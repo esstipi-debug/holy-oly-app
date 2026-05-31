@@ -4,3 +4,8 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# capturas sueltas de desarrollo (no son parte de la app; los íconos icon-*.png SÍ se versionan)
+_mockup/shot-*.png
+_mockup/cc-*.png
+_mockup/c-top.png
