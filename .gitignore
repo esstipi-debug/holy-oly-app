@@ -9,3 +9,6 @@ Thumbs.db
 _mockup/shot-*.png
 _mockup/cc-*.png
 _mockup/c-top.png
+
+dist/
+*.tsbuildinfo
