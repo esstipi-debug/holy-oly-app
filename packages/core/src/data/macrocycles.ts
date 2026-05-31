@@ -30,36 +30,7 @@
  * debe converger (migración 017 ya apunta a las 10 escuelas + phases JSONB).
  */
 
-export type MacrocycleLevel = 'beginner' | 'intermediate' | 'advanced' | 'elite';
-
-export interface MacrocyclePhase {
-  key: string;                 // 'realizacion'
-  name: string;                // 'Realización'
-  weeks: [number, number];     // rango inclusivo de semanas dentro del ciclo
-  imrPct: [number, number];    // banda de %1RM esperada (§8.4)
-  volRel: number;              // volumen relativo 0–100 (% del pico de volumen del ciclo)
-  focus: string;               // foco de la fase
-}
-
-export interface Macrocycle {
-  id: string;
-  name: string;
-  family: 'Búlgaro' | 'Coreano' | 'Chino' | 'Cubano' | 'Polaco' | 'Ruso' | 'Ucraniano' | 'Colombiano' | 'Híbrido' | 'USA';
-  /** Producto al que pertenece. Holy Oly = halterofilia. */
-  product: 'holy-oly';
-  desc: string;
-  frequency: string;       // "5d/sem"
-  duration: string;        // "12 semanas"
-  intensity: number;       // 1-5
-  volume: number;          // 1-5
-  color: string;
-  bestFor?: string;
-  // ── Campos normalizados (§5.3) ──────────────────────────────
-  level: MacrocycleLevel;          // nivel mínimo recomendado
-  peaks: boolean;                  // pica
-  peakWeek: number | null;         // semanaPico (null si no pica)
-  phaseProfile: MacrocyclePhase[]; // perfilFases
-}
+import type { Macrocycle, MacrocyclePhase } from "../types";
 
 export const MACROCYCLES: Macrocycle[] = [
   // ── BÚLGARO ──────────────────────────────────────────────
@@ -604,5 +575,5 @@ export function phaseForWeek(macro: Macrocycle, week: number): MacrocyclePhase |
   const phases = macro.phaseProfile;
   if (!phases.length) return null;
   const hit = phases.find(p => week >= p.weeks[0] && week <= p.weeks[1]);
-  return hit ?? phases[phases.length - 1];
+  return hit ?? phases[phases.length - 1] ?? null;
 }
