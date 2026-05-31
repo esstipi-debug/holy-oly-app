@@ -82,6 +82,8 @@
   .count{ display:flex; align-items:baseline; gap:8px; margin-bottom:9px; }
   .count b{ font-family:var(--wl-display); font-weight:800; font-size:30px; color:var(--wl-accent); line-height:.9; }
   .count span{ font-family:var(--mono); font-size:10px; color:var(--wl-muted); }
+  .count span b{ color:var(--wl-text); font-weight:700; }
+  .count__more{ font-family:var(--mono); font-size:9px; color:var(--wl-muted); margin:-2px 0 8px; }
   .sb-batt{ display:inline-flex; align-items:center; gap:6px; font-weight:700; }
   .sb-batt i{ width:22px; height:11px; border:1.5px solid currentColor; border-radius:3px; position:relative; opacity:.9; }
   .sb-batt i::after{ content:''; position:absolute; left:2px; top:2px; bottom:2px; right:3px; background:currentColor; border-radius:1px; }
@@ -247,10 +249,18 @@
     return card('Hábitos de recuperación','esta semana','','cuenta el hábito, no la cifra', inner); }
 
   /* 8 · camino a la competencia */
+  function getComps(){ try{ var raw=localStorage.getItem('ho_comps'); if(raw){ var a=JSON.parse(raw); if(a&&a.length) return a; } var ow=+localStorage.getItem('ho_comp_week'); if(ow>=1&&ow<=16) return [{week:ow,name:localStorage.getItem('ho_comp_name')||'COMP A'}]; }catch(e){} return [{week:16,name:'COMP A'}]; }
   function pathTile(){ var phs=[['Hipertrofia',1,4,68],['Fuerza básica',5,8,78],['Fuerza/Pot.',9,12,88],['Peaking',13,16,97]], NW=16, hoy=12;
-    var ribbon='<div class="ribbon">'+phs.map(function(p){ var wks=p[2]-p[1]+1, fill=Math.round((p[3]-60)/45*78+16), now=hoy>=p[1]&&hoy<=p[2]; return '<div class="ribbon__seg'+(now?' now':'')+'" style="flex:'+wks+';--fill:'+fill+'%"><div class="ribbon__nm">'+p[0]+(now?' • hoy':'')+'</div><div class="ribbon__wk">sem '+p[1]+'–'+p[2]+'</div></div>'; }).join('')+'</div>';
-    var count='<div class="count"><b>4</b><span>semanas para tu competencia<br>COMP A · semana 16</span></div>';
-    return card('Camino a la competencia','','','dónde estás y qué viene', count+ribbon); }
+    var comps=getComps().slice().sort(function(a,b){return a.week-b.week;});
+    var next=comps.filter(function(c){return c.week>=hoy;})[0]||comps[comps.length-1];
+    var faltan=next.week-hoy;
+    function hasComp(p){ return comps.some(function(c){return c.week>=p[1]&&c.week<=p[2];}); }
+    var ribbon='<div class="ribbon">'+phs.map(function(p){ var wks=p[2]-p[1]+1, fill=Math.round((p[3]-60)/45*78+16), now=hoy>=p[1]&&hoy<=p[2], cp=hasComp(p); return '<div class="ribbon__seg'+(now?' now':'')+'" style="flex:'+wks+';--fill:'+fill+'%"><div class="ribbon__nm">'+p[0]+(cp?' 🚩':'')+(now?' • hoy':'')+'</div><div class="ribbon__wk">sem '+p[1]+'–'+p[2]+'</div></div>'; }).join('')+'</div>';
+    var big=faltan<=0?'0':String(faltan);
+    var line=faltan<=0 ? next.name+' es <b>esta semana</b> (sem '+next.week+')' : 'semanas para <b>'+next.name+'</b><br>semana '+next.week;
+    var more=comps.length>1 ? '<div class="count__more">tus competencias · '+comps.map(function(c){return c.name+' (sem '+c.week+')';}).join('  ·  ')+'</div>' : '';
+    var count='<div class="count"><b>'+big+'</b><span>'+line+'</span></div>'+more;
+    return card('Camino a la competencia','','','lo fija tu coach', count+ribbon); }
 
   /* ciclo (opt-in · neutro) — estado: regular | unreliable (irregular/ACO) | amenorrhea */
   var CYCST='regular'; try{ CYCST=localStorage.getItem('ho_cycle_state')||'regular'; }catch(e){}
