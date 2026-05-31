@@ -3,6 +3,7 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: { display: ["var(--wl-display)"] },
       colors: {
         wl: {
           bg: "var(--wl-bg)", surface: "var(--wl-surface)",
