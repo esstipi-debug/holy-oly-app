@@ -1,4 +1,5 @@
-import type { Estado, MonitorSeries } from "../types";
+import type { Estado, Macrocycle, MonitorSeries } from "../types";
+import { phaseForWeek } from "../data/macrocycles";
 
 /** Estado plus the render-only "no data" boundary state. */
 export type CellState = Estado | "none";
@@ -96,4 +97,14 @@ export function seriesState(s: MonitorSeries | undefined, week: number): CellSta
 export function rosterStatus(s: MonitorSeries | undefined): CellState {
   if (!s || s.weeks === 0 || s.acute.length === 0) return "none";
   return seriesState(s, s.weeks);
+}
+
+/** The IMR band the program expects for `week` (falls back to the last phase). */
+export function imrBandForWeek(macro: Macrocycle, week: number): [number, number] {
+  return phaseForWeek(macro, week)!.imrPct;
+}
+
+/** Estado of `imr` vs the phase band for `week`. Always Estado (non-empty macro). */
+export function imrStateForWeek(imr: number, macro: Macrocycle, week: number): Estado {
+  return imrBandState(imr, imrBandForWeek(macro, week));
 }

@@ -3,9 +3,11 @@ import {
   acwrState, chronic, acwr, imrBandState,
   recoveryScore, recoverySeries, recoveryState,
   acwrStateSafe, rosterStatus, seriesState,
+  imrBandForWeek, imrStateForWeek,
 } from "./monitor";
 import type { CellState } from "./monitor";
 import type { MonitorSeries } from "../types";
+import { MACROCYCLES } from "../data/macrocycles";
 
 // Mara — real arrays from _mockup/coach.html (the seed's reference athlete)
 const MARA: MonitorSeries = {
@@ -96,5 +98,25 @@ describe("no-data state", () => {
     expect(seriesState(mara, 10)).toBe("alert"); // week 10: recovery 67 → alert dominates
     const holed = { ...mara, recovery: mara.recovery.slice(0, 5) };
     expect(seriesState(holed, 8)).toBe("none"); // recovery[7] is undefined → none
+  });
+});
+
+describe("imr-to-fase adapter", () => {
+  const ruso = MACROCYCLES.find((m) => m.id === "ruso-5d")!;
+  it("imrBandForWeek returns the phase's imrPct (falls back to last phase out of range)", () => {
+    expect(imrBandForWeek(ruso, 1)).toEqual([65, 72]);   // hipertrofia
+    expect(imrBandForWeek(ruso, 14)).toEqual([92, 102]); // peaking
+    expect(imrBandForWeek(ruso, 99)).toEqual([92, 102]); // out of range -> last phase, NOT none
+  });
+  it("imrStateForWeek = imrBandState over the phase band (Estado, never none)", () => {
+    expect(imrStateForWeek(70, ruso, 1)).toBe("ok");    // in [65,72]±2
+    expect(imrStateForWeek(80, ruso, 1)).toBe("warn");  // above band+2
+    expect(imrStateForWeek(95, ruso, 14)).toBe("ok");   // in [92,102]±2
+  });
+  it("imrStateForWeek ±2 boundary: band[1]+2 is still ok, +3 is warn (week-1 band [65,72])", () => {
+    expect(imrStateForWeek(74, ruso, 1)).toBe("ok");    // exactly band[1]+2 → not >, ok
+    expect(imrStateForWeek(75, ruso, 1)).toBe("warn");  // band[1]+3 → warn
+    expect(imrStateForWeek(63, ruso, 1)).toBe("ok");    // exactly band[0]-2 → not <, ok
+    expect(imrStateForWeek(62, ruso, 1)).toBe("warn");  // band[0]-3 → warn
   });
 });
