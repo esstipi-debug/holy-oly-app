@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8742", "-d", "_mockup"],
       "port": 8742
+    },
+    {
+      "name": "holy-oly-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@holy-oly/web", "dev"],
+      "port": 8743
     }
   ]
 }
