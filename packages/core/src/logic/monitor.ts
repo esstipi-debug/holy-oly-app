@@ -67,3 +67,33 @@ export function recoveryState(v: number): CellState {
   if (!Number.isFinite(v)) return "none";
   return v < 70 ? "alert" : v < 80 ? "warn" : "ok";
 }
+
+/** Guarded acwrState: a non-finite ratio (no/zero data) is "none", never "ok". */
+export function acwrStateSafe(v: number): CellState {
+  return Number.isFinite(v) ? acwrState(v) : "none";
+}
+
+/** Worse-of two CellStates via an explicit rank so "none" can never out-rank a real state. */
+const RANK: Record<CellState, number> = { none: -1, ok: 0, warn: 1, alert: 2 };
+function worseOf(a: CellState, b: CellState): CellState {
+  // If EITHER axis is "none" (missing data), the cell is "none" — never silently green.
+  if (a === "none" || b === "none") return "none";
+  return RANK[a] >= RANK[b] ? a : b;
+}
+
+/** Per-cell state: "none" when missing/out-of-range/recovery-hole, else worse-of(acwr, recovery). */
+export function seriesState(s: MonitorSeries | undefined, week: number): CellState {
+  if (!s) return "none";
+  const i = week - 1;
+  if (i < 0 || i >= s.weeks) return "none";
+  const load = acwrStateSafe(acwr(s.acute)[i] ?? NaN);   // NaN → none
+  const rec = recoveryState(s.recovery[i] ?? NaN);       // missing recovery week → none
+  return worseOf(load, rec);
+}
+
+/** Roster cell = the LAST week's seriesState (worse-of), or "none" when there is no series.
+ *  Single rule shared by the buckets, the quadrant dot, and the heatmap's current column. */
+export function rosterStatus(s: MonitorSeries | undefined): CellState {
+  if (!s || s.weeks === 0 || s.acute.length === 0) return "none";
+  return seriesState(s, s.weeks);
+}

@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   acwrState, chronic, acwr, imrBandState,
   recoveryScore, recoverySeries, recoveryState,
+  acwrStateSafe, rosterStatus, seriesState,
 } from "./monitor";
+import type { CellState } from "./monitor";
 import type { MonitorSeries } from "../types";
 
 // Mara — real arrays from _mockup/coach.html (the seed's reference athlete)
@@ -63,5 +65,36 @@ describe("recovery", () => {
     expect(Math.min(...rec)).toBe(rec[9]);   // week 10 is the series minimum
     expect(rec[9]!).toBeLessThan(70);        // → recoveryState(rec[9]) === "alert"
     expect(recoveryState(rec[9]!)).toBe("alert");
+  });
+});
+
+describe("no-data state", () => {
+  it("acwrStateSafe: finite → acwrState; NaN / Infinity / 0/0 → none", () => {
+    expect(acwrStateSafe(1.0)).toBe("ok");
+    expect(acwrStateSafe(1.6)).toBe("alert");
+    expect(acwrStateSafe(NaN)).toBe("none");
+    expect(acwrStateSafe(Infinity)).toBe("none");
+    expect(acwrStateSafe(0 / 0)).toBe("none");
+  });
+  it("recoveryState: non-finite recovery → none (never green) — the recovery twin of the NaN trap", () => {
+    expect(recoveryState(NaN)).toBe("none");
+    expect(recoveryState(Infinity)).toBe("none");
+    expect(recoveryState(64)).toBe("alert"); // finite still works
+  });
+  it("rosterStatus: undefined / zero-week → none, else worse-of(acwr,recovery) of the LAST week", () => {
+    expect(rosterStatus(undefined)).toBe("none");
+    expect(rosterStatus({ ...MARA, weeks: 0, acute: [], recovery: [] })).toBe("none");
+    // Mara week-12 is a deload trough: acwr 0.739 (<0.8 → "warn") and rec 77 (<80 → "warn")
+    // → worse-of = "warn". (NOT "~1.0"; the last week is a taper, not the week-10 spike.)
+    const mara = { ...MARA, recovery: recoverySeries(MARA) };
+    expect(rosterStatus(mara)).toBe("warn");
+  });
+  it("seriesState: none when missing / out of range / recovery hole; else worse-of(acwr, recovery)", () => {
+    const mara = { ...MARA, recovery: recoverySeries(MARA) };
+    expect(seriesState(undefined, 1)).toBe("none");
+    expect(seriesState(mara, 99)).toBe("none"); // week out of range
+    expect(seriesState(mara, 10)).toBe("alert"); // week 10: recovery 67 → alert dominates
+    const holed = { ...mara, recovery: mara.recovery.slice(0, 5) };
+    expect(seriesState(holed, 8)).toBe("none"); // recovery[7] is undefined → none
   });
 });
