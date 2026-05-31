@@ -43,6 +43,18 @@ export interface MonitorSeries {
   rhr: number[]; rhrBase: number;
   imr: number[];
   wellness: number[];
+  recovery: number[];
+}
+
+export type CycleShare = "full" | "min" | "none";
+export type CycleState = "regular" | "unreliable" | "amenorrhea";
+
+/** Coach-facing, redacted by construction: never exposes phase/day/symptom. */
+export interface CycleContext {
+  share: CycleShare;
+  inLutealNow: boolean | null;
+  health: "ok" | "referral";
+  reliable: boolean;
 }
 
 export type VinculoEstado = "pendiente" | "activo" | "rechazado" | "revocado";
