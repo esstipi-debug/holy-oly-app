@@ -88,6 +88,19 @@
   .msheet__cancel{ width:100%; margin-top:8px; border:0; background:transparent; color:var(--wl-muted); font-family:var(--mono); font-size:12px; padding:8px; cursor:pointer; }
   .mtoast{ position:absolute; left:14px; right:14px; bottom:16px; z-index:41; display:none; background:var(--wl-accent); color:var(--wl-bg); font-family:var(--wl-display); font-weight:700; font-size:13px; padding:13px 16px; border-radius:12px; text-align:center; box-shadow:0 14px 40px -12px rgba(0,0,0,.7); }
   .mtoast.show{ display:block; }
+  /* asignar competencia (perfil del alumno) */
+  .objbar{ display:flex; align-items:center; gap:10px; background:var(--wl-surface); border:1px solid color-mix(in srgb,var(--wl-text) 8%,transparent); border-radius:var(--wl-radius); padding:11px 13px; margin-top:11px; }
+  .objbar__main{ flex:1; min-width:0; }
+  .objbar__lbl{ font-family:var(--mono); font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--wl-muted); }
+  .objbar__v{ font-family:var(--wl-display); font-weight:700; font-size:14px; color:var(--wl-text); margin-top:4px; }
+  .objbar__tag{ font-family:var(--mono); font-size:8px; font-weight:700; color:var(--wl-bg); background:var(--wl-accent); padding:2px 6px; border-radius:99px; }
+  .objbar__btn{ flex:0 0 auto; border:0; cursor:pointer; font-family:var(--wl-display); font-weight:800; font-size:12.5px; padding:10px 14px; border-radius:11px; background:var(--wl-accent); color:var(--wl-bg); }
+  .restrnote{ margin-top:10px; padding:8px 10px; border-radius:10px; background:color-mix(in srgb,var(--wl-accent) 12%, transparent); border:1px solid color-mix(in srgb,var(--wl-accent) 40%, transparent); font-family:var(--mono); font-size:9px; line-height:1.5; color:var(--wl-text); }
+  .restrnote b{ color:var(--wl-accent); }
+  .msheet__weeks{ display:flex; gap:6px; overflow-x:auto; padding-bottom:3px; }
+  .msheet__weeks::-webkit-scrollbar{ height:0; }
+  .cwk{ flex:0 0 auto; border:1px solid color-mix(in srgb,var(--wl-text) 14%,transparent); background:transparent; color:var(--wl-text); font-family:var(--wl-display); font-weight:700; font-size:12px; padding:8px 11px; border-radius:10px; cursor:pointer; white-space:nowrap; }
+  .cwk.on{ background:var(--wl-accent); color:var(--wl-bg); border-color:var(--wl-accent); }
 </style>
 </head>
 <body>
@@ -240,30 +253,39 @@
     return ccard('Peso vs categoría','banda objetivo de categoría','80.8 kg','ok', svg); }
 
   /* 8 · Macrociclo timeline */
-  function chartMacro(){ var H=150, NW=16, top=42, bot=H-16, mxV=100; var w0=10, ww=W-20;
+  function chartMacro(){ var H=160, NW=16, top=42, bot=H-16, mxV=100; var w0=10, ww=W-20;
     function xw(w){ return w0+(w-0.5)/NW*ww; }
     function yv(v){ return top+(1-v/mxV)*(bot-top-6); }
-    var phases=[['Hiper',1,4,68,'#6f86ff'],['Fuerza',5,8,78,'#2dd4e6'],['Potencia',9,12,88,ST.warn],['Peaking',13,16,97,ST.alert]];
-    // phase ribbon
-    var ribbon=phases.map(function(p){ var x0=w0+(p[1]-1)/NW*ww, x1=w0+(p[2])/NW*ww; return '<rect x="'+x0.toFixed(1)+'" y="10" width="'+(x1-x0-2).toFixed(1)+'" height="20" rx="4" style="fill:'+p[4]+';opacity:.85"/><text x="'+((x0+x1)/2).toFixed(1)+'" y="24" text-anchor="middle" font-size="8.5" font-weight="700" style="fill:#0b0b11" font-family="Chakra Petch">'+p[0]+'</text>'; }).join('');
-    // volume bars (russian wave per phase) + intensity line
+    var phases=[['Hiper',1,4,'#6f86ff'],['Fuerza',5,8,'#2dd4e6'],['Potencia',9,12,ST.warn],['Peaking',13,16,ST.alert]];
+    var ribbon=phases.map(function(p){ var x0=w0+(p[1]-1)/NW*ww, x1=w0+(p[2])/NW*ww; return '<rect x="'+x0.toFixed(1)+'" y="10" width="'+(x1-x0-2).toFixed(1)+'" height="20" rx="4" style="fill:'+p[3]+';opacity:.85"/><text x="'+((x0+x1)/2).toFixed(1)+'" y="24" text-anchor="middle" font-size="8.5" font-weight="700" style="fill:#0b0b11" font-family="Chakra Petch">'+p[0]+'</text>'; }).join('');
+    // volumen con bajada (taper) en las ~3 semanas previas a la competencia → "adelanta" la descarga
     var wave=[1,0.9,0.6,0.45], pf=[1,0.88,0.72,0.5];
-    var bars='', il=[];
-    for(var w=1;w<=NW;w++){ var pi=Math.floor((w-1)/4); var vol=wave[(w-1)%4]*pf[pi]*100; var bw=ww/NW*0.62; var x=xw(w); bars+='<rect x="'+(x-bw/2).toFixed(1)+'" y="'+yv(vol).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(bot-yv(vol)).toFixed(1)+'" rx="1" style="fill:var(--wl-text);opacity:.18"/>'; il.push([x, top+(1-(phases[pi][3]-60)/45)*(bot-top-6)]); }
+    function volAt(w){ var pi=Math.floor((w-1)/4); var base=wave[(w-1)%4]*pf[pi]*100; var dd=compWeek-w;
+      if(dd<0) return base*0.55; if(dd<=1) return Math.min(base,26); if(dd<=2) return Math.min(base,40); if(dd<=3) return Math.min(base,56); return base; }
+    function intAt(w){ var d=compWeek-w; if(d<0) d=-d*1.6; return Math.max(62, 100 - d*3.2); }   // pico en compWeek
+    var taperStart=Math.max(1,compWeek-2), bars='', il=[];
+    for(var w=1;w<=NW;w++){ var vol=volAt(w); var bw=ww/NW*0.62; var x=xw(w); var inTaper=(w>=taperStart&&w<=compWeek);
+      bars+='<rect x="'+(x-bw/2).toFixed(1)+'" y="'+yv(vol).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(bot-yv(vol)).toFixed(1)+'" rx="1" style="fill:'+(inTaper?ST.alert:'var(--wl-text)')+';opacity:'+(inTaper?'.5':'.18')+'"/>';
+      il.push([x, top+(1-(intAt(w)-60)/45)*(bot-top-6)]); }
     var iline='<path d="'+il.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ')+'" style="fill:none;stroke:var(--wl-accent);stroke-width:2.2" stroke-linejoin="round"/>';
     var hoy='<line x1="'+xw(12).toFixed(1)+'" x2="'+xw(12).toFixed(1)+'" y1="36" y2="'+bot+'" style="stroke:var(--wl-text);opacity:.55" stroke-dasharray="3 2"/><text x="'+xw(12).toFixed(1)+'" y="'+(H-3)+'" text-anchor="middle" class="lend" style="fill:var(--wl-text)">HOY</text>';
-    var flag='<text x="'+xw(16).toFixed(1)+'" y="40" text-anchor="middle" font-size="11">🚩</text><text x="'+xw(16).toFixed(1)+'" y="'+(H-3)+'" text-anchor="middle" class="lend" style="fill:'+ST.alert+'">COMP A</text>';
+    var fx=xw(compWeek); var flag='<line x1="'+fx.toFixed(1)+'" x2="'+fx.toFixed(1)+'" y1="34" y2="'+bot+'" style="stroke:'+ST.alert+';opacity:.6" stroke-dasharray="2 2"/><text x="'+fx.toFixed(1)+'" y="40" text-anchor="middle" font-size="11">🚩</text><text x="'+fx.toFixed(1)+'" y="'+(H-3)+'" text-anchor="middle" class="lend" style="fill:'+ST.alert+'">'+compName+'</text>';
     var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+ribbon+bars+iline+hoy+flag+'</svg>';
-    return ccard('Macrociclo','cinta de fases + volumen (barras) e intensidad (línea) · HOY centrado','sem 12','ok', svg); }
+    var restr=(compWeek!==16);
+    var note=restr?'<div class="restrnote"><b>Reestructurado:</b> la bajada de volumen se adelantó a la sem '+compWeek+' (pico para '+compName+'). Las semanas posteriores quedan como bloque post-competencia.</div>':'';
+    return ccard('Macrociclo', restr?'descarga adelantada a sem '+compWeek+' · barras=volumen · línea=intensidad':'cinta de fases + volumen + intensidad · HOY centrado', restr?'reestructurado':'sem 12', restr?'warn':'ok', svg+note); }
 
   // nivel que comparte la atleta (default mínimo) + estado del ciclo — los fija ella; persisten vía localStorage
   var SHARE='min'; try{ SHARE=localStorage.getItem('ho_cycle_share')||'min'; }catch(e){}
   var CYCST='regular'; try{ CYCST=localStorage.getItem('ho_cycle_state')||'regular'; }catch(e){}
+  var compWeek=16, compName='COMP A';
+  try{ var _cw=+localStorage.getItem('ho_comp_week'); if(_cw>=1&&_cw<=16) compWeek=_cw; var _cn=localStorage.getItem('ho_comp_name'); if(_cn) compName=_cn; }catch(e){}
+  function objbar(){ var restr=compWeek!==16; return '<div class="objbar"><div class="objbar__main"><div class="objbar__lbl">Competencia objetivo</div><div class="objbar__v">'+compName+' · sem '+compWeek+(restr?' <span class="objbar__tag">reestructurado</span>':'')+'</div></div><button class="objbar__btn" onclick="openComp()">Asignar</button></div>'; }
   function cycTag(){ if(SHARE==='none') return ''; var amen=(CYCST==='amenorrhea'); var lbl=amen?'salud · derivación':(SHARE==='full'?'ciclo · compartido':'ciclo · reservado'); if(CYCST==='unreliable'&&!amen) lbl+=' (poco fiable)'; return '<div class="cyctag">'+lbl+'</div>'; }
   function render(){ document.getElementById('coach').innerHTML =
     '<div class="chead"><div class="chead__main"><div class="chead__name">Mara</div><div class="chead__prog">Ruso 5D · sem 12/16 · Fuerza/Potencia</div>'+cycTag()+'</div><span class="estado" style="color:#0b0b11;background:'+ST.warn+'">Vigilar</span></div>'
-    + chartACWR() + chartLoad() + chartRec() + chartIMR() + chartWell() + chartComp() + chartWt() + chartMacro() + palmares(); }
-  HOmedalsSeed(); render(); HOinitMedalSheet();
+    + objbar() + chartACWR() + chartLoad() + chartRec() + chartIMR() + chartWell() + chartComp() + chartWt() + chartMacro() + palmares(); }
+  HOmedalsSeed(); render(); HOinitMedalSheet(); HOinitCompSheet();
 
   document.querySelectorAll('.spill').forEach(function(b){ b.addEventListener('click',function(){ SHARE=b.dataset.share; try{localStorage.setItem('ho_cycle_share',SHARE);}catch(e){} document.querySelectorAll('.spill').forEach(function(x){x.classList.toggle('on',x.dataset.share===SHARE);}); render(); }); });
   document.querySelectorAll('.spill').forEach(function(x){x.classList.toggle('on',x.dataset.share===SHARE);});
@@ -304,6 +326,28 @@
     closeMedalSheet(); render();
     var t=document.getElementById('mtoast'); if(t){ t.textContent='✓ Medalla de '+HO_METAL_NAMES[mMetal].toLowerCase()+' registrada'; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2600); } }
   window.openMedalSheet=openMedalSheet; window.pickMetal=pickMetal; window.recalcTotal=recalcTotal; window.closeMedalSheet=closeMedalSheet; window.saveMedal=saveMedal;
+
+  /* ── Asignar competencia (perfil del alumno) → reestructura el macro: adelanta/repite la bajada de volumen ── */
+  function HOinitCompSheet(){ var dev=document.getElementById('coach').closest('.device'); if(!dev||document.getElementById('compSheet')) return;
+    var s=document.createElement('div'); s.className='msheet'; s.id='compSheet';
+    s.innerHTML='<div class="msheet__panel"><div class="msheet__title">Asignar competencia</div>'
+      +'<div class="msheet__lbl">Nombre</div><input id="cName" class="msheet__in" placeholder="COMP A">'
+      +'<div class="msheet__lbl">Semana objetivo (pico)</div><div class="msheet__weeks" id="cWeeks"></div>'
+      +'<div class="restrnote"><b>Reestructura el macro:</b> la bajada de volumen que ya trae el macrociclo se <b>adelanta</b> (o repite) para picar en la semana elegida.</div>'
+      +'<button class="msheet__save" onclick="saveComp()">Asignar y reestructurar</button>'
+      +'<button class="msheet__cancel" onclick="closeComp()">Cancelar</button></div>';
+    dev.appendChild(s); }
+  var _pickW=compWeek;
+  function openComp(){ _pickW=compWeek; document.getElementById('cName').value=compName;
+    var w=''; for(var k=1;k<=16;k++){ w+='<button class="cwk'+(k===compWeek?' on':'')+'" onclick="pickCompWeek('+k+')">Sem '+k+'</button>'; }
+    document.getElementById('cWeeks').innerHTML=w; document.getElementById('compSheet').classList.add('show'); }
+  function pickCompWeek(w){ _pickW=w; document.querySelectorAll('#cWeeks .cwk').forEach(function(b,idx){ b.classList.toggle('on',(idx+1)===w); }); }
+  function closeComp(){ var s=document.getElementById('compSheet'); if(s) s.classList.remove('show'); }
+  function saveComp(){ compWeek=_pickW; compName=document.getElementById('cName').value||'COMP A';
+    try{ localStorage.setItem('ho_comp_week',compWeek); localStorage.setItem('ho_comp_name',compName); }catch(e){}
+    closeComp(); render();
+    var t=document.getElementById('mtoast'); if(t){ t.textContent='✓ '+compName+' en sem '+compWeek+' · macro reestructurado'; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },3000); } }
+  window.openComp=openComp; window.pickCompWeek=pickCompWeek; window.closeComp=closeComp; window.saveComp=saveComp;
 </script>
 </body>
 </html>
