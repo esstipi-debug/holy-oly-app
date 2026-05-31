@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#120a16"/>
+  <!-- disco / plato: motivo central de la app -->
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#c8ff2d" stroke-width="44"/>
+  <circle cx="256" cy="256" r="68" fill="#120a16" stroke="#c8ff2d" stroke-width="12"/>
+  <circle cx="256" cy="256" r="17" fill="#c8ff2d"/>
+  <!-- destello cian (skin neon) -->
+  <path d="M256 84 a172 172 0 0 1 121 50" fill="none" stroke="#1fe7ff" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+</svg>

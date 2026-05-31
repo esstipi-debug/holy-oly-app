@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Holy Oly · Coach — Asignar plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@500;600;700;800&family=Saira+Condensed:wght@600;700;800&family=JetBrains+Mono:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wl-themes.css">
+<link rel="stylesheet" href="app-mode.css">
+<script>(function(){var p=new URLSearchParams(location.search);var sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;if(p.get('app')==='1'||window.self!==window.top||sa){document.documentElement.classList.add('appmode');}})();</script>
+<style>
+  :root{ --page:#0b0b11; --mono:'JetBrains Mono',ui-monospace,monospace; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{ background:var(--page); color:#e8e8ee; font-family:'Manrope',system-ui,sans-serif; padding:28px 20px 60px; }
+  .title{ text-align:center; margin:0 0 4px; font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:22px; }
+  .sub{ text-align:center; margin:0 0 20px; color:#8a8a99; font-size:12.5px; }
+  .switcher{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:24px; }
+  .tpill{ cursor:pointer; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04); color:#cfcfe0; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:12px; padding:7px 13px; border-radius:99px; }
+  .tpill.active{ background:#c8ff2d; color:#0a0410; border-color:#c8ff2d; }
+  .wrap{ display:flex; justify-content:center; }
+  .device{ width:362px; border-radius:34px; overflow:hidden; border:1px solid rgba(255,255,255,.12); box-shadow:0 30px 80px -20px rgba(0,0,0,.85); background:#000; position:relative; }
+  .statusbar{ height:32px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:12px; font-weight:700; background:var(--wl-bg); color:var(--wl-text); font-family:'Chakra Petch',sans-serif; }
+  .sb-batt{ display:inline-flex; align-items:center; gap:6px; font-weight:700; }
+  .sb-batt i{ width:22px; height:11px; border:1.5px solid currentColor; border-radius:3px; position:relative; opacity:.9; }
+  .sb-batt i::after{ content:''; position:absolute; left:2px; top:2px; bottom:2px; right:3px; background:currentColor; border-radius:1px; }
+  .sb-batt i::before{ content:''; position:absolute; right:-3.5px; top:3px; bottom:3px; width:2px; background:currentColor; border-radius:0 2px 2px 0; }
+  .hobar{ display:flex; align-items:center; gap:11px; padding:9px 13px; background:var(--wl-bg); border-bottom:1px solid color-mix(in srgb,var(--wl-text) 8%,transparent); }
+  .hobar__back{ width:34px; height:34px; flex:0 0 auto; border-radius:10px; border:1px solid color-mix(in srgb,var(--wl-text) 15%,transparent); background:var(--wl-surface); color:var(--wl-text); font-size:19px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+  .hobar__brand{ display:flex; flex-direction:column; line-height:1; }
+  .hobar__name{ font-family:var(--wl-display); font-weight:800; font-size:15px; letter-spacing:.05em; color:var(--wl-text); }
+  .hobar__motto{ font-family:var(--mono); font-size:8.5px; letter-spacing:.07em; color:var(--wl-accent); margin-top:4px; }
+  .caption{ text-align:center; margin-top:12px; color:#8a8a99; font-size:12.5px; font-family:'Chakra Petch',sans-serif; }
+
+  .plan{ background:var(--wl-bg); padding:15px 15px 26px; }
+  .plan__h{ font-family:var(--wl-display); font-weight:800; font-size:24px; color:var(--wl-text); line-height:1; }
+  .plan__for{ display:inline-flex; align-items:center; gap:7px; margin-top:9px; font-family:var(--mono); font-size:11px; color:var(--wl-muted); }
+  .plan__for b{ font-family:var(--wl-display); font-weight:700; font-size:12.5px; color:var(--wl-text); }
+  .sec{ font-family:var(--wl-display); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--wl-muted); margin:22px 0 11px; }
+
+  /* RM rows */
+  .rm{ background:var(--wl-surface); border:1px solid color-mix(in srgb,var(--wl-text) 7%,transparent); border-radius:var(--wl-radius); padding:11px 13px 12px; }
+  .rm+.rm{ margin-top:9px; }
+  .rm__top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .rm__lbl{ font-family:var(--wl-display); font-weight:700; font-size:14px; color:var(--wl-text); }
+  .rm__step{ display:flex; align-items:center; gap:9px; }
+  .rm__btn{ width:30px; height:30px; flex:0 0 auto; border-radius:9px; border:1px solid color-mix(in srgb,var(--wl-text) 16%,transparent); background:transparent; color:var(--wl-text); font-size:17px; line-height:1; cursor:pointer; }
+  .rm__kg{ font-family:var(--wl-display); font-weight:800; font-size:19px; color:var(--wl-text); min-width:42px; text-align:center; }
+  .rm__u{ font-family:var(--mono); font-size:10px; color:var(--wl-muted); margin-left:-5px; }
+  .rm__discs{ display:flex; align-items:center; gap:3px; margin-top:9px; min-height:26px; flex-wrap:wrap; }
+  .rm__none{ font-family:var(--mono); font-size:9.5px; color:var(--wl-muted); }
+
+  /* macro picker */
+  .psel{ width:100%; box-sizing:border-box; background:var(--wl-surface); border:1px solid color-mix(in srgb,var(--wl-text) 14%,transparent); border-radius:12px; padding:12px 13px; color:var(--wl-text); font-family:var(--wl-display); font-weight:700; font-size:14px; appearance:none; -webkit-appearance:none; }
+  .pstats{ display:flex; gap:9px; margin-top:10px; }
+  .pstats div{ flex:1; background:var(--wl-surface); border-radius:12px; padding:9px 6px; text-align:center; }
+  .pstats b{ font-family:var(--wl-display); font-weight:800; font-size:16px; color:var(--wl-text); display:block; }
+  .pstats span{ font-family:var(--mono); font-size:8px; letter-spacing:.06em; text-transform:uppercase; color:var(--wl-muted); }
+  .weeks{ display:flex; gap:6px; overflow-x:auto; padding-bottom:3px; margin-top:12px; }
+  .weeks::-webkit-scrollbar{ height:0; }
+  .wk{ flex:0 0 auto; border:1px solid color-mix(in srgb,var(--wl-text) 14%,transparent); background:transparent; color:var(--wl-text); font-family:var(--wl-display); font-weight:700; font-size:12px; padding:8px 12px; border-radius:10px; cursor:pointer; white-space:nowrap; }
+  .wk.on{ background:var(--wl-accent); color:var(--wl-bg); border-color:var(--wl-accent); box-shadow:0 0 14px color-mix(in srgb,var(--wl-accent) 45%, transparent); }
+
+  .assign{ width:100%; margin-top:22px; border:0; cursor:pointer; font-family:var(--wl-display); font-weight:800; font-size:16px; padding:15px; border-radius:14px; background:var(--wl-accent); color:var(--wl-bg); }
+  .toast{ position:absolute; left:14px; right:14px; bottom:16px; z-index:30; display:none; background:var(--wl-accent); color:var(--wl-bg); font-family:var(--wl-display); font-weight:700; font-size:12.5px; line-height:1.4; padding:13px 16px; border-radius:12px; text-align:center; box-shadow:0 14px 40px -12px rgba(0,0,0,.7); }
+  .toast.show{ display:block; }
+</style>
+</head>
+<body>
+  <h1 class="title">HOLY OLY · Coach — Asignar plan</h1>
+  <p class="sub">El coach rellena las marcas (1RM) y asigna el macrociclo en una sola ventana.</p>
+  <div class="switcher">
+    <span class="tpill active" data-t="neon">Neon PR</span>
+    <span class="tpill" data-t="plates">Plates</span>
+    <span class="tpill" data-t="premium">Premium</span>
+    <span class="tpill" data-t="chalk">Chalk</span>
+    <span class="tpill" data-t="neonlight">Neon Bloom</span>
+  </div>
+  <div class="wrap">
+    <div class="device wl wl--neon" data-wl>
+      <div class="statusbar"><span>9:45</span><span class="sb-batt">100<i></i></span></div>
+      <div class="hobar"><button class="hobar__back" onclick="history.back()">‹</button><div class="hobar__brand"><span class="hobar__name">HOLY OLY</span><span class="hobar__motto">smart training · zero burnout</span></div></div>
+      <div class="plan">
+        <div class="plan__h">Asignar plan</div>
+        <div class="plan__for">Para: <b>Lucía R.</b> · Coreano · intermedio</div>
+
+        <div class="sec">Marcas · 1RM</div>
+        <div id="rmlist"></div>
+
+        <div class="sec">Macrociclo</div>
+        <select class="psel" id="planMacro"></select>
+        <div class="pstats" id="planStats"></div>
+        <div class="sec" style="margin:16px 0 0">Semana de inicio</div>
+        <div class="weeks" id="planWeeks"></div>
+
+        <button class="assign" onclick="assignPlan()">Asignar plan</button>
+      </div>
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+  <div class="caption">Coach · Asignar plan — RM + macrociclo + semana, en una ventana</div>
+
+<script>
+  /* discos (barra 20 kg) */
+  var P={10:['#3eb24a','#2c8a37','#7fd07f'],15:['#f3c200','#c79c00','#ffe46b'],20:['#2f6fa8','#1d4f7e','#6fa3cf'],25:['#d5232b','#a4161d','#ec6b6f']};
+  var uid=0;
+  function disc(w){ var a=P[w], id='pd'+(uid++), nc=(w===15)?'#3a2a00':'#fff';
+    return '<svg viewBox="0 0 32 32" width="26" height="26" style="display:block"><defs><radialGradient id="'+id+'" cx="42%" cy="34%" r="75%"><stop offset="0" stop-color="'+a[2]+'"/><stop offset="55%" stop-color="'+a[0]+'"/><stop offset="100%" stop-color="'+a[1]+'"/></radialGradient></defs><circle cx="16" cy="16" r="15" fill="'+a[1]+'"/><circle cx="16" cy="16" r="14" fill="url(#'+id+')"/><circle cx="16" cy="16" r="6" fill="#dde0e4" stroke="rgba(0,0,0,.18)" stroke-width="1"/><circle cx="16" cy="16" r="1.9" fill="#33363a"/><text x="16" y="10.5" text-anchor="middle" font-size="6.4" font-weight="800" fill="'+nc+'" font-family="Saira Condensed, sans-serif">'+w+'</text></svg>'; }
+  function perSide(total){ var r=(total-20)/2, out=[]; if(r<5) return out; [25,20,15,10].forEach(function(p){ while(r>=p){ out.push(p); r-=p; } }); return out; }
+
+  /* RM (1RM del atleta, editable) */
+  var RM=[{k:'arranque',l:'Arranque',kg:78},{k:'envion',l:'Envión',kg:98},{k:'sent',l:'Sentadilla atrás',kg:130},{k:'frente',l:'Sentadilla frente',kg:110}];
+  function rmRow(x,i){ var d=perSide(x.kg); var discs = d.length? d.map(disc).join('') : '<span class="rm__none">— por lado (carga ligera)</span>';
+    return '<div class="rm"><div class="rm__top"><span class="rm__lbl">'+x.l+'</span><div class="rm__step"><button class="rm__btn" onclick="rmAdj('+i+',-2.5)">−</button><span class="rm__kg">'+x.kg+'</span><span class="rm__u">kg</span><button class="rm__btn" onclick="rmAdj('+i+',2.5)">+</button></div></div><div class="rm__discs">'+discs+'</div></div>'; }
+  function renderRM(){ document.getElementById('rmlist').innerHTML=RM.map(rmRow).join(''); }
+  function rmAdj(i,d){ RM[i].kg=Math.max(20, +(RM[i].kg+d).toFixed(1)); renderRM(); }
+  window.rmAdj=rmAdj;
+
+  /* catálogo (compacto): nombre · familia · semanas · intensidad · días */
+  var PROG=[
+    {n:'Búlgaro 6D',f:'Búlgaro',wk:12,i:5,d:'6'},
+    {n:'Coreano 5D',f:'Coreano',wk:12,i:4,d:'5'},{n:'Coreano 6D',f:'Coreano',wk:12,i:4,d:'6'},
+    {n:'Chino 5D',f:'Chino',wk:4,i:4,d:'5'},
+    {n:'Cubano Novicio 2D',f:'Cubano',wk:8,i:2,d:'2'},{n:'Cubano Novicio 3D',f:'Cubano',wk:8,i:2,d:'3'},{n:'Cubano Intermedio 5D',f:'Cubano',wk:12,i:3,d:'5'},{n:'Cubano Avanzado 5D',f:'Cubano',wk:12,i:4,d:'5'},{n:'Cubano Competidor',f:'Cubano',wk:16,i:5,d:'5'},
+    {n:'Polaco 4D',f:'Polaco',wk:6,i:4,d:'4'},{n:'Polaco 5D',f:'Polaco',wk:6,i:4,d:'5'},
+    {n:'Ruso 5D',f:'Ruso',wk:16,i:3,d:'5'},
+    {n:'Ucraniano 3D',f:'Ucraniano',wk:12,i:4,d:'3'},{n:'Ucraniano 4D',f:'Ucraniano',wk:12,i:4,d:'4'},
+    {n:'Colombiano 5D',f:'Colombiano',wk:12,i:4,d:'5'},
+    {n:'Híbrido Moderno 3D',f:'Híbrido',wk:12,i:3,d:'3'},{n:'Híbrido Moderno 4D',f:'Híbrido',wk:12,i:3,d:'4'},{n:'Híbrido Moderno 5D',f:'Híbrido',wk:12,i:4,d:'5'},{n:'Híbrido Modular',f:'Híbrido',wk:12,i:4,d:'var'},
+    {n:'USA Weightlifting',f:'USA',wk:12,i:3,d:'4-5'},{n:'USA Principiante',f:'USA',wk:16,i:2,d:'4'},{n:'USA Intermedio',f:'USA',wk:16,i:4,d:'5'},{n:'USA Avanzado',f:'USA',wk:8,i:5,d:'5'},{n:'USA Master 40+',f:'USA',wk:12,i:3,d:'3'}
+  ];
+  var curProg=1, startWeek=1;   // default Coreano 5D
+  function buildSelect(){ var fams=[], by={}; PROG.forEach(function(p,i){ if(!by[p.f]){by[p.f]=[];fams.push(p.f);} by[p.f].push(i); });
+    document.getElementById('planMacro').innerHTML=fams.map(function(f){ return '<optgroup label="'+f+'">'+by[f].map(function(i){ return '<option value="'+i+'"'+(i===curProg?' selected':'')+'>'+PROG[i].n+'</option>'; }).join('')+'</optgroup>'; }).join(''); }
+  function renderStats(){ var p=PROG[curProg];
+    document.getElementById('planStats').innerHTML='<div><b>'+p.wk+'</b><span>semanas</span></div><div><b>'+p.d+'</b><span>días/sem</span></div><div><b>'+p.i+'/5</b><span>intensidad</span></div>';
+    var w=''; for(var k=1;k<=p.wk;k++){ w+='<button class="wk'+(k===startWeek?' on':'')+'" onclick="pickWeek('+k+')">Sem '+k+'</button>'; }
+    document.getElementById('planWeeks').innerHTML=w; }
+  function pickWeek(w){ startWeek=w; document.querySelectorAll('#planWeeks .wk').forEach(function(b,idx){ b.classList.toggle('on',(idx+1)===w); }); }
+  window.pickWeek=pickWeek;
+  document.getElementById('planMacro').addEventListener('change',function(){ curProg=+this.value; startWeek=1; renderStats(); });
+
+  function assignPlan(){ var p=PROG[curProg];
+    var rms=RM.map(function(x){ return x.l.split(' ')[0]+' '+x.kg; }).join(' · ');
+    var t=document.getElementById('toast'); t.innerHTML='✓ Plan asignado a Lucía R.<br>'+p.n+' · empieza semana '+startWeek+'<br><span style="font-weight:600;opacity:.85">RM: '+rms+'</span>'; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },3600); }
+  window.assignPlan=assignPlan;
+
+  renderRM(); buildSelect(); renderStats();
+
+  document.querySelectorAll('.tpill').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.tpill').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); document.querySelectorAll('[data-wl]').forEach(function(d){ d.className='device wl wl--'+b.dataset.t; }); }); });
+</script>
+</body>
+</html>

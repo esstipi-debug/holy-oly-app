@@ -1,0 +1,48 @@
+/* Holy Oly · app-mode — cuando la pantalla corre como PWA instalada (display:standalone),
+   embebida en el shell (iframe) o con ?app=1: suelta el marco de revisión y llena la pantalla.
+   Se activa con html.appmode (lo pone un script en <head> de cada pantalla). */
+
+html.appmode, html.appmode body { height: 100%; margin: 0; }
+html.appmode body { padding: 0 !important; background: var(--wl-bg) !important; overflow: hidden; }
+
+/* fuera el cromado de revisión de escritorio */
+html.appmode .title,
+html.appmode .sub,
+html.appmode .switcher,
+html.appmode .caption { display: none !important; }
+
+html.appmode .stage,
+html.appmode .wrap { display: block !important; height: 100%; margin: 0; gap: 0; }
+html.appmode .stage > div,
+html.appmode .wrap > div { height: 100%; }
+
+/* el "teléfono" pasa a pantalla completa, sin marco */
+html.appmode .device {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: flex !important;
+  flex-direction: column;
+}
+
+html.appmode .statusbar,
+html.appmode .hobar { flex: 0 0 auto; }
+
+/* el área scrolleable de cada pantalla llena el alto restante */
+html.appmode .screen,
+html.appmode .feed,
+html.appmode .coach,
+html.appmode .team {
+  flex: 1 1 auto;
+  height: auto !important;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* PWA instalada de verdad: el SO ya dibuja su barra de estado → ocultamos la mock + safe-area */
+@media (display-mode: standalone) {
+  html.appmode .statusbar { display: none !important; }
+  html.appmode .hobar { padding-top: calc(9px + env(safe-area-inset-top, 0px)); }
+}

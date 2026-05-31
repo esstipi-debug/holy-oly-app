@@ -1,0 +1,19 @@
+{
+  "name": "Holy Oly",
+  "short_name": "Holy Oly",
+  "description": "Smart training, zero burnout — macrociclos de halterofilia, coach⇄atleta.",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0b11",
+  "theme_color": "#0b0b11",
+  "categories": ["health", "fitness", "sports"],
+  "lang": "es",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

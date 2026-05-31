@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Holy Oly · Coach drill-down</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@500;600;700;800&family=Saira+Condensed:wght@600;700;800&family=Barlow+Semi+Condensed:wght@600;700&family=Anton&family=Archivo:wght@600;700;800&family=Sora:wght@600;700;800&family=JetBrains+Mono:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wl-themes.css">
+<link rel="stylesheet" href="app-mode.css">
+<script>(function(){var p=new URLSearchParams(location.search);var sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;if(p.get('app')==='1'||window.self!==window.top||sa){document.documentElement.classList.add('appmode');}})();</script>
+<style>
+  :root{ --page:#0b0b11; --mono:'JetBrains Mono',ui-monospace,monospace; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{ background:var(--page); color:#e8e8ee; font-family:'Manrope',system-ui,sans-serif; padding:28px 20px 60px; }
+  .title{ text-align:center; margin:0 0 4px; font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:22px; }
+  .sub{ text-align:center; margin:0 0 20px; color:#8a8a99; font-size:12.5px; }
+  .switcher{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:24px; }
+  .tpill{ cursor:pointer; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04); color:#cfcfe0; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:12px; padding:7px 13px; border-radius:99px; }
+  .tpill.active{ background:#c8ff2d; color:#0a0410; border-color:#c8ff2d; }
+  .wrap{ display:flex; justify-content:center; }
+  .device{ width:362px; border-radius:34px; overflow:hidden; border:1px solid rgba(255,255,255,.12); box-shadow:0 30px 80px -20px rgba(0,0,0,.85); background:#000; position:relative; }
+  .statusbar{ height:32px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:12px; font-weight:700; background:var(--wl-bg); color:var(--wl-text); font-family:'Chakra Petch',sans-serif; }
+  .coach{ background:var(--wl-bg); padding:14px 13px 26px; }
+
+  .chead{ display:flex; align-items:center; gap:11px; margin-bottom:4px; }
+  .chead__back{ width:40px;height:40px;flex:0 0 auto;border-radius:12px;border:1px solid color-mix(in srgb,var(--wl-text) 14%,transparent);background:var(--wl-surface);color:var(--wl-text);font-size:18px;cursor:pointer; }
+  .chead__main{ flex:1; min-width:0; }
+  .chead__name{ font-family:var(--wl-display); font-weight:800; font-size:20px; color:var(--wl-text); line-height:1; }
+  .chead__prog{ font-family:var(--mono); font-size:10.5px; color:var(--wl-muted); margin-top:4px; }
+  .estado{ font-family:var(--wl-display); font-weight:800; font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:7px 12px; border-radius:99px; }
+
+  .ccard{ background:var(--wl-surface); border:1px solid color-mix(in srgb,var(--wl-text) 7%,transparent); border-radius:var(--wl-radius); padding:12px 13px 10px; margin-top:11px; }
+  .ccard__head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+  .ccard__t{ font-family:var(--wl-display); font-weight:700; font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:var(--wl-text); }
+  .ccard__sub{ font-family:var(--mono); font-size:9px; color:var(--wl-muted); margin-top:-6px; margin-bottom:8px; }
+  .cchip{ font-family:var(--mono); font-size:10px; font-weight:700; padding:3px 8px; border-radius:99px; border:1px solid; white-space:nowrap; }
+  .spk{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px 10px; margin-top:9px; }
+  .spk__i{ }
+  .spk__l{ font-family:var(--mono); font-size:8.5px; color:var(--wl-muted); letter-spacing:.04em; display:flex; justify-content:space-between; }
+  svg{ display:block; }
+  .lend{ font-family:var(--mono); font-size:8.5px; }
+  .sb-batt{ display:inline-flex; align-items:center; gap:6px; font-weight:700; }
+  .sb-batt i{ width:22px; height:11px; border:1.5px solid currentColor; border-radius:3px; position:relative; opacity:.9; }
+  .sb-batt i::after{ content:''; position:absolute; left:2px; top:2px; bottom:2px; right:3px; background:currentColor; border-radius:1px; }
+  .sb-batt i::before{ content:''; position:absolute; right:-3.5px; top:3px; bottom:3px; width:2px; background:currentColor; border-radius:0 2px 2px 0; }
+  .hobar{ display:flex; align-items:center; gap:11px; padding:9px 13px; background:var(--wl-bg); border-bottom:1px solid color-mix(in srgb,var(--wl-text) 8%,transparent); }
+  .hobar__back{ width:34px; height:34px; flex:0 0 auto; border-radius:10px; border:1px solid color-mix(in srgb,var(--wl-text) 15%,transparent); background:var(--wl-surface); color:var(--wl-text); font-size:19px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+  .hobar__back:active{ transform:scale(.93); }
+  .hobar__brand{ display:flex; flex-direction:column; line-height:1; }
+  .hobar__name{ font-family:var(--wl-display); font-weight:800; font-size:15px; letter-spacing:.05em; color:var(--wl-text); }
+  .hobar__motto{ font-family:var(--mono); font-size:8.5px; letter-spacing:.07em; color:var(--wl-accent); margin-top:4px; }
+  .cycnote{ margin-top:10px; padding:8px 10px; border-radius:10px; background:color-mix(in srgb,#7b66a8 16%, transparent); border:1px solid color-mix(in srgb,#7b66a8 42%, transparent); font-family:var(--mono); font-size:9px; line-height:1.5; color:var(--wl-text); }
+  .cycnote b{ color:#a98fd0; font-weight:700; }
+  .cycnote--min{ background:color-mix(in srgb,#7b66a8 9%, transparent); border-style:dashed; }
+  .cyctag{ display:inline-block; margin-top:7px; font-family:var(--mono); font-size:8px; letter-spacing:.05em; padding:2px 8px; border-radius:99px; background:color-mix(in srgb,#7b66a8 18%, transparent); color:#a98fd0; border:1px solid color-mix(in srgb,#7b66a8 40%, transparent); }
+  .spill,.stpill{ cursor:pointer; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04); color:#cfcfe0; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:11px; padding:6px 12px; border-radius:99px; }
+  .spill.on,.stpill.on{ background:#a98fd0; color:#0b0b11; border-color:#a98fd0; font-weight:700; }
+  /* palmarés / medallas */
+  .palm__sum{ display:flex; gap:16px; margin-bottom:6px; }
+  .palm__sumi{ display:flex; align-items:center; gap:5px; }
+  .palm__sumi b{ font-family:var(--wl-display); font-weight:800; font-size:16px; color:var(--wl-text); }
+  .palm__row{ display:flex; gap:11px; align-items:center; padding:9px 0; }
+  .palm__row+.palm__row{ border-top:1px solid color-mix(in srgb,var(--wl-text) 7%,transparent); }
+  .palm__info{ flex:1; min-width:0; }
+  .palm__comp{ font-family:var(--wl-display); font-weight:700; font-size:13.5px; color:var(--wl-text); }
+  .palm__meta{ font-family:var(--mono); font-size:9.5px; color:var(--wl-muted); margin-top:2px; }
+  .palm__lifts{ display:flex; gap:12px; margin-top:5px; font-family:var(--mono); font-size:10px; color:var(--wl-muted); }
+  .palm__lifts b{ color:var(--wl-text); font-family:var(--wl-display); font-weight:700; }
+  .palm__empty{ font-family:var(--mono); font-size:11px; color:var(--wl-muted); padding:8px 0; }
+  .palm__add{ width:100%; margin-top:12px; border:1px solid color-mix(in srgb,var(--wl-accent) 45%,transparent); background:color-mix(in srgb,var(--wl-accent) 10%,transparent); color:var(--wl-accent); cursor:pointer; font-family:var(--wl-display); font-weight:700; font-size:13px; padding:11px; border-radius:12px; }
+  .msheet{ position:absolute; inset:0; background:rgba(0,0,0,.5); display:none; align-items:flex-end; z-index:40; }
+  .msheet.show{ display:flex; }
+  .msheet__panel{ width:100%; background:var(--wl-surface); border-radius:18px 18px 0 0; padding:16px 16px 18px; max-height:90%; overflow-y:auto; }
+  .msheet__title{ font-family:var(--wl-display); font-weight:800; font-size:17px; color:var(--wl-text); margin-bottom:4px; }
+  .msheet__lbl{ font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--wl-muted); margin:11px 0 6px; }
+  .msheet__medals{ display:flex; gap:8px; }
+  .mopt{ flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; border:1px solid color-mix(in srgb,var(--wl-text) 14%,transparent); background:transparent; border-radius:12px; padding:7px 4px 5px; cursor:pointer; color:var(--wl-muted); font-family:var(--mono); font-size:9px; text-transform:capitalize; }
+  .mopt.on{ border-color:var(--wl-accent); background:color-mix(in srgb,var(--wl-accent) 12%,transparent); color:var(--wl-text); }
+  .msheet__in{ width:100%; box-sizing:border-box; background:color-mix(in srgb,var(--wl-text) 6%,transparent); border:1px solid color-mix(in srgb,var(--wl-text) 14%,transparent); border-radius:10px; padding:10px 12px; color:var(--wl-text); font-family:var(--wl-display); font-weight:600; font-size:14px; }
+  .msheet__row{ display:flex; gap:10px; }
+  .msheet__col{ flex:1; min-width:0; }
+  .msheet__total{ font-family:var(--mono); font-size:12px; color:var(--wl-muted); margin:13px 0 0; }
+  .msheet__total b{ font-family:var(--wl-display); font-weight:800; font-size:18px; color:var(--wl-accent); }
+  .msheet__save{ width:100%; margin-top:14px; border:0; cursor:pointer; font-family:var(--wl-display); font-weight:800; font-size:15px; padding:13px; border-radius:12px; background:var(--wl-accent); color:var(--wl-bg); }
+  .msheet__cancel{ width:100%; margin-top:8px; border:0; background:transparent; color:var(--wl-muted); font-family:var(--mono); font-size:12px; padding:8px; cursor:pointer; }
+  .mtoast{ position:absolute; left:14px; right:14px; bottom:16px; z-index:41; display:none; background:var(--wl-accent); color:var(--wl-bg); font-family:var(--wl-display); font-weight:700; font-size:13px; padding:13px 16px; border-radius:12px; text-align:center; box-shadow:0 14px 40px -12px rgba(0,0,0,.7); }
+  .mtoast.show{ display:block; }
+</style>
+</head>
+<body>
+  <h1 class="title">HOLY OLY · Coach — drill-down de atleta</h1>
+  <p class="sub">8 gráficos del spec móvil. Banda/corredor + color = estado. Datos de ejemplo: Mara · Ruso 5D · sem 12/16 (pico de carga en sem 10 · ciclo opt-in activo).</p>
+  <div class="switcher">
+    <span class="tpill active" data-t="neon">Neon PR</span>
+    <span class="tpill" data-t="plates">Plates</span>
+    <span class="tpill" data-t="premium">Premium</span>
+    <span class="tpill" data-t="chalk">Chalk</span>
+    <span class="tpill" data-t="neonlight">Neon Bloom</span>
+  </div>
+  <div class="switcher" style="margin-top:-10px">
+    <span style="font-family:'Chakra Petch',sans-serif;font-size:11px;color:#8a8a99;align-self:center">Ciclo que comparte la atleta (demo):</span>
+    <span class="spill" data-share="full">Todo</span>
+    <span class="spill" data-share="min">Lo mínimo</span>
+    <span class="spill" data-share="none">No compartir</span>
+  </div>
+  <div class="switcher" style="margin-top:-10px">
+    <span style="font-family:'Chakra Petch',sans-serif;font-size:11px;color:#8a8a99;align-self:center">Estado del ciclo (demo):</span>
+    <span class="stpill" data-st="regular">Regular</span>
+    <span class="stpill" data-st="unreliable">Poco fiable</span>
+    <span class="stpill" data-st="amenorrhea">Amenorrea</span>
+  </div>
+  <div class="wrap">
+    <div class="device wl wl--neon" data-wl>
+      <div class="statusbar"><span>9:44</span><span class="sb-batt">100<i></i></span></div>
+      <div class="hobar"><button class="hobar__back" onclick="history.back()">‹</button><div class="hobar__brand"><span class="hobar__name">HOLY OLY</span><span class="hobar__motto">smart training · zero burnout</span></div></div>
+      <div class="coach" id="coach"></div>
+    </div>
+  </div>
+
+<script src="medals.js"></script>
+<script>
+  var ST={ok:'#1bc98a',warn:'#ffab2e',alert:'#ff3b46'};
+  var WK=[1,2,3,4,5,6,7,8,9,10,11,12], N=12;
+  var acute=[300,320,340,300,360,380,400,320,420,700,380,340];
+  var chronic=acute.map(function(_,i){ var s=0,c=0; for(var j=Math.max(0,i-3);j<=i;j++){s+=acute[j];c++;} return s/c; });
+  var acwr=acute.map(function(a,i){ return a/chronic[i]; });
+  var hrv=[72,71,70,73,69,70,68,72,67,62,64,69], hrvBase=70;
+  var rhr=[49,50,50,48,51,50,52,49,53,56,54,50], rhrBase=50;
+  var imr=[66,68,70,69,76,78,80,79,86,93,88,89];
+  var imrPh=[[1,4,65,72],[5,8,75,82],[9,12,85,92]];
+  var wsc=[78,80,76,82,74,72,70,80,66,58,64,74];
+  var witems={Fatiga:[2,2,3,2,3,3,4,2,4,5,4,3],Dolor:[1,1,2,1,2,2,2,1,3,3,3,2],'Estrés':[2,3,2,2,3,3,3,2,4,4,3,3],Humor:[4,4,3,4,3,3,3,4,2,2,3,3],'Motiv.':[5,4,4,5,4,4,3,4,3,2,3,4],'Sueño':[4,4,3,4,3,3,3,4,3,2,3,4]};
+  var comp=[100,90,100,100,80,90,100,100,70,60,80,90];
+  var rpe=[7,7.5,8,6,8,8.5,8.5,7,9,9.5,8,7.5];
+  var wt=[83,82.6,82.4,82.1,82,81.8,81.5,81.4,81.2,81,80.9,80.8], wtBand=[80,81];
+
+  var W=300;
+  function px(i){ return 12 + i/(N-1)*(W-24); }
+  function lpath(arr,yf){ return arr.map(function(v,i){ return (i?'L':'M')+px(i).toFixed(1)+' '+yf(v).toFixed(1); }).join(' '); }
+  function xlabels(yB){ return '<text x="12" y="'+yB+'" class="lend" style="fill:var(--wl-muted)">S1</text><text x="'+(px(5)).toFixed(0)+'" y="'+yB+'" text-anchor="middle" class="lend" style="fill:var(--wl-muted)">S6</text><text x="'+(W-12)+'" y="'+yB+'" text-anchor="end" class="lend" style="fill:var(--wl-muted)">S12</text>'; }
+  function ccard(t,sub,chip,cst,svg){ return '<div class="ccard"><div class="ccard__head"><span class="ccard__t">'+t+'</span>'+(chip?'<span class="cchip" style="color:'+ST[cst]+';border-color:'+ST[cst]+'55;background:'+ST[cst]+'1f">'+chip+'</span>':'')+'</div>'+(sub?'<div class="ccard__sub">'+sub+'</div>':'')+svg+'</div>'; }
+
+  // ── ciclo menstrual (opt-in · CONTEXTO no disparador · paleta neutra, NO de estado) ──
+  var CYP=['lut','lutT','men','fol','lut','lutT','men','fol','lut','lutT','men','fol'];
+  var CPAL={men:'#9a6fa8',fol:'#b9aee0',ovu:'#c9b3e6',lut:'#7b66a8',lutT:'#5f4d8c'};
+  function isLut(k){ return k==='lut'||k==='lutT'; }
+  function lutealBands(yT,yB,op){ op=op||0.16; var step=(W-24)/(N-1), out='', i=0;
+    while(i<N){ if(isLut(CYP[i])){ var j=i; while(j+1<N&&isLut(CYP[j+1])) j++;
+      var x0=Math.max(12,12+i*step-step/2), x1=Math.min(W-12,12+j*step+step/2);
+      out+='<rect x="'+x0.toFixed(1)+'" y="'+yT+'" width="'+(x1-x0).toFixed(1)+'" height="'+(yB-yT)+'" style="fill:'+CPAL.lut+';opacity:'+op+'"/>'; i=j+1; } else i++; }
+    return out; }
+
+  /* 1 · ACWR */
+  function acwrState(v){ return v>1.5?'alert':(v>1.3||v<0.8?'warn':'ok'); }
+  function chartACWR(){ var H=128, top=10, bot=H-16, lo=0.5, hi=1.7;
+    function y(v){ return top+(1-(v-lo)/(hi-lo))*(bot-top); }
+    var band='<rect x="12" y="'+y(1.3).toFixed(1)+'" width="'+(W-24)+'" height="'+(y(0.8)-y(1.3)).toFixed(1)+'" style="fill:'+ST.ok+';opacity:.13"/>';
+    var l13='<line x1="12" x2="'+(W-12)+'" y1="'+y(1.3).toFixed(1)+'" y2="'+y(1.3).toFixed(1)+'" style="stroke:'+ST.warn+';opacity:.5" stroke-dasharray="3 3"/>';
+    var l15='<line x1="12" x2="'+(W-12)+'" y1="'+y(1.5).toFixed(1)+'" y2="'+y(1.5).toFixed(1)+'" style="stroke:'+ST.alert+';opacity:.5" stroke-dasharray="3 3"/>';
+    var line='<path d="'+lpath(acwr,y)+'" style="fill:none;stroke:var(--wl-text);stroke-width:2;opacity:.85" stroke-linejoin="round"/>';
+    var dots=acwr.map(function(v,i){ var st=acwrState(v); if(st==='ok'&&i!==N-1) return ''; return '<circle cx="'+px(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="3.4" style="fill:'+ST[st]+';stroke:var(--wl-surface);stroke-width:1.5"/>'; }).join('');
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+band+l13+l15+'<text x="'+(W-12)+'" y="'+(y(1.3)-3).toFixed(1)+'" text-anchor="end" class="lend" style="fill:'+ST.warn+'">1.3</text>'+line+dots+xlabels(H-3)+'</svg>';
+    var cur=acwr[N-1]; return ccard('ACWR','banda segura 0,8–1,3 · el atleta NO ve este número', cur.toFixed(2)+(cur<0.8?' · baja':''), acwrState(cur), svg); }
+
+  /* 2 · Carga aguda vs crónica */
+  function chartLoad(){ var H=120, top=10, bot=H-16, mx=Math.max.apply(null,acute)*1.1;
+    function y(v){ return top+(1-v/mx)*(bot-top); }
+    var bw=(W-24)/N*0.6;
+    var bars=acute.map(function(v,i){ var h=bot-y(v); return '<rect x="'+(px(i)-bw/2).toFixed(1)+'" y="'+y(v).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="1.5" style="fill:var(--wl-accent);opacity:'+(i===9?'.95':'.45')+'"/>'; }).join('');
+    var cl='<path d="'+lpath(chronic,y)+'" style="fill:none;stroke:var(--wl-text);stroke-width:2" stroke-linejoin="round"/>';
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+bars+cl+'<text x="'+(px(11)).toFixed(0)+'" y="'+(y(chronic[11])-5).toFixed(1)+'" text-anchor="end" class="lend" style="fill:var(--wl-text)">crónica</text>'+xlabels(H-3)+'</svg>';
+    return ccard('Carga aguda vs crónica','barras = semanal · línea = crónica (4 sem)','sem 10', 'alert', svg); }
+
+  /* 3 · Recuperación (HRV + FC reposo vs base) */
+  function miniRec(arr,base,col,loPad,hiPad,label,thr,bandSvg){ var H=52, top=8, bot=H-6; var mn=Math.min.apply(null,arr.concat([base]))-loPad, mx=Math.max.apply(null,arr.concat([base]))+hiPad;
+    function y(v){ return top+(1-(v-mn)/(mx-mn))*(bot-top); }
+    var bl='<line x1="12" x2="'+(W-12)+'" y1="'+y(base).toFixed(1)+'" y2="'+y(base).toFixed(1)+'" style="stroke:var(--wl-muted);opacity:.5" stroke-dasharray="2 3"/>';
+    var ln='<path d="'+lpath(arr,y)+'" style="fill:none;stroke:'+col+';stroke-width:2" stroke-linejoin="round"/>';
+    var d='<circle cx="'+px(9).toFixed(1)+'" cy="'+y(arr[9]).toFixed(1)+'" r="3" style="fill:'+ST.alert+';stroke:var(--wl-surface);stroke-width:1.5"/>';
+    return '<div style="display:flex;justify-content:space-between"><span class="spk__l" style="width:auto">'+label+'</span><span class="spk__l" style="width:auto">base '+base+'</span></div><svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+(bandSvg||'')+bl+ln+d+'</svg>'; }
+  function chartRec(){ var none=(SHARE==='none'), full=(SHARE==='full'), amen=(CYCST==='amenorrhea'), unrel=(CYCST==='unreliable');
+    var bands=(full&&!amen)?lutealBands(8,46, unrel?0.09:0.16):'';
+    var svg=miniRec(hrv,hrvBase,ST.ok,4,4,'HRV (ms)','',bands)+miniRec(rhr,rhrBase,'#2dd4e6',3,3,'FC reposo (lpm)','',bands);
+    var sub=(full&&!amen)?'HRV ↓ y FC reposo ↑ · fondo lavanda = fase lútea (est.)':'HRV ↓ y FC reposo ↑ sostenidos = alerta (sem 10)';
+    var note='';
+    if(!none){
+      if(amen){
+        note = full
+          ? '<div class="cycnote"><b>Salud:</b> la atleta registró ausencia sostenida de ciclo, junto a carga alta y recuperación baja. Considerá derivación a un profesional de salud. <b>No es diagnóstico.</b></div>'
+          : '<div class="cycnote cycnote--min"><b>Salud (reservado):</b> la atleta registró una señal que sugiere derivación a un profesional. Sin detalle.</div>';
+      } else if(full){
+        note='<div class="cycnote"><b>Contexto de ciclo:</b> la caída de la sem 9–10 cae en fase lútea tardía (estimada). Parte del descenso de HRV / alza de FC puede ser de la fase — ponderá antes de descargar. <b>No cambia el semáforo.</b>'+(unrel?' <b>(estimación poco fiable — tomala con cautela.)</b>':'')+'</div>';
+      } else {
+        note='<div class="cycnote cycnote--min"><b>Contexto de ciclo (reservado'+(unrel?', poco fiable':'')+'):</b> la atleta comparte solo que un factor de su ciclo puede influir en la recuperación. Sin fase, día ni síntomas. Ponderá antes de descargar. <b>No cambia el semáforo.</b></div>';
+      }
+    }
+    return ccard('Recuperación',sub,'sem 10 ↓', 'alert', svg+note); }
+
+  /* 4 · IMR vs fase (signature) */
+  function chartIMR(){ var H=132, top=10, bot=H-16, lo=60, hi=100;
+    function y(v){ return top+(1-(v-lo)/(hi-lo))*(bot-top); }
+    function xw(w){ return 12+(w-1)/(N-1)*(W-24); }
+    var bands=imrPh.map(function(p,i){ var x0=xw(p[0]-0.5)<12?12:xw(p[0]-0.5); var x1=xw(p[1]+0.5)>W-12?W-12:xw(p[1]+0.5); return '<rect x="'+x0.toFixed(1)+'" y="'+y(p[3]).toFixed(1)+'" width="'+(x1-x0).toFixed(1)+'" height="'+(y(p[2])-y(p[3])).toFixed(1)+'" style="fill:'+ST.ok+';opacity:.16"/>'; }).join('');
+    var seps=imrPh.slice(1).map(function(p){ var x=xw(p[0]-0.5); return '<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+top+'" y2="'+bot+'" style="stroke:var(--wl-muted);opacity:.25" stroke-dasharray="2 2"/>'; }).join('');
+    var line='<path d="'+lpath(imr,y)+'" style="fill:none;stroke:var(--wl-text);stroke-width:2.2" stroke-linejoin="round"/>';
+    var dots=imr.map(function(v,i){ var w=i+1, band=imrPh.find(function(p){return w>=p[0]&&w<=p[1];}); var st='ok'; if(band){ if(v>band[3]+2||v<band[2]-2) st='warn'; } if(st==='ok'&&i!==N-1) return ''; return '<circle cx="'+px(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="3.4" style="fill:'+ST[st]+';stroke:var(--wl-surface);stroke-width:1.5"/>'; }).join('');
+    var labs=imrPh.map(function(p){ var xc=xw((p[0]+p[1])/2); return '<text x="'+xc.toFixed(1)+'" y="'+(H-3)+'" text-anchor="middle" class="lend" style="fill:var(--wl-muted)">'+(p[0]===1?'Hiper':p[0]===5?'Fuerza':'Potencia')+'</text>'; }).join('');
+    var imrLut=(SHARE==='full'&&CYCST!=='amenorrhea')?lutealBands(top,bot, CYCST==='unreliable'?0.07:0.1):'';
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+imrLut+bands+seps+line+dots+labs+'</svg>';
+    var sub=imrLut?'banda verde = IMR esperado · fondo lavanda = fase lútea (est.)':'banda = lo que el programa espera (se mueve por fase)';
+    return ccard('IMR vs fase',sub,'sem 10 ▲', 'warn', svg); }
+
+  /* 5 · Bienestar + sparklines */
+  function spark(arr,col){ var w=78,H=22,top=3,bot=H-3,mn=1,mx=5; function y(v){return top+(1-(v-mn)/(mx-mn))*(bot-top);} function x(i){return 2+i/(N-1)*(w-4);} var d=arr.map(function(v,i){return (i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1);}).join(' '); return '<svg viewBox="0 0 '+w+' '+H+'" width="100%" height="'+H+'"><path d="'+d+'" style="fill:none;stroke:'+col+';stroke-width:1.6"/></svg>'; }
+  function chartWell(){ var H=96, top=10, bot=H-16, lo=40, hi=100; function y(v){ return top+(1-(v-lo)/(hi-lo))*(bot-top); }
+    var area='<path d="'+lpath(wsc,y)+' L '+px(N-1).toFixed(1)+' '+bot+' L '+px(0).toFixed(1)+' '+bot+' Z" style="fill:var(--wl-accent);opacity:.12"/>';
+    var line='<path d="'+lpath(wsc,y)+'" style="fill:none;stroke:var(--wl-accent);stroke-width:2" stroke-linejoin="round"/>';
+    var top1='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+area+line+xlabels(H-3)+'</svg>';
+    var sp='<div class="spk">'+Object.keys(witems).map(function(k){ var a=witems[k]; var bad=a[N-1]>=4; return '<div class="spk__i"><div class="spk__l"><span>'+k+'</span><span style="color:'+(bad?ST.alert:'var(--wl-muted)')+'">'+a[N-1]+'</span></div>'+spark(a,bad?ST.alert:'var(--wl-muted)')+'</div>'; }).join('')+'</div>';
+    return ccard('Bienestar','puntaje 0–100 + ítems (1–5)','74 · ok','ok', top1+sp); }
+
+  /* 6 · Cumplimiento */
+  function chartComp(){ var H=120, top=10, bot=H-16; function y(v){ return top+(1-v/100)*(bot-top); }
+    var bw=(W-24)/N*0.6;
+    var bars=comp.map(function(v,i){ var st=v>=85?'ok':(v>=70?'warn':'alert'); var h=bot-y(v); return '<rect x="'+(px(i)-bw/2).toFixed(1)+'" y="'+y(v).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="1.5" style="fill:'+ST[st]+';opacity:.8"/>'; }).join('');
+    function yr(v){ return top+(1-(v-5)/(5))*(bot-top); }
+    var rl='<path d="'+lpath(rpe,yr)+'" style="fill:none;stroke:var(--wl-text);stroke-width:1.6;opacity:.7" stroke-dasharray="3 2"/>';
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+bars+rl+'<text x="'+(W-12)+'" y="'+(yr(rpe[11])-4).toFixed(1)+'" text-anchor="end" class="lend" style="fill:var(--wl-text)">RPE</text>'+xlabels(H-3)+'</svg>';
+    return ccard('Cumplimiento','% completado + RPE medio','90% · ok','ok', svg); }
+
+  /* 7 · Peso vs categoría */
+  function chartWt(){ var H=110, top=10, bot=H-16, lo=80, hi=83.4; function y(v){ return top+(1-(v-lo)/(hi-lo))*(bot-top); }
+    var band='<rect x="12" y="'+y(wtBand[1]).toFixed(1)+'" width="'+(W-24)+'" height="'+(y(wtBand[0])-y(wtBand[1])).toFixed(1)+'" style="fill:'+ST.ok+';opacity:.13"/>';
+    var line='<path d="'+lpath(wt,y)+'" style="fill:none;stroke:var(--wl-text);stroke-width:2" stroke-linejoin="round"/>';
+    var d='<circle cx="'+px(11).toFixed(1)+'" cy="'+y(wt[11]).toFixed(1)+'" r="3.4" style="fill:'+ST.ok+';stroke:var(--wl-surface);stroke-width:1.5"/>';
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+band+'<text x="'+(W-12)+'" y="'+(y(wtBand[1])-3).toFixed(1)+'" text-anchor="end" class="lend" style="fill:'+ST.ok+'">cat. −81</text>'+line+d+xlabels(H-3)+'</svg>';
+    return ccard('Peso vs categoría','banda objetivo de categoría','80.8 kg','ok', svg); }
+
+  /* 8 · Macrociclo timeline */
+  function chartMacro(){ var H=150, NW=16, top=42, bot=H-16, mxV=100; var w0=10, ww=W-20;
+    function xw(w){ return w0+(w-0.5)/NW*ww; }
+    function yv(v){ return top+(1-v/mxV)*(bot-top-6); }
+    var phases=[['Hiper',1,4,68,'#6f86ff'],['Fuerza',5,8,78,'#2dd4e6'],['Potencia',9,12,88,ST.warn],['Peaking',13,16,97,ST.alert]];
+    // phase ribbon
+    var ribbon=phases.map(function(p){ var x0=w0+(p[1]-1)/NW*ww, x1=w0+(p[2])/NW*ww; return '<rect x="'+x0.toFixed(1)+'" y="10" width="'+(x1-x0-2).toFixed(1)+'" height="20" rx="4" style="fill:'+p[4]+';opacity:.85"/><text x="'+((x0+x1)/2).toFixed(1)+'" y="24" text-anchor="middle" font-size="8.5" font-weight="700" style="fill:#0b0b11" font-family="Chakra Petch">'+p[0]+'</text>'; }).join('');
+    // volume bars (russian wave per phase) + intensity line
+    var wave=[1,0.9,0.6,0.45], pf=[1,0.88,0.72,0.5];
+    var bars='', il=[];
+    for(var w=1;w<=NW;w++){ var pi=Math.floor((w-1)/4); var vol=wave[(w-1)%4]*pf[pi]*100; var bw=ww/NW*0.62; var x=xw(w); bars+='<rect x="'+(x-bw/2).toFixed(1)+'" y="'+yv(vol).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(bot-yv(vol)).toFixed(1)+'" rx="1" style="fill:var(--wl-text);opacity:.18"/>'; il.push([x, top+(1-(phases[pi][3]-60)/45)*(bot-top-6)]); }
+    var iline='<path d="'+il.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ')+'" style="fill:none;stroke:var(--wl-accent);stroke-width:2.2" stroke-linejoin="round"/>';
+    var hoy='<line x1="'+xw(12).toFixed(1)+'" x2="'+xw(12).toFixed(1)+'" y1="36" y2="'+bot+'" style="stroke:var(--wl-text);opacity:.55" stroke-dasharray="3 2"/><text x="'+xw(12).toFixed(1)+'" y="'+(H-3)+'" text-anchor="middle" class="lend" style="fill:var(--wl-text)">HOY</text>';
+    var flag='<text x="'+xw(16).toFixed(1)+'" y="40" text-anchor="middle" font-size="11">🚩</text><text x="'+xw(16).toFixed(1)+'" y="'+(H-3)+'" text-anchor="middle" class="lend" style="fill:'+ST.alert+'">COMP A</text>';
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+ribbon+bars+iline+hoy+flag+'</svg>';
+    return ccard('Macrociclo','cinta de fases + volumen (barras) e intensidad (línea) · HOY centrado','sem 12','ok', svg); }
+
+  // nivel que comparte la atleta (default mínimo) + estado del ciclo — los fija ella; persisten vía localStorage
+  var SHARE='min'; try{ SHARE=localStorage.getItem('ho_cycle_share')||'min'; }catch(e){}
+  var CYCST='regular'; try{ CYCST=localStorage.getItem('ho_cycle_state')||'regular'; }catch(e){}
+  function cycTag(){ if(SHARE==='none') return ''; var amen=(CYCST==='amenorrhea'); var lbl=amen?'salud · derivación':(SHARE==='full'?'ciclo · compartido':'ciclo · reservado'); if(CYCST==='unreliable'&&!amen) lbl+=' (poco fiable)'; return '<div class="cyctag">'+lbl+'</div>'; }
+  function render(){ document.getElementById('coach').innerHTML =
+    '<div class="chead"><div class="chead__main"><div class="chead__name">Mara</div><div class="chead__prog">Ruso 5D · sem 12/16 · Fuerza/Potencia</div>'+cycTag()+'</div><span class="estado" style="color:#0b0b11;background:'+ST.warn+'">Vigilar</span></div>'
+    + chartACWR() + chartLoad() + chartRec() + chartIMR() + chartWell() + chartComp() + chartWt() + chartMacro() + palmares(); }
+  HOmedalsSeed(); render(); HOinitMedalSheet();
+
+  document.querySelectorAll('.spill').forEach(function(b){ b.addEventListener('click',function(){ SHARE=b.dataset.share; try{localStorage.setItem('ho_cycle_share',SHARE);}catch(e){} document.querySelectorAll('.spill').forEach(function(x){x.classList.toggle('on',x.dataset.share===SHARE);}); render(); }); });
+  document.querySelectorAll('.spill').forEach(function(x){x.classList.toggle('on',x.dataset.share===SHARE);});
+
+  document.querySelectorAll('.stpill').forEach(function(b){ b.addEventListener('click',function(){ CYCST=b.dataset.st; try{localStorage.setItem('ho_cycle_state',CYCST);}catch(e){} document.querySelectorAll('.stpill').forEach(function(x){x.classList.toggle('on',x.dataset.st===CYCST);}); render(); }); });
+  document.querySelectorAll('.stpill').forEach(function(x){x.classList.toggle('on',x.dataset.st===CYCST);});
+
+  document.querySelectorAll('.tpill').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.tpill').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); document.querySelectorAll('[data-wl]').forEach(function(d){ d.className='device wl wl--'+b.dataset.t; }); }); });
+
+  /* ── Palmarés / medallas (el coach las añade; deja registro de competencia + levantamientos) ── */
+  function palmares(){ var a=HOmedalsGet(), c=HOmedalsCount();
+    var sum='<div class="palm__sum">'+['oro','plata','bronce'].map(function(k){ return '<span class="palm__sumi">'+HOmedal(k,26)+'<b>'+c[k]+'</b></span>'; }).join('')+'</div>';
+    var list = a.length ? a.map(function(r){ return '<div class="palm__row">'+HOmedal(r.medal,38)+'<div class="palm__info"><div class="palm__comp">'+r.comp+'</div><div class="palm__meta">'+r.date+' · '+r.cat+' kg · '+r.place+'</div><div class="palm__lifts"><span>Arr <b>'+r.sn+'</b></span><span>Env <b>'+r.cj+'</b></span><span>Total <b>'+(r.sn+r.cj)+'</b></span></div></div></div>'; }).join('') : '<div class="palm__empty">Sin medallas registradas.</div>';
+    return ccard('Palmarés · competencias', a.length+' medalla'+(a.length===1?'':'s')+' · solo atletas que compiten','', 'ok', sum+list+'<button class="palm__add" onclick="openMedalSheet()">+ Añadir medalla</button>'); }
+
+  var mMetal='oro';
+  function HOinitMedalSheet(){ var dev=document.getElementById('coach').closest('.device'); if(!dev||document.getElementById('medalSheet')) return;
+    var ms=document.createElement('div'); ms.className='msheet'; ms.id='medalSheet';
+    ms.innerHTML='<div class="msheet__panel"><div class="msheet__title">Añadir medalla</div>'
+      +'<div class="msheet__lbl">Medalla</div><div class="msheet__medals" id="medalPick"></div>'
+      +'<div class="msheet__lbl">Competencia</div><input id="mComp" class="msheet__in" placeholder="Ej. Nacional Absoluto">'
+      +'<div class="msheet__row"><div class="msheet__col"><div class="msheet__lbl">Fecha</div><input id="mDate" class="msheet__in" placeholder="2026-05"></div><div class="msheet__col"><div class="msheet__lbl">Categoría (kg)</div><input id="mCat" class="msheet__in" placeholder="−81"></div></div>'
+      +'<div class="msheet__row"><div class="msheet__col"><div class="msheet__lbl">Arranque (kg)</div><input id="mSn" class="msheet__in" type="number" inputmode="numeric" oninput="recalcTotal()" placeholder="0"></div><div class="msheet__col"><div class="msheet__lbl">Envión (kg)</div><input id="mCj" class="msheet__in" type="number" inputmode="numeric" oninput="recalcTotal()" placeholder="0"></div></div>'
+      +'<div class="msheet__total">Total <b id="mTotal">0</b> kg</div>'
+      +'<button class="msheet__save" onclick="saveMedal()">Guardar medalla</button>'
+      +'<button class="msheet__cancel" onclick="closeMedalSheet()">Cancelar</button></div>';
+    var mt=document.createElement('div'); mt.className='mtoast'; mt.id='mtoast';
+    dev.appendChild(ms); dev.appendChild(mt); }
+  function openMedalSheet(){ mMetal='oro';
+    document.getElementById('medalPick').innerHTML=['oro','plata','bronce'].map(function(k){ return '<button class="mopt'+(k==='oro'?' on':'')+'" data-k="'+k+'" onclick="pickMetal(\''+k+'\')">'+HOmedal(k,34)+'<span>'+HO_METAL_NAMES[k]+'</span></button>'; }).join('');
+    document.getElementById('mComp').value=''; document.getElementById('mDate').value='2026-05'; document.getElementById('mCat').value='−81'; document.getElementById('mSn').value=''; document.getElementById('mCj').value=''; document.getElementById('mTotal').textContent='0';
+    document.getElementById('medalSheet').classList.add('show'); }
+  function pickMetal(k){ mMetal=k; document.querySelectorAll('#medalPick .mopt').forEach(function(b){ b.classList.toggle('on',b.dataset.k===k); }); }
+  function recalcTotal(){ var s=+document.getElementById('mSn').value||0, c=+document.getElementById('mCj').value||0; document.getElementById('mTotal').textContent=(s+c); }
+  function closeMedalSheet(){ var s=document.getElementById('medalSheet'); if(s) s.classList.remove('show'); }
+  function saveMedal(){ var s=+document.getElementById('mSn').value||0, c=+document.getElementById('mCj').value||0;
+    HOmedalsAdd({ comp:document.getElementById('mComp').value||'Competencia', date:document.getElementById('mDate').value||'2026', cat:document.getElementById('mCat').value||'−81', medal:mMetal, sn:s, cj:c, place: mMetal==='oro'?'1º':mMetal==='plata'?'2º':'3º' });
+    closeMedalSheet(); render();
+    var t=document.getElementById('mtoast'); if(t){ t.textContent='✓ Medalla de '+HO_METAL_NAMES[mMetal].toLowerCase()+' registrada'; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2600); } }
+  window.openMedalSheet=openMedalSheet; window.pickMetal=pickMetal; window.recalcTotal=recalcTotal; window.closeMedalSheet=closeMedalSheet; window.saveMedal=saveMedal;
+</script>
+</body>
+</html>

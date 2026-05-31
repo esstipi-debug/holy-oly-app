@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"/>
+<title>Holy Oly</title>
+<meta name="theme-color" content="#0b0b11"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Holy Oly"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="icon" href="icon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wl-themes.css">
+<style>
+  :root{ --mono:'JetBrains Mono',ui-monospace,monospace; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; }
+  body{ background:var(--wl-bg); color:var(--wl-text); font-family:'Manrope',system-ui,sans-serif; overflow:hidden; }
+  .app{ height:var(--app-height,100vh); display:flex; flex-direction:column; background:var(--wl-bg); }
+  #screen{ flex:1 1 auto; width:100%; border:0; background:var(--wl-bg); }
+
+  .tabbar{ flex:0 0 auto; display:flex; background:var(--wl-surface);
+    border-top:1px solid color-mix(in srgb,var(--wl-text) 10%, transparent);
+    padding-bottom:env(safe-area-inset-bottom, 0px); }
+  .tab{ flex:1; border:0; background:transparent; cursor:pointer; padding:9px 4px 8px;
+    display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--wl-muted); }
+  .tab svg{ width:21px; height:21px; display:block; }
+  .tab span{ font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:9.5px; letter-spacing:.02em; }
+  .tab.on{ color:var(--wl-accent); }
+
+  /* install CTA (inyectada por pwa.js) */
+  .ho-install{ position:fixed; left:10px; right:10px; bottom:calc(70px + env(safe-area-inset-bottom,0px));
+    z-index:50; display:none; align-items:center; gap:10px; padding:11px 12px; border-radius:14px;
+    background:var(--wl-surface); border:1px solid color-mix(in srgb,var(--wl-accent) 45%, transparent);
+    box-shadow:0 14px 40px -12px rgba(0,0,0,.7); }
+  .ho-install.show{ display:flex; }
+  .ho-install__t{ flex:1; font-size:12px; line-height:1.35; color:var(--wl-text); }
+  .ho-install__t b{ color:var(--wl-accent); }
+  .ho-install__go{ flex:0 0 auto; border:0; cursor:pointer; font-family:'Chakra Petch',sans-serif; font-weight:700;
+    font-size:12px; padding:8px 14px; border-radius:10px; background:var(--wl-accent); color:var(--wl-bg); }
+  .ho-install__x{ flex:0 0 auto; border:0; background:transparent; color:var(--wl-muted); cursor:pointer; font-size:13px; padding:4px; }
+</style>
+</head>
+<body class="wl wl--neon">
+  <div class="app">
+    <iframe id="screen" src="index.html?screen=inicio&app=1" title="Holy Oly"></iframe>
+    <nav class="tabbar" id="tabbar">
+      <button class="tab on" data-src="index.html?screen=inicio&app=1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7M5 10v9h14v-9"/></svg>
+        <span>Inicio</span>
+      </button>
+      <button class="tab" data-src="index.html?screen=macro&app=1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>Macrociclos</span>
+      </button>
+      <button class="tab" data-src="index.html?screen=entreno&app=1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M4 9l2-2M9 4l-2 2M15 20l2-2M20 15l-2 2M7 10l7 7"/></svg>
+        <span>Entreno</span>
+      </button>
+      <button class="tab" data-src="atleta.html?app=1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 6-7 3 3"/><path d="M3 21h18"/></svg>
+        <span>Progreso</span>
+      </button>
+    </nav>
+  </div>
+
+<script>
+  var frame=document.getElementById('screen');
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.tab').forEach(function(x){ x.classList.toggle('on', x===t); });
+      if(frame.getAttribute('src')!==t.dataset.src) frame.setAttribute('src', t.dataset.src);
+    });
+  });
+</script>
+<script src="pwa.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Holy Oly · Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@500;600;700;800&family=Saira+Condensed:wght@600;700;800&family=Barlow+Semi+Condensed:wght@600;700&family=Anton&family=Archivo:wght@600;700;800&family=Sora:wght@600;700;800&family=Oswald:wght@600;700&family=JetBrains+Mono:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wl-themes.css">
+<link rel="stylesheet" href="app-mode.css">
+<script>(function(){var p=new URLSearchParams(location.search);var sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;if(p.get('app')==='1'||window.self!==window.top||sa){document.documentElement.classList.add('appmode');var s=p.get('screen');if(s)addEventListener('DOMContentLoaded',function(){var m={inicio:0,entreno:1,macro:2},cols=document.querySelectorAll('.stage > div');if(cols.length&&m[s]!=null)cols.forEach(function(c,i){c.style.display=(i===m[s]?'':'none');});});}})();</script>
+<style>
+  :root{ --page:#0b0b11; --mono:'JetBrains Mono',ui-monospace,monospace; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{ background:var(--page); color:#e8e8ee; font-family:'Manrope',system-ui,sans-serif; padding:30px 20px 60px; }
+  .title{ text-align:center; margin:0 0 4px; font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:24px; }
+  .sub{ text-align:center; margin:0 0 22px; color:#8a8a99; font-size:13px; }
+  .switcher{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:26px; }
+  .tpill{ cursor:pointer; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04); color:#cfcfe0; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:12px; letter-spacing:.04em; padding:8px 14px; border-radius:99px; }
+  .tpill.active{ background:#c8ff2d; color:#0a0410; border-color:#c8ff2d; }
+  .stage{ display:flex; gap:26px; justify-content:center; align-items:flex-start; flex-wrap:wrap; }
+  .device{ width:360px; border-radius:34px; overflow:hidden; border:1px solid rgba(255,255,255,.12); box-shadow:0 30px 80px -20px rgba(0,0,0,.85); background:#000; position:relative; }
+  .device .statusbar{ height:32px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:12px; font-weight:700; background:var(--wl-bg); color:var(--wl-text); font-family:'Chakra Petch',sans-serif; }
+  .screen{ height:716px; overflow-y:auto; }
+  .screen::-webkit-scrollbar{ width:0; height:0; }
+  .caption{ text-align:center; margin-top:12px; color:#8a8a99; font-size:12.5px; font-family:'Chakra Petch',sans-serif; letter-spacing:.04em; }
+
+  /* status battery + brand bar */
+  .sb-batt{ display:inline-flex; align-items:center; gap:6px; font-weight:700; }
+  .sb-batt i{ width:22px; height:11px; border:1.5px solid currentColor; border-radius:3px; position:relative; opacity:.9; }
+  .sb-batt i::after{ content:''; position:absolute; left:2px; top:2px; bottom:2px; right:3px; background:currentColor; border-radius:1px; }
+  .sb-batt i::before{ content:''; position:absolute; right:-3.5px; top:3px; bottom:3px; width:2px; background:currentColor; border-radius:0 2px 2px 0; }
+  .hobar{ display:flex; align-items:center; gap:11px; padding:9px 13px; background:var(--wl-bg); border-bottom:1px solid color-mix(in srgb,var(--wl-text) 8%,transparent); }
+  .hobar__back{ width:34px; height:34px; flex:0 0 auto; border-radius:10px; border:1px solid color-mix(in srgb,var(--wl-text) 15%,transparent); background:var(--wl-surface); color:var(--wl-text); font-size:19px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+  .hobar__back:active{ transform:scale(.93); }
+  .hobar__brand{ display:flex; flex-direction:column; line-height:1; }
+  .hobar__name{ font-family:var(--wl-display); font-weight:800; font-size:15px; letter-spacing:.05em; color:var(--wl-text); }
+  .hobar__motto{ font-family:var(--mono); font-size:8.5px; letter-spacing:.07em; color:var(--wl-accent); margin-top:4px; }
+
+  /* home */
+  .home .hello{ font-family:var(--wl-display); font-weight:800; font-size:21px; color:var(--wl-text); }
+  .home .role{ display:flex; align-items:center; gap:7px; font-size:12px; color:var(--wl-muted); margin-top:4px; }
+  #lvl svg{ width:18px; height:18px; display:block; }
+  .home .readi{ text-align:right; }
+  .home .readi__n{ font-family:var(--wl-display); font-weight:800; font-size:23px; color:var(--wl-accent); line-height:1; }
+  .home .readi__l{ font-size:9px; letter-spacing:.18em; color:var(--wl-muted); text-transform:uppercase; margin-top:3px; }
+  .weeknav{ display:flex; align-items:center; gap:10px; }
+  .weeknav__btn{ width:40px; height:40px; border-radius:12px; border:1px solid color-mix(in srgb,var(--wl-text) 14%, transparent); background:var(--wl-surface); color:var(--wl-text); font-size:18px; cursor:pointer; }
+  .weeknav__c{ flex:1; text-align:center; }
+  .weeknav__wk{ font-family:var(--wl-display); font-weight:800; font-size:17px; letter-spacing:.03em; color:var(--wl-text); }
+  .weeknav__pr{ font-size:11.5px; color:var(--wl-muted); margin-top:2px; }
+  .exrow{ display:flex; align-items:center; gap:12px; padding:12px 15px; }
+  .exrow + .exrow{ border-top:1px solid color-mix(in srgb,var(--wl-text) 8%, transparent); }
+  .exrow__main{ flex:1; min-width:0; }
+  .exrow__name{ font-family:var(--wl-display); font-weight:700; font-size:15px; color:var(--wl-text); }
+  .exrow__discs{ display:flex; align-items:center; gap:3px; margin-top:5px; min-height:20px; }
+  .exrow__num{ text-align:right; white-space:nowrap; }
+  .exrow__kg{ font-family:var(--wl-display); font-weight:800; font-size:18px; color:var(--wl-text); }
+  .exrow__sub{ font-size:11px; color:var(--wl-muted); }
+  .macro{ background:var(--wl-surface); border-radius:var(--wl-radius); padding:12px 14px 6px; }
+  .cta{ width:100%; justify-content:center; display:flex; margin-top:2px; }
+
+  /* macrociclos (library) */
+  .meto{ background:var(--wl-bg); padding:16px 14px 26px; }
+  .meto__eyebrow{ font-family:var(--mono); font-size:10px; letter-spacing:.2em; color:var(--wl-accent); }
+  .meto__title{ font-family:var(--wl-display); font-weight:800; font-size:33px; line-height:.95; letter-spacing:.01em; text-transform:uppercase; color:var(--wl-text); margin:5px 0 0; }
+  .meto__sub{ font-family:var(--mono); font-size:11px; color:var(--wl-muted); margin:8px 0 0; line-height:1.5; }
+  .chips{ display:flex; gap:7px; overflow-x:auto; padding:6px 0 4px; }
+  .filt__l{ font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--wl-muted); margin:11px 0 0; }
+  .meto__empty{ grid-column:1/-1; font-family:var(--mono); font-size:11px; color:var(--wl-muted); padding:22px 4px; text-align:center; }
+  .chips::-webkit-scrollbar{ height:0; }
+  .chip{ flex-shrink:0; font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; padding:7px 12px; border-radius:99px; border:1px solid color-mix(in srgb,var(--wl-text) 12%, transparent); background:transparent; color:var(--wl-muted); cursor:pointer; white-space:nowrap; }
+  .chip.on{ background:var(--wl-accent); color:var(--wl-bg); border-color:var(--wl-accent); font-weight:700; }
+  .metogrid{ display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-top:13px; }
+  .mcard{ position:relative; background:var(--wl-surface); border:1px solid color-mix(in srgb,var(--wl-text) 8%, transparent); border-radius:var(--wl-radius); padding:13px 12px 14px; overflow:hidden; cursor:pointer; transition:transform .12s, border-color .2s; }
+  .mcard:active{ transform:scale(.975); }
+  .mcard__title{ font-family:var(--wl-display); font-weight:700; font-size:14px; line-height:1.08; text-transform:uppercase; color:var(--wl-text); margin:0 0 7px; padding-right:18px; }
+  .mcard__desc{ font-size:10px; line-height:1.4; color:var(--wl-muted); margin:0 0 10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .mmeta{ display:flex; gap:12px; font-family:var(--mono); font-size:10px; color:var(--wl-muted); margin-bottom:11px; align-items:center; }
+  .mmeta span{ display:inline-flex; align-items:center; gap:4px; }
+  .mmeta b{ color:var(--wl-text); }
+  .meter{ display:flex; align-items:center; gap:6px; height:12px; margin-bottom:5px; }
+  .meter__l{ font-family:var(--mono); font-size:8px; letter-spacing:.3px; color:var(--wl-muted); width:56px; flex-shrink:0; }
+  .meter__seg{ display:flex; gap:2.5px; flex:1; }
+  .meter__seg i{ width:7px; height:7px; border-radius:1.5px; }
+  .meter__v{ font-family:var(--mono); font-size:9px; color:var(--wl-muted); flex-shrink:0; }
+  .mcard__tag{ font-family:var(--mono); font-style:italic; font-size:10px; color:var(--wl-muted); margin:10px 0 9px; }
+  .mcard__best{ font-size:10px; line-height:1.35; }
+  .mcard__best b{ font-family:var(--wl-display); font-weight:600; text-transform:uppercase; color:var(--wl-text); font-size:9.5px; letter-spacing:.4px; }
+  .mcard__best em{ font-family:var(--mono); font-style:normal; color:var(--wl-accent); }
+  .mcard__pk{ position:absolute; top:10px; right:9px; font-family:var(--mono); font-size:8px; font-weight:700; color:var(--wl-accent); border:1px solid color-mix(in srgb,var(--wl-accent) 45%, transparent); border-radius:5px; padding:2px 5px; }
+
+  /* detail */
+  .detail{ background:var(--wl-bg); padding:14px 16px 30px; }
+  .dt__top{ display:flex; align-items:center; gap:10px; }
+  .dt__title{ font-family:var(--wl-display); font-weight:800; font-size:25px; line-height:1; text-transform:uppercase; color:var(--wl-text); margin:12px 0 0; }
+  .dt__tags{ display:flex; gap:8px; margin:11px 0 0; flex-wrap:wrap; align-items:center; }
+  .dt__fam,.dt__lv,.dt__pk{ font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:4px 9px; border-radius:99px; }
+  .dt__fam{ background:color-mix(in srgb,var(--wl-accent) 16%, transparent); color:var(--wl-accent); }
+  .dt__lv{ border:1px solid color-mix(in srgb,var(--wl-text) 16%, transparent); color:var(--wl-muted); }
+  .dt__pk{ background:color-mix(in srgb,var(--wl-accent) 12%, transparent); color:var(--wl-accent); font-weight:700; }
+  .dt__desc{ font-size:12.5px; line-height:1.55; color:var(--wl-muted); margin:14px 0 0; }
+  .dt__stats{ display:flex; gap:9px; margin:16px 0 4px; }
+  .dt__stats div{ flex:1; background:var(--wl-surface); border-radius:var(--wl-radius); padding:10px 8px; text-align:center; }
+  .dt__stats b{ font-family:var(--wl-display); font-weight:800; font-size:18px; color:var(--wl-text); display:block; }
+  .dt__stats span{ font-family:var(--mono); font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--wl-muted); }
+  .dt__sec{ font-family:var(--wl-display); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--wl-muted); margin:22px 0 10px; }
+  .dt__chart{ background:var(--wl-surface); border-radius:var(--wl-radius); padding:12px 10px 6px; }
+  .dt__cap{ display:flex; gap:13px; flex-wrap:wrap; margin:8px 2px 0; font-family:var(--mono); font-size:8.5px; color:var(--wl-muted); }
+  .dt__cap span{ display:inline-flex; align-items:center; }
+  .dt__cap i{ display:inline-block; width:12px; height:0; margin-right:5px; }
+  .dt__cap .swl{ border-top:2.6px solid var(--wl-accent); }
+  .dt__cap .swb{ height:8px; border-radius:2px; background:color-mix(in srgb,var(--wl-text) 38%, transparent); }
+  .dt__cap .swband{ height:9px; border-radius:2px; background:var(--wl-accent); opacity:.16; border:1px solid color-mix(in srgb,var(--wl-accent) 50%, transparent); }
+  .ribbon{ display:flex; gap:4px; }
+  .ribbon__seg{ position:relative; flex:1; min-width:0; min-height:66px; border-radius:8px; padding:8px 8px 9px; background:color-mix(in srgb,var(--wl-text) 6%, transparent); border:1px solid color-mix(in srgb,var(--wl-text) 9%, transparent); overflow:hidden; }
+  .ribbon__seg::after{ content:''; position:absolute; left:0; right:0; bottom:0; height:var(--fill,30%); background:linear-gradient(var(--wl-accent), color-mix(in srgb,var(--wl-accent) 35%, transparent)); opacity:.2; pointer-events:none; }
+  .ribbon__nm{ position:relative; z-index:1; font-family:var(--wl-display); font-weight:700; font-size:9px; line-height:1.1; color:var(--wl-text); display:block; overflow-wrap:break-word; hyphens:auto; -webkit-hyphens:auto; }
+  .ribbon__wk{ position:relative; z-index:1; font-family:var(--mono); font-size:8.5px; color:var(--wl-muted); display:block; margin-top:3px; }
+  .ribbon__im{ position:relative; z-index:1; font-family:var(--mono); font-size:8px; color:var(--wl-accent); display:block; margin-top:4px; }
+  .dt__phases{ display:flex; flex-direction:column; gap:9px; }
+  .ph{ background:var(--wl-surface); border-radius:var(--wl-radius); padding:11px 12px; }
+  .ph__head{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .ph__name{ font-family:var(--wl-display); font-weight:700; font-size:13.5px; color:var(--wl-text); }
+  .ph__wk{ font-family:var(--mono); font-size:9.5px; color:var(--wl-muted); white-space:nowrap; }
+  .ph__bar{ height:7px; border-radius:99px; background:color-mix(in srgb,var(--wl-text) 10%, transparent); margin:8px 0 6px; overflow:hidden; }
+  .ph__bar i{ display:block; height:100%; border-radius:99px; background:var(--wl-accent); }
+  .ph__foco{ font-family:var(--mono); font-size:9.5px; color:var(--wl-muted); }
+  .dt__best{ font-size:12px; line-height:1.5; color:var(--wl-text); margin:0; }
+  .dt__assign{ width:100%; margin-top:20px; border:0; cursor:pointer; font-family:var(--wl-display); font-weight:800; font-size:15px; letter-spacing:.02em; padding:14px; border-radius:14px; background:var(--wl-accent); color:var(--wl-bg); }
+  .asheet{ position:absolute; inset:0; background:rgba(0,0,0,.5); display:none; align-items:flex-end; z-index:30; }
+  .asheet.show{ display:flex; }
+  .asheet__panel{ width:100%; background:var(--wl-surface); border-radius:18px 18px 0 0; padding:16px 16px 20px; max-height:80%; overflow-y:auto; }
+  .asheet__title{ font-family:var(--wl-display); font-weight:800; font-size:16px; color:var(--wl-text); margin-bottom:12px; }
+  .asheet__list{ display:flex; flex-direction:column; gap:7px; }
+  .asheet__list button{ text-align:left; border:1px solid color-mix(in srgb,var(--wl-text) 12%,transparent); background:transparent; color:var(--wl-text); font-family:var(--wl-display); font-weight:600; font-size:14px; padding:12px 14px; border-radius:12px; cursor:pointer; }
+  .asheet__list button:active{ background:color-mix(in srgb,var(--wl-accent) 18%,transparent); }
+  .asheet__lbl{ font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--wl-muted); margin:14px 0 7px; }
+  .asheet__weeks{ display:flex; gap:6px; overflow-x:auto; padding-bottom:3px; }
+  .asheet__weeks::-webkit-scrollbar{ height:0; }
+  .asheet__week{ flex:0 0 auto; border:1px solid color-mix(in srgb,var(--wl-text) 14%,transparent); background:transparent; color:var(--wl-text); font-family:var(--wl-display); font-weight:700; font-size:12px; padding:8px 12px; border-radius:10px; cursor:pointer; white-space:nowrap; }
+  .asheet__week.on{ background:var(--wl-accent); color:var(--wl-bg); border-color:var(--wl-accent); box-shadow:0 0 14px color-mix(in srgb,var(--wl-accent) 45%, transparent); }
+  .asheet__close{ width:100%; margin-top:12px; border:0; background:transparent; color:var(--wl-muted); font-family:var(--mono); font-size:12px; padding:10px; cursor:pointer; }
+  .atoast{ position:absolute; left:14px; right:14px; bottom:16px; z-index:31; display:none; background:var(--wl-accent); color:var(--wl-bg); font-family:var(--wl-display); font-weight:700; font-size:13px; padding:13px 16px; border-radius:12px; text-align:center; box-shadow:0 14px 40px -12px rgba(0,0,0,.7); }
+  .atoast.show{ display:block; }
+</style>
+</head>
+<body>
+  <h1 class="title">HOLY OLY · cómo lo veo</h1>
+  <p class="sub">Multi-tema · default Neon PR. Inicio · Entreno · Macrociclos (con detalle). Catálogo real (24/10).</p>
+  <div class="switcher">
+    <span class="tpill active" data-t="neon">Neon PR</span>
+    <span class="tpill" data-t="plates">Plates</span>
+    <span class="tpill" data-t="premium">Premium</span>
+    <span class="tpill" data-t="chalk">Chalk</span>
+    <span class="tpill" data-t="neonlight">Neon Bloom</span>
+  </div>
+
+  <div class="stage">
+    <!-- HOME -->
+    <div>
+      <div class="device wl wl--neon" data-wl>
+        <div class="statusbar"><span>9:41</span><span class="sb-batt">100<i></i></span></div>
+        <div class="hobar"><button class="hobar__back" onclick="return false">‹</button><div class="hobar__brand"><span class="hobar__name">HOLY OLY</span><span class="hobar__motto">smart training · zero burnout</span></div></div>
+        <div class="wls home screen">
+          <header class="wls__head">
+            <div class="wls__titlecol">
+              <div class="hello">Hola, Marco</div>
+              <div class="role"><span id="lvl"></span> Atleta · Intermedio</div>
+            </div>
+            <div class="readi"><div class="readi__n">82</div><div class="readi__l">Readiness</div></div>
+          </header>
+          <div class="weeknav">
+            <button class="weeknav__btn">‹</button>
+            <div class="weeknav__c">
+              <div class="weeknav__wk">SEMANA 12 / 16</div>
+              <div class="weeknav__pr">Ruso 5D · Fuerza/Potencia · jue</div>
+            </div>
+            <button class="weeknav__btn">›</button>
+          </div>
+          <div class="wls__sectionhead">
+            <span class="wls__sectiontitle">Sesión de hoy</span>
+            <span class="wl-badge wl-badge--scheme">Día 3</span>
+          </div>
+          <div class="wls__list" id="exlist"></div>
+          <div class="wls__sectionhead">
+            <span class="wls__sectiontitle">Intensidad del macro</span>
+            <span style="font-size:12px;font-weight:700;color:var(--wl-accent)">Sem 12 · 88%</span>
+          </div>
+          <div class="macro" id="macro"></div>
+          <button class="wl-btn wl-btn--primary cta">Empezar sesión</button>
+        </div>
+      </div>
+      <div class="caption">Inicio · sesión de hoy</div>
+    </div>
+
+    <!-- WORKOUT -->
+    <div>
+      <div class="device wl wl--neon" data-wl>
+        <div class="statusbar"><span>9:42</span><span class="sb-batt">100<i></i></span></div>
+        <div class="hobar"><button class="hobar__back" onclick="return false">‹</button><div class="hobar__brand"><span class="hobar__name">HOLY OLY</span><span class="hobar__motto">smart training · zero burnout</span></div></div>
+        <div class="wls screen">
+          <header class="wls__head">
+            <div class="wls__titlecol">
+              <div class="wls__nameline">
+                <h1 class="wls__name">Arrancada</h1>
+                <span class="wl-badge wl-badge--scheme">5×2</span>
+                <span class="wl-badge wl-badge--intensity">🔥 88%</span>
+              </div>
+              <p class="wls__meta">Bloque 3/4 · Serie 1/5</p>
+            </div>
+            <div class="wls__cronocol">
+              <span class="wls__cronolabel">Crono</span>
+              <span class="wls__time">00:24</span>
+              <div class="wls__actions">
+                <button class="wl-btn wl-btn--ghost">‹ Ant</button>
+                <button class="wl-btn wl-btn--primary">Fin</button>
+              </div>
+            </div>
+          </header>
+          <div class="wl-seg">
+            <span class="wl-seg__bar is-on"></span><span class="wl-seg__bar"></span><span class="wl-seg__bar"></span><span class="wl-seg__bar"></span><span class="wl-seg__bar"></span>
+          </div>
+          <div class="wls__coach"><strong>Coach:</strong> Pecho alto en el catch. No te apures en la subida.</div>
+          <div class="wls__sectionhead">
+            <span class="wls__sectiontitle">Ramp-up técnico</span>
+            <div class="wls__sectionright">
+              <button class="wl-skip">⚐ Saltar</button>
+              <span class="wl-badge wl-badge--progress">0/4</span>
+            </div>
+          </div>
+          <div class="wls__list">
+            <div class="wls__row"><span class="wl-radio"></span><span class="wls__rowlabel">Barra vacía</span><span class="wls__rowval"><span class="wls__kg">20 kg</span><span class="wls__reps">× 5</span></span></div>
+            <div class="wls__row"><span class="wl-radio"></span><span class="wls__rowlabel">40% 1RM</span><span class="wls__rowval"><span class="wls__kg">45 kg</span><span class="wls__reps">× 3</span></span></div>
+            <div class="wls__row"><span class="wl-radio"></span><span class="wls__rowlabel">55% 1RM</span><span class="wls__rowval"><span class="wls__kg">62.5 kg</span><span class="wls__reps">× 2</span></span></div>
+            <div class="wls__row"><span class="wl-radio"></span><span class="wls__rowlabel">70% 1RM</span><span class="wls__rowval"><span class="wls__kg">77.5 kg</span><span class="wls__reps">× 1</span></span></div>
+          </div>
+          <div class="wls__sectionhead">
+            <span class="wls__sectiontitle">Series de trabajo</span>
+            <span class="wl-badge wl-badge--target">Target 90kg · 2r · 88%</span>
+          </div>
+          <div class="wls__inputs">
+            <div class="wl-fieldwrap"><div class="wl-fieldlabel">Peso (kg)</div><div class="wl-field"><button class="wl-step">−</button><div class="wl-field__val"><span class="wl-field__num">90</span><span class="wl-field__suffix">kg</span></div><button class="wl-step">+</button></div></div>
+            <div class="wl-fieldwrap"><div class="wl-fieldlabel">Reps</div><div class="wl-field"><button class="wl-step">−</button><div class="wl-field__val"><span class="wl-field__num">2</span></div><button class="wl-step">+</button></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="caption">Entreno · ejecución</div>
+    </div>
+
+    <!-- MACROCICLOS -->
+    <div>
+      <div class="device wl wl--neon" data-wl>
+        <div class="statusbar"><span>9:43</span><span class="sb-batt">100<i></i></span></div>
+        <div class="hobar"><button class="hobar__back" onclick="metoBack()">‹</button><div class="hobar__brand"><span class="hobar__name">HOLY OLY</span><span class="hobar__motto">smart training · zero burnout</span></div></div>
+        <div class="meto screen" id="metolist">
+          <div class="meto__eyebrow" id="metoeyebrow">CATÁLOGO · 24 MACROCICLOS</div>
+          <h1 class="meto__title">Macrociclos</h1>
+          <p class="meto__sub">Programas por escuela. 10 familias. Tocá uno para ver el detalle.</p>
+          <div class="filt__l">Escuela</div>
+          <div class="chips" id="chips"></div>
+          <div class="filt__l">Días / semana</div>
+          <div class="chips" id="chipsDay"></div>
+          <div class="metogrid" id="metogrid"></div>
+        </div>
+        <div class="detail screen" id="detail" style="display:none"></div>
+      </div>
+      <div class="caption">Macrociclos · biblioteca → detalle (fases + distribución)</div>
+    </div>
+  </div>
+
+<script>
+  /* discos */
+  var P={10:['#3eb24a','#2c8a37','#7fd07f'],15:['#f3c200','#c79c00','#ffe46b'],20:['#2f6fa8','#1d4f7e','#6fa3cf'],25:['#d5232b','#a4161d','#ec6b6f']};
+  var uid=0;
+  function disc(w){ var a=P[w]; var id='d'+(uid++); var nc=(w===15)?'#3a2a00':'#fff';
+    return '<svg viewBox="0 0 32 32" width="28" height="28" style="display:block"><defs><radialGradient id="'+id+'" cx="42%" cy="34%" r="75%"><stop offset="0" stop-color="'+a[2]+'"/><stop offset="55%" stop-color="'+a[0]+'"/><stop offset="100%" stop-color="'+a[1]+'"/></radialGradient></defs><circle cx="16" cy="16" r="15" fill="'+a[1]+'"/><circle cx="16" cy="16" r="14" fill="url(#'+id+')"/><circle cx="16" cy="16" r="6" fill="#dde0e4" stroke="rgba(0,0,0,.18)" stroke-width="1"/><circle cx="16" cy="16" r="1.9" fill="#33363a"/><text x="16" y="10.5" text-anchor="middle" font-size="6.4" font-weight="800" fill="'+nc+'" font-family="Saira Condensed, sans-serif">'+w+'</text></svg>'; }
+  function perSide(total){ var r=(total-20)/2, out=[]; [25,20,15,10].forEach(function(p){ while(r>=p){ out.push(p); r-=p; } }); return out; }
+  var SESSION=[{n:'Arrancada',s:'5×2',p:'88%',kg:90},{n:'Tirón de Arranque',s:'4×3',p:'100%',kg:100},{n:'Sentadilla',s:'5×3',p:'85%',kg:140},{n:'Sentadilla Overhead',s:'3×3',p:'75%',kg:70}];
+  document.getElementById('exlist').innerHTML = SESSION.map(function(x){ var d=perSide(x.kg).map(disc).join(''); return '<div class="exrow"><div class="exrow__main"><div class="exrow__name">'+x.n+'</div><div class="exrow__discs">'+d+'</div></div><div class="exrow__num"><div class="exrow__kg">'+x.kg+' kg</div><div class="exrow__sub">'+x.s+' · '+x.p+'</div></div></div>'; }).join('');
+  document.getElementById('lvl').innerHTML = disc(15);
+
+  /* home macro chart */
+  (function(){ var W=320,H=92,pad=8,lo=60,hi=105; var phase=[[1,4,68.5],[5,8,78.5],[9,12,88.5],[13,16,97]];
+    function val(w){ for(var i=0;i<phase.length;i++){ if(w>=phase[i][0]&&w<=phase[i][1]) return phase[i][2]; } return 80; }
+    function x(w){ return pad+(w-1)/15*(W-2*pad); } function y(v){ return pad+(1-(v-lo)/(hi-lo))*(H-2*pad-12); }
+    var pts=[]; for(var w=1;w<=16;w++) pts.push([x(w),y(val(w))]);
+    var line=pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ');
+    var area=line+' L '+pts[15][0].toFixed(1)+' '+(H-12)+' L '+pts[0][0].toFixed(1)+' '+(H-12)+' Z'; var cx=x(12),cy=y(val(12));
+    document.getElementById('macro').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'"><defs><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--wl-accent);stop-opacity:.35"/><stop offset="1" style="stop-color:var(--wl-accent);stop-opacity:0"/></linearGradient></defs><path d="'+area+'" style="fill:url(#ar)"/><path d="'+line+'" style="fill:none;stroke:var(--wl-accent);stroke-width:2.5" stroke-linejoin="round" stroke-linecap="round"/><line x1="'+cx+'" y1="'+pad+'" x2="'+cx+'" y2="'+(H-12)+'" style="stroke:var(--wl-accent);stroke-opacity:.4" stroke-dasharray="3 3"/><circle cx="'+cx+'" cy="'+cy+'" r="5" style="fill:var(--wl-accent);stroke:var(--wl-bg);stroke-width:2.5"/><text x="'+pad+'" y="'+(H-2)+'" font-size="9" style="fill:var(--wl-muted)" font-family="Chakra Petch">S1</text><text x="'+(W-pad)+'" y="'+(H-2)+'" text-anchor="end" font-size="9" style="fill:var(--wl-muted)" font-family="Chakra Petch">S16</text></svg>';
+  })();
+
+  /* ---------- catálogo real (con desc + fases) ---------- */
+  // ph: [nombre, semIni, semFin, imrLo, imrHi, volRel, foco]
+  var CAT=[
+    {t:'Búlgaro 6D',f:'Búlgaro',wk:'12',d:'6',i:5,v:2,df:5,lv:'Elite',pk:false,pw:null,desc:'Daily Max: especificidad e intensidad extremas, frecuencia altísima. Siempre ≥95%.',best:'Atletas elite con SNC adaptado a >90% diario.',ph:[['Daily Max',1,12,95,110,95,'daily max · descarga cada 4ª sem']]},
+    {t:'Coreano 5D',f:'Coreano',wk:'12',d:'5',i:4,v:4,df:3,lv:'Intermedio',pk:true,pw:12,desc:'Estructura rígida, fuerza posicional y disciplina. Tirones pesados.',best:'Énfasis en tirones y posiciones de transición.',ph:[['Cimentación',1,4,70,76,100,'hipertrofia · técnica'],['Transformación',5,8,78,84,80,'fuerza · pulls pesados'],['Realización',9,12,85,95,45,'peaking · competencia']]},
+    {t:'Coreano 6D',f:'Coreano',wk:'12',d:'6',i:4,v:5,df:4,lv:'Avanzado',pk:true,pw:12,desc:'Alta densidad, más volumen distribuido en 6 días. Squats y pulls.',best:'Atletas full-time con buena recuperación.',ph:[['Cimentación',1,4,72,78,100,'hipertrofia · densidad'],['Transformación',5,8,80,86,82,'fuerza · pulls >100%'],['Realización',9,12,86,96,45,'peaking · competencia']]},
+    {t:'Chino 5D',f:'Chino',wk:'4',d:'5',i:4,v:4,df:3,lv:'Intermedio',pk:false,pw:null,desc:'Bloque de choque: fuerza-técnica + culturismo funcional. Corrige debilidades.',best:'Corrección de debilidades específicas, hipertrofia.',ph:[['Base estructural',1,1,70,75,100,'volumen · tendones'],['Acumulación',2,2,80,88,90,'fuerza absoluta · pulls'],['Choque',3,3,90,98,65,'max out controlado'],['Descarga',4,4,80,85,35,'taper · recuperación']]},
+    {t:'Cubano Novicio 2D',f:'Cubano',wk:'8',d:'2',i:2,v:1,df:2,lv:'Principiante',pk:false,pw:null,desc:'Iniciación con 2 sesiones semanales. Foco técnico, carga muy baja.',best:'Principiantes absolutos, tiempo muy limitado.',ph:[['Cimentación',1,4,58,64,100,'iniciación · técnica'],['Desarrollo',5,8,62,70,90,'fuerza general']]},
+    {t:'Cubano Novicio 3D',f:'Cubano',wk:'8',d:'3',i:2,v:2,df:2,lv:'Principiante',pk:false,pw:null,desc:'Distribución eficiente: volumen lunes, técnico miércoles, intensidad viernes.',best:'Novato con disponibilidad media.',ph:[['Cimentación',1,4,60,66,100,'volumen · técnica'],['Desarrollo',5,8,64,72,88,'fuerza general']]},
+    {t:'Cubano Intermedio 5D',f:'Cubano',wk:'12',d:'5',i:3,v:3,df:3,lv:'Intermedio',pk:false,pw:null,desc:'Estructura clásica: lun volumen, mié intensidad media, vie test.',best:'Atleta con base técnica establecida.',ph:[['Cimentación',1,4,65,72,100,'base · volumen'],['Desarrollo',5,8,72,80,78,'fuerza general'],['Intensificación',9,12,78,86,55,'fuerza máxima · test']]},
+    {t:'Cubano Avanzado 5D',f:'Cubano',wk:'12',d:'5',i:4,v:5,df:4,lv:'Avanzado',pk:false,pw:null,desc:'Mayor capacidad de trabajo. Volumen mensual 1.100-1.300 reps.',best:'Avanzado con tolerancia alta al volumen.',ph:[['Cimentación',1,4,70,76,100,'volumen alto'],['Desarrollo',5,8,74,82,85,'fuerza · volumen'],['Intensificación',9,12,80,88,60,'fuerza máxima']]},
+    {t:'Cubano Competidor',f:'Cubano',wk:'16',d:'5',i:5,v:4,df:4,lv:'Avanzado',pk:true,pw:16,desc:'Orientado a salida competitiva. Acumulación → realización, picos planificados.',best:'Pre-competencia, picos planificados.',ph:[['Cimentación',1,4,70,76,100,'base · volumen'],['Desarrollo',5,8,74,82,80,'fuerza general'],['Intensificación',9,12,80,88,57,'fuerza máxima'],['Realización',13,16,88,100,34,'peaking · competencia']]},
+    {t:'Polaco 4D',f:'Polaco',wk:'6',d:'4',i:4,v:2,df:2,lv:'Principiante',pk:true,pw:6,desc:'Ciclo corto de choque. Progresión cauta (+2.5kg/sem) y picos frecuentes.',best:'Atletas que necesitan picar rápido sin saturar.',ph:[['Reps altas',1,2,70,75,100,'reps altas · técnica'],['Reps medias',3,4,80,85,60,'reps medias · fuerza'],['Singles',5,6,90,95,25,'singles · peaking']]},
+    {t:'Polaco 5D',f:'Polaco',wk:'6',d:'5',i:4,v:2,df:3,lv:'Intermedio',pk:true,pw:6,desc:'Calidad sobre cantidad: series cortas, mucho pull desde bloques.',best:'Recuperar sensaciones de competencia rápidamente.',ph:[['Reps altas',1,2,70,75,100,'reps altas · calidad'],['Reps medias',3,4,80,85,60,'pulls desde bloque'],['Singles',5,6,90,95,25,'singles · competencia']]},
+    {t:'Ruso 5D',f:'Ruso',wk:'16',d:'5',i:3,v:5,df:3,lv:'Intermedio',pk:true,pw:16,desc:'Waviness: ondulación diaria + semanal (onda 1·.9·.6·.45). GPP extensa.',best:'Atleta clásico, ciclo largo con peaking final.',ph:[['Hipertrofia',1,4,65,72,100,'hipertrofia · GPP'],['Fuerza básica',5,8,75,82,85,'fuerza base'],['Fuerza/Potencia',9,12,85,92,65,'fuerza · potencia'],['Peaking',13,16,92,102,45,'peaking · competencia']]},
+    {t:'Ucraniano 3D',f:'Ucraniano',wk:'12',d:'3',i:4,v:3,df:3,lv:'Intermedio',pk:true,pw:12,desc:'Alta densidad pura, EMOM-heavy. Acumula singles al ≥85%.',best:'Tiempo limitado, enfoque en densidad.',ph:[['Acumulación',1,6,70,85,100,'EMOM · densidad'],['Intensificación',7,11,85,94,55,'singles + taper'],['Test',12,12,90,100,20,'pico · test']]},
+    {t:'Ucraniano 4D',f:'Ucraniano',wk:'12',d:'4',i:4,v:4,df:3,lv:'Intermedio',pk:true,pw:12,desc:'Estándar: más volumen accesorio y distribución de carga.',best:'Balance entre densidad y accesorios.',ph:[['Acumulación',1,6,70,85,100,'EMOM · densidad · accesorios'],['Intensificación',7,11,85,94,55,'singles + taper'],['Test',12,12,90,100,20,'pico · test']]},
+    {t:'Colombiano 5D',f:'Colombiano',wk:'12',d:'5',i:4,v:4,df:3,lv:'Intermedio',pk:true,pw:12,desc:'"Piernas primero": volumen extremo de cuclillas → cero en competencia.',best:'Atletas con Jerk débil que necesitan reforzar overhead.',ph:[['Prep General',1,4,58,66,100,'volumen extremo piernas'],['Prep Especial',5,8,65,72,65,'técnica-fuerza'],['Precompetencia',9,10,72,82,30,'intensidad · baja vol'],['Realización',11,12,82,100,10,'peak · piernas a cero']]},
+    {t:'Híbrido Moderno 3D',f:'Híbrido',wk:'12',d:'3',i:3,v:2,df:3,lv:'Intermedio',pk:true,pw:12,desc:'Alta densidad por sesión, compuestos grandes y complejos. Pocos accesorios.',best:'Atletas máster o time-constrained.',ph:[['Acumulación',1,4,70,76,100,'hipertrofia · complejos'],['Transmutación',5,8,80,86,70,'fuerza · densidad EMOM'],['Realización',9,12,88,96,40,'peaking · test']]},
+    {t:'Híbrido Moderno 4D',f:'Híbrido',wk:'12',d:'4',i:3,v:3,df:3,lv:'Intermedio',pk:true,pw:12,desc:'Block periodization: hipertrofia + fuerza + densidad EMOM.',best:'Atleta con tiempo limitado, sostenibilidad a largo plazo.',ph:[['Acumulación',1,4,70,76,100,'hipertrofia funcional'],['Transmutación',5,8,80,86,70,'fuerza · densidad EMOM'],['Realización',9,12,88,96,40,'peaking · test']]},
+    {t:'Híbrido Moderno 5D',f:'Híbrido',wk:'12',d:'5',i:4,v:3,df:3,lv:'Intermedio',pk:true,pw:12,desc:'Acumulación → Transmutación → Realización. Sesiones ~90 min.',best:'Transición CrossFit → Weightlifting competitivo.',ph:[['Acumulación',1,4,70,76,100,'hipertrofia · capacidad'],['Transmutación',5,8,80,86,70,'fuerza · densidad EMOM'],['Realización',9,12,88,96,40,'peaking · test']]},
+    {t:'Híbrido Modular',f:'Híbrido',wk:'mod',d:'var',i:4,v:4,df:4,lv:'Avanzado',pk:true,pw:12,desc:'Variación coordinada: bloques concentrados con ondulación semanal A-B-C-D.',best:'Evitar estancamiento, programación adaptable.',ph:[['Bloque Hipertrofia',1,4,65,82,100,'acumulación · ondulación'],['Bloque Fuerza',5,8,78,92,65,'fuerza absoluta · CNS'],['Bloque Potencia',9,12,85,97,40,'potencia · peaking']]},
+    {t:'USA Weightlifting',f:'USA',wk:'10-12',d:'4-5',i:3,v:3,df:3,lv:'Intermedio',pk:true,pw:12,desc:'Periodización lineal americana. Balance volumen / intensidad, RPE.',best:'Estándar competitivo norteamericano.',ph:[['Acumulación',1,4,65,75,100,'general strength'],['Desarrollo',5,8,75,85,70,'olympic specificity'],['Realización',9,12,85,97,40,'peaking & testing']]},
+    {t:'USA Principiante',f:'USA',wk:'16',d:'4',i:2,v:4,df:2,lv:'Principiante',pk:false,pw:null,desc:'Lineal de 16 sem: anatómica → fuerza base → integración → intensificación.',best:'Principiantes (0-2 años) construyendo base técnica y de fuerza.',ph:[['Prep anatómica',1,4,55,65,100,'high hang · core'],['Fuerza base',5,8,65,70,85,'desde suelo'],['Fuerza integrada',9,12,70,80,65,'lifts completos'],['Intensificación',13,16,80,90,45,'intensificación + test']]},
+    {t:'USA Intermedio',f:'USA',wk:'16',d:'5',i:4,v:4,df:3,lv:'Intermedio',pk:true,pw:16,desc:'Bloques ondulantes de 16 sem con deloads. Acumulación → realización.',best:'Intermedios (2-5 años) con base sólida.',ph:[['Acumulación B1',1,4,65,75,100,'sentadillas · complexes'],['Transmutación B2',5,8,75,82,80,'front squat · pausas'],['Intensificación B3',9,12,80,88,55,'balístico · pulls 105%'],['Realización B4',13,16,85,97,35,'simulación comp · singles']]},
+    {t:'USA Avanzado',f:'USA',wk:'8',d:'5',i:5,v:2,df:4,lv:'Avanzado',pk:true,pw:8,desc:'Peaking de 8 sem: sobrecarga → choque neural → realización → tapering.',best:'Avanzados afinando para una competencia.',ph:[['Sobrecarga',1,2,80,85,100,'sobrecarga transmutativa'],['Choque neural',3,4,85,92,65,'choque + deload'],['Realización',5,6,90,98,40,'realización submáxima'],['Taper',7,8,85,100,20,'tapering · competencia']]},
+    {t:'USA Master 40+',f:'USA',wk:'12',d:'3',i:3,v:3,df:3,lv:'Intermedio',pk:true,pw:12,desc:'Adaptado a máster: estabilidad articular → fuerza preservada → realización.',best:'Atletas máster (40+) priorizando articulaciones y recuperación.',ph:[['Estabilidad',1,4,60,70,100,'unilateral · powers'],['Fuerza',5,8,70,80,75,'desde bloques'],['Realización',9,12,80,92,45,'realización master']]}
+  ];
+  CAT.forEach(function(p,i){ p._i=i; });
+
+  var FAMS=['Todos','Búlgaro','Coreano','Chino','Cubano','Polaco','Ruso','Ucraniano','Colombiano','Híbrido','USA'];
+  var CAL='<svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6h12M5.5 1.5v3M10.5 1.5v3"/></svg>';
+  var CLK='<svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8.5" r="6"/><path d="M8 5v3.4l2.2 1.4" stroke-linecap="round"/></svg>';
+  function rec(p){ return Math.max(1, Math.min(5, 6 - Math.max(p.i,p.v))); }
+  function focusW(p){ if(p.v>=5)return 'volumen'; if(p.pk&&p.i>=5)return 'peaking'; if(p.i>=5)return 'intensidad'; if(p.i>=4)return 'fuerza'; return 'técnico'; }
+  function meter(label,val,color){ var s=''; for(var i=0;i<5;i++){ var on=i<val; s+='<i style="background:'+(on?color:'rgba(127,134,148,.18)')+';box-shadow:'+(on?'0 0 5px '+color+'66':'none')+'"></i>'; } return '<div class="meter"><span class="meter__l">'+label+'</span><span class="meter__seg">'+s+'</span><span class="meter__v">'+val+'/5</span></div>'; }
+  function card(p){ return '<div class="mcard" onclick="openDetail('+p._i+')">'+(p.pk?'<span class="mcard__pk">▲ S'+p.pw+'</span>':'')
+    +'<h3 class="mcard__title">'+p.t+'</h3>'
+    +'<p class="mcard__desc">'+p.desc+'</p>'
+    +'<div class="mmeta"><span>'+CAL+'<b>'+p.wk+'</b> sem</span><span>'+CLK+'<b>'+p.d+'</b> d/sem</span></div>'
+    +meter('INTENSIDAD',p.i,'#ff5e5e')+meter('VOLUMEN',p.v,'#2dd4e6')+meter('RECOVERY',rec(p),'#34d058')
+    +'<div class="mcard__tag">"'+p.f+' · '+focusW(p)+'"</div>'
+    +'<div class="mcard__best"><b>Nivel</b> <em>'+p.lv+'</em> · <b>Dificultad</b> <em>'+p.df+'/5</em></div></div>'; }
+  var DAYS=['Todos','2d','3d','4d','5d','6d'];
+  var curFam='Todos', curDay='Todos';
+  function dayMatch(p){ if(curDay==='Todos') return true; return String(p.d).indexOf(curDay.replace('d',''))>=0; }
+  function renderMeto(){ var list=CAT.filter(function(p){ return (curFam==='Todos'||p.f===curFam) && dayMatch(p); });
+    document.getElementById('metogrid').innerHTML=list.length?list.map(card).join(''):'<div class="meto__empty">Ningún programa con esos filtros.</div>';
+    document.getElementById('metoeyebrow').textContent='CATÁLOGO · '+list.length+' '+(list.length===1?'MACROCICLO':'MACROCICLOS'); }
+  document.getElementById('chips').innerHTML=FAMS.map(function(f){return '<button class="chip'+(f==='Todos'?' on':'')+'" data-f="'+f+'">'+f+'</button>';}).join('');
+  document.getElementById('chipsDay').innerHTML=DAYS.map(function(f){return '<button class="chip'+(f==='Todos'?' on':'')+'" data-d="'+f+'">'+f+'</button>';}).join('');
+  document.querySelectorAll('#chips .chip').forEach(function(c){ c.addEventListener('click',function(){ curFam=c.dataset.f; document.querySelectorAll('#chips .chip').forEach(function(x){x.classList.toggle('on',x.dataset.f===curFam);}); renderMeto(); }); });
+  document.querySelectorAll('#chipsDay .chip').forEach(function(c){ c.addEventListener('click',function(){ curDay=c.dataset.d; document.querySelectorAll('#chipsDay .chip').forEach(function(x){x.classList.toggle('on',x.dataset.d===curDay);}); renderMeto(); }); });
+  renderMeto();
+
+  /* detalle */
+  // Periodización: corredor de intensidad (banda IMR lo–hi por fase, escalonada)
+  // + media de fase + barras de volumen relativo, todo desde phaseProfile real.
+  function periodChart(ph,peaks,pw){
+    var tot=ph[ph.length-1][2]; var W=320,padL=20,padR=10,padT=14;
+    var iH=84, gap=13, vH=40, labH=18; var H=padT+iH+gap+vH+labH;
+    var lo=55, hi=110, span=W-padL-padR;
+    function Lx(w){ return padL+(w-1)/tot*span; } function Rx(w){ return padL+w/tot*span; }
+    function Cx(w){ return padL+(w-0.5)/tot*span; }
+    function iy(v){ return padT+(1-(v-lo)/(hi-lo))*iH; }
+    var vTop=padT+iH+gap, vBase=vTop+vH; function vy(v){ return vBase-(v/100)*vH; }
+    var g='';
+    // gridlines de intensidad
+    [70,90].forEach(function(gv){ var yy=iy(gv).toFixed(1);
+      g+='<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="color-mix(in srgb,var(--wl-text) 10%, transparent)" stroke-width="1" stroke-dasharray="2 3"/>';
+      g+='<text x="'+(padL-3)+'" y="'+(iy(gv)+3).toFixed(1)+'" text-anchor="end" font-size="7" style="fill:var(--wl-muted)" font-family="JetBrains Mono">'+gv+'</text>'; });
+    // corredor (banda) + bordes por fase
+    ph.forEach(function(f){ var x0=Lx(f[1]),x1=Rx(f[2]),yT=iy(f[4]),yB=iy(f[3]);
+      g+='<rect x="'+x0.toFixed(1)+'" y="'+yT.toFixed(1)+'" width="'+(x1-x0).toFixed(1)+'" height="'+(yB-yT).toFixed(1)+'" style="fill:var(--wl-accent);opacity:.14"/>';
+      g+='<line x1="'+x0.toFixed(1)+'" y1="'+yT.toFixed(1)+'" x2="'+x1.toFixed(1)+'" y2="'+yT.toFixed(1)+'" stroke="var(--wl-accent)" stroke-width="1" stroke-opacity=".45"/>';
+      g+='<line x1="'+x0.toFixed(1)+'" y1="'+yB.toFixed(1)+'" x2="'+x1.toFixed(1)+'" y2="'+yB.toFixed(1)+'" stroke="var(--wl-accent)" stroke-width="1" stroke-opacity=".45"/>'; });
+    // media de fase (línea escalonada)
+    var mid=''; ph.forEach(function(f,i){ var m=(f[3]+f[4])/2,x0=Lx(f[1]),x1=Rx(f[2]),yy=iy(m).toFixed(1);
+      mid+=(i?'L'+x0.toFixed(1)+' '+yy+' ':'M'+x0.toFixed(1)+' '+yy+' ')+'L'+x1.toFixed(1)+' '+yy+' '; });
+    g+='<path d="'+mid+'" style="fill:none;stroke:var(--wl-accent);stroke-width:2.6" stroke-linejoin="round" stroke-linecap="round"/>';
+    // divisores de fase
+    ph.forEach(function(f,i){ if(!i)return; var xx=Lx(f[1]).toFixed(1);
+      g+='<line x1="'+xx+'" y1="'+padT+'" x2="'+xx+'" y2="'+vBase.toFixed(1)+'" stroke="color-mix(in srgb,var(--wl-text) 12%, transparent)" stroke-width="1" stroke-dasharray="3 3"/>'; });
+    // marca de pico
+    if(peaks&&pw){ var px=Cx(pw).toFixed(1);
+      g+='<line x1="'+px+'" y1="'+padT+'" x2="'+px+'" y2="'+vBase.toFixed(1)+'" stroke="var(--wl-accent)" stroke-width="1.3" stroke-dasharray="2 2" stroke-opacity=".85"/>';
+      g+='<text x="'+px+'" y="'+(padT+7)+'" text-anchor="middle" font-size="9" style="fill:var(--wl-accent)" font-weight="700">▲</text>'; }
+    // barras de volumen
+    ph.forEach(function(f){ var x0=Lx(f[1])+2,x1=Rx(f[2])-2,yT=vy(f[5]);
+      g+='<rect x="'+x0.toFixed(1)+'" y="'+yT.toFixed(1)+'" width="'+Math.max(2,(x1-x0)).toFixed(1)+'" height="'+(vBase-yT).toFixed(1)+'" rx="2" style="fill:color-mix(in srgb,var(--wl-text) 36%, transparent)"/>';
+      g+='<text x="'+Cx((f[1]+f[2])/2).toFixed(1)+'" y="'+(yT-2).toFixed(1)+'" text-anchor="middle" font-size="7" style="fill:var(--wl-muted)" font-family="JetBrains Mono">'+f[5]+'</text>'; });
+    g+='<line x1="'+padL+'" y1="'+vBase.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+vBase.toFixed(1)+'" stroke="color-mix(in srgb,var(--wl-text) 14%, transparent)" stroke-width="1"/>';
+    // etiquetas de semana por fase
+    ph.forEach(function(f){ var lab=f[1]+(f[2]>f[1]?'–'+f[2]:'');
+      g+='<text x="'+Cx((f[1]+f[2])/2).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="7.5" style="fill:var(--wl-muted)" font-family="JetBrains Mono">'+lab+'</text>'; });
+    g+='<text x="'+(W-padR)+'" y="'+(padT-4)+'" text-anchor="end" font-size="7" style="fill:var(--wl-muted)" font-family="Chakra Petch" letter-spacing=".1em">%1RM · SEMANAS</text>';
+    return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+g+'</svg>';
+  }
+  // Reparto de fases: ancho = duración · relleno = intensidad media
+  function phaseRibbon(ph,peaks,pw){ return '<div class="ribbon">'+ph.map(function(f){
+      var wks=f[2]-f[1]+1, mid=Math.round((f[3]+f[4])/2), fill=Math.round((mid-55)/(110-55)*78+16);
+      var peak=peaks&&pw&&pw>=f[1]&&pw<=f[2];
+      return '<div class="ribbon__seg" style="flex:'+wks+';--fill:'+fill+'%">'
+        +'<span class="ribbon__nm">'+f[0]+(peak?' ▲':'')+'</span>'
+        +'<span class="ribbon__wk">sem '+f[1]+(f[2]>f[1]?'–'+f[2]:'')+' · '+wks+(wks>1?' sem':' sem')+'</span>'
+        +'<span class="ribbon__im">IMR ~'+mid+'%</span></div>'; }).join('')+'</div>'; }
+  function phaseRows(ph){ return ph.map(function(f){ return '<div class="ph"><div class="ph__head"><span class="ph__name">'+f[0]+'</span><span class="ph__wk">sem '+f[1]+(f[2]>f[1]?'–'+f[2]:'')+' · IMR '+f[3]+'–'+f[4]+'%</span></div><div class="ph__bar"><i style="width:'+f[5]+'%"></i></div><div class="ph__foco">vol '+f[5]+'% · '+f[6]+'</div></div>'; }).join(''); }
+  var CAPP='<div class="dt__cap"><span><i class="swband"></i>banda = IMR esperado</span><span><i class="swl"></i>media de fase</span><span><i class="swb"></i>volumen rel.</span></div>';
+  var CAPR='<div class="dt__cap"><span>ancho = duración de fase</span><span><i class="swband"></i>relleno = intensidad media</span></div>';
+  function detailHTML(p){ return '<h1 class="dt__title">'+p.t+'</h1>'
+    +'<div class="dt__tags"><span class="dt__fam">'+p.f+'</span><span class="dt__lv">'+p.lv+'</span>'+(p.pk?'<span class="dt__pk">▲ pico sem '+p.pw+'</span>':'<span class="dt__lv">sin pico</span>')+'</div>'
+    +'<p class="dt__desc">'+p.desc+'</p>'
+    +'<div class="dt__stats"><div><b>'+p.wk+'</b><span>semanas</span></div><div><b>'+p.d+'</b><span>días/sem</span></div><div><b>'+p.ph.length+'</b><span>fases</span></div></div>'
+    +'<div class="dt__sec">Carga</div>'+meter('INTENSIDAD',p.i,'#ff5e5e')+meter('VOLUMEN',p.v,'#2dd4e6')+meter('RECOVERY',rec(p),'#34d058')
+    +'<div class="dt__sec">Periodización · intensidad y volumen</div><div class="dt__chart">'+periodChart(p.ph,p.pk,p.pw)+'</div>'+CAPP
+    +'<div class="dt__sec">Reparto de fases</div>'+phaseRibbon(p.ph,p.pk,p.pw)+CAPR
+    +'<div class="dt__sec">Fases en detalle · '+p.ph.length+'</div><div class="dt__phases">'+phaseRows(p.ph)+'</div>'
+    +'<div class="dt__sec">Ideal para</div><p class="dt__best">'+p.best+'</p>'
+    +(ROLE==='coach'?'<button class="dt__assign" onclick="openAssign('+p._i+')">+ Asignar a un atleta</button>':''); }
+  function openDetail(i){ var p=CAT[i]; var d=document.getElementById('detail'); d.innerHTML=detailHTML(p); document.getElementById('metolist').style.display='none'; d.style.display='block'; d.scrollTop=0; }
+  function closeDetail(){ document.getElementById('detail').style.display='none'; document.getElementById('metolist').style.display='block'; }
+  function metoBack(){ if(document.getElementById('detail').style.display==='block') closeDetail(); }
+  window.openDetail=openDetail; window.closeDetail=closeDetail; window.metoBack=metoBack;
+
+  /* rol coach: el catálogo se usa para ASIGNAR un programa a un atleta */
+  var ROLE=(new URLSearchParams(location.search).get('role')||'athlete');
+  var ROSTER=['Mara V.','Diego S.','Lucía R.','Sofía M.','Tomás L.','Ana P.','Bruno G.','Caro F.'];
+  (function(){ if(ROLE!=='coach') return;
+    var sub=document.querySelector('.meto__sub'); if(sub) sub.textContent='Catálogo para asignar · tocá un programa para ver su detalle y asignarlo a un atleta.';
+    var dev=document.getElementById('metolist').closest('.device');
+    var sheet=document.createElement('div'); sheet.className='asheet'; sheet.id='assignSheet';
+    sheet.innerHTML='<div class="asheet__panel"><div class="asheet__title" id="asheetTitle">Asignar</div><div class="asheet__lbl">Semana de inicio</div><div class="asheet__weeks" id="asheetWeeks"></div><div class="asheet__lbl">Atleta</div><div class="asheet__list" id="asheetList"></div><button class="asheet__close" onclick="closeAssign()">Cancelar</button></div>';
+    var toast=document.createElement('div'); toast.className='atoast'; toast.id='atoast';
+    dev.appendChild(sheet); dev.appendChild(toast);
+  })();
+  var startWeek=1;
+  function progWeeks(p){ return p.ph[p.ph.length-1][2]; }   // duración real desde el perfil de fases
+  function openAssign(i){ var p=CAT[i]; startWeek=1;
+    document.getElementById('asheetTitle').textContent='Asignar “'+p.t+'”';
+    var wk=progWeeks(p), w='';
+    for(var k=1;k<=wk;k++){ w+='<button class="asheet__week'+(k===1?' on':'')+'" onclick="pickWeek('+k+')">Sem '+k+'</button>'; }
+    document.getElementById('asheetWeeks').innerHTML=w;
+    document.getElementById('asheetList').innerHTML=ROSTER.map(function(a){ return '<button onclick="pickAthlete(\''+a+'\')">'+a+'</button>'; }).join('');
+    document.getElementById('assignSheet').classList.add('show'); }
+  function closeAssign(){ var s=document.getElementById('assignSheet'); if(s) s.classList.remove('show'); }
+  function pickWeek(w){ startWeek=w; document.querySelectorAll('#asheetWeeks button').forEach(function(b,idx){ b.classList.toggle('on',(idx+1)===w); }); }
+  function pickAthlete(name){ closeAssign(); var t=document.getElementById('atoast'); if(!t) return; t.textContent='✓ Asignado a '+name+' · empieza semana '+startWeek; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2800); }
+  window.openAssign=openAssign; window.closeAssign=closeAssign; window.pickWeek=pickWeek; window.pickAthlete=pickAthlete;
+
+  /* theme switch */
+  document.querySelectorAll('.tpill').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.tpill').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); document.querySelectorAll('[data-wl]').forEach(function(d){ d.className='device wl wl--'+b.dataset.t; }); }); });
+</script>
+</body>
+</html>

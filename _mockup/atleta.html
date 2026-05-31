@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Holy Oly · Atleta — Progreso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@500;600;700;800&family=Saira+Condensed:wght@600;700;800&family=Barlow+Semi+Condensed:wght@600;700&family=Anton&family=Archivo:wght@600;700;800&family=Sora:wght@600;700;800&family=JetBrains+Mono:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wl-themes.css">
+<link rel="stylesheet" href="app-mode.css">
+<script>(function(){var p=new URLSearchParams(location.search);var sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;if(p.get('app')==='1'||window.self!==window.top||sa){document.documentElement.classList.add('appmode');}})();</script>
+<style>
+  :root{ --page:#0b0b11; --mono:'JetBrains Mono',ui-monospace,monospace; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{ background:var(--page); color:#e8e8ee; font-family:'Manrope',system-ui,sans-serif; padding:28px 20px 60px; }
+  .title{ text-align:center; margin:0 0 4px; font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:22px; }
+  .sub{ text-align:center; margin:0 0 20px; color:#8a8a99; font-size:12.5px; }
+  .switcher{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:24px; }
+  .tpill{ cursor:pointer; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04); color:#cfcfe0; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:12px; padding:7px 13px; border-radius:99px; }
+  .tpill.active{ background:#c8ff2d; color:#0a0410; border-color:#c8ff2d; }
+  .wrap{ display:flex; justify-content:center; }
+  .device{ width:362px; border-radius:34px; overflow:hidden; border:1px solid rgba(255,255,255,.12); box-shadow:0 30px 80px -20px rgba(0,0,0,.85); background:#000; }
+  .statusbar{ height:32px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:12px; font-weight:700; background:var(--wl-bg); color:var(--wl-text); font-family:'Chakra Petch',sans-serif; }
+  .feed{ background:var(--wl-bg); padding:14px 13px 26px; height:760px; overflow-y:auto; }
+  .feed::-webkit-scrollbar{ width:0; }
+  .caption{ text-align:center; margin-top:12px; color:#8a8a99; font-size:12.5px; font-family:'Chakra Petch',sans-serif; letter-spacing:.03em; }
+
+  /* athlete greeting */
+  .ahead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .ahead__h{ font-family:var(--wl-display); font-weight:800; font-size:20px; color:var(--wl-text); line-height:1; }
+  .ahead__s{ font-family:var(--mono); font-size:10px; color:var(--wl-muted); margin-top:5px; }
+
+  /* tile 1 — titular */
+  .titular{ border-radius:var(--wl-radius); padding:16px 15px; margin-bottom:11px; border:1px solid; }
+  .titular__row{ display:flex; align-items:center; gap:12px; }
+  .titular__dot{ width:34px; height:34px; border-radius:50%; flex:0 0 auto; box-shadow:0 0 16px; }
+  .titular__st{ font-family:var(--wl-display); font-weight:800; font-size:20px; letter-spacing:.04em; text-transform:uppercase; line-height:1; }
+  .titular__lbl{ font-family:var(--mono); font-size:9px; letter-spacing:.18em; text-transform:uppercase; opacity:.7; }
+  .titular__msg{ font-size:13px; line-height:1.5; margin:12px 0 0; color:var(--wl-text); }
+
+  .card{ background:var(--wl-surface); border:1px solid color-mix(in srgb,var(--wl-text) 7%,transparent); border-radius:var(--wl-radius); padding:12px 13px 11px; margin-top:11px; }
+  .card__head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:3px; }
+  .card__t{ font-family:var(--wl-display); font-weight:700; font-size:13.5px; letter-spacing:.03em; color:var(--wl-text); }
+  .card__end{ font-family:var(--mono); font-size:11px; font-weight:600; }
+  .card__sub{ font-family:var(--mono); font-size:9px; color:var(--wl-muted); margin-bottom:8px; }
+  svg{ display:block; }
+  .lend{ font-family:var(--mono); font-size:8.5px; }
+
+  /* calendar heatmap */
+  .calhd{ display:grid; grid-template-columns:repeat(7,30px); gap:6px; justify-content:center; margin-bottom:6px; }
+  .calhd span{ text-align:center; font-family:var(--mono); font-size:8px; color:var(--wl-muted); }
+  .cal{ display:grid; grid-template-columns:repeat(7,30px); gap:6px; justify-content:center; }
+  .cal__c{ width:30px; height:30px; border-radius:5px; }
+  .cal__c.on{ background:var(--wl-accent); }
+  .cal__c.rest{ background:color-mix(in srgb,var(--wl-text) 12%,transparent); position:relative; }
+  .cal__c.rest::after{ content:''; position:absolute; inset:40%; border-radius:50%; background:var(--wl-muted); opacity:.7; }
+  .cal__c.miss{ border:1px dashed color-mix(in srgb,var(--wl-text) 22%,transparent); }
+  .cal__c.fut{ background:color-mix(in srgb,var(--wl-text) 5%,transparent); }
+  .streak{ display:flex; align-items:center; gap:7px; margin-bottom:9px; }
+  .streak b{ font-family:var(--wl-display); font-weight:800; font-size:18px; color:var(--wl-accent); }
+  .streak span{ font-family:var(--mono); font-size:9.5px; color:var(--wl-muted); }
+
+  /* sparklines (cómo me siento) */
+  .spk{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px 10px; margin-top:9px; }
+  .spk__l{ font-family:var(--mono); font-size:8.5px; color:var(--wl-muted); display:flex; justify-content:space-between; }
+
+  /* rings */
+  .rings{ display:flex; justify-content:space-around; gap:6px; padding-top:4px; }
+  .ring{ text-align:center; }
+  .ring__l{ font-family:var(--mono); font-size:9px; color:var(--wl-muted); margin-top:6px; }
+  .ring__v{ font-family:var(--wl-display); font-weight:800; font-size:12px; color:var(--wl-text); }
+
+  /* timeline */
+  .ribbon{ display:flex; gap:3px; margin-top:4px; }
+  .ribbon__seg{ position:relative; min-width:0; border-radius:6px; padding:7px 6px 8px; background:color-mix(in srgb,var(--wl-text) 6%,transparent); border:1px solid color-mix(in srgb,var(--wl-text) 9%,transparent); overflow:hidden; }
+  .ribbon__seg.now{ border-color:var(--wl-accent); }
+  .ribbon__seg::after{ content:''; position:absolute; left:0; right:0; bottom:0; height:var(--fill,30%); background:var(--wl-accent); opacity:.18; }
+  .ribbon__nm{ position:relative; z-index:1; font-family:var(--wl-display); font-weight:700; font-size:9px; line-height:1.05; color:var(--wl-text); overflow-wrap:anywhere; }
+  .ribbon__wk{ position:relative; z-index:1; font-family:var(--mono); font-size:8px; color:var(--wl-muted); }
+  .count{ display:flex; align-items:baseline; gap:8px; margin-bottom:9px; }
+  .count b{ font-family:var(--wl-display); font-weight:800; font-size:30px; color:var(--wl-accent); line-height:.9; }
+  .count span{ font-family:var(--mono); font-size:10px; color:var(--wl-muted); }
+  .sb-batt{ display:inline-flex; align-items:center; gap:6px; font-weight:700; }
+  .sb-batt i{ width:22px; height:11px; border:1.5px solid currentColor; border-radius:3px; position:relative; opacity:.9; }
+  .sb-batt i::after{ content:''; position:absolute; left:2px; top:2px; bottom:2px; right:3px; background:currentColor; border-radius:1px; }
+  .sb-batt i::before{ content:''; position:absolute; right:-3.5px; top:3px; bottom:3px; width:2px; background:currentColor; border-radius:0 2px 2px 0; }
+  .hobar{ display:flex; align-items:center; gap:11px; padding:9px 13px; background:var(--wl-bg); border-bottom:1px solid color-mix(in srgb,var(--wl-text) 8%,transparent); }
+  .hobar__back{ width:34px; height:34px; flex:0 0 auto; border-radius:10px; border:1px solid color-mix(in srgb,var(--wl-text) 15%,transparent); background:var(--wl-surface); color:var(--wl-text); font-size:19px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+  .hobar__back:active{ transform:scale(.93); }
+  .hobar__brand{ display:flex; flex-direction:column; line-height:1; }
+  .hobar__name{ font-family:var(--wl-display); font-weight:800; font-size:15px; letter-spacing:.05em; color:var(--wl-text); }
+  .hobar__motto{ font-family:var(--mono); font-size:8.5px; letter-spacing:.07em; color:var(--wl-accent); margin-top:4px; }
+  /* ciclo (paleta propia neutra, no de estado) */
+  .cyc{ display:flex; gap:14px; align-items:center; }
+  .cyc__ringwrap{ flex:0 0 auto; }
+  .cyc__info{ flex:1; min-width:0; }
+  .cyc__day{ font-family:var(--wl-display); font-weight:800; font-size:19px; color:var(--wl-text); line-height:1; }
+  .cyc__ph{ font-family:var(--mono); font-size:11px; margin-top:5px; }
+  .cyc__est{ font-family:var(--mono); font-size:8.5px; color:var(--wl-muted); margin-top:5px; line-height:1.4; }
+  .cyc__btns{ display:flex; gap:7px; margin-top:10px; }
+  .cyc__btn{ font-family:var(--mono); font-size:9px; letter-spacing:.03em; padding:6px 10px; border-radius:99px; border:1px solid color-mix(in srgb,var(--wl-text) 16%,transparent); background:transparent; color:var(--wl-text); cursor:pointer; }
+  .cyc-leg{ display:flex; gap:11px; flex-wrap:wrap; margin-top:10px; font-family:var(--mono); font-size:8px; color:var(--wl-muted); }
+  .cyc-leg span{ display:inline-flex; align-items:center; gap:4px; }
+  .cyc-leg i{ width:8px; height:8px; border-radius:2px; }
+  .cyc-share{ margin-top:12px; padding-top:11px; border-top:1px solid color-mix(in srgb,var(--wl-text) 9%,transparent); }
+  .cyc-share__lbl{ font-family:var(--mono); font-size:9px; letter-spacing:.04em; color:var(--wl-muted); margin-bottom:8px; display:flex; align-items:center; gap:5px; }
+  .cyc-seg{ display:flex; gap:5px; }
+  .cyc-seg button{ flex:1; font-family:var(--mono); font-size:9px; padding:7px 5px; border-radius:8px; border:1px solid color-mix(in srgb,var(--wl-text) 16%,transparent); background:transparent; color:var(--wl-text); cursor:pointer; }
+  .cyc-seg button.on{ background:var(--wl-accent); color:var(--wl-bg); border-color:var(--wl-accent); font-weight:700; }
+  .cyc-share__hint{ font-family:var(--mono); font-size:8.5px; color:var(--wl-muted); margin-top:8px; line-height:1.45; }
+  .cyc__tag{ display:inline-block; font-family:var(--mono); font-size:8px; padding:1px 6px; border-radius:99px; background:color-mix(in srgb,#7b66a8 22%,transparent); color:#a98fd0; margin-right:4px; }
+  .cyc-amen{ display:flex; gap:12px; align-items:flex-start; padding:2px 0 4px; }
+  .cyc-amen__ico{ flex:0 0 auto; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb,#7b66a8 22%,transparent); color:#a98fd0; font-family:var(--wl-display); font-weight:800; font-size:18px; }
+  .cyc-amen__t{ font-family:var(--wl-display); font-weight:700; font-size:14px; color:var(--wl-text); }
+  .cyc-amen__b{ font-family:var(--mono); font-size:9.5px; line-height:1.5; color:var(--wl-muted); margin-top:6px; }
+  .cyc-amen__cta{ margin-top:11px; font-family:var(--mono); font-size:9.5px; padding:7px 13px; border-radius:99px; border:1px solid color-mix(in srgb,#7b66a8 50%,transparent); background:transparent; color:#a98fd0; cursor:pointer; }
+  .cycdemo{ cursor:pointer; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04); color:#cfcfe0; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:11px; padding:6px 12px; border-radius:99px; }
+  .cycdemo.on{ background:#a98fd0; color:#0a0410; border-color:#a98fd0; font-weight:700; }
+</style>
+</head>
+<body>
+  <h1 class="title">HOLY OLY · Atleta — Progreso</h1>
+  <p class="sub">Feed vertical (spec §2). Muestra CARGA, no ACWR · recuperación vs tu normalidad · refuerza el hábito. Datos: Mara · Ruso 5D · sem 12/16 (ciclo opt-in activo).</p>
+  <div class="switcher">
+    <span class="tpill active" data-t="neon">Neon PR</span>
+    <span class="tpill" data-t="plates">Plates</span>
+    <span class="tpill" data-t="premium">Premium</span>
+    <span class="tpill" data-t="chalk">Chalk</span>
+    <span class="tpill" data-t="neonlight">Neon Bloom</span>
+  </div>
+  <div class="switcher" style="margin-top:-10px">
+    <span style="font-family:'Chakra Petch',sans-serif;font-size:11px;color:#8a8a99;align-self:center">Ciclo (demo):</span>
+    <span class="cycdemo" data-st="regular">Regular</span>
+    <span class="cycdemo" data-st="unreliable">Poco fiable</span>
+    <span class="cycdemo" data-st="amenorrhea">Amenorrea</span>
+  </div>
+  <div class="wrap">
+    <div class="device wl wl--neon" data-wl>
+      <div class="statusbar"><span>9:41</span><span class="sb-batt">100<i></i></span></div>
+      <div class="hobar"><button class="hobar__back" onclick="history.back()">‹</button><div class="hobar__brand"><span class="hobar__name">HOLY OLY</span><span class="hobar__motto">smart training · zero burnout</span></div></div>
+      <div class="feed" id="feed"></div>
+    </div>
+  </div>
+  <div class="caption">Atleta · Progreso — 8 tarjetas, scroll vertical</div>
+
+<script>
+  var ST={ok:'#1bc98a',warn:'#ffab2e',alert:'#ff3b46'};
+  function rgba(hex,a){ var n=parseInt(hex.slice(1),16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
+  var N=12;
+  var carga=[300,320,340,300,360,380,400,320,420,700,380,340];
+  var deload={4:1,8:1,12:1};                       // semanas de descenso planificado (honradas)
+  var hrv=[72,71,70,73,69,70,68,72,67,62,64,69], hrvBase=70;
+  var sueno=[7.2,7.0,7.5,7.4,6.8,7.1,6.6,7.3,6.4,6.0,6.5,7.0];
+  var wsc=[78,80,76,82,74,72,70,80,66,58,64,74];
+  var witems={Fatiga:[2,2,3,2,3,3,4,2,4,5,4,3],Dolor:[1,1,2,1,2,2,2,1,3,3,3,2],'Estrés':[2,3,2,2,3,3,3,2,4,4,3,3],Humor:[4,4,3,4,3,3,3,4,2,2,3,3],'Motiv.':[5,4,4,5,4,4,3,4,3,2,3,4],'Sueño':[4,4,3,4,3,3,3,4,3,2,3,4]};
+  var wt=[83,82.6,82.4,82.1,82,81.8,81.5,81.4,81.2,81,80.9,80.8], wtBand=[80,81];
+
+  // ── ciclo menstrual (opt-in · CONTEXTO no disparador · paleta neutra, NO de estado) ──
+  var CYP=['lut','lutT','men','fol','lut','lutT','men','fol','lut','lutT','men','fol']; // fase estimada por semana
+  var CPAL={men:'#9a6fa8',fol:'#b9aee0',ovu:'#c9b3e6',lut:'#7b66a8',lutT:'#5f4d8c'};
+  function isLut(k){ return k==='lut'||k==='lutT'; }
+  function lutealBands(yT,yB,op){ op=op||0.16; var step=(W-24)/(N-1), out='', i=0;
+    while(i<N){ if(isLut(CYP[i])){ var j=i; while(j+1<N&&isLut(CYP[j+1])) j++;
+      var x0=Math.max(12,12+i*step-step/2), x1=Math.min(W-12,12+j*step+step/2);
+      out+='<rect x="'+x0.toFixed(1)+'" y="'+yT+'" width="'+(x1-x0).toFixed(1)+'" height="'+(yB-yT)+'" style="fill:'+CPAL.lut+';opacity:'+op+'"/>'; i=j+1; } else i++; }
+    return out; }
+  function cycPt(cx,cy,R,deg){ var r=(deg-90)*Math.PI/180; return [cx+R*Math.cos(r),cy+R*Math.sin(r)]; }
+  function cycArc(cx,cy,R,d0,d1,tot){ var a0=d0/tot*360,a1=d1/tot*360,p0=cycPt(cx,cy,R,a0),p1=cycPt(cx,cy,R,a1),laf=(a1-a0)>180?1:0; return 'M'+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A '+R+' '+R+' 0 '+laf+' 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1); }
+  function cycleRing(day,tot,unrel){ var S=92,cx=46,cy=46,R=33,sw=9; var da=unrel?' stroke-dasharray="4 5"':''; var op=unrel?'.5':'.9';
+    var ph=[['men',0,5],['fol',5,13],['ovu',13,16],['lut',16,28]];
+    var arcs=ph.map(function(p){ return '<path d="'+cycArc(cx,cy,R,p[1],p[2],tot)+'" fill="none" stroke="'+CPAL[p[0]]+'" stroke-width="'+sw+'"'+da+' opacity="'+op+'"/>'; }).join('');
+    var m=cycPt(cx,cy,R,day/tot*360); var marker='<circle cx="'+m[0].toFixed(1)+'" cy="'+m[1].toFixed(1)+'" r="4.6" fill="'+(unrel?'none':'var(--wl-text)')+'" stroke="'+(unrel?'var(--wl-muted)':'var(--wl-surface)')+'" stroke-width="2"/>';
+    return '<svg viewBox="0 0 '+S+' '+S+'" width="84" height="84">'+arcs+marker+'<text x="'+cx+'" y="'+(cy-1)+'" text-anchor="middle" font-size="15" font-weight="800" fill="var(--wl-text)" font-family="Chakra Petch">'+day+'</text><text x="'+cx+'" y="'+(cy+11)+'" text-anchor="middle" font-size="7" fill="var(--wl-muted)" font-family="JetBrains Mono">día</text></svg>'; }
+
+  var W=300;
+  function px(i){ return 12 + i/(N-1)*(W-24); }
+  function lpath(arr,yf){ return arr.map(function(v,i){ return (i?'L':'M')+px(i).toFixed(1)+' '+yf(v).toFixed(1); }).join(' '); }
+  function xlabels(yB){ return '<text x="12" y="'+yB+'" class="lend" style="fill:var(--wl-muted)">S1</text><text x="'+px(5).toFixed(0)+'" y="'+yB+'" text-anchor="middle" class="lend" style="fill:var(--wl-muted)">S6</text><text x="'+(W-12)+'" y="'+yB+'" text-anchor="end" class="lend" style="fill:var(--wl-muted)">S12</text>'; }
+  function card(t,end,endcol,sub,inner){ return '<div class="card"><div class="card__head"><span class="card__t">'+t+'</span>'+(end?'<span class="card__end" style="color:'+(endcol||'var(--wl-muted)')+'">'+end+'</span>':'')+'</div>'+(sub?'<div class="card__sub">'+sub+'</div>':'')+inner+'</div>'; }
+
+  /* 1 · titular */
+  function titular(){ var st='warn', word='Cuidate hoy';
+    return '<div class="titular" style="background:'+rgba(ST[st],.14)+';border-color:'+rgba(ST[st],.45)+'">'
+      +'<div class="titular__row"><span class="titular__dot" style="background:'+ST[st]+';box-shadow:0 0 16px '+rgba(ST[st],.6)+'"></span>'
+      +'<div><div class="titular__lbl">Mi estado de hoy</div><div class="titular__st" style="color:'+ST[st]+'">'+word+'</div></div></div>'
+      +'<p class="titular__msg">Venís de una semana exigente. Hoy bajá un escalón la intensidad y priorizá dormir — el plan ya contempla este descenso.</p></div>'; }
+
+  /* 2 · constancia (calendario) */
+  var CAL=[
+    [1,1,1,2,1,1,2],[1,1,1,1,1,1,2],[1,1,1,1,1,0,2],[1,1,1,2,1,1,2],
+    [1,1,1,1,1,1,2],[1,1,1,2,1,1,2],[1,1,1,1,1,1,2],[1,1,1,1,3,3,3]
+  ];
+  function calTile(){ var cls={0:'miss',1:'on',2:'rest',3:'fut'};
+    var hd='<div class="calhd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>';
+    var grid='<div class="cal">'+CAL.map(function(wk){ return wk.map(function(v){ return '<div class="cal__c '+cls[v]+'"></div>'; }).join(''); }).join('')+'</div>';
+    var top='<div class="streak"><b>21</b><span>días de racha · el descanso no la rompe</span></div>';
+    return card('Constancia de registro','','','filas = semanas · 7 columnas = días', top+hd+grid); }
+
+  /* 3 · mi carga (sin ratio) */
+  function cargaTile(){ var H=120, top=10, bot=H-16, mx=Math.max.apply(null,carga)*1.08;
+    function y(v){ return top+(1-v/mx)*(bot-top); }
+    var area='<path d="'+lpath(carga,y)+' L '+px(N-1).toFixed(1)+' '+bot+' L '+px(0).toFixed(1)+' '+bot+' Z" style="fill:var(--wl-accent);opacity:.13"/>';
+    var line='<path d="'+lpath(carga,y)+'" style="fill:none;stroke:var(--wl-accent);stroke-width:2.2" stroke-linejoin="round"/>';
+    var marks=carga.map(function(v,i){ if(!deload[i+1]) return ''; return '<circle cx="'+px(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="4" style="fill:'+ST.ok+';stroke:var(--wl-surface);stroke-width:1.6"/><text x="'+px(i).toFixed(1)+'" y="'+(y(v)-7).toFixed(1)+'" text-anchor="middle" class="lend" style="fill:'+ST.ok+'">✓</text>'; }).join('');
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+area+line+marks+xlabels(H-3)+'</svg>';
+    return card('Mi carga','✓ bajaste cuando tocaba',ST.ok,'carga semanal (UA) · sin mostrar ratios', svg); }
+
+  /* 4 · mi recuperación (HRV + banda normal) + sueño */
+  function recTile(){ var H=104, top=10, bot=H-30, lo=hrvBase-9, hi=hrvBase+9;
+    function y(v){ return top+(1-(v-lo)/(hi-lo))*(bot-top); }
+    var band='<rect x="12" y="'+y(hrvBase+5).toFixed(1)+'" width="'+(W-24)+'" height="'+(y(hrvBase-5)-y(hrvBase+5)).toFixed(1)+'" style="fill:'+ST.ok+';opacity:.13"/>';
+    var bl='<line x1="12" x2="'+(W-12)+'" y1="'+y(hrvBase).toFixed(1)+'" y2="'+y(hrvBase).toFixed(1)+'" style="stroke:var(--wl-muted);opacity:.4" stroke-dasharray="2 3"/>';
+    var line='<path d="'+lpath(hrv,y)+'" style="fill:none;stroke:var(--wl-text);stroke-width:2;opacity:.9" stroke-linejoin="round"/>';
+    var end=hrv[N-1]; var inb=end>=hrvBase-5&&end<=hrvBase+5;
+    var d='<circle cx="'+px(N-1).toFixed(1)+'" cy="'+y(end).toFixed(1)+'" r="3.6" style="fill:'+(inb?ST.ok:ST.warn)+';stroke:var(--wl-surface);stroke-width:1.5"/>';
+    var elabel='<text x="'+(W-14)+'" y="'+(y(hrvBase+5)-3).toFixed(1)+'" text-anchor="end" class="lend" style="fill:'+ST.ok+'">tu rango normal</text>';
+    // mini sueño sparkline strip
+    var sH=22, sTop=bot+8, sBot=H-4, smn=5.5,smx=8; function sy(v){ return sTop+(1-(v-smn)/(smx-smn))*(sBot-sTop); }
+    var sl='<path d="'+sueno.map(function(v,i){return (i?'L':'M')+px(i).toFixed(1)+' '+sy(v).toFixed(1);}).join(' ')+'" style="fill:none;stroke:#2dd4e6;stroke-width:1.5;opacity:.75"/>';
+    var slab='<text x="12" y="'+(sTop-1).toFixed(1)+'" class="lend" style="fill:var(--wl-muted)">Sueño (h)</text>';
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+bandsFor(top,bot)+band+bl+elabel+line+d+slab+sl+'</svg>';
+    return card('Mi recuperación',end+' ms',inb?ST.ok:ST.warn,'HRV vs tu normalidad · fondo lavanda = fase lútea (est.)', svg); }
+
+  /* 5 · cómo me siento */
+  function spark(arr,col){ var w=78,H=22,top=3,bot=H-3,mn=1,mx=5; function y(v){return top+(1-(v-mn)/(mx-mn))*(bot-top);} function x(i){return 2+i/(N-1)*(w-4);} var d=arr.map(function(v,i){return (i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1);}).join(' '); return '<svg viewBox="0 0 '+w+' '+H+'" width="100%" height="'+H+'"><path d="'+d+'" style="fill:none;stroke:'+col+';stroke-width:1.6"/></svg>'; }
+  function feelTile(){ var H=86, top=10, bot=H-14, lo=40, hi=100; function y(v){ return top+(1-(v-lo)/(hi-lo))*(bot-top); }
+    var area='<path d="'+lpath(wsc,y)+' L '+px(N-1).toFixed(1)+' '+bot+' L '+px(0).toFixed(1)+' '+bot+' Z" style="fill:var(--wl-accent);opacity:.12"/>';
+    var line='<path d="'+lpath(wsc,y)+'" style="fill:none;stroke:var(--wl-accent);stroke-width:2" stroke-linejoin="round"/>';
+    var top1='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+bandsFor(top,bot)+area+line+xlabels(H-3)+'</svg>';
+    var sp='<div class="spk">'+Object.keys(witems).map(function(k){ var a=witems[k]; var hi2=(k==='Fatiga'||k==='Dolor'||k==='Estrés'); var bad=hi2?a[N-1]>=4:a[N-1]<=2; return '<div><div class="spk__l"><span>'+k+'</span><span style="color:'+(bad?ST.warn:'var(--wl-muted)')+'">'+a[N-1]+'</span></div>'+spark(a,bad?ST.warn:'var(--wl-muted)')+'</div>'; }).join('')+'</div>';
+    return card('Cómo me siento','74 · estable',ST.ok,'puntaje + cada ítem (1–5)', top1+sp); }
+
+  /* 6 · peso vs categoría */
+  function wtTile(){ var H=104, top=10, bot=H-16, lo=80, hi=83.4; function y(v){ return top+(1-(v-lo)/(hi-lo))*(bot-top); }
+    var band='<rect x="12" y="'+y(wtBand[1]).toFixed(1)+'" width="'+(W-24)+'" height="'+(y(wtBand[0])-y(wtBand[1])).toFixed(1)+'" style="fill:'+ST.ok+';opacity:.13"/>';
+    var line='<path d="'+lpath(wt,y)+'" style="fill:none;stroke:var(--wl-text);stroke-width:2" stroke-linejoin="round"/>';
+    var d='<circle cx="'+px(N-1).toFixed(1)+'" cy="'+y(wt[N-1]).toFixed(1)+'" r="3.6" style="fill:'+ST.ok+';stroke:var(--wl-surface);stroke-width:1.5"/>';
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'">'+band+'<text x="'+(W-12)+'" y="'+(y(wtBand[1])-3).toFixed(1)+'" text-anchor="end" class="lend" style="fill:'+ST.ok+'">categoría −81 kg</text>'+line+d+xlabels(H-3)+'</svg>';
+    return card('Peso vs categoría','80.8 kg',ST.ok,'banda objetivo, sin restricción extrema', svg); }
+
+  /* 7 · hábitos (anillos) */
+  function ring(label,done,total,col){ var R=21,C=2*Math.PI*R,pct=done/total,off=C*(1-pct),S=58;
+    return '<div class="ring"><svg viewBox="0 0 '+S+' '+S+'" width="58" height="58"><circle cx="29" cy="29" r="'+R+'" fill="none" stroke="color-mix(in srgb,var(--wl-text) 12%,transparent)" stroke-width="5"/><circle cx="29" cy="29" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 29 29)"/><text x="29" y="32.5" text-anchor="middle" class="ring__v" fill="var(--wl-text)">'+done+'/'+total+'</text></svg><div class="ring__l">'+label+'</div></div>'; }
+  function habitsTile(){ var inner='<div class="rings">'+ring('Sueño',6,7,ST.ok)+ring('Movilidad',4,5,ST.accent||'#2dd4e6')+ring('Descanso',2,2,ST.ok)+'</div>';
+    return card('Hábitos de recuperación','esta semana','','cuenta el hábito, no la cifra', inner); }
+
+  /* 8 · camino a la competencia */
+  function pathTile(){ var phs=[['Hipertrofia',1,4,68],['Fuerza básica',5,8,78],['Fuerza/Pot.',9,12,88],['Peaking',13,16,97]], NW=16, hoy=12;
+    var ribbon='<div class="ribbon">'+phs.map(function(p){ var wks=p[2]-p[1]+1, fill=Math.round((p[3]-60)/45*78+16), now=hoy>=p[1]&&hoy<=p[2]; return '<div class="ribbon__seg'+(now?' now':'')+'" style="flex:'+wks+';--fill:'+fill+'%"><div class="ribbon__nm">'+p[0]+(now?' • hoy':'')+'</div><div class="ribbon__wk">sem '+p[1]+'–'+p[2]+'</div></div>'; }).join('')+'</div>';
+    var count='<div class="count"><b>4</b><span>semanas para tu competencia<br>COMP A · semana 16</span></div>';
+    return card('Camino a la competencia','','','dónde estás y qué viene', count+ribbon); }
+
+  /* ciclo (opt-in · neutro) — estado: regular | unreliable (irregular/ACO) | amenorrhea */
+  var CYCST='regular'; try{ CYCST=localStorage.getItem('ho_cycle_state')||'regular'; }catch(e){}
+  function bandsFor(yT,yB){ if(CYCST==='amenorrhea') return ''; return lutealBands(yT,yB, CYCST==='unreliable'?0.09:0.16); }
+  var LOCK='<svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>';
+  function shareBox(){ return '<div class="cyc-share"><div class="cyc-share__lbl">'+LOCK+' Compartir con mi coach</div><div class="cyc-seg" id="cycSeg"><button data-share="full">Todo</button><button data-share="min">Lo mínimo</button><button data-share="none">Solo para mí</button></div><div class="cyc-share__hint" id="shareHint"></div></div>'; }
+  function cycLeg(){ return '<div class="cyc-leg"><span><i style="background:'+CPAL.men+'"></i>Menstrual</span><span><i style="background:'+CPAL.fol+'"></i>Folicular</span><span><i style="background:'+CPAL.ovu+'"></i>Ovulatoria</span><span><i style="background:'+CPAL.lut+'"></i>Lútea</span></div>'; }
+  function cycTile(){
+    if(CYCST==='amenorrhea'){
+      var amen='<div class="cyc-amen"><div class="cyc-amen__ico">+</div><div><div class="cyc-amen__t">Registraste ausencia de ciclo</div><div class="cyc-amen__b">Sostenida y junto a carga alta y recuperación baja, puede indicar baja disponibilidad energética (RED-S). Te sugerimos hablar con un profesional de salud. No es un diagnóstico ni una falla — es cuidarte.</div><button class="cyc-amen__cta">Hablar con un profesional</button></div></div>';
+      return card('Mi ciclo','','','privado · vos controlás qué ve tu coach', amen+shareBox());
+    }
+    var day=11, unrel=(CYCST==='unreliable');
+    var ring='<div class="cyc__ringwrap">'+cycleRing(day,28,unrel)+'</div>';
+    var est = unrel
+      ? '<div class="cyc__est"><span class="cyc__tag">estimación poco fiable</span> ciclo irregular o anticonceptivo — se pondera menos</div>'
+      : '<div class="cyc__est">estimada · ciclo ~28 d · suele tolerar bien la carga</div>';
+    var info='<div class="cyc__info"><div class="cyc__day">Día '+(unrel?'~':'')+day+'</div><div class="cyc__ph" style="color:#a98fd0">Fase folicular</div>'+est+'<div class="cyc__btns"><button class="cyc__btn">+ Marcar inicio</button><button class="cyc__btn">Síntoma</button></div></div>';
+    return card('Mi ciclo','','','privado · vos controlás qué ve tu coach','<div class="cyc">'+ring+info+'</div>'+cycLeg()+shareBox()); }
+
+  function renderFeed(){
+    document.getElementById('feed').innerHTML =
+      '<div class="ahead"><div><div class="ahead__h">Hola, Mara</div><div class="ahead__s">Ruso 5D · semana 12 de 16 · Fuerza/Potencia</div></div></div>'
+      + titular() + calTile() + cargaTile() + cycTile() + recTile() + feelTile() + wtTile() + habitsTile() + pathTile();
+    initShare();
+  }
+
+  // privacidad del ciclo: la atleta elige qué comparte con su coach (persiste para la vista coach). Default = mínimo (privacy-forward).
+  var SHARE_HINT={ full:'Tu coach ve tu fase, la banda en sus gráficos y la nota de contexto.', min:'Tu coach ve solo una nota: que un factor de tu ciclo puede influir en tu recuperación. Sin fase, día ni síntomas.', none:'Tu coach no ve nada del ciclo. Es solo para vos.' };
+  function setShare(v){ try{localStorage.setItem('ho_cycle_share',v);}catch(e){} document.querySelectorAll('#cycSeg button').forEach(function(b){ b.classList.toggle('on', b.dataset.share===v); }); var h=document.getElementById('shareHint'); if(h) h.textContent=SHARE_HINT[v]; }
+  function initShare(){ var cur='min'; try{ cur=localStorage.getItem('ho_cycle_share')||'min'; }catch(e){} document.querySelectorAll('#cycSeg button').forEach(function(b){ b.addEventListener('click', function(){ setShare(b.dataset.share); }); }); setShare(cur); }
+
+  // demo (chrome): estado del ciclo
+  function setCycState(s){ CYCST=s; try{localStorage.setItem('ho_cycle_state',s);}catch(e){} document.querySelectorAll('.cycdemo').forEach(function(x){x.classList.toggle('on',x.dataset.st===s);}); renderFeed(); }
+  document.querySelectorAll('.cycdemo').forEach(function(b){ b.addEventListener('click',function(){ setCycState(b.dataset.st); }); });
+  document.querySelectorAll('.cycdemo').forEach(function(x){x.classList.toggle('on',x.dataset.st===CYCST);});
+
+  renderFeed();
+
+  document.querySelectorAll('.tpill').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.tpill').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); document.querySelectorAll('[data-wl]').forEach(function(d){ d.className='device wl wl--'+b.dataset.t; }); }); });
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# tooling / junk
+.playwright-mcp/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

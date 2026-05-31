@@ -1,0 +1,13 @@
+# Render Blueprint — Holy Oly (prototipo estático)
+# Publica la carpeta _mockup como Static Site.
+services:
+  - type: web
+    name: holy-oly
+    runtime: static
+    buildCommand: echo "sitio estatico, sin build"
+    staticPublishPath: ./_mockup
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache

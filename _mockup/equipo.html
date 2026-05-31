@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Holy Oly · Coach — Equipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@500;600;700;800&family=Saira+Condensed:wght@600;700;800&family=Barlow+Semi+Condensed:wght@600;700&family=Anton&family=Archivo:wght@600;700;800&family=Sora:wght@600;700;800&family=JetBrains+Mono:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wl-themes.css">
+<link rel="stylesheet" href="app-mode.css">
+<script>(function(){var p=new URLSearchParams(location.search);var sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;if(p.get('app')==='1'||window.self!==window.top||sa){document.documentElement.classList.add('appmode');}})();</script>
+<style>
+  :root{ --page:#0b0b11; --mono:'JetBrains Mono',ui-monospace,monospace; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{ background:var(--page); color:#e8e8ee; font-family:'Manrope',system-ui,sans-serif; padding:28px 20px 60px; }
+  .title{ text-align:center; margin:0 0 4px; font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:22px; }
+  .sub{ text-align:center; margin:0 0 20px; color:#8a8a99; font-size:12.5px; }
+  .switcher{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:24px; }
+  .tpill{ cursor:pointer; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04); color:#cfcfe0; font-family:'Chakra Petch',sans-serif; font-weight:600; font-size:12px; padding:7px 13px; border-radius:99px; }
+  .tpill.active{ background:#c8ff2d; color:#0a0410; border-color:#c8ff2d; }
+  .wrap{ display:flex; justify-content:center; }
+  .device{ width:362px; border-radius:34px; overflow:hidden; border:1px solid rgba(255,255,255,.12); box-shadow:0 30px 80px -20px rgba(0,0,0,.85); background:#000; }
+  .statusbar{ height:32px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:12px; font-weight:700; background:var(--wl-bg); color:var(--wl-text); font-family:'Chakra Petch',sans-serif; }
+  .team{ background:var(--wl-bg); padding:14px 13px 26px; }
+  .caption{ text-align:center; margin-top:12px; color:#8a8a99; font-size:12.5px; font-family:'Chakra Petch',sans-serif; letter-spacing:.03em; }
+
+  .thead__h{ font-family:var(--wl-display); font-weight:800; font-size:22px; color:var(--wl-text); line-height:1; }
+  .thead__s{ font-family:var(--mono); font-size:10.5px; color:var(--wl-muted); margin-top:6px; }
+  .tcount{ display:flex; gap:14px; margin-top:11px; }
+  .tcount span{ font-family:var(--mono); font-size:10px; color:var(--wl-muted); display:inline-flex; align-items:center; gap:5px; }
+  .tcount i{ width:9px; height:9px; border-radius:50%; }
+
+  .card{ background:var(--wl-surface); border:1px solid color-mix(in srgb,var(--wl-text) 7%,transparent); border-radius:var(--wl-radius); padding:12px 0 11px; margin-top:13px; }
+  .card__t{ font-family:var(--wl-display); font-weight:700; font-size:13.5px; letter-spacing:.03em; color:var(--wl-text); padding:0 13px; }
+  .card__sub{ font-family:var(--mono); font-size:9px; color:var(--wl-muted); margin:3px 0 9px; padding:0 13px; }
+
+  /* heatmap plantel */
+  .hm{ overflow-x:auto; }
+  .hm::-webkit-scrollbar{ height:5px; }
+  .hm::-webkit-scrollbar-thumb{ background:color-mix(in srgb,var(--wl-text) 18%,transparent); border-radius:9px; }
+  .hm__row{ display:flex; align-items:center; height:34px; }
+  .hm__row+.hm__row{ border-top:1px solid color-mix(in srgb,var(--wl-text) 6%,transparent); }
+  .hm__nm{ position:sticky; left:0; z-index:2; flex:0 0 104px; width:104px; padding:0 10px; background:var(--wl-surface); cursor:pointer; }
+  .hm__nm b{ font-family:var(--wl-display); font-weight:700; font-size:11.5px; color:var(--wl-text); display:block; line-height:1.05; padding-right:16px; }
+  .hm__medal{ position:absolute; top:5px; right:6px; line-height:0; }
+  .hm__nm span{ font-family:var(--mono); font-size:8px; color:var(--wl-muted); }
+  .hm__cells{ display:flex; gap:3px; padding:0 10px 0 4px; }
+  .hm__c{ width:22px; height:22px; border-radius:4px; flex:0 0 auto; }
+  .hm__hdr{ display:flex; align-items:center; height:20px; }
+  .hm__hsp{ position:sticky; left:0; z-index:2; flex:0 0 104px; width:104px; background:var(--wl-surface); }
+  .hm__hwk{ display:flex; gap:3px; padding:0 10px 0 4px; }
+  .hm__hwk span{ width:22px; text-align:center; font-family:var(--mono); font-size:7.5px; color:var(--wl-muted); flex:0 0 auto; }
+
+  .pick{ font-family:var(--mono); font-size:10px; color:var(--wl-muted); padding:8px 13px 0; min-height:18px; }
+  .pick b{ color:var(--wl-text); }
+  .sb-batt{ display:inline-flex; align-items:center; gap:6px; font-weight:700; }
+  .sb-batt i{ width:22px; height:11px; border:1.5px solid currentColor; border-radius:3px; position:relative; opacity:.9; }
+  .sb-batt i::after{ content:''; position:absolute; left:2px; top:2px; bottom:2px; right:3px; background:currentColor; border-radius:1px; }
+  .sb-batt i::before{ content:''; position:absolute; right:-3.5px; top:3px; bottom:3px; width:2px; background:currentColor; border-radius:0 2px 2px 0; }
+  .hobar{ display:flex; align-items:center; gap:11px; padding:9px 13px; background:var(--wl-bg); border-bottom:1px solid color-mix(in srgb,var(--wl-text) 8%,transparent); }
+  .hobar__back{ width:34px; height:34px; flex:0 0 auto; border-radius:10px; border:1px solid color-mix(in srgb,var(--wl-text) 15%,transparent); background:var(--wl-surface); color:var(--wl-text); font-size:19px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+  .hobar__back:active{ transform:scale(.93); }
+  .hobar__brand{ display:flex; flex-direction:column; line-height:1; }
+  .hobar__name{ font-family:var(--wl-display); font-weight:800; font-size:15px; letter-spacing:.05em; color:var(--wl-text); }
+  .hobar__motto{ font-family:var(--mono); font-size:8.5px; letter-spacing:.07em; color:var(--wl-accent); margin-top:4px; }
+</style>
+</head>
+<body>
+  <h1 class="title">HOLY OLY · Coach — Equipo (triage)</h1>
+  <p class="sub">Pantalla de entrada del coach (spec §3.1). Heatmap de plantel (nombre fijo + scroll horizontal) + cuadrante de riesgo. Tocá un atleta → drill-down.</p>
+  <div class="switcher">
+    <span class="tpill active" data-t="neon">Neon PR</span>
+    <span class="tpill" data-t="plates">Plates</span>
+    <span class="tpill" data-t="premium">Premium</span>
+    <span class="tpill" data-t="chalk">Chalk</span>
+    <span class="tpill" data-t="neonlight">Neon Bloom</span>
+  </div>
+  <div class="wrap">
+    <div class="device wl wl--neon" data-wl>
+      <div class="statusbar"><span>9:40</span><span class="sb-batt">100<i></i></span></div>
+      <div class="hobar"><button class="hobar__back" onclick="history.back()">‹</button><div class="hobar__brand"><span class="hobar__name">HOLY OLY</span><span class="hobar__motto">smart training · zero burnout</span></div></div>
+      <div class="team" id="team"></div>
+    </div>
+  </div>
+  <div class="caption">Coach · Equipo — triage de un vistazo</div>
+
+<script src="medals.js"></script>
+<script>
+  var ST={ok:'#1bc98a',warn:'#ffab2e',alert:'#ff3b46'};
+  var STC=[ST.ok,ST.warn,ST.alert];
+  // h = estado por semana (0 ok · 1 vigilar · 2 alerta) — últimas 12
+  var ROS=[
+    {n:'Mara V.',   i:'MV', m:'Ruso 5D',     acwr:1.42, rec:64, comp:1, h:[0,0,1,0,0,1,0,1,1,2,1,1]},
+    {n:'Diego S.',  i:'DS', m:'USA Intermedio',acwr:1.58, rec:54, comp:1, h:[0,1,1,1,1,2,1,2,2,2,2,2]},
+    {n:'Lucía R.',  i:'LR', m:'Coreano 5D',   acwr:1.04, rec:88, comp:1, h:[0,0,0,1,0,0,0,0,1,0,0,0]},
+    {n:'Sofía M.',  i:'SM', m:'Búlgaro 6D',   acwr:1.27, rec:76, h:[1,0,1,1,0,1,1,0,1,1,0,1]},
+    {n:'Tomás L.',  i:'TL', m:'Polaco 5D',    acwr:0.68, rec:90, h:[0,0,0,0,1,1,0,0,1,1,1,1]},
+    {n:'Ana P.',    i:'AP', m:'Cubano Int.',  acwr:1.10, rec:83, h:[0,0,0,0,0,1,0,0,0,0,0,0]},
+    {n:'Bruno G.',  i:'BG', m:'Híbrido 5D',   acwr:1.34, rec:69, h:[0,1,0,1,1,1,1,1,1,1,1,1]},
+    {n:'Caro F.',   i:'CF', m:'Colombiano 5D',acwr:0.95, rec:86, h:[0,0,1,0,0,0,0,1,0,0,0,0]}
+  ];
+  var NW=12;
+  function curState(a){ return a.h[a.h.length-1]; }
+  var nAlert=ROS.filter(function(a){return curState(a)===2;}).length;
+  var nWarn=ROS.filter(function(a){return curState(a)===1;}).length;
+
+  /* heatmap */
+  function heatmap(){
+    var hdr='<div class="hm__hdr"><div class="hm__hsp"></div><div class="hm__hwk">'+Array.from({length:NW}).map(function(_,i){ return '<span>'+(i+1)+'</span>'; }).join('')+'</div></div>';
+    var rows=ROS.map(function(a,ri){
+      var cells=a.h.map(function(s){ return '<div class="hm__c" style="background:'+STC[s]+';opacity:'+(s===0?'.55':'.92')+'"></div>'; }).join('');
+      return '<div class="hm__row"><div class="hm__nm" onclick="go('+ri+')">'+(a.comp?'<span class="hm__medal" title="Compite">'+HOmedal('oro',14)+'</span>':'')+'<b>'+a.n+'</b><span>'+a.m+'</span></div><div class="hm__cells">'+cells+'</div></div>';
+    }).join('');
+    return '<div class="card"><div class="card__t">Estado del plantel</div><div class="card__sub">una fila por atleta · color = estado · deslizá → para ver historial</div><div class="hm">'+hdr+rows+'</div></div>';
+  }
+
+  /* cuadrante de riesgo: x=ACWR, y=recuperación */
+  function quad(){ var S=300, pad=30, axlo=0.6, axhi=1.7, rylo=48, ryhi=94;
+    function x(v){ return pad+(v-axlo)/(axhi-axlo)*(S-pad-12); }
+    function y(v){ return 12+(1-(v-rylo)/(ryhi-rylo))*(S-pad-12); }
+    // banda segura ACWR 0.8–1.3 (vertical) + zona de riesgo (abajo-derecha)
+    var safe='<rect x="'+x(0.8).toFixed(1)+'" y="12" width="'+(x(1.3)-x(0.8)).toFixed(1)+'" height="'+(S-pad-12)+'" style="fill:'+ST.ok+';opacity:.10"/>';
+    var risk='<rect x="'+x(1.3).toFixed(1)+'" y="'+y(70).toFixed(1)+'" width="'+(x(axhi)-x(1.3)).toFixed(1)+'" height="'+(y(rylo)-y(70)).toFixed(1)+'" style="fill:'+ST.alert+';opacity:.12"/>';
+    var risklab='<text x="'+(x(axhi)-4).toFixed(1)+'" y="'+(y(rylo)-6).toFixed(1)+'" text-anchor="end" font-size="8.5" style="fill:'+ST.alert+'" font-family="JetBrains Mono">zona de riesgo</text>';
+    // ejes / referencias
+    var v10='<line x1="'+x(1.0).toFixed(1)+'" x2="'+x(1.0).toFixed(1)+'" y1="12" y2="'+(S-pad)+'" style="stroke:var(--wl-muted);opacity:.2" stroke-dasharray="2 3"/>';
+    var axx='<line x1="'+pad+'" x2="'+(S-12)+'" y1="'+(S-pad)+'" y2="'+(S-pad)+'" style="stroke:var(--wl-muted);opacity:.3"/>';
+    var axy='<line x1="'+pad+'" x2="'+pad+'" y1="12" y2="'+(S-pad)+'" style="stroke:var(--wl-muted);opacity:.3"/>';
+    var xt=[0.8,1.0,1.3,1.5].map(function(t){ return '<text x="'+x(t).toFixed(1)+'" y="'+(S-pad+12)+'" text-anchor="middle" font-size="8" style="fill:var(--wl-muted)" font-family="JetBrains Mono">'+t.toFixed(1)+'</text>'; }).join('');
+    var xlab='<text x="'+((pad+S-12)/2).toFixed(1)+'" y="'+(S-4)+'" text-anchor="middle" font-size="8.5" style="fill:var(--wl-muted)" font-family="Chakra Petch" letter-spacing=".05em">CARGA · ACWR →</text>';
+    var ylab='<text x="11" y="'+((S-pad)/2).toFixed(1)+'" font-size="8.5" style="fill:var(--wl-muted)" font-family="Chakra Petch" transform="rotate(-90 11 '+((S-pad)/2).toFixed(1)+')" text-anchor="middle">← RECUPERACIÓN</text>';
+    var pts=ROS.map(function(a,ri){ var st=curState(a); return '<g style="cursor:pointer" onclick="pick('+ri+')"><circle cx="'+x(a.acwr).toFixed(1)+'" cy="'+y(a.rec).toFixed(1)+'" r="11" style="fill:'+STC[st]+';opacity:.9"/><text x="'+x(a.acwr).toFixed(1)+'" y="'+(y(a.rec)+3).toFixed(1)+'" text-anchor="middle" font-size="8.5" font-weight="800" fill="#0b0b11" font-family="Chakra Petch">'+a.i+'</text></g>'; }).join('');
+    var svg='<svg viewBox="0 0 '+S+' '+S+'" width="100%" height="'+S+'">'+safe+risk+risklab+v10+axx+axy+xt+xlab+ylab+pts+'</svg>';
+    return '<div class="card"><div class="card__t">Riesgo ahora</div><div class="card__sub">carga (ACWR) × recuperación · tocá un punto</div><div style="padding:0 10px">'+svg+'</div><div class="pick" id="pick">Esquina inferior-derecha = alta carga + baja recuperación.</div></div>';
+  }
+
+  document.getElementById('team').innerHTML =
+    '<div class="thead__h">Plantel</div><div class="thead__s">8 atletas · semana en curso</div>'
+    +'<div class="tcount"><span><i style="background:'+ST.alert+'"></i>'+nAlert+' en alerta</span><span><i style="background:'+ST.warn+'"></i>'+nWarn+' a vigilar</span><span><i style="background:'+ST.ok+'"></i>'+(ROS.length-nAlert-nWarn)+' ok</span></div>'
+    + heatmap() + quad();
+
+  function go(ri){ window.location.href='coach.html'; }
+  function pick(ri){ var a=ROS[ri]; var st=curState(a); var w=['ok','vigilar','alerta'][st];
+    document.getElementById('pick').innerHTML='<b>'+a.n+'</b> · '+a.m+' · ACWR '+a.acwr.toFixed(2)+' · recup. '+a.rec+'% · <span style="color:'+STC[st]+'">'+w+'</span> — <span style="text-decoration:underline;cursor:pointer" onclick="go('+ri+')">ver drill-down ›</span>'; }
+  window.go=go; window.pick=pick;
+
+  document.querySelectorAll('.tpill').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.tpill').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); document.querySelectorAll('[data-wl]').forEach(function(d){ d.className='device wl wl--'+b.dataset.t; }); }); });
+</script>
+</body>
+</html>
