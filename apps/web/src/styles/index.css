@@ -1,0 +1,6 @@
+@import "./theme.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root { color-scheme: dark; }
+body { margin: 0; background: var(--wl-bg); color: var(--wl-text); font-family: Manrope, system-ui, sans-serif; }

@@ -1,0 +1,8 @@
+/* Placeholder — replaced in Task 10 by the full wl-themes port (5 skins). */
+.wl--neon {
+  --wl-bg: #120a16;
+  --wl-surface: #1c1022;
+  --wl-text: #f4ecf7;
+  --wl-muted: #b39bc4;
+  --wl-accent: #c6ff3a;
+}
