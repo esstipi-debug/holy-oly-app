@@ -8,6 +8,9 @@ import { seriesToRows } from "../src/db/mapping";
 const COACH_EMAIL = (process.env.SEED_COACH_EMAIL ?? "coach@holyoly.dev").trim().toLowerCase();
 const COACH_PASSWORD = process.env.SEED_COACH_PASSWORD ?? "holyoly-demo";
 const COACH_INVITE = process.env.SEED_INVITE_CODE ?? "HOLY-DEMO";
+// Demo athlete login — left UNLINKED so the demo can walk the vínculo flow end to end.
+const ATLETA_EMAIL = (process.env.SEED_ATLETA_EMAIL ?? "atleta@holyoly.dev").trim().toLowerCase();
+const ATLETA_PASSWORD = process.env.SEED_ATLETA_PASSWORD ?? "holyoly-demo";
 
 const prisma = new PrismaClient();
 const COACH_ID = process.env.DEV_COACH_ID ?? "coach-stub";
@@ -112,7 +115,15 @@ async function main(): Promise<void> {
   // Mara's target competition (the M4c seed: Nacional at week 16).
   await prisma.competencia.create({ data: { athleteId: "mv", name: "Nacional", week: 16 } });
 
-  console.log(`Seed complete: 1 coach, ${ATHLETES.length} athletes, Mara fully instrumented.`);
+  // Demo athlete login (no Vínculo → can demo the join flow: enter the coach code, coach confirms).
+  const atletaUser = await prisma.user.create({
+    data: { email: ATLETA_EMAIL, passwordHash: await hash(ATLETA_PASSWORD), role: "atleta" },
+  });
+  await prisma.athlete.create({
+    data: { id: "demo-atleta", nombre: "Demo Atleta", iniciales: "DA", nivel: "beginner", userId: atletaUser.id },
+  });
+
+  console.log(`Seed complete: 1 coach + 1 demo athlete login, ${ATHLETES.length} athletes, Mara fully instrumented.`);
 }
 
 main()
