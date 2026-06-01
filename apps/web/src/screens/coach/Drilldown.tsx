@@ -13,6 +13,8 @@ import { WeightChart } from "../../ui/charts/WeightChart";
 import { MacroTimeline } from "../../ui/charts/MacroTimeline";
 import { Medal as MedalIcon } from "../../ui/Medal";
 import { Badge } from "../../ui/Badge";
+import { MedalSheet } from "./MedalSheet";
+import { CompSheet } from "./CompSheet";
 
 export function Drilldown() {
   const { id = "" } = useParams();
@@ -21,6 +23,8 @@ export function Drilldown() {
   const [series, setSeries] = useState<MonitorSeries | undefined>();
   const [medals, setMedals] = useState<Medal[]>([]);
   const [comps, setComps] = useState<Competencia[]>([]);
+  const [medalOpen, setMedalOpen] = useState(false);
+  const [compOpen, setCompOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
@@ -47,8 +51,28 @@ export function Drilldown() {
   const counts = { oro: 0, plata: 0, bronce: 0 } as Record<Medal["medal"], number>;
   for (const m of medals) counts[m.medal]++;
 
+  const maxWeek = macro?.phaseProfile.at(-1)?.weeks[1] ?? 16;
+  async function onAddMedal(m: Medal): Promise<void> {
+    await repo.addMedal(id, m);
+    setMedals(await repo.getMedals(id));
+  }
+  async function onAddComp(name: string, week: number): Promise<void> {
+    await repo.setComps(id, [...comps, { name, week }]);
+    setComps(await repo.getComps(id));
+  }
+  async function onRemoveComp(i: number): Promise<void> {
+    await repo.setComps(id, comps.filter((_, idx) => idx !== i));
+    setComps(await repo.getComps(id));
+  }
+  const compSummary =
+    comps.length === 0
+      ? "Sin competencia asignada"
+      : comps.length === 1
+        ? `${comps[0]!.name} · sem ${comps[0]!.week}`
+        : `${comps.length} competencias · sem ${[...comps].map((c) => c.week).sort((a, b) => a - b).join(", ")}`;
+
   return (
-    <div style={{ padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)", minHeight: "100vh", maxWidth: 390, margin: "0 auto" }}>
+    <div style={{ padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)", minHeight: "100vh", maxWidth: 390, margin: "0 auto", position: "relative" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
         <div>
           <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 22, lineHeight: 1 }}>{athlete.nombre}</div>
@@ -59,6 +83,15 @@ export function Drilldown() {
         {cell === "none"
           ? <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", padding: "3px 8px", borderRadius: 99 }}>{estadoLabel}</span>
           : <Badge tone={cell}>{estadoLabel}</Badge>}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Competencia{comps.length > 1 ? "s" : ""} objetivo</div>
+          <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: "var(--wl-text)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{compSummary}</div>
+        </div>
+        <button type="button" onClick={() => setCompOpen(true)}
+          style={{ flex: "0 0 auto", padding: "7px 14px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Asignar</button>
       </div>
 
       {series ? (
@@ -100,6 +133,13 @@ export function Drilldown() {
           </div>
         ))
       )}
+      {athlete.compite && (
+        <button type="button" onClick={() => setMedalOpen(true)}
+          style={{ marginTop: 12, padding: "8px 14px", borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-accent) 50%,transparent)", background: "color-mix(in srgb,var(--wl-accent) 12%,transparent)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>+ Añadir medalla</button>
+      )}
+
+      <MedalSheet open={medalOpen} onClose={() => setMedalOpen(false)} onSubmit={onAddMedal} />
+      <CompSheet open={compOpen} onClose={() => setCompOpen(false)} comps={comps} maxWeek={maxWeek} onAdd={onAddComp} onRemove={onRemoveComp} />
     </div>
   );
 }
