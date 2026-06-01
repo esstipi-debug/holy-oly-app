@@ -1,0 +1,23 @@
+# Local Postgres for dev + integration tests (matches Render Postgres in prod).
+# Usage: docker compose up -d   (from apps/api/)
+services:
+  db:
+    image: postgres:16
+    container_name: holyoly_pg
+    environment:
+      POSTGRES_USER: holyoly
+      POSTGRES_PASSWORD: holyoly
+      POSTGRES_DB: holyoly_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - holyoly_pg:/var/lib/postgresql/data
+      - ./prisma/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U holyoly -d holyoly_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  holyoly_pg:

@@ -1,0 +1,165 @@
+// Holy Oly API — Prisma schema (Postgres).
+// Multi-tenant from the first migration: Coach + Vinculo gate every coach-scoped read.
+// The macrocycle catalog stays in @holy-oly/core (static reference data) — not a table.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Nivel {
+  beginner
+  intermediate
+  advanced
+  elite
+}
+
+enum VinculoEstado {
+  pendiente
+  activo
+  rechazado
+  revocado
+}
+
+enum CycleShare {
+  full
+  min
+  none
+}
+
+enum CycleState {
+  regular
+  unreliable
+  amenorrhea
+}
+
+enum Metal {
+  oro
+  plata
+  bronce
+}
+
+/// The paying tenant. Auth fields are minimal in Fase 1 (stub); subscription → Fase 5.
+model Coach {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String
+  createdAt DateTime  @default(now())
+  vinculos  Vinculo[]
+}
+
+/// Athlete. Ownership is modeled through Vinculo (not a direct coachId) so athletes
+/// can be linked to a coach via the invite flow and own their own data.
+model Athlete {
+  id           String        @id @default(uuid())
+  nombre       String
+  iniciales    String
+  nivel        Nivel
+  macroId      String?
+  compite      Boolean       @default(false)
+  weightBandLo Float?
+  weightBandHi Float?
+  createdAt    DateTime      @default(now())
+  vinculos     Vinculo[]
+  plan         Plan?
+  comps        Competencia[]
+  weeks        MonitorWeek[]
+  medals       Medal[]
+  cycle        CycleConsent?
+}
+
+/// The multi-tenancy join: a coach sees an athlete only via an `activo` Vinculo.
+model Vinculo {
+  id         String        @id @default(uuid())
+  coachId    String
+  coach      Coach         @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  athleteId  String
+  athlete    Athlete       @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  estado     VinculoEstado @default(pendiente)
+  inviteCode String?
+  createdAt  DateTime      @default(now())
+
+  @@unique([coachId, athleteId])
+  @@index([coachId, estado])
+}
+
+model Plan {
+  id        String  @id @default(uuid())
+  athleteId String  @unique
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  macroId   String
+  startWeek Int
+  rms       Json
+}
+
+/// Athlete-scoped competitions (mirrors getComps/setComps; reconciled with Plan in M5).
+model Competencia {
+  id        String  @id @default(uuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  name      String
+  week      Int
+
+  @@index([athleteId])
+}
+
+/// One row per athlete-week. `recovery` is computed via core.recoverySeries on write.
+model MonitorWeek {
+  id         String         @id @default(uuid())
+  athleteId  String
+  athlete    Athlete        @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  week       Int
+  acute      Float
+  hrv        Float
+  hrvBase    Float
+  rhr        Float
+  rhrBase    Float
+  imr        Float
+  wellness   Float
+  recovery   Float
+  compliance Float?
+  rpe        Float?
+  bodyweight Float?
+  items      WellnessItem[]
+
+  @@unique([athleteId, week])
+}
+
+/// Normalizes MonitorSeries.wellnessItems (Record<string, number[]>) into per-(week,item) rows.
+model WellnessItem {
+  id            String      @id @default(uuid())
+  monitorWeekId String
+  monitorWeek   MonitorWeek @relation(fields: [monitorWeekId], references: [id], onDelete: Cascade)
+  key           String
+  value         Int
+
+  @@unique([monitorWeekId, key])
+}
+
+model Medal {
+  id        String  @id @default(uuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  comp      String
+  date      String
+  cat       String
+  medal     Metal
+  sn        Int
+  cj        Int
+  place     String
+
+  @@index([athleteId])
+}
+
+/// Athlete-private cycle consent. The coach NEVER reads this directly — only the
+/// server-computed, redacted CycleContext is exposed (no raw share/state to a coach).
+model CycleConsent {
+  athleteId String     @id
+  athlete   Athlete    @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  share     CycleShare
+  state     CycleState
+}

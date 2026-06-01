@@ -12,3 +12,8 @@ _mockup/c-top.png
 
 dist/
 *.tsbuildinfo
+
+# env files with real secrets; .env.example IS versioned
+.env
+.env.*
+!.env.example
