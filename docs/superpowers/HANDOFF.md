@@ -5,7 +5,7 @@
 ## Dónde estamos parados
 
 - Monorepo pnpm: `packages/core` (dominio puro + tipos + schemas Zod), `apps/web` (React 18 + Vite), `apps/api` (Fastify 5 + Prisma 6 + Postgres).
-- **En `main`:** Fase 0 (hardening) + Fase 1 (backend read API) + Fase 2 (`HttpRepository` conecta el front) + **Fase 3 (auth + Vínculo) — COMPLETA**. Todo verificado.
+- **En `main`:** Fase 0 + Fase 1 (read API) + Fase 2 (`HttpRepository`) + **Fase 3 (auth + Vínculo) COMPLETA** + **Fase 4 slices 1-2** (escrituras coach autorizadas + `HttpRepository` writes). Todo verificado (`main` @ `bbb8125`).
 - **Fase 3 mergeada a `main` por fast-forward** (7 commits sobre el viejo `73cdbb7`): slices 1-4 (`fafa2a6` modelo/seed, `210fe25` auth core, `6e66512` vínculo API, `65ad037` front auth), slice 5 (`9cb2d22` Vínculo UI), slice 6 (`9487671` e2e full-flow), y **review ECC** (`3167f09` fixes auth/vínculo).
 - **Working tree limpio.** La rama `claude/stupefied-greider-01c07c` ya no tiene nada pendiente.
 
@@ -28,11 +28,11 @@
 
 ## Verificado (todo verde)
 
-`91 unit` (core 27 + api 11 + web 53) + `9 integración` + **e2e full-flow sobre HTTP real** (`pnpm --filter @holy-oly/api e2e`): 401 → login → roster 8 → ciclo redactado → signup atleta → accept (pendiente) → coach confirma → roster 9. `tsc` (core/web/api) + `pnpm lint` + web prod build limpios.
+`94 unit` (core 27 + api 11 + web 56) + `15 integración` (auth/vínculo 9 + escrituras 6) + **e2e full-flow sobre HTTP real** (`pnpm --filter @holy-oly/api e2e`, Fase 3): 401 → login → roster 8 → ciclo redactado → signup atleta → accept (pendiente) → coach confirma → roster 9. `tsc` (core/web/api) + `pnpm lint` + web prod build limpios.
 
 ## Cómo verificar (NO hay Docker/Postgres/WSL en la máquina)
 
-- `pnpm --filter @holy-oly/api verify` → levanta Postgres efímero (`embedded-postgres`), migra, siembra y corre los 9 tests de integración.
+- `pnpm --filter @holy-oly/api verify` → levanta Postgres efímero (`embedded-postgres`), migra, siembra y corre los 15 tests de integración (auth/vínculo + escrituras).
 - `pnpm --filter @holy-oly/api e2e` → flujo HTTP completo (auth + Vínculo) contra PG embebido.
 - `pnpm -r test` (unit) · `pnpm -r typecheck` · `pnpm lint`.
 - Migraciones nuevas: `apps/api/scripts/make-migration.ts` (embedded-PG + `migrate diff`, no-interactivo).
@@ -45,12 +45,12 @@
 - **Cuentas demo (del seed):** coach `coach@holyoly.dev` / `holyoly-demo`; inviteCode `HOLY-DEMO` (ahora overridables por env `SEED_COACH_EMAIL`/`SEED_COACH_PASSWORD`/`SEED_INVITE_CODE`).
 - Los tests de `apps/web` inyectan su repo y NO pasan por el router/auth.
 
-## EMPEZAR ACÁ — Fase 4 (escrituras + telemetría + app del atleta)
+## Fase 4 EN CURSO — slices 1-2 hechos; EMPEZAR ACÁ = slice 3 (M4c UI)
 
-Fase 3 gatea Fase 4 (ya hay auth/tenancy). Próximo trabajo (spec §Fase 4 del roadmap):
+Spec de la fase: `2026-06-01-fase4-writes-design.md` (decomposición 1-6 por riesgo/dependencia).
 
-1. **Escrituras autorizadas:** `savePlan` / `addMedal` / `setComps` en la API (comps = **replace transaccional**). Hoy `HttpRepository.*` (write) tiran error "writes arrive in Fase 4"; cablear los endpoints + authz por Vínculo.
-2. **Ingestión de series** → arranca la **app del atleta** (productor de telemetría; **hoy no existe** — es el esfuerzo no-dimensionado más grande, riesgo medio-alto).
-3. **M4c** (interactividad del drill-down; spec `2026-06-01-m4c-drilldown-interactivity-design.md`) y **M5** (asignar plan). Recordar: `ruso-5d` es **16 sem**, la serie de Mara **12** (timeline data-driven: eje = semanas del macro, HOY = largo de serie).
+- **Hecho (en `main`):** **slice 1** (`9171619`) escrituras coach autorizadas en la API — `PUT /athletes/:id/plan` (upsert, ignora `plan.comps`), `POST /athletes/:id/medals` (append), `PUT /athletes/:id/comps` (replace transaccional); bajo `guardAthlete` (coach 401 + Vínculo 403) + check `body.atletaId === :id` (400). **slice 2** (`bbb8125`) `HttpRepository` writes (los 3 stubs reemplazados → abstracción `Repository` cerrada). Review ECC aplicada (bounds de input en `core/schemas`, `mutate` consume body, JSDoc del contrato `savePlan`). **94 unit + 15 integración** verdes.
+- **EMPEZAR ACÁ → slice 3 = UI de escritura M4c** (spec propio `2026-06-01-m4c-drilldown-interactivity-design.md`, ya aprobado): primer **consumidor real** de las writes — sheets de comp/medalla + `MacroTimeline` data-driven + overlay luteal en el Drilldown. OJO: hoy **ninguna UI llama writes** (los stubs eran inalcanzables); M4c es quien las cablea. Añadir **manejo de error** en los submit (M4c asumía `LocalRepository`, que nunca falla; contra HTTP el write puede dar 403).
+- **Luego:** slice 6 (**M5** asignar plan, sobre `savePlan`) · **[gated por design doc]** slice 4 (ingestión de telemetría — nuevo eje de authz: atleta-sobre-sí-mismo vía `requireAthlete`, scope a `req.athleteId`, **NO** requiere Vínculo) · **[gated por brainstorm+doc]** slice 5 (**app del atleta** — el esfuerzo no-dimensionado más grande). Recordar: `ruso-5d` = **16 sem**, serie de Mara = **12** (timeline: eje = semanas del macro, HOY = largo de serie).
 
-**Fase 5** (Mercado Pago — suscripción del coach; puede ir en paralelo a Fase 4) y **Fase 6** (CSP/headers/rate-limit, **E2E Playwright browser**, backups, cifrado de ciclo, export "el atleta es dueño de sus datos") después. **Render provisioning prod sigue pendiente del login del usuario.**
+**Fase 5** (Mercado Pago — suscripción del coach; paralelizable a Fase 4) y **Fase 6** (CSP/headers/rate-limit, **E2E Playwright browser**, backups, cifrado de ciclo, export "el atleta es dueño de sus datos") después. **Render provisioning prod sigue pendiente del login del usuario.**
