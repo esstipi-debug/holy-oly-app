@@ -1,4 +1,4 @@
-import { recoverySeries, type Atleta, type MonitorSeries, type CycleShare, type CycleState } from "@holy-oly/core";
+import { recoverySeries, type Atleta, type Medal, type MonitorSeries, type CycleShare, type CycleState } from "@holy-oly/core";
 
 export interface RosterMeta { metodo: string; }
 
@@ -114,4 +114,11 @@ export const SEED_SERIES: Record<string, MonitorSeries> = {
 export const SEED_CYCLE: Record<string, { share: CycleShare; state: CycleState }> = {
   mv: { share: "full", state: "regular" },
   // Default elsewhere is share "min"/state "regular" (LocalRepository fills the gap).
+};
+
+export const SEED_MEDALS: Record<string, Medal[]> = {
+  mv: [
+    { comp: "Nacional Absoluto", date: "2026-03", cat: "−81", medal: "oro", sn: 92, cj: 116, place: "1º" },
+    { comp: "Apertura Regional", date: "2025-11", cat: "−81", medal: "plata", sn: 88, cj: 110, place: "2º" },
+  ],
 };

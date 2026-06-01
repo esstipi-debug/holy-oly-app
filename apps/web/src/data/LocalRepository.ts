@@ -4,7 +4,7 @@ import type {
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
-import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE } from "./seeds";
+import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE, SEED_MEDALS } from "./seeds";
 
 export class LocalRepository implements Repository {
   private s: JsonStore;
@@ -17,6 +17,8 @@ export class LocalRepository implements Repository {
     for (const a of SEED_ROSTER) {
       const series = SEED_SERIES[a.id];
       if (series) this.s.set(KEYS.series(a.id), series);
+      const medals = SEED_MEDALS[a.id];
+      if (medals) this.s.set(KEYS.medals(a.id), medals);
       const cyc = SEED_CYCLE[a.id] ?? { share: "min" as CycleShare, state: "regular" as CycleState };
       this.s.set(KEYS.cycleShare(a.id), cyc.share);
       this.s.set(KEYS.cycleState(a.id), cyc.state);

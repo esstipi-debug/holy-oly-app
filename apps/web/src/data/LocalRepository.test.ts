@@ -32,7 +32,8 @@ describe("LocalRepository", () => {
   it("init is idempotent: re-init does not clobber an added medal", async () => {
     await repo.addMedal("mv", medal);
     new LocalRepository(store).init(); // simulate refresh
-    expect(await repo.getMedals("mv")).toHaveLength(1);
+    // 2 seeded medals + 1 added = 3; re-init is a no-op so the count must not go back to 2.
+    expect(await repo.getMedals("mv")).toHaveLength(3);
   });
 
   it("cycle redaction: min→populated (luteal null), full→populated, amenorrhea→referral, none→undefined", async () => {
