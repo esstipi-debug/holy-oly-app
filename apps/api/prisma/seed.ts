@@ -1,6 +1,12 @@
 import { PrismaClient } from "@prisma/client";
+import { hash } from "@node-rs/argon2";
 import type { MacrocycleLevel, MonitorSeries } from "@holy-oly/core";
 import { seriesToRows } from "../src/db/mapping";
+
+// Demo coach login (Fase 3). Surfaced so the front login demo + e2e can authenticate.
+const COACH_EMAIL = "coach@holyoly.dev";
+const COACH_PASSWORD = "holyoly-demo";
+const COACH_INVITE = "HOLY-DEMO";
 
 const prisma = new PrismaClient();
 const COACH_ID = process.env.DEV_COACH_ID ?? "coach-stub";
@@ -54,6 +60,7 @@ const MARA: MonitorSeries = {
 async function main(): Promise<void> {
   // Dev-only reset so the seed is re-runnable.
   await prisma.$transaction([
+    prisma.session.deleteMany(),
     prisma.wellnessItem.deleteMany(),
     prisma.monitorWeek.deleteMany(),
     prisma.medal.deleteMany(),
@@ -63,10 +70,14 @@ async function main(): Promise<void> {
     prisma.vinculo.deleteMany(),
     prisma.athlete.deleteMany(),
     prisma.coach.deleteMany(),
+    prisma.user.deleteMany(),
   ]);
 
+  const coachUser = await prisma.user.create({
+    data: { email: COACH_EMAIL, passwordHash: await hash(COACH_PASSWORD), role: "coach" },
+  });
   const coach = await prisma.coach.create({
-    data: { id: COACH_ID, email: "coach@holyoly.dev", name: "Coach Demo" },
+    data: { id: COACH_ID, userId: coachUser.id, name: "Coach Demo", inviteCode: COACH_INVITE },
   });
 
   for (const a of ATHLETES) {

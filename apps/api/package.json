@@ -16,7 +16,11 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "@holy-oly/core": "workspace:*",
+    "@node-rs/argon2": "^2.0.2",
+    "@oslojs/crypto": "^1.0.1",
+    "@oslojs/encoding": "^1.1.0",
     "@prisma/client": "^6.19.3",
     "fastify": "^5.8.5"
   },

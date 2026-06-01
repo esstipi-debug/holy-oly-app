@@ -43,19 +43,51 @@ enum Metal {
   bronce
 }
 
-/// The paying tenant. Auth fields are minimal in Fase 1 (stub); subscription → Fase 5.
+enum UserRole {
+  coach
+  atleta
+}
+
+/// Auth identity (login) for both coaches and athletes — email/password (argon2).
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+  coach        Coach?
+  athlete      Athlete?
+}
+
+/// Server-side, revocable session. `id` is the SHA-256 (hex) of the token held in the
+/// httpOnly cookie — the raw token is never stored.
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+
+  @@index([userId])
+}
+
+/// The paying tenant. A Coach is a User (role=coach) + this profile + a rotatable invite code.
 model Coach {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  name      String
-  createdAt DateTime  @default(now())
-  vinculos  Vinculo[]
+  id         String    @id @default(uuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  inviteCode String?   @unique
+  createdAt  DateTime  @default(now())
+  vinculos   Vinculo[]
 }
 
 /// Athlete. Ownership is modeled through Vinculo (not a direct coachId) so athletes
 /// can be linked to a coach via the invite flow and own their own data.
 model Athlete {
   id           String        @id @default(uuid())
+  userId       String?       @unique
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   nombre       String
   iniciales    String
   nivel        Nivel
