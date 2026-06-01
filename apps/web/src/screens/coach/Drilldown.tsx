@@ -7,6 +7,9 @@ import { AcwrChart } from "../../ui/charts/AcwrChart";
 import { LoadChart } from "../../ui/charts/LoadChart";
 import { RecoveryChart } from "../../ui/charts/RecoveryChart";
 import { ImrFaseChart } from "../../ui/charts/ImrFaseChart";
+import { WellnessChart } from "../../ui/charts/WellnessChart";
+import { CompChart } from "../../ui/charts/CompChart";
+import { WeightChart } from "../../ui/charts/WeightChart";
 import { Medal as MedalIcon } from "../../ui/Medal";
 import { Badge } from "../../ui/Badge";
 
@@ -57,6 +60,9 @@ export function Drilldown() {
           <LoadChart series={series} />
           <RecoveryChart series={series} />
           {macro && <ImrFaseChart series={series} macro={macro} />}
+          {series.wellness.length > 0 && <WellnessChart series={series} />}
+          {series.compliance && series.compliance.length > 0 && <CompChart series={series} />}
+          {series.bodyweight && series.bodyweight.length > 0 && <WeightChart series={series} />}
         </div>
       ) : (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", margin: "16px 0" }}>

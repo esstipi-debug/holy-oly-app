@@ -31,6 +31,9 @@ test("shows the athlete header, the monitor charts, and the palmarés medals (Ma
   expect(screen.getByText("ACWR")).toBeInTheDocument();
   expect(screen.getByText(/Recuperación/)).toBeInTheDocument();
   expect(screen.getByText("IMR vs fase")).toBeInTheDocument();
+  expect(screen.getByText("Bienestar")).toBeInTheDocument();
+  expect(screen.getByText("Cumplimiento")).toBeInTheDocument();
+  expect(screen.getByText("Peso vs categoría")).toBeInTheDocument();
   expect(screen.getByText(/Palmar/)).toBeInTheDocument();
   expect(screen.getByText("Nacional Absoluto")).toBeInTheDocument();
   expect(container.querySelectorAll("svg").length).toBeGreaterThan(3);
