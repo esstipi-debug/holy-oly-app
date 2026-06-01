@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/main.ts",
-    "build": "tsup src/main.ts --format esm --clean --no-splitting",
+    "build": "tsup",
     "start": "node dist/main.js",
     "start:prod": "prisma migrate deploy && node dist/main.js",
     "test": "vitest run",
