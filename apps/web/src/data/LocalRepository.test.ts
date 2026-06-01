@@ -1,6 +1,7 @@
 import { beforeEach, describe, it, expect } from "vitest";
 import { LocalRepository } from "./LocalRepository";
 import type { Medal } from "@holy-oly/core";
+import { KEYS } from "./keys";
 
 // In-memory Storage shim (no jsdom localStorage needed).
 class MemStorage implements Storage {
@@ -53,5 +54,22 @@ describe("LocalRepository", () => {
   it("corrupt JSON falls back instead of throwing", async () => {
     store.setItem("ho:roster", "{not json");
     await expect(repo.getRoster()).resolves.toBeInstanceOf(Array);
+  });
+
+  it("re-seeds when the stored seed version is stale (old boolean ho:seeded)", async () => {
+    // Simulate an M3-era browser: seeded with the OLD boolean marker, no medals.
+    const old = new MemStorage();
+    old.setItem(KEYS.seeded, JSON.stringify(true));   // pre-versioning marker
+    old.setItem(KEYS.roster, JSON.stringify([]));     // stale empty roster
+    const repo2 = new LocalRepository(old);
+    repo2.init();                                      // stale version → re-seed
+    expect(await repo2.getRoster()).toHaveLength(8);
+    expect(await repo2.getMedals("mv")).not.toHaveLength(0); // medals now seeded
+  });
+
+  it("does not re-seed when the stored version matches (idempotent refresh)", async () => {
+    await repo.addMedal("mv", medal);                  // repo is seeded at the current version (beforeEach)
+    new LocalRepository(store).init();                 // same version → no-op, must NOT clobber
+    expect(await repo.getMedals("mv")).toHaveLength(3); // 2 seeded + 1 added survive
   });
 });

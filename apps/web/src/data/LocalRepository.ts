@@ -4,15 +4,15 @@ import type {
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
-import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE, SEED_MEDALS } from "./seeds";
+import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE, SEED_MEDALS, SEED_VERSION } from "./seeds";
 
 export class LocalRepository implements Repository {
   private s: JsonStore;
   constructor(backend: Storage = localStorage) { this.s = new JsonStore(backend); }
 
-  /** Idempotent: seeds once, guarded by ho:seeded so refresh keeps edits. */
+  /** Idempotent within a version: seeds once, guarded by SEED_VERSION so a version bump re-seeds. */
   init(): void {
-    if (this.s.has(KEYS.seeded)) return;
+    if (this.s.get<number>(KEYS.seeded, 0) === SEED_VERSION) return;
     this.s.set(KEYS.roster, SEED_ROSTER);
     for (const a of SEED_ROSTER) {
       const series = SEED_SERIES[a.id];
@@ -23,7 +23,7 @@ export class LocalRepository implements Repository {
       this.s.set(KEYS.cycleShare(a.id), cyc.share);
       this.s.set(KEYS.cycleState(a.id), cyc.state);
     }
-    this.s.set(KEYS.seeded, true);
+    this.s.set(KEYS.seeded, SEED_VERSION);
   }
 
   async getRoster(): Promise<Atleta[]> { return this.s.get<Atleta[]>(KEYS.roster, []); }

@@ -1,5 +1,8 @@
 import { recoverySeries, type Atleta, type Medal, type MonitorSeries, type CycleShare, type CycleState } from "@holy-oly/core";
 
+/** Bump when SEED_* shapes change so already-seeded browsers re-seed (e.g. M4a added medals → v2). */
+export const SEED_VERSION = 2;
+
 export interface RosterMeta { metodo: string; }
 
 export const SEED_ROSTER: Atleta[] = [
