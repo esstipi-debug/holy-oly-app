@@ -1,22 +1,43 @@
-# Render Blueprint — Holy Oly web app (apps/web, Vite SPA).
-# Builds and publishes the real React app (was: the static _mockup folder).
-# NOTE: provisioning the Render service still needs the account owner's login.
+# Render Blueprint — Holy Oly (single-service production).
+# ONE Node web service (Fastify serves the built React SPA + the API, same origin → the session
+# cookie just works, no CORS) + a managed Postgres. Provisioning still needs the account owner's
+# login: create the Blueprint from this file, then run the one-off seed (see docs/superpowers/DEPLOY.md).
+databases:
+  - name: holy-oly-db
+    plan: free                 # ⚠️ free Postgres is deleted after 90 days — upgrade for real prod
+    postgresMajorVersion: "16"
+
 services:
   - type: web
     name: holy-oly
-    runtime: static
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @holy-oly/web build
-    staticPublishPath: ./apps/web/dist
-    pullRequestPreviewsEnabled: false
+    runtime: node
+    plan: free                 # ⚠️ free web services cold-start after inactivity — upgrade for prod
+    # Build: deps (incl. devDeps even under NODE_ENV=production) → prisma client → web (API mode,
+    # relative fetches) → api bundle → fold the SPA build into what Fastify serves.
+    buildCommand: >
+      corepack enable &&
+      pnpm install --frozen-lockfile --prod=false &&
+      pnpm --filter @holy-oly/api exec prisma generate &&
+      VITE_API_ENABLED=true pnpm --filter @holy-oly/web build &&
+      pnpm --filter @holy-oly/api build &&
+      cp -r apps/web/dist apps/api/dist/public
+    # Start: apply pending migrations, then boot. (Idempotent; on Starter+ you can move the
+    # migrate step to a preDeployCommand instead.)
+    startCommand: corepack enable && pnpm --filter @holy-oly/api start:prod
+    healthCheckPath: /health
     envVars:
       - key: NODE_VERSION
         value: "20"
-    # SPA fallback so client-side routes (e.g. /coach/a/:id) resolve to index.html.
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    # Cheap baseline security headers (full CSP/HSTS deferred to Fase 6 hardening).
+      - key: NODE_ENV
+        value: production
+      - key: SERVE_WEB          # Fastify serves the SPA from apps/api/dist/public (default path)
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: holy-oly-db
+          property: connectionString
+    # Baseline security headers (full CSP/HSTS = Fase 6). X-Frame-Options stays DENY: the app
+    # is not meant to be framed.
     headers:
       - path: /*
         name: X-Content-Type-Options

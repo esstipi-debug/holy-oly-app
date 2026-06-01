@@ -1,9 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import * as client from "./authClient";
 import type { AuthUser, Role } from "./authClient";
+import { API_ENABLED } from "../data/apiConfig";
 
-/** Auth only applies when the app talks to the API; standalone (localStorage) mode has none. */
-export const API_ENABLED = Boolean(import.meta.env.VITE_API_URL);
+// Auth only applies when the app talks to the API; standalone (localStorage) mode has none.
+export { API_ENABLED };
 
 interface AuthValue {
   apiEnabled: boolean;

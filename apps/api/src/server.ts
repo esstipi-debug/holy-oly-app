@@ -1,6 +1,9 @@
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
+import fastifyStatic from "@fastify/static";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { UserRole } from "@prisma/client";
 import { PlanSchema, MedalSchema, CompsSchema } from "@holy-oly/core";
 import { prisma } from "./db/client";
@@ -27,14 +30,18 @@ declare module "fastify" {
 export function buildServer(): FastifyInstance {
   const app = Fastify({ logger: true });
   app.register(cookie);
-  // Allow the front (cross-origin in dev) to send the session cookie. In production an explicit
-  // WEB_ORIGIN is REQUIRED: with credentials:true the `?? true` dev fallback reflects any Origin,
-  // letting any site make authenticated calls. Fail fast rather than ship that.
+  // SERVE_WEB = the single-service deploy where Fastify also serves the built SPA → same origin,
+  // so CORS isn't involved at all. Otherwise (split origin) the front sends the session cookie
+  // cross-origin: in production an explicit WEB_ORIGIN is REQUIRED (credentialed CORS can't be a
+  // wildcard — the `?? true` dev fallback would reflect any Origin). Fail fast rather than ship that.
+  const serveWeb = process.env.SERVE_WEB === "true";
   const webOrigin = process.env.WEB_ORIGIN;
-  if (process.env.NODE_ENV === "production" && !webOrigin) {
+  if (process.env.NODE_ENV === "production" && !serveWeb && !webOrigin) {
     throw new Error("WEB_ORIGIN must be set in production (CORS credentials require an explicit origin)");
   }
-  app.register(cors, { origin: webOrigin ?? true, credentials: true });
+  if (!serveWeb) {
+    app.register(cors, { origin: webOrigin ?? true, credentials: true });
+  }
 
   app.setErrorHandler((err, _req, reply) => {
     reply.log.error(err);
@@ -153,6 +160,21 @@ export function buildServer(): FastifyInstance {
     await repo.setComps(prisma, req.params.id, parsed.data);
     return reply.code(200).send({ ok: true });
   });
+
+  // Single-service deploy: Fastify also serves the built SPA + a client-routing fallback.
+  // API routes above take router precedence; this only catches assets and unmatched client paths.
+  if (serveWeb) {
+    const webRoot =
+      process.env.WEB_DIST_PATH ?? path.join(path.dirname(fileURLToPath(import.meta.url)), "public");
+    app.register(fastifyStatic, { root: webRoot, wildcard: false });
+    app.setNotFoundHandler((req, reply) => {
+      // An unmatched GET that wants HTML is a client route → hand back the SPA shell.
+      if (req.method === "GET" && (req.headers.accept ?? "").includes("text/html")) {
+        return reply.sendFile("index.html");
+      }
+      return reply.code(404).send({ error: "not found" });
+    });
+  }
 
   return app;
 }

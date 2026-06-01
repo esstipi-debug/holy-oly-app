@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 import type { Repository } from "@holy-oly/core";
 import { LocalRepository } from "./LocalRepository";
 import { HttpRepository } from "./HttpRepository";
+import { API_ENABLED, API_BASE } from "./apiConfig";
 
 const RepoContext = createContext<Repository | null>(null);
 
@@ -11,8 +12,8 @@ const RepoContext = createContext<Repository | null>(null);
  * Tests inject their own repo and bypass this.
  */
 function defaultRepository(): Repository {
-  const apiUrl = import.meta.env.VITE_API_URL;
-  return apiUrl ? new HttpRepository(apiUrl) : new LocalRepository();
+  // API_BASE is "" for the same-origin single-service deploy (relative fetches).
+  return API_ENABLED ? new HttpRepository(API_BASE) : new LocalRepository();
 }
 
 /** Narrows to a repo that needs one-time initialization (only LocalRepository seeds). */
