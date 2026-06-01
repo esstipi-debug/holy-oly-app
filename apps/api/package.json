@@ -10,7 +10,7 @@
     "test:int": "vitest run --config vitest.int.config.ts",
     "typecheck": "tsc --noEmit",
     "verify": "tsx scripts/db-verify.ts",
-    "e2e": "tsx scripts/e2e-fase2.ts",
+    "e2e": "tsx scripts/e2e.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts"
