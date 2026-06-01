@@ -68,6 +68,13 @@ export async function vinculoRoutes(app: FastifyInstance): Promise<void> {
       reply.code(404).send({ error: "not found" });
       return undefined;
     }
+    // Confirm/deny only act on a pending request. Without this, a coach could re-activate a
+    // previously rejected vínculo (or reject an active one) out of band; the athlete must
+    // re-initiate (accept resets to "pendiente") to restart the flow.
+    if (v.estado !== "pendiente") {
+      reply.code(409).send({ error: "vínculo is not pending" });
+      return undefined;
+    }
     const updated = await prisma.vinculo.update({ where: { id: v.id }, data: { estado } });
     return { id: updated.id, estado: updated.estado };
   }

@@ -26,8 +26,14 @@ declare module "fastify" {
 export function buildServer(): FastifyInstance {
   const app = Fastify({ logger: true });
   app.register(cookie);
-  // Allow the front (cross-origin in dev) to send the session cookie. Set WEB_ORIGIN in prod.
-  app.register(cors, { origin: process.env.WEB_ORIGIN ?? true, credentials: true });
+  // Allow the front (cross-origin in dev) to send the session cookie. In production an explicit
+  // WEB_ORIGIN is REQUIRED: with credentials:true the `?? true` dev fallback reflects any Origin,
+  // letting any site make authenticated calls. Fail fast rather than ship that.
+  const webOrigin = process.env.WEB_ORIGIN;
+  if (process.env.NODE_ENV === "production" && !webOrigin) {
+    throw new Error("WEB_ORIGIN must be set in production (CORS credentials require an explicit origin)");
+  }
+  app.register(cors, { origin: webOrigin ?? true, credentials: true });
 
   app.setErrorHandler((err, _req, reply) => {
     reply.log.error(err);

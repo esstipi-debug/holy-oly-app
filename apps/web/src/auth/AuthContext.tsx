@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import * as client from "./authClient";
 import type { AuthUser, Role } from "./authClient";
 
@@ -44,11 +44,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
-  return (
-    <AuthCtx.Provider value={{ apiEnabled: API_ENABLED, user, loading, login, signup, logout }}>
-      {children}
-    </AuthCtx.Provider>
+  const value = useMemo<AuthValue>(
+    () => ({ apiEnabled: API_ENABLED, user, loading, login, signup, logout }),
+    [user, loading, login, signup, logout],
   );
+
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 
 export function useAuth(): AuthValue {

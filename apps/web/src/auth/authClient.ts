@@ -1,3 +1,5 @@
+import { AuthUserSchema } from "@holy-oly/core";
+
 export type Role = "coach" | "atleta";
 
 export interface AuthUser {
@@ -19,7 +21,7 @@ async function throwIfNotOk(res: Response): Promise<void> {
 export async function me(): Promise<AuthUser | null> {
   const res = await fetch(`${BASE}/auth/me`, { credentials: "include" });
   if (!res.ok) return null;
-  return (await res.json()) as AuthUser;
+  return AuthUserSchema.parse(await res.json());
 }
 
 async function authPost(path: string, body: unknown): Promise<void> {

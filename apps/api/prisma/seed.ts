@@ -4,9 +4,10 @@ import type { MacrocycleLevel, MonitorSeries } from "@holy-oly/core";
 import { seriesToRows } from "../src/db/mapping";
 
 // Demo coach login (Fase 3). Surfaced so the front login demo + e2e can authenticate.
-const COACH_EMAIL = "coach@holyoly.dev";
-const COACH_PASSWORD = "holyoly-demo";
-const COACH_INVITE = "HOLY-DEMO";
+// Overridable via env so production never has to seed these committed defaults.
+const COACH_EMAIL = (process.env.SEED_COACH_EMAIL ?? "coach@holyoly.dev").trim().toLowerCase();
+const COACH_PASSWORD = process.env.SEED_COACH_PASSWORD ?? "holyoly-demo";
+const COACH_INVITE = process.env.SEED_INVITE_CODE ?? "HOLY-DEMO";
 
 const prisma = new PrismaClient();
 const COACH_ID = process.env.DEV_COACH_ID ?? "coach-stub";
