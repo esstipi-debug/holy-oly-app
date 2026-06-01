@@ -14,9 +14,10 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
       </RepositoryProvider>
     ),
     children: [
-      { index: true, element: <Gallery /> }, // kept through M3 for visual regression (TODO: retire when coach build ships)
-      { path: "coach", element: <Equipo /> },
+      { index: true, element: <Equipo /> }, // the real coach screen is the front door
+      { path: "coach", element: <Equipo /> }, // alias (drill-down navigates under /coach/a/:id)
       { path: "coach/a/:id", element: <DrilldownPlaceholder /> },
+      { path: "gallery", element: <Gallery /> }, // dev component showcase, moved off "/"
     ],
   },
 ]);
