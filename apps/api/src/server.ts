@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import type { UserRole } from "@prisma/client";
+import { PlanSchema, MedalSchema, CompsSchema } from "@holy-oly/core";
 import { prisma } from "./db/client";
 import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
@@ -121,6 +122,36 @@ export function buildServer(): FastifyInstance {
       return;
     }
     return ctx;
+  });
+
+  // ── Coach-authorized writes (Fase 4). Same gate as the reads (coach session + active Vinculo). ──
+
+  app.put<{ Params: { id: string } }>("/athletes/:id/plan", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    const parsed = PlanSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid plan" });
+    // The path id is the authorized athlete; reject a body that targets a different one.
+    if (parsed.data.atletaId !== req.params.id) {
+      return reply.code(400).send({ error: "athlete id mismatch" });
+    }
+    await repo.savePlan(prisma, req.params.id, parsed.data);
+    return reply.code(200).send({ ok: true });
+  });
+
+  app.post<{ Params: { id: string } }>("/athletes/:id/medals", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    const parsed = MedalSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid medal" });
+    await repo.addMedal(prisma, req.params.id, parsed.data);
+    return reply.code(201).send({ ok: true });
+  });
+
+  app.put<{ Params: { id: string } }>("/athletes/:id/comps", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    const parsed = CompsSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid comps" });
+    await repo.setComps(prisma, req.params.id, parsed.data);
+    return reply.code(200).send({ ok: true });
   });
 
   return app;

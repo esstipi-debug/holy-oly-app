@@ -37,25 +37,29 @@ export const MonitorSeriesSchema = z.object({
   wellnessItems: z.record(z.string(), z.array(z.number())).optional(),
 });
 
+// Bounds below are also the write-input contract (Fase 4): athletes/coaches are untrusted
+// writers, so cap free text, array size, and numeric range at the boundary (an unbounded
+// kg or NaN would corrupt downstream core math; a giant array/string is a resource vector).
 export const MedalSchema = z.object({
-  comp: z.string(),
-  date: z.string(),
-  cat: z.string(),
+  comp: z.string().max(120),
+  date: z.string().max(20),
+  cat: z.string().max(40),
   medal: z.enum(["oro", "plata", "bronce"]),
-  sn: z.number(),
-  cj: z.number(),
-  place: z.string(),
+  sn: z.number().nonnegative().max(1000),
+  cj: z.number().nonnegative().max(1000),
+  place: z.string().max(20),
 });
 export const MedalsSchema = z.array(MedalSchema);
 
-export const CompetenciaSchema = z.object({ name: z.string(), week: z.number() });
-export const CompsSchema = z.array(CompetenciaSchema);
+export const CompetenciaSchema = z.object({ name: z.string().max(120), week: z.number().int().min(1).max(104) });
+export const CompsSchema = z.array(CompetenciaSchema).max(200);
 
+const KgSchema = z.number().positive().max(500); // realistic lift ceiling; positive rejects 0/NaN
 export const RMSchema = z.object({
-  arranque: z.number(),
-  envion: z.number(),
-  sentadilla: z.number(),
-  frente: z.number(),
+  arranque: KgSchema,
+  envion: KgSchema,
+  sentadilla: KgSchema,
+  frente: KgSchema,
 });
 export const PlanSchema = z.object({
   atletaId: z.string(),

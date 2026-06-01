@@ -8,6 +8,12 @@ export interface Repository {
   getAthlete(id: string): Promise<Atleta | undefined>;
   getSeries(id: string): Promise<MonitorSeries | undefined>;
   getPlan(id: string): Promise<Plan | undefined>;
+  /**
+   * Persist the plan's scalar fields (atletaId, macroId, startWeek, rms). The HTTP backend
+   * intentionally ignores `plan.comps` — competitions are owned by `setComps` and live in
+   * their own store — so do not rely on `getPlan().comps` reflecting a value passed here.
+   * (Formal Plan/Competencia reconciliation is M5.)
+   */
   savePlan(plan: Plan): Promise<void>;
   getMedals(id: string): Promise<Medal[]>;
   addMedal(id: string, medal: Medal): Promise<void>;

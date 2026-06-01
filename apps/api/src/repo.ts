@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext,
 } from "@holy-oly/core";
@@ -83,4 +83,37 @@ export async function getCycle(prisma: PrismaClient, athleteId: string): Promise
   const c = await prisma.cycleConsent.findUnique({ where: { athleteId } });
   if (!c) return undefined;
   return redactCycle(c.share, c.state);
+}
+
+// ── Writes (Fase 4). Inverse of the reads above; mirror LocalRepository's semantics so the
+// two Repository implementations stay swappable. The caller (server.ts) authorizes first. ──
+
+/**
+ * Upsert the athlete's plan (replace, keyed by athleteId @unique). Writes only the Plan scalar
+ * fields + rms; competitions live in the Competencia table (owned by setComps, reconciled in M5),
+ * so plan.comps is intentionally ignored here.
+ */
+export async function savePlan(prisma: PrismaClient, athleteId: string, plan: Plan): Promise<void> {
+  // rms is a plain {lift: number} object → JSON-safe; the double cast satisfies Prisma's Json input
+  // type (RM has no string index signature to overlap InputJsonValue directly).
+  const data = { macroId: plan.macroId, startWeek: plan.startWeek, rms: plan.rms as unknown as Prisma.InputJsonValue };
+  await prisma.plan.upsert({ where: { athleteId }, create: { athleteId, ...data }, update: data });
+}
+
+/** Append a medal (one row — no read-modify-write, unlike the LocalRepository oracle). */
+export async function addMedal(prisma: PrismaClient, athleteId: string, medal: Medal): Promise<void> {
+  await prisma.medal.create({
+    data: {
+      athleteId, comp: medal.comp, date: medal.date, cat: medal.cat,
+      medal: medal.medal, sn: medal.sn, cj: medal.cj, place: medal.place,
+    },
+  });
+}
+
+/** Replace the whole competition list transactionally — a partial failure must not truncate it. */
+export async function setComps(prisma: PrismaClient, athleteId: string, comps: Competencia[]): Promise<void> {
+  await prisma.$transaction([
+    prisma.competencia.deleteMany({ where: { athleteId } }),
+    prisma.competencia.createMany({ data: comps.map((c) => ({ athleteId, name: c.name, week: c.week })) }),
+  ]);
 }
