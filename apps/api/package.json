@@ -22,7 +22,8 @@
     "@oslojs/crypto": "^1.0.1",
     "@oslojs/encoding": "^1.1.0",
     "@prisma/client": "^6.19.3",
-    "fastify": "^5.8.5"
+    "fastify": "^5.8.5",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
