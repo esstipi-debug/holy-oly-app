@@ -67,3 +67,12 @@ export const PlanSchema = z.object({
 
 export const CycleShareSchema = z.enum(["full", "min", "none"]);
 export const CycleStateSchema = z.enum(["regular", "unreliable", "amenorrhea"]);
+
+// Coach-facing, redacted cycle view — now transmitted over the wire (API → front), so it
+// gets a schema too. (Raw share/state never crosses the boundary; only this projection.)
+export const CycleContextSchema = z.object({
+  share: CycleShareSchema,
+  inLutealNow: z.boolean().nullable(),
+  health: z.enum(["ok", "referral"]),
+  reliable: z.boolean(),
+});
