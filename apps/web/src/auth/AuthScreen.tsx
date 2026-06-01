@@ -2,6 +2,7 @@ import { useState, type CSSProperties, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import type { Role } from "./authClient";
+import { HolyOlyIcon } from "../ui/HolyOlyIcon";
 
 const input: CSSProperties = {
   width: "100%", boxSizing: "border-box", marginTop: 6, padding: "10px 12px", borderRadius: 10,
@@ -39,9 +40,11 @@ export function AuthScreen() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--wl-bg)", display: "grid", placeItems: "center", padding: 16 }}>
       <form onSubmit={onSubmit} style={{ width: "100%", maxWidth: 360, background: "var(--wl-surface)", borderRadius: 18, padding: "22px 20px", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 24, color: "var(--wl-text)", lineHeight: 1 }}>Holy Oly</div>
-        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 6 }}>
-          {mode === "login" ? "Ingresá a tu cuenta" : "Creá tu cuenta"}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <HolyOlyIcon size={88} />
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
+            {mode === "login" ? "Ingresá a tu cuenta" : "Creá tu cuenta"}
+          </div>
         </div>
 
         {mode === "signup" && (

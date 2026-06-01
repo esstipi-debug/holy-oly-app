@@ -1,0 +1,15 @@
+{
+  "name": "Holy Oly",
+  "short_name": "Holy Oly",
+  "description": "Macrociclos de halterofilia — coach ⇄ atleta.",
+  "lang": "es",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#15171a",
+  "theme_color": "#15171a",
+  "icons": [
+    { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any" },
+    { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "maskable" }
+  ]
+}
