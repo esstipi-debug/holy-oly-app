@@ -1,63 +1,56 @@
-# HANDOFF — Holy Oly · arrancar el build en una sesión nueva
+# HANDOFF — Holy Oly (estado para retomar en un chat nuevo)
 
-Este documento permite **continuar el proyecto desde cero de contexto** en otra sesión. Empezás el build real (mockup → app) con ejecución **subagente-driven**.
+**Fecha:** 2026-06-01 · **Objetivo global:** completar la app a producción (100% operativa, online, con cobro). Roadmap maestro: `docs/superpowers/specs/2026-06-01-production-readiness-roadmap.md` (6 fases).
 
----
+## Dónde estamos parados
 
-## ▶️ Cómo arrancar (pegá esto en la sesión nueva)
+- Monorepo pnpm: `packages/core` (dominio puro + tipos + schemas Zod), `apps/web` (React 18 + Vite), `apps/api` (Fastify 5 + Prisma 6 + Postgres).
+- **En `main`:** Fase 0 (hardening) + Fase 1 (backend read API) + Fase 2 (`HttpRepository` conecta el front) + **Fase 3 (auth + Vínculo) — COMPLETA**. Todo verificado.
+- **Fase 3 mergeada a `main` por fast-forward** (7 commits sobre el viejo `73cdbb7`): slices 1-4 (`fafa2a6` modelo/seed, `210fe25` auth core, `6e66512` vínculo API, `65ad037` front auth), slice 5 (`9cb2d22` Vínculo UI), slice 6 (`9487671` e2e full-flow), y **review ECC** (`3167f09` fixes auth/vínculo).
+- **Working tree limpio.** La rama `claude/stupefied-greider-01c07c` ya no tiene nada pendiente.
 
-> Abrí una sesión de Claude Code en `C:\Holy Oly 0017` y pegá:
+## Qué entró en Fase 3
 
-```
-Leé docs/superpowers/HANDOFF.md, docs/superpowers/specs/2026-05-31-holy-oly-app-design.md
-y docs/superpowers/plans/2026-05-31-holy-oly-foundation-coach.md.
-Después implementá ese plan con la skill superpowers:subagent-driven-development,
-empezando por la Task 1 (scaffold del monorepo). Un subagente por tarea, me mostrás
-el review entre tareas. Commit por tarea; push por milestone (M1 y M2).
-```
+- **Auth propia, sesión-cookie:** signup/login/logout/me; token = 20 bytes random base32, se guarda sólo `sha256(token)` (id de `Session`); cookie httpOnly + SameSite=Lax + secure en prod (`@oslojs` + `@fastify/cookie`). Passwords: argon2id (`@node-rs/argon2`, prebuilt). Hook `onRequest` resuelve la cookie → `req.coachId`/`req.athleteId` (reemplazó el stub `x-dev-coach`).
+- **Multi-tenant authz:** reads coach-scoped exigen sesión de coach (401) **y** Vínculo activo (403). Redacción de ciclo server-side intacta.
+- **Flujo Vínculo completo:** coach rota/ve su `inviteCode` y confirma/rechaza pendientes; atleta ingresa el código → solicitud `pendiente`. UI: `InvitacionesScreen` (coach) + `AtletaScreen` (atleta) + `vinculoClient`. API: `vinculo/routes.ts` (rotate/accept/confirm/deny, owner-checked, accept idempotente).
+- **Front modo dual:** con `VITE_API_URL` → `HttpRepository` + auth real; sin él → `LocalRepository` (demo localStorage, guards en pass-through).
 
-La memoria del proyecto (MEMORY.md + specs) se autocarga sola en la sesión nueva, así que el contexto de diseño ya va a estar.
+## Review ECC aplicada (security + TS) — `3167f09`
 
----
+- signup **transaccional** (User + perfil atómicos; evita usuario huérfano sin coachId/athleteId).
+- **email normalizado** (trim+lowercase) en signup/login.
+- **CORS exige `WEB_ORIGIN` en producción** (el fallback `?? true` con credentials reflejaba cualquier Origin).
+- confirm/deny de Vínculo sólo sobre estado `pendiente` (409 si no).
+- `clearCookie` replica los flags de la cookie; seed con credenciales por env (`SEED_COACH_*`/`SEED_INVITE_CODE`).
+- web: `authClient.me()` valida con `AuthUserSchema` (Zod); `AuthContext` memoiza el value.
+- **Diferido a Fase 5/6** (no bloquea): rate-limiting en auth/vínculo, CSRF token / SameSite=Strict, single-session en login, headers de seguridad (HSTS/etc.).
 
-## Qué es esto
-**Holy Oly** — app móvil de macrociclos de halterofilia, coach⇄atleta. *Smart training, zero burnout.*
-Estamos pasando de un **mockup navegable** a la **app real**, por slices verticales.
+## Verificado (todo verde)
 
-## Estado actual (lo que ya existe en el repo)
-- `_mockup/` — prototipo completo en HTML/CSS/JS (referencia visual, **se conserva**): Inicio, Entreno, Macrociclos (catálogo+detalle, rol coach=asignar), Atleta Progreso (con ciclo), Coach Equipo + Drill-down (palmarés/medallas + asignar competencia/reestructuración), Asignar plan (RM+macro), PWA instalable (app.html/manifest/sw), medals.js.
-- `macrocycles.ts` (raíz) — catálogo normalizado **24 programas / 10 escuelas** = fuente de verdad. **En la Task 4 se mueve a `packages/core/src/data/` y se borra de la raíz.**
-- `docs/superpowers/specs/2026-05-31-holy-oly-app-design.md` — design doc (aprobado).
-- `docs/superpowers/plans/2026-05-31-holy-oly-foundation-coach.md` — **el plan a ejecutar** (M1 + M2, ~14 tareas, TDD).
-- Git: repo **`holy-oly-app`** en GitHub (privado, cuenta `esstipi-debug`), rama `main`, en sync.
+`91 unit` (core 27 + api 11 + web 53) + `9 integración` + **e2e full-flow sobre HTTP real** (`pnpm --filter @holy-oly/api e2e`): 401 → login → roster 8 → ciclo redactado → signup atleta → accept (pendiente) → coach confirma → roster 9. `tsc` (core/web/api) + `pnpm lint` + web prod build limpios.
 
-## Decisiones bloqueadas (no re-preguntar)
-- **Monorepo nuevo** (pnpm workspaces) en este repo: `apps/web` + `apps/api` (placeholder) + `packages/core`.
-- **Frontend-first con datos locales** (patrón `Repository`: `LocalRepository`/localStorage ahora, `ApiRepository` después). Las pantallas **nunca** tocan storage directo.
-- **Primer slice = vista coach** (Equipo + Drill-down + Asignar plan). M1+M2 son el cimiento; las pantallas coach son M3–M5 (otro plan).
-- **Stack:** `apps/web` = Vite + React 18 + TS + Tailwind 3 + React Router 6; `packages/core` = TS puro + Vitest.
-- **Backend (`apps/api`): lenguaje diferido** (TS vs FastAPI) — se decide en el slice de backend, NO ahora.
-- **Port, no rehago:** los componentes salen del `_mockup/` (tokens `wl-themes`, charts SVG, Disc, Medal). Default tema **Neon PR**.
+## Cómo verificar (NO hay Docker/Postgres/WSL en la máquina)
 
-## Entorno (Windows)
-- Node **v24.13.1**, pnpm **10.33.0**, npm 11.8 (usar **pnpm**). Git 2.54.
-- Working dir: `C:\Holy Oly 0017` (= raíz del repo y del monorepo).
-- `gh` autenticado como `esstipi-debug` (scope `repo`) → push directo OK.
-- Inofensivo: warnings de git `LF will be replaced by CRLF`. Ignorar.
+- `pnpm --filter @holy-oly/api verify` → levanta Postgres efímero (`embedded-postgres`), migra, siembra y corre los 9 tests de integración.
+- `pnpm --filter @holy-oly/api e2e` → flujo HTTP completo (auth + Vínculo) contra PG embebido.
+- `pnpm -r test` (unit) · `pnpm -r typecheck` · `pnpm lint`.
+- Migraciones nuevas: `apps/api/scripts/make-migration.ts` (embedded-PG + `migrate diff`, no-interactivo).
 
-## Ejecución (subagente-driven)
-- Skill: **superpowers:subagent-driven-development** sobre el plan. Un subagente por tarea, review entre tareas.
-- **Commit por tarea** (mensajes ya están en el plan). **Push por milestone** (M1, M2). Terminar cada commit con:
-  `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
-- **Verificación:** `pnpm -r test` verde. Verificación visual del Gallery (M2) en `pnpm --filter @holy-oly/web dev` (:8743).
-- **Definition of done:**
-  - **M1:** `pnpm -r test` verde; `@holy-oly/core` exporta tipos + catálogo (24/10) + discos/monitor/restructure + `Repository`.
-  - **M2:** `pnpm -r test` verde; `apps/web` bootea; el Gallery muestra tokens + primitivos + Disc + Medal + MacroTimeline en Neon PR y el cambio de tema funciona.
+## Gotchas críticos (no re-descubrir)
 
-## Gotchas
-- La **herramienta de captura de pantalla** estuvo trabada esta sesión (efecto del service worker del mockup). No bloquea nada: verificar por `pnpm test` y por estado/DOM (eval). El service worker vive en `_mockup/sw.js` (no afecta `apps/web`).
-- **Render: pendiente de TU login** (no se puede automatizar: crear cuenta + OAuth). `render.yaml` ya publica `_mockup/` como sitio estático; conectar el repo en Render (New → Blueprint) cuando quieras la URL HTTPS (necesaria para instalar la PWA en el teléfono).
-- No re-scaffoldear sobre archivos existentes; el plan asume el estado actual del repo.
+- **Locale del host = Spanish_Chile.1252 → WIN1252.** Los scripts pasan `initdbFlags: ["--encoding=UTF8","--locale=C"]` (prod Render PG ya es UTF8). Sin eso, chars como `−` (U+2212) rompen el seed.
+- **argon2 = `@node-rs/argon2`** (prebuilt; el `argon2` normal falla por node-gyp en Windows). **CORS:** `@fastify/cors` (credentials) — ahora **requiere `WEB_ORIGIN` en prod**.
+- **Prisma pin v6** (v7 da fricción). Migraciones `0_init` + `1_auth` committeadas.
+- **Cuentas demo (del seed):** coach `coach@holyoly.dev` / `holyoly-demo`; inviteCode `HOLY-DEMO` (ahora overridables por env `SEED_COACH_EMAIL`/`SEED_COACH_PASSWORD`/`SEED_INVITE_CODE`).
+- Los tests de `apps/web` inyectan su repo y NO pasan por el router/auth.
 
-## Después de M1–M2
-Escribir el plan **M3–M5** (LocalRepository con seeds → Equipo → Drill-down → Asignar plan) referenciando este cimiento. Luego: slice atleta, auth + vinculación coach⇄atleta (spec en memoria), backend real, deploy.
+## EMPEZAR ACÁ — Fase 4 (escrituras + telemetría + app del atleta)
+
+Fase 3 gatea Fase 4 (ya hay auth/tenancy). Próximo trabajo (spec §Fase 4 del roadmap):
+
+1. **Escrituras autorizadas:** `savePlan` / `addMedal` / `setComps` en la API (comps = **replace transaccional**). Hoy `HttpRepository.*` (write) tiran error "writes arrive in Fase 4"; cablear los endpoints + authz por Vínculo.
+2. **Ingestión de series** → arranca la **app del atleta** (productor de telemetría; **hoy no existe** — es el esfuerzo no-dimensionado más grande, riesgo medio-alto).
+3. **M4c** (interactividad del drill-down; spec `2026-06-01-m4c-drilldown-interactivity-design.md`) y **M5** (asignar plan). Recordar: `ruso-5d` es **16 sem**, la serie de Mara **12** (timeline data-driven: eje = semanas del macro, HOY = largo de serie).
+
+**Fase 5** (Mercado Pago — suscripción del coach; puede ir en paralelo a Fase 4) y **Fase 6** (CSP/headers/rate-limit, **E2E Playwright browser**, backups, cifrado de ciclo, export "el atleta es dueño de sus datos") después. **Render provisioning prod sigue pendiente del login del usuario.**
