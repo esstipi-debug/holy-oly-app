@@ -8,6 +8,7 @@ import { WeekPicker } from "./WeekPicker";
 import { DiscRow } from "./Disc";
 import { Medal } from "./Medal";
 import { MacroTimeline } from "./charts/MacroTimeline";
+import { MACROCYCLES } from "@holy-oly/core";
 
 type Skin = "plates" | "neon" | "chalk" | "premium" | "neonlight";
 const SKINS: Skin[] = ["plates", "neon", "chalk", "premium", "neonlight"];
@@ -194,7 +195,7 @@ export function Gallery() {
       <div style={LABEL as React.CSSProperties}>MacroTimeline</div>
       <Card>
         <MacroTimeline
-          weeks={16}
+          macro={MACROCYCLES.find((m) => m.id === "ruso-5d")!}
           hoy={12}
           comps={[
             { name: "A", week: 12 },

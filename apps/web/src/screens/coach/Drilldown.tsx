@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
-import { MACROCYCLES, rosterStatus, type Atleta, type Macrocycle, type Medal, type MonitorSeries } from "@holy-oly/core";
+import { MACROCYCLES, rosterStatus, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
 import { AcwrChart } from "../../ui/charts/AcwrChart";
 import { LoadChart } from "../../ui/charts/LoadChart";
@@ -10,6 +10,7 @@ import { ImrFaseChart } from "../../ui/charts/ImrFaseChart";
 import { WellnessChart } from "../../ui/charts/WellnessChart";
 import { CompChart } from "../../ui/charts/CompChart";
 import { WeightChart } from "../../ui/charts/WeightChart";
+import { MacroTimeline } from "../../ui/charts/MacroTimeline";
 import { Medal as MedalIcon } from "../../ui/Medal";
 import { Badge } from "../../ui/Badge";
 
@@ -19,16 +20,17 @@ export function Drilldown() {
   const [athlete, setAthlete] = useState<Atleta | undefined>();
   const [series, setSeries] = useState<MonitorSeries | undefined>();
   const [medals, setMedals] = useState<Medal[]>([]);
+  const [comps, setComps] = useState<Competencia[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     let on = true;
     setLoaded(false); setError(false); // reset on athlete change so a prior error/data doesn't stick
-    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id)])
-      .then(([a, s, m]) => {
+    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id), repo.getComps(id)])
+      .then(([a, s, m, c]) => {
         if (!on) return;
-        setAthlete(a); setSeries(s); setMedals(m); setLoaded(true);
+        setAthlete(a); setSeries(s); setMedals(m); setComps(c); setLoaded(true);
       })
       .catch(() => { if (on) { setError(true); setLoaded(true); } });
     return () => { on = false; };
@@ -61,6 +63,7 @@ export function Drilldown() {
 
       {series ? (
         <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
+          {macro && <MacroTimeline macro={macro} hoy={series.weeks} comps={comps} />}
           <AcwrChart series={series} />
           <LoadChart series={series} />
           <RecoveryChart series={series} />

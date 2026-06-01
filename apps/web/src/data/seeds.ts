@@ -1,20 +1,25 @@
-import { recoverySeries, type Atleta, type Medal, type MonitorSeries, type CycleShare, type CycleState } from "@holy-oly/core";
+import { recoverySeries, type Atleta, type Competencia, type Medal, type MonitorSeries, type CycleShare, type CycleState } from "@holy-oly/core";
 
-/** Bump when SEED_* shapes change so already-seeded browsers re-seed (e.g. M4a added medals → v2). */
-export const SEED_VERSION = 3;
+/** Bump when SEED_* shapes change so already-seeded browsers re-seed (M4a medals → v2; M4c macroIds + comps → v4). */
+export const SEED_VERSION = 4;
 
 export interface RosterMeta { metodo: string; }
 
 export const SEED_ROSTER: Atleta[] = [
   { id: "mv", nombre: "Mara V.",  iniciales: "MV", nivel: "intermediate", compite: true,  macroId: "ruso-5d" },
-  { id: "ds", nombre: "Diego S.", iniciales: "DS", nivel: "intermediate", compite: true },
-  { id: "lr", nombre: "Lucía R.", iniciales: "LR", nivel: "intermediate", compite: true },
-  { id: "sm", nombre: "Sofía M.", iniciales: "SM", nivel: "advanced" },
-  { id: "tl", nombre: "Tomás L.", iniciales: "TL", nivel: "beginner" }, // NO series → no-data exemplar
-  { id: "ap", nombre: "Ana P.",   iniciales: "AP", nivel: "intermediate" },
-  { id: "bg", nombre: "Bruno G.", iniciales: "BG", nivel: "intermediate" },
-  { id: "cf", nombre: "Caro F.",  iniciales: "CF", nivel: "intermediate" },
+  { id: "ds", nombre: "Diego S.", iniciales: "DS", nivel: "intermediate", compite: true,  macroId: "usa-intermedio" },
+  { id: "lr", nombre: "Lucía R.", iniciales: "LR", nivel: "intermediate", compite: true,  macroId: "coreano-5d" },
+  { id: "sm", nombre: "Sofía M.", iniciales: "SM", nivel: "advanced",                     macroId: "bulgaro-6d" },
+  { id: "tl", nombre: "Tomás L.", iniciales: "TL", nivel: "beginner" }, // NO series ni macro → no-data exemplar
+  { id: "ap", nombre: "Ana P.",   iniciales: "AP", nivel: "intermediate",                 macroId: "cubano-int-5d" },
+  { id: "bg", nombre: "Bruno G.", iniciales: "BG", nivel: "intermediate",                 macroId: "hibrido-5d" },
+  { id: "cf", nombre: "Caro F.",  iniciales: "CF", nivel: "intermediate",                 macroId: "colombiano-5d" },
 ];
+
+// Mara's target competition (M4c seed). Others start with no comp → assigned from the sheet.
+export const SEED_COMPS: Record<string, Competencia[]> = {
+  mv: [{ name: "Nacional", week: 16 }],
+};
 
 export const ROSTER_META: Record<string, RosterMeta> = {
   mv: { metodo: "Ruso 5D" },        ds: { metodo: "USA Intermedio" },

@@ -1,4 +1,4 @@
-import { volumeCurve, isTaperWeek, type Competencia } from "@holy-oly/core";
+import { volumeCurve, isTaperWeek, type Competencia, type Macrocycle, type MacrocyclePhase } from "@holy-oly/core";
 
 const W = 320;
 const H = 160;
@@ -7,84 +7,58 @@ const BOT = H - 16; // 144
 const W0 = 10;
 const WW = W - 20; // 300
 
+// Phase ribbon colours, indexed by phase order (cycles past 4). phaseProfile carries no
+// colour — this is a render decision, not data.
+const RAMP = ["#6f86ff", "#2dd4e6", "#ffab2e", "#ff3b46"];
+
 function xw(w: number, NW: number): number {
   return W0 + ((w - 0.5) / NW) * WW;
 }
-
-function yv(v: number): number {
+// volRel is 0–100 (% of the cycle's own volume peak).
+function yvol(v: number): number {
   return TOP + (1 - v / 100) * (BOT - TOP - 6);
 }
-
-const PHASES: [string, number, number, string][] = [
-  ["Hiper", 1, 4, "#6f86ff"],
-  ["Fuerza", 5, 8, "#2dd4e6"],
-  ["Potencia", 9, 12, "#ffab2e"],
-  ["Peaking", 13, 16, "#ff3b46"],
-];
-
-function intAt(w: number, comps: Competencia[]): number {
-  let best = 62;
-  for (const c of comps) {
-    let d = c.week - w;
-    if (d < 0) d = -d * 1.6;
-    best = Math.max(best, 100 - d * 3.2);
-  }
-  return best;
+// imrPct (%1RM, ~70–110) midpoint mapped over a fixed 60–110 domain into the chart's y range.
+function yint(mid: number): number {
+  const n = Math.max(0, Math.min(1, (mid - 60) / 50));
+  return TOP + (1 - n) * (BOT - TOP - 6);
 }
 
 /**
- * Macrocycle timeline (phase ribbon + volume bars + intensity line + comp flags).
- * NOTE: tuned for 16-week macros — the phase ribbon and base wave are hardcoded to a
- * 4×4-week structure. M3 will make phases/wave data-driven from the Macrocycle's
- * phaseProfile. Volume bars come from core.volumeCurve; taper highlight from core.isTaperWeek.
+ * Macrocycle timeline (the drill-down's 8th chart) — fully data-driven from `macro.phaseProfile`:
+ *  - phase ribbon: one segment per phase (`phase.weeks`), label `phase.name`, colour by order;
+ *  - volume bars: base `phase.volRel` shaped by the taper before each comp (`core.volumeCurve`);
+ *  - intensity line: midpoint of `phase.imrPct` per week (ascending staircase);
+ *  - comp flags + HOY divider.
+ * X axis = macro duration (end of the last phase). HOY = current week (= the series length),
+ * which may sit inside the plan (series shorter than the macro) or at its edge.
  */
 export function MacroTimeline({
-  weeks,
+  macro,
   hoy,
   comps,
 }: {
-  weeks: number;
+  macro: Macrocycle;
   hoy: number;
   comps: Competencia[];
 }) {
-  const NW = weeks;
+  const phases = macro.phaseProfile;
+  const NW = phases.at(-1)?.weeks[1] ?? 1; // macro duration
+  const phaseAt = (w: number): MacrocyclePhase =>
+    phases.find((p) => w >= p.weeks[0] && w <= p.weeks[1]) ?? phases.at(-1)!;
 
-  // Base volume wave
-  const wave = [1, 0.9, 0.6, 0.45];
-  const pf = [1, 0.88, 0.72, 0.5];
-  const baseAt = (w: number): number => {
-    const wi = (w - 1) % 4;
-    const pi = Math.min(Math.floor((w - 1) / 4), pf.length - 1);
-    return wave[wi]! * pf[pi]! * 100;
-  };
-
-  const vol = volumeCurve(weeks, comps, baseAt);
+  const vol = volumeCurve(NW, comps, (w) => phaseAt(w).volRel);
 
   // Phase ribbon
-  const ribbon = PHASES.map(([label, s, e, color]) => {
-    const x0 = W0 + ((s - 1) / NW) * WW;
-    const x1 = W0 + (e / NW) * WW;
+  const ribbon = phases.map((p, i) => {
+    const x0 = W0 + ((p.weeks[0] - 1) / NW) * WW;
+    const x1 = W0 + (p.weeks[1] / NW) * WW;
     return (
-      <g key={label}>
-        <rect
-          x={x0}
-          y={10}
-          width={x1 - x0 - 2}
-          height={20}
-          rx={4}
-          style={{ fill: color, opacity: 0.85 }}
-        />
-        <text
-          x={(x0 + x1) / 2}
-          y={24}
-          textAnchor="middle"
-          fontSize={8.5}
-          fontWeight={700}
-          style={{ fill: "#0b0b11" }}
-          fontFamily="Chakra Petch"
-        >
-          {label}
-        </text>
+      <g key={p.key}>
+        <rect x={x0} y={10} width={Math.max(0, x1 - x0 - 2)} height={20} rx={4}
+          style={{ fill: RAMP[i % RAMP.length], opacity: 0.85 }} />
+        <text x={(x0 + x1) / 2} y={24} textAnchor="middle" fontSize={8.5} fontWeight={700}
+          style={{ fill: "#0b0b11" }} fontFamily="Chakra Petch">{p.name}</text>
       </g>
     );
   });
@@ -93,96 +67,48 @@ export function MacroTimeline({
   const bw = (WW / NW) * 0.62;
   const bars: JSX.Element[] = [];
   const ilPoints: [number, number][] = [];
-
-  for (let w = 1; w <= weeks; w++) {
+  for (let w = 1; w <= NW; w++) {
     const t = isTaperWeek(w, comps);
     const x = xw(w, NW);
     const v = vol[w - 1]!;
     bars.push(
-      <rect
-        key={w}
-        x={x - bw / 2}
-        y={yv(v)}
-        width={bw}
-        height={BOT - yv(v)}
-        rx={1}
-        style={{
-          fill: t ? "#ff3b46" : "var(--wl-text)",
-          opacity: t ? 0.5 : 0.18,
-        }}
-      />
+      <rect key={w} x={x - bw / 2} y={yvol(v)} width={bw} height={BOT - yvol(v)} rx={1}
+        style={{ fill: t ? "#ff3b46" : "var(--wl-text)", opacity: t ? 0.5 : 0.18 }} />,
     );
-    ilPoints.push([x, TOP + (1 - (intAt(w, comps) - 60) / 45) * (BOT - TOP - 6)]);
+    const ph = phaseAt(w);
+    ilPoints.push([x, yint((ph.imrPct[0] + ph.imrPct[1]) / 2)]);
   }
 
-  // Intensity line path
   const pathD = ilPoints
     .map(([px, py], i) => `${i === 0 ? "M" : "L"}${px.toFixed(1)} ${py.toFixed(1)}`)
     .join(" ");
-
   const intensityLine = (
-    <path
-      d={pathD}
-      style={{ fill: "none", stroke: "var(--wl-accent)", strokeWidth: 2.2 }}
-      strokeLinejoin="round"
-    />
+    <path d={pathD} style={{ fill: "none", stroke: "var(--wl-accent)", strokeWidth: 2.2 }} strokeLinejoin="round" />
   );
 
-  // HOY divider
-  const hoyX = xw(hoy, NW);
+  // HOY divider (clamped into the macro span)
+  const hoyX = xw(Math.min(Math.max(hoy, 1), NW), NW);
   const hoyEl = (
     <g key="hoy">
-      <line
-        x1={hoyX}
-        x2={hoyX}
-        y1={36}
-        y2={BOT}
-        style={{ stroke: "var(--wl-text)", opacity: 0.55 }}
-        strokeDasharray="3 2"
-      />
-      <text
-        x={hoyX}
-        y={H - 3}
-        textAnchor="middle"
-        fontSize={9}
-        style={{ fill: "var(--wl-text)" }}
-      >
-        HOY
-      </text>
+      <line x1={hoyX} x2={hoyX} y1={36} y2={BOT} style={{ stroke: "var(--wl-text)", opacity: 0.55 }} strokeDasharray="3 2" />
+      <text x={hoyX} y={H - 3} textAnchor="middle" fontSize={9} style={{ fill: "var(--wl-text)" }}>HOY</text>
     </g>
   );
 
-  // Flags — one per comp (tested)
+  // Flags — one per comp
   const flags = comps.map((c) => {
     const fx = xw(c.week, NW);
     return (
       <g key={`flag-${c.week}-${c.name}`}>
-        <line
-          x1={fx}
-          x2={fx}
-          y1={34}
-          y2={BOT}
-          style={{ stroke: "#ff3b46", opacity: 0.6 }}
-          strokeDasharray="2 2"
-        />
-        <text x={fx} y={40} textAnchor="middle" fontSize={11}>
-          🚩
-        </text>
-        <text
-          x={fx}
-          y={H - 3}
-          textAnchor="middle"
-          fontSize={9}
-          style={{ fill: "#ff3b46" }}
-        >
-          {c.name}
-        </text>
+        <line x1={fx} x2={fx} y1={34} y2={BOT} style={{ stroke: "#ff3b46", opacity: 0.6 }} strokeDasharray="2 2" />
+        <text x={fx} y={40} textAnchor="middle" fontSize={11}>🚩</text>
+        <text x={fx} y={H - 3} textAnchor="middle" fontSize={9} style={{ fill: "#ff3b46" }}>{c.name}</text>
       </g>
     );
   });
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={`Macrociclo ${weeks} semanas`}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={`Macrociclo ${macro.name} · ${NW} semanas`}>
       {ribbon}
       {bars}
       {intensityLine}
