@@ -1,5 +1,6 @@
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import cookie from "@fastify/cookie";
+import cors from "@fastify/cors";
 import type { UserRole } from "@prisma/client";
 import { prisma } from "./db/client";
 import * as repo from "./repo";
@@ -25,6 +26,8 @@ declare module "fastify" {
 export function buildServer(): FastifyInstance {
   const app = Fastify({ logger: true });
   app.register(cookie);
+  // Allow the front (cross-origin in dev) to send the session cookie. Set WEB_ORIGIN in prod.
+  app.register(cors, { origin: process.env.WEB_ORIGIN ?? true, credentials: true });
 
   app.setErrorHandler((err, _req, reply) => {
     reply.log.error(err);

@@ -4,9 +4,6 @@ import {
   type CycleShare, type CycleContext,
 } from "@holy-oly/core";
 
-/** Fase 1 stub auth header; replaced by real session auth in Fase 3. */
-const DEV_COACH = "coach-stub";
-
 interface Parser<T> {
   parse(data: unknown): T;
 }
@@ -27,7 +24,8 @@ export class HttpRepository implements Repository {
   constructor(private readonly baseUrl: string) {}
 
   private async fetchJson(path: string): Promise<{ status: number; ok: boolean; body: unknown }> {
-    const res = await fetch(`${this.baseUrl}${path}`, { headers: { "x-dev-coach": DEV_COACH } });
+    // The httpOnly session cookie (Fase 3) travels with the request; the API resolves the coach from it.
+    const res = await fetch(`${this.baseUrl}${path}`, { credentials: "include" });
     const body = res.status === 204 ? undefined : await res.json().catch(() => undefined);
     return { status: res.status, ok: res.ok, body };
   }

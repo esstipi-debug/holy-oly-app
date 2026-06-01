@@ -3,17 +3,17 @@ import type { MonitorSeries } from "@holy-oly/core";
 import { HttpRepository } from "./HttpRepository";
 
 const BASE = "http://api.test";
-const headersSeen: Array<Record<string, string>> = [];
+const initsSeen: Array<{ credentials?: string }> = [];
 
 function mock(status: number, body: unknown): typeof fetch {
-  return vi.fn(async (_url: string, init?: { headers?: Record<string, string> }) => {
-    headersSeen.push(init?.headers ?? {});
+  return vi.fn(async (_url: string, init?: { credentials?: string }) => {
+    initsSeen.push(init ?? {});
     return { ok: status >= 200 && status < 300, status, json: async () => body } as Response;
   }) as unknown as typeof fetch;
 }
 
 afterEach(() => {
-  headersSeen.length = 0;
+  initsSeen.length = 0;
   vi.restoreAllMocks();
 });
 
@@ -24,12 +24,12 @@ const series: MonitorSeries = {
 const ctx = { share: "full", inLutealNow: false, health: "ok", reliable: true };
 
 describe("HttpRepository", () => {
-  it("getRoster hits /roster with the coach header and validates the response", async () => {
+  it("getRoster hits /roster, sends the session cookie (credentials), and validates", async () => {
     global.fetch = mock(200, roster);
     const r = await new HttpRepository(BASE).getRoster();
     expect(r).toHaveLength(1);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(`${BASE}/roster`);
-    expect(headersSeen[0]?.["x-dev-coach"]).toBeTruthy();
+    expect(initsSeen[0]?.credentials).toBe("include");
   });
 
   it("getSeries returns undefined on 404", async () => {
@@ -55,7 +55,7 @@ describe("HttpRepository", () => {
   });
 
   it("rejects a structurally-invalid response (validates at the boundary)", async () => {
-    global.fetch = mock(200, [{ id: "x" }]); // missing required Atleta fields
+    global.fetch = mock(200, [{ id: "x" }]);
     await expect(new HttpRepository(BASE).getRoster()).rejects.toThrow();
   });
 
