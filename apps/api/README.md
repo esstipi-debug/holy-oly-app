@@ -4,7 +4,18 @@ Fastify + Prisma + Postgres. Coach-scoped **read** API that reuses `@holy-oly/co
 (same triage functions + Zod schemas). Auth is a **stub** in Fase 1 (dev header
 `x-dev-coach`); real session auth lands in Fase 3.
 
-## Run the DB + API (needs Docker / a reachable Postgres)
+## Verify end-to-end with ONE command (no Docker)
+
+Spins up a throwaway Postgres via `embedded-postgres` (UTF8), applies the committed
+migration, seeds, runs the integration tests, and tears everything down:
+
+```bash
+pnpm --filter @holy-oly/api verify
+```
+
+Use this when Docker isn't available. For a persistent local DB, use the Docker path below.
+
+## Run the DB + API (Docker, for a persistent local DB)
 
 ```bash
 cd apps/api

@@ -3,12 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsup src/server.ts --format esm --clean --no-splitting",
-    "start": "node dist/server.js",
+    "dev": "tsx watch src/main.ts",
+    "build": "tsup src/main.ts --format esm --clean --no-splitting",
+    "start": "node dist/main.js",
     "test": "vitest run",
-    "test:int": "vitest run --mode integration",
+    "test:int": "vitest run --config vitest.int.config.ts",
     "typecheck": "tsc --noEmit",
+    "verify": "tsx scripts/db-verify.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts"
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "embedded-postgres": "18.3.0-beta.17",
     "prisma": "^6.19.3",
     "tsup": "^8.5.1",
     "tsx": "^4.22.4",

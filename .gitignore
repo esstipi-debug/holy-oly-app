@@ -17,3 +17,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# embedded-postgres ephemeral data dirs (db-verify orchestrator)
+.pgdata*/
