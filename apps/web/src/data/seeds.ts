@@ -1,7 +1,7 @@
 import { recoverySeries, type Atleta, type Medal, type MonitorSeries, type CycleShare, type CycleState } from "@holy-oly/core";
 
 /** Bump when SEED_* shapes change so already-seeded browsers re-seed (e.g. M4a added medals → v2). */
-export const SEED_VERSION = 2;
+export const SEED_VERSION = 3;
 
 export interface RosterMeta { metodo: string; }
 
@@ -25,6 +25,7 @@ export const ROSTER_META: Record<string, RosterMeta> = {
 
 // Mara — real 12-week arrays from _mockup/coach.html; recovery precomputed.
 // Derived current-week cell: warn (acwr 0.74 deload + recovery 77).
+// M4b optional fields seeded only for Mara (showcase athlete); others stay as-is.
 const MARA_BASE: Omit<MonitorSeries, "recovery"> = {
   weeks: 12,
   acute: [300, 320, 340, 300, 360, 380, 400, 320, 420, 700, 380, 340],
@@ -32,6 +33,19 @@ const MARA_BASE: Omit<MonitorSeries, "recovery"> = {
   rhr: [49, 50, 50, 48, 51, 50, 52, 49, 53, 56, 54, 50], rhrBase: 50,
   imr: [66, 68, 70, 69, 76, 78, 80, 79, 86, 93, 88, 89],
   wellness: [82, 80, 78, 83, 74, 72, 70, 80, 66, 58, 62, 70],
+  // M4b: compliance/rpe/bodyweight/weightBand/wellnessItems — coherent with week-10 overreach spike
+  compliance: [95, 92, 98, 90, 94, 88, 96, 91, 85, 72, 90, 94],
+  rpe: [7, 7, 8, 7, 8, 8, 9, 7, 9, 10, 8, 7],
+  bodyweight: [81.2, 81.1, 80.9, 80.8, 80.9, 80.7, 80.6, 80.5, 80.6, 80.3, 80.4, 80.8],
+  weightBand: [80, 81],
+  wellnessItems: {
+    Fatiga:     [2, 2, 3, 2, 3, 3, 4, 2, 4, 5, 3, 2],
+    Dolor:      [1, 2, 2, 1, 2, 2, 3, 2, 3, 4, 2, 2],
+    Estrés:     [2, 2, 2, 3, 3, 3, 3, 2, 4, 4, 3, 2],
+    Humor:      [4, 4, 4, 4, 3, 3, 3, 4, 2, 1, 3, 4],
+    Motivación: [5, 5, 4, 4, 4, 4, 3, 4, 3, 2, 4, 5],
+    Sueño:      [4, 4, 4, 4, 3, 3, 3, 4, 2, 1, 3, 4],
+  },
 };
 
 const withRec = (b: Omit<MonitorSeries, "recovery">): MonitorSeries =>

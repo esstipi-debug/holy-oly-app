@@ -44,6 +44,12 @@ export interface MonitorSeries {
   imr: number[];
   wellness: number[];
   recovery: number[];
+  // M4b (optional, append-only — back the Cumplimiento / Peso / Bienestar-ítems charts)
+  compliance?: number[];                 // % completado por semana (0..100)
+  rpe?: number[];                        // RPE medio por semana (~5..10)
+  bodyweight?: number[];                 // peso corporal por semana (kg)
+  weightBand?: [number, number];         // banda objetivo de categoría [lo, hi]
+  wellnessItems?: Record<string, number[]>; // ítems 1..5 por semana (Fatiga/Dolor/Estrés/Humor/Motivación/Sueño)
 }
 
 export type CycleShare = "full" | "min" | "none";
