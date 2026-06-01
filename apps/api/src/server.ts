@@ -5,6 +5,8 @@ import { prisma } from "./db/client";
 import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
 import { authRoutes, SESSION_COOKIE } from "./auth/routes";
+import { vinculoRoutes } from "./vinculo/routes";
+import { requireCoach } from "./auth/guards";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -47,16 +49,9 @@ export function buildServer(): FastifyInstance {
   });
 
   app.register(authRoutes);
+  app.register(vinculoRoutes);
 
   app.get("/health", async () => ({ ok: true }));
-
-  function requireCoach(req: FastifyRequest, reply: FastifyReply): string | undefined {
-    if (!req.coachId) {
-      reply.code(401).send({ error: "coach session required" });
-      return undefined;
-    }
-    return req.coachId;
-  }
 
   // Athlete-scoped read: requires a coach session + an active Vinculo to the athlete.
   const guardAthlete = async (req: FastifyRequest, reply: FastifyReply, id: string): Promise<boolean> => {
