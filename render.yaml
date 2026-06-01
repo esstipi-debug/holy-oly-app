@@ -1,13 +1,32 @@
-# Render Blueprint — Holy Oly (prototipo estático)
-# Publica la carpeta _mockup como Static Site.
+# Render Blueprint — Holy Oly web app (apps/web, Vite SPA).
+# Builds and publishes the real React app (was: the static _mockup folder).
+# NOTE: provisioning the Render service still needs the account owner's login.
 services:
   - type: web
     name: holy-oly
     runtime: static
-    buildCommand: echo "sitio estatico, sin build"
-    staticPublishPath: ./_mockup
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @holy-oly/web build
+    staticPublishPath: ./apps/web/dist
     pullRequestPreviewsEnabled: false
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+    # SPA fallback so client-side routes (e.g. /coach/a/:id) resolve to index.html.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    # Cheap baseline security headers (full CSP/HSTS deferred to Fase 6 hardening).
     headers:
-      - path: /sw.js
-        name: Cache-Control
-        value: no-cache
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()

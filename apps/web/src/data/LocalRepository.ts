@@ -2,6 +2,10 @@ import type {
   Repository, Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleState, CycleContext,
 } from "@holy-oly/core";
+import {
+  RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
+  CompsSchema, CycleShareSchema, CycleStateSchema,
+} from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
 import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE, SEED_MEDALS, SEED_VERSION } from "./seeds";
@@ -26,42 +30,51 @@ export class LocalRepository implements Repository {
     this.s.set(KEYS.seeded, SEED_VERSION);
   }
 
-  async getRoster(): Promise<Atleta[]> { return this.s.get<Atleta[]>(KEYS.roster, []); }
+  async getRoster(): Promise<Atleta[]> {
+    // All-or-nothing: one invalid athlete rejects the whole roster → []. Acceptable because
+    // the roster is seeded atomically and SEED_VERSION re-seeds on shape changes.
+    const r = RosterSchema.safeParse(this.s.getOptional<unknown>(KEYS.roster));
+    return r.success ? r.data : [];
+  }
   async getAthlete(id: string): Promise<Atleta | undefined> {
     return (await this.getRoster()).find((a) => a.id === id);
   }
   async getSeries(id: string): Promise<MonitorSeries | undefined> {
-    return this.s.getOptional<MonitorSeries>(KEYS.series(id));
+    const r = MonitorSeriesSchema.safeParse(this.s.getOptional<unknown>(KEYS.series(id)));
+    return r.success ? r.data : undefined;
   }
   async getPlan(id: string): Promise<Plan | undefined> {
-    return this.s.getOptional<Plan>(KEYS.plan(id));
+    const r = PlanSchema.safeParse(this.s.getOptional<unknown>(KEYS.plan(id)));
+    return r.success ? r.data : undefined;
   }
   async savePlan(plan: Plan): Promise<void> { this.s.set(KEYS.plan(plan.atletaId), plan); }
-  async getMedals(id: string): Promise<Medal[]> { return this.s.get<Medal[]>(KEYS.medals(id), []); }
+  async getMedals(id: string): Promise<Medal[]> {
+    const r = MedalsSchema.safeParse(this.s.getOptional<unknown>(KEYS.medals(id)));
+    return r.success ? r.data : [];
+  }
   async addMedal(id: string, medal: Medal): Promise<void> {
     this.s.set(KEYS.medals(id), [...(await this.getMedals(id)), medal]);
   }
-  async getComps(id: string): Promise<Competencia[]> { return this.s.get<Competencia[]>(KEYS.comps(id), []); }
+  async getComps(id: string): Promise<Competencia[]> {
+    const r = CompsSchema.safeParse(this.s.getOptional<unknown>(KEYS.comps(id)));
+    return r.success ? r.data : [];
+  }
   async setComps(id: string, comps: Competencia[]): Promise<void> { this.s.set(KEYS.comps(id), comps); }
 
   async getCycleShare(id: string): Promise<CycleShare> {
-    return this.s.get<CycleShare>(KEYS.cycleShare(id), "none");
+    const r = CycleShareSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleShare(id)));
+    return r.success ? r.data : "none";
   }
   /** Redaction by construction: never exposes phase/day/symptom. */
   async getCycleContext(id: string): Promise<CycleContext | undefined> {
     const share = await this.getCycleShare(id);
     if (share === "none") return undefined;
-    const state = this.s.get<CycleState>(KEYS.cycleState(id), "regular");
+    const stateParsed = CycleStateSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleState(id)));
+    const state: CycleState = stateParsed.success ? stateParsed.data : "regular";
     const reliable = state === "regular";
     const health: CycleContext["health"] = state === "amenorrhea" ? "referral" : "ok";
     // "min" share never reveals the luteal flag; "full" could (placeholder false until the athlete slice computes it).
     const inLutealNow = share === "full" ? false : null;
     return { share, inLutealNow, health, reliable };
-  }
-
-  /** Test-only cycle writer (no coach-facing cycle setter exists by design). */
-  __setCycleForTest(id: string, share: CycleShare, state: CycleState): void {
-    this.s.set(KEYS.cycleShare(id), share);
-    this.s.set(KEYS.cycleState(id), state);
   }
 }

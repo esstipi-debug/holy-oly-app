@@ -1,4 +1,9 @@
-/** Typed JSON over a Storage (default localStorage). Corrupt/missing → fallback. */
+/**
+ * Typed JSON over a Storage (default localStorage). Corrupt/missing → fallback.
+ * NOTE: `get`/`getOptional` are unchecked `as T` casts. Domain reads MUST validate the
+ * result against a core Zod schema (see LocalRepository); the bare casts are only for
+ * internal/non-domain keys (e.g. the numeric seed version).
+ */
 export class JsonStore {
   constructor(private readonly backend: Storage) {}
 

@@ -2,17 +2,9 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { RepositoryProvider } from "../../../data/RepositoryProvider";
 import { LocalRepository } from "../../../data/LocalRepository";
+import { MemStorage } from "../../../test-utils/MemStorage";
+import type { Atleta } from "@holy-oly/core";
 import { Drilldown } from "../Drilldown";
-
-class MemStorage implements Storage {
-  private m = new Map<string, string>();
-  get length() { return this.m.size; }
-  clear() { this.m.clear(); }
-  getItem(k: string) { return this.m.get(k) ?? null; }
-  key(i: number) { return [...this.m.keys()][i] ?? null; }
-  removeItem(k: string) { this.m.delete(k); }
-  setItem(k: string, v: string) { this.m.set(k, v); }
-}
 
 function renderAt(id: string) {
   const repo = new LocalRepository(new MemStorage());
@@ -43,4 +35,18 @@ test("no-data athlete (Tomás) shows an empty state, not charts", async () => {
   renderAt("tl");
   await waitFor(() => expect(screen.getByText("Tomás L.")).toBeInTheDocument());
   expect(screen.getByText(/sin datos de monitoreo/i)).toBeInTheDocument();
+});
+
+test("shows an error state when the athlete fails to load", async () => {
+  class FailingRepo extends LocalRepository {
+    async getAthlete(): Promise<Atleta | undefined> { throw new Error("boom"); }
+  }
+  render(
+    <RepositoryProvider repo={new FailingRepo(new MemStorage())}>
+      <MemoryRouter initialEntries={["/coach/a/mv"]}>
+        <Routes><Route path="/coach/a/:id" element={<Drilldown />} /></Routes>
+      </MemoryRouter>
+    </RepositoryProvider>,
+  );
+  expect(await screen.findByText(/no se pudo cargar el atleta/i)).toBeInTheDocument();
 });

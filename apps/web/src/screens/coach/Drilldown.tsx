@@ -20,17 +20,22 @@ export function Drilldown() {
   const [series, setSeries] = useState<MonitorSeries | undefined>();
   const [medals, setMedals] = useState<Medal[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     let on = true;
-    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id)]).then(([a, s, m]) => {
-      if (!on) return;
-      setAthlete(a); setSeries(s); setMedals(m); setLoaded(true);
-    });
+    setLoaded(false); setError(false); // reset on athlete change so a prior error/data doesn't stick
+    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id)])
+      .then(([a, s, m]) => {
+        if (!on) return;
+        setAthlete(a); setSeries(s); setMedals(m); setLoaded(true);
+      })
+      .catch(() => { if (on) { setError(true); setLoaded(true); } });
     return () => { on = false; };
   }, [repo, id]);
 
-  if (!loaded) return <div style={{ padding: 24, color: "var(--wl-muted)" }} />;
+  if (!loaded) return <div aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)" }}>Cargando…</div>;
+  if (error) return <div style={{ padding: 24, color: "var(--wl-text)" }}>No se pudo cargar el atleta. Reintentá.</div>;
   if (!athlete) return <div style={{ padding: 24, color: "var(--wl-text)" }}>Atleta no encontrado.</div>;
 
   const macro: Macrocycle | undefined = athlete.macroId ? MACROCYCLES.find((m) => m.id === athlete.macroId) : undefined;
@@ -83,7 +88,7 @@ export function Drilldown() {
         <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>Sin medallas registradas.</div>
       ) : (
         medals.map((m, i) => (
-          <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", padding: "6px 0", borderTop: "1px solid color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
+          <div key={`${m.date}-${m.comp}-${m.medal}-${i}`} style={{ display: "flex", gap: 10, alignItems: "center", padding: "6px 0", borderTop: "1px solid color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
             <MedalIcon metal={m.medal} size={26} />
             <div>
               <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12 }}>{m.comp}</div>

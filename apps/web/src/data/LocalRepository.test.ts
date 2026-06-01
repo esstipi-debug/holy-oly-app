@@ -2,17 +2,7 @@ import { beforeEach, describe, it, expect } from "vitest";
 import { LocalRepository } from "./LocalRepository";
 import type { Medal } from "@holy-oly/core";
 import { KEYS } from "./keys";
-
-// In-memory Storage shim (no jsdom localStorage needed).
-class MemStorage implements Storage {
-  private m = new Map<string, string>();
-  get length() { return this.m.size; }
-  clear() { this.m.clear(); }
-  getItem(k: string) { return this.m.get(k) ?? null; }
-  key(i: number) { return [...this.m.keys()][i] ?? null; }
-  removeItem(k: string) { this.m.delete(k); }
-  setItem(k: string, v: string) { this.m.set(k, v); }
-}
+import { MemStorage, seedCycle } from "../test-utils/MemStorage";
 
 const medal: Medal = { comp: "Nacional", date: "2026-03-01", cat: "73kg", medal: "oro", sn: 90, cj: 115, place: "1" };
 
@@ -45,15 +35,25 @@ describe("LocalRepository", () => {
     const mara = await repo.getCycleContext("mv");
     expect(mara?.share).toBe("full");
     expect(mara?.health).toBe("ok");
-    await repo.__setCycleForTest("ds", "full", "amenorrhea");
+    seedCycle(store, "ds", "full", "amenorrhea");
     expect((await repo.getCycleContext("ds"))?.health).toBe("referral");
-    await repo.__setCycleForTest("lr", "none", "regular");
+    seedCycle(store, "lr", "none", "regular");
     expect(await repo.getCycleContext("lr")).toBeUndefined();
   });
 
   it("corrupt JSON falls back instead of throwing", async () => {
     store.setItem("ho:roster", "{not json");
     await expect(repo.getRoster()).resolves.toBeInstanceOf(Array);
+  });
+
+  it("rejects structurally-invalid roster (valid JSON, wrong shape) and falls back to []", async () => {
+    store.setItem(KEYS.roster, JSON.stringify([{ id: "x" }])); // missing required Atleta fields
+    expect(await repo.getRoster()).toEqual([]);
+  });
+
+  it("rejects a malformed series and returns undefined (no NaN into the charts)", async () => {
+    store.setItem(KEYS.series("mv"), JSON.stringify({ weeks: 12 })); // missing the numeric arrays
+    expect(await repo.getSeries("mv")).toBeUndefined();
   });
 
   it("re-seeds when the stored seed version is stale (old boolean ho:seeded)", async () => {

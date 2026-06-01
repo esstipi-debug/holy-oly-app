@@ -2,17 +2,9 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { RepositoryProvider } from "../../../data/RepositoryProvider";
 import { LocalRepository } from "../../../data/LocalRepository";
+import { MemStorage } from "../../../test-utils/MemStorage";
+import type { Atleta } from "@holy-oly/core";
 import { Equipo } from "../Equipo";
-
-class MemStorage implements Storage {
-  private m = new Map<string, string>();
-  get length() { return this.m.size; }
-  clear() { this.m.clear(); }
-  getItem(k: string) { return this.m.get(k) ?? null; }
-  key(i: number) { return [...this.m.keys()][i] ?? null; }
-  removeItem(k: string) { this.m.delete(k); }
-  setItem(k: string, v: string) { this.m.set(k, v); }
-}
 
 function renderEquipo() {
   const repo = new LocalRepository(new MemStorage());
@@ -50,4 +42,18 @@ test("clicking a name navigates to /coach/a/:id", async () => {
   await waitFor(() => screen.getByRole("button", { name: "Mara V." }));
   fireEvent.click(screen.getByRole("button", { name: "Mara V." }));
   await waitFor(() => expect(screen.getByText("DRILLDOWN")).toBeInTheDocument());
+});
+
+test("shows an error state when the roster fails to load", async () => {
+  class FailingRepo extends LocalRepository {
+    async getRoster(): Promise<Atleta[]> { throw new Error("boom"); }
+  }
+  render(
+    <RepositoryProvider repo={new FailingRepo(new MemStorage())}>
+      <MemoryRouter initialEntries={["/coach"]}>
+        <Routes><Route path="/coach" element={<Equipo />} /></Routes>
+      </MemoryRouter>
+    </RepositoryProvider>,
+  );
+  expect(await screen.findByText(/no se pudo cargar/i)).toBeInTheDocument();
 });
