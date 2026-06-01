@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
 import { getRosterRows, type RosterRow } from "./roster";
 import { Heatmap } from "../../ui/charts/Heatmap";
@@ -41,7 +41,10 @@ export function Equipo() {
 
   return (
     <div style={{ padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)", minHeight: "100vh", maxWidth: 390, margin: "0 auto" }}>
-      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 22, lineHeight: 1 }}>Plantel</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 22, lineHeight: 1 }}>Plantel</div>
+        <Link to="/coach/invitaciones" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-accent)", textDecoration: "none" }}>Invitaciones ›</Link>
+      </div>
 
       {error ? (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "16px 0" }}>No se pudo cargar el plantel. Reintentá.</div>

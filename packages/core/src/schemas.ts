@@ -76,3 +76,27 @@ export const CycleContextSchema = z.object({
   health: z.enum(["ok", "referral"]),
   reliable: z.boolean(),
 });
+
+// ── Auth + Vínculo wire shapes (Fase 3). The front parses every API response against
+// these instead of casting `unknown` — same boundary discipline as the reads above. ──
+export const RoleSchema = z.enum(["coach", "atleta"]);
+
+export const AuthUserSchema = z.object({
+  id: z.string(),
+  role: RoleSchema,
+  coachId: z.string().nullable(),
+  athleteId: z.string().nullable(),
+});
+
+export const VinculoEstadoSchema = z.enum(["pendiente", "activo", "rechazado", "revocado"]);
+
+export const VinculoRowSchema = z.object({
+  id: z.string(),
+  estado: VinculoEstadoSchema,
+  athlete: z.object({ id: z.string(), nombre: z.string(), iniciales: z.string() }),
+});
+export const VinculoRowsSchema = z.array(VinculoRowSchema);
+
+export const InviteSchema = z.object({ inviteCode: z.string().nullable() });
+export const InviteCodeSchema = z.object({ inviteCode: z.string() });
+export const AcceptResultSchema = z.object({ id: z.string(), estado: VinculoEstadoSchema });
