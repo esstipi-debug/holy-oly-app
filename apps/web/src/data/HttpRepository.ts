@@ -9,8 +9,8 @@ interface Parser<T> {
 }
 
 class HttpError extends Error {
-  constructor(public readonly status: number, path: string) {
-    super(`API ${status} for ${path}`);
+  constructor(public readonly status: number, path: string, detail?: string) {
+    super(`API ${status} for ${path}${detail ? `: ${detail}` : ""}`);
     this.name = "HttpError";
   }
 }
@@ -79,14 +79,27 @@ export class HttpRepository implements Repository {
     return (await this.getCycleContext(id))?.share ?? "none";
   }
 
-  // ── Writes arrive in Fase 4 (API is read-only in Fase 1). Unreachable from the current UI. ──
-  async savePlan(): Promise<void> {
-    throw new Error("HttpRepository.savePlan: writes arrive in Fase 4");
+  // ── Writes (Fase 4). Coach-authorized; the httpOnly session cookie carries the principal. ──
+  private async mutate(path: string, method: "POST" | "PUT", body: unknown): Promise<void> {
+    const res = await fetch(`${this.baseUrl}${path}`, {
+      method,
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    // Consume the body (like fetchJson) so the connection is released and API errors surface.
+    const payload = (await res.json().catch(() => undefined)) as { error?: string } | undefined;
+    if (!res.ok) throw new HttpError(res.status, path, payload?.error);
   }
-  async addMedal(): Promise<void> {
-    throw new Error("HttpRepository.addMedal: writes arrive in Fase 4");
+
+  // The interface gives no separate id; the path athlete is plan.atletaId (server enforces the match).
+  async savePlan(plan: Plan): Promise<void> {
+    return this.mutate(this.athletePath(plan.atletaId, "plan"), "PUT", plan);
   }
-  async setComps(): Promise<void> {
-    throw new Error("HttpRepository.setComps: writes arrive in Fase 4");
+  async addMedal(id: string, medal: Medal): Promise<void> {
+    return this.mutate(this.athletePath(id, "medals"), "POST", medal);
+  }
+  async setComps(id: string, comps: Competencia[]): Promise<void> {
+    return this.mutate(this.athletePath(id, "comps"), "PUT", comps);
   }
 }

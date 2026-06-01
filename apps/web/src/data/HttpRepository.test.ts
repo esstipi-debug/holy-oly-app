@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import type { MonitorSeries } from "@holy-oly/core";
+import type { MonitorSeries, Plan, Medal, Competencia } from "@holy-oly/core";
 import { HttpRepository } from "./HttpRepository";
 
 const BASE = "http://api.test";
-const initsSeen: Array<{ credentials?: string }> = [];
+const initsSeen: Array<{ method?: string; credentials?: string; body?: string }> = [];
 
 function mock(status: number, body: unknown): typeof fetch {
-  return vi.fn(async (_url: string, init?: { credentials?: string }) => {
+  return vi.fn(async (_url: string, init?: { method?: string; credentials?: string; body?: string }) => {
     initsSeen.push(init ?? {});
     return { ok: status >= 200 && status < 300, status, json: async () => body } as Response;
   }) as unknown as typeof fetch;
@@ -59,7 +59,39 @@ describe("HttpRepository", () => {
     await expect(new HttpRepository(BASE).getRoster()).rejects.toThrow();
   });
 
-  it("write methods throw until Fase 4", async () => {
-    await expect(new HttpRepository(BASE).addMedal()).rejects.toThrow(/Fase 4/);
+  it("savePlan PUTs the plan to the athlete path (id from plan.atletaId, with credentials)", async () => {
+    global.fetch = mock(200, { ok: true });
+    const plan: Plan = {
+      atletaId: "mv", macroId: "ruso-5d", startWeek: 1,
+      rms: { arranque: 90, envion: 115, sentadilla: 150, frente: 120 }, comps: [],
+    };
+    await new HttpRepository(BASE).savePlan(plan);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(`${BASE}/athletes/mv/plan`);
+    expect(initsSeen[0]?.method).toBe("PUT");
+    expect(initsSeen[0]?.credentials).toBe("include");
+    expect(JSON.parse(initsSeen[0]?.body ?? "{}")).toEqual(plan);
+  });
+
+  it("addMedal POSTs the medal to the medals path", async () => {
+    global.fetch = mock(201, { ok: true });
+    const medal: Medal = { comp: "Open", date: "2026-05", cat: "81kg", medal: "oro", sn: 90, cj: 115, place: "1º" };
+    await new HttpRepository(BASE).addMedal("mv", medal);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(`${BASE}/athletes/mv/medals`);
+    expect(initsSeen[0]?.method).toBe("POST");
+    expect(JSON.parse(initsSeen[0]?.body ?? "{}")).toEqual(medal);
+  });
+
+  it("setComps PUTs the comps array to the comps path", async () => {
+    global.fetch = mock(200, { ok: true });
+    const comps: Competencia[] = [{ name: "Nacional", week: 16 }];
+    await new HttpRepository(BASE).setComps("mv", comps);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(`${BASE}/athletes/mv/comps`);
+    expect(initsSeen[0]?.method).toBe("PUT");
+    expect(JSON.parse(initsSeen[0]?.body ?? "{}")).toEqual(comps);
+  });
+
+  it("a failed write throws HttpError", async () => {
+    global.fetch = mock(403, { error: "forbidden" });
+    await expect(new HttpRepository(BASE).setComps("mv", [])).rejects.toThrow();
   });
 });
