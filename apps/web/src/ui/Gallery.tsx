@@ -8,6 +8,7 @@ import { WeekPicker } from "./WeekPicker";
 import { DiscRow } from "./Disc";
 import { Medal } from "./Medal";
 import { MacroTimeline } from "./charts/MacroTimeline";
+import { MacroPeriodization } from "./charts/MacroPeriodization";
 import { MACROCYCLES } from "@holy-oly/core";
 
 type Skin = "plates" | "neon" | "chalk" | "premium" | "neonlight";
@@ -203,6 +204,13 @@ export function Gallery() {
           ]}
         />
       </Card>
+
+      {/* MacroPeriodization (program-level detail — ported from _mockup) */}
+      <div style={LABEL as React.CSSProperties}>MacroPeriodization · Cubano Intermedio 5D</div>
+      <MacroPeriodization macro={MACROCYCLES.find((m) => m.id === "cubano-int-5d")!} />
+
+      <div style={LABEL as React.CSSProperties}>MacroPeriodization · Ruso 5D (con pico)</div>
+      <MacroPeriodization macro={MACROCYCLES.find((m) => m.id === "ruso-5d")!} />
 
       <div style={{ height: 32 }} />
     </div>
