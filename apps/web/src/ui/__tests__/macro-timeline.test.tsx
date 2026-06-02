@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { MACROCYCLES } from "@holy-oly/core";
 import { MacroTimeline } from "../charts/MacroTimeline";
 
@@ -18,4 +18,10 @@ test("derives the phase ribbon from the macro's phaseProfile", () => {
   for (const p of ruso.phaseProfile) expect(labels).toContain(p.name);
   // X axis = macro duration (end of the last phase), not the series length.
   expect(container.querySelector("svg")?.getAttribute("aria-label")).toContain(String(ruso.phaseProfile.at(-1)!.weeks[1]));
+});
+
+test("MacroTimeline: va en ChartCard (título + ⓘ de contexto)", () => {
+  render(<MacroTimeline macro={ruso} hoy={3} comps={[]} />);
+  expect(screen.getByText(/Macrociclo · línea de tiempo/)).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /cómo se lee/i })).toBeInTheDocument();
 });

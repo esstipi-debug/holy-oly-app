@@ -27,6 +27,11 @@ export function CompChart({ series, onPointClick }: { series: MonitorSeries; onP
       }}
     >
       <svg viewBox={`0 0 300 ${H}`} width="100%" height={H}>
+        {[85, 70].map((thr) => (
+          <line key={thr} x1={0} x2={300} y1={y(thr)} y2={y(thr)}
+            style={{ stroke: thr === 85 ? STATUS.ok : STATUS.warn, opacity: 0.35 } as React.CSSProperties}
+            strokeDasharray="2 3" />
+        ))}
         {comp.map((v, i) => {
           const cx = x(i + 1);
           const cy = y(v);

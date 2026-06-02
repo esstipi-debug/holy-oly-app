@@ -23,3 +23,13 @@ test("renders the wellness score chart and a sparkline per item", () => {
     expect(screen.getByText(k)).toBeInTheDocument();
   }
 });
+
+test("WellnessChart: no muestra el número plano del ítem (HR-1)", () => {
+  const solo = {
+    weeks: 1, acute: [], hrv: [], hrvBase: 70, rhr: [], rhrBase: 50, imr: [],
+    wellness: [80], recovery: [], wellnessItems: { Fatiga: [3] },
+  } as unknown as MonitorSeries;
+  render(<WellnessChart series={solo} />);
+  expect(screen.getByText("Fatiga")).toBeInTheDocument();
+  expect(screen.queryByText("3")).not.toBeInTheDocument();
+});

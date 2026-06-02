@@ -13,7 +13,7 @@ export function ImrFaseChart({ series, macro, onPointClick }: { series: MonitorS
   return (
     <ChartCard
       title="IMR vs fase"
-      sub="banda = lo que el programa espera (se mueve por fase)"
+      sub="corredor esperado de la fase ±2 (se mueve con el macro)"
       chip={Number.isFinite(imr.at(-1)) ? String(imr.at(-1)) : undefined}
       chipState={imr.at(-1) != null ? imrStateForWeekSafe(imr.at(-1)!, macro, weeks) : undefined}
       explain={{
@@ -28,9 +28,9 @@ export function ImrFaseChart({ series, macro, onPointClick }: { series: MonitorS
           <g key={phase.key}>
             <rect
               x={x(phase.weeks[0])}
-              y={y(phase.imrPct[1])}
+              y={y(Math.min(hi, phase.imrPct[1] + 2))}
               width={x(phase.weeks[1]) - x(phase.weeks[0])}
-              height={y(phase.imrPct[0]) - y(phase.imrPct[1])}
+              height={y(Math.max(lo, phase.imrPct[0] - 2)) - y(Math.min(hi, phase.imrPct[1] + 2))}
               style={{ fill: STATUS.ok, opacity: 0.16 } as React.CSSProperties}
             />
             <line

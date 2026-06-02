@@ -1,4 +1,6 @@
 import { volumeCurve, isTaperWeek, type Competencia, type Macrocycle, type MacrocyclePhase } from "@holy-oly/core";
+import { ChartCard } from "./chartkit";
+import { STATUS } from "../status";
 
 const W = 320;
 const H = 160;
@@ -7,9 +9,9 @@ const BOT = H - 16; // 144
 const W0 = 10;
 const WW = W - 20; // 300
 
-// Phase ribbon colours, indexed by phase order (cycles past 4). phaseProfile carries no
-// colour — this is a render decision, not data.
-const RAMP = ["#6f86ff", "#2dd4e6", "#ffab2e", "#ff3b46"];
+// Paleta neutra de fases (categórica, NO semáforo — no colisiona con STATUS verde/amarillo/rojo).
+// phaseProfile no trae color — es decisión de render, no dato.
+const RAMP = ["#6f86ff", "#22b8cf", "#a78bfa", "#94a3b8"];
 
 function xw(w: number, NW: number): number {
   return W0 + ((w - 0.5) / NW) * WW;
@@ -73,7 +75,7 @@ export function MacroTimeline({
     const v = vol[w - 1]!;
     bars.push(
       <rect key={w} x={x - bw / 2} y={yvol(v)} width={bw} height={BOT - yvol(v)} rx={1}
-        style={{ fill: t ? "#ff3b46" : "var(--wl-text)", opacity: t ? 0.5 : 0.18 }} />,
+        style={{ fill: t ? STATUS.alert : "var(--wl-text)", opacity: t ? 0.5 : 0.18 }} />,
     );
     const ph = phaseAt(w);
     ilPoints.push([x, yint((ph.imrPct[0] + ph.imrPct[1]) / 2)]);
@@ -100,20 +102,29 @@ export function MacroTimeline({
     const fx = xw(c.week, NW);
     return (
       <g key={`flag-${c.week}-${c.name}`}>
-        <line x1={fx} x2={fx} y1={34} y2={BOT} style={{ stroke: "#ff3b46", opacity: 0.6 }} strokeDasharray="2 2" />
+        <line x1={fx} x2={fx} y1={34} y2={BOT} style={{ stroke: STATUS.alert, opacity: 0.6 }} strokeDasharray="2 2" />
         <text x={fx} y={40} textAnchor="middle" fontSize={11}>🚩</text>
-        <text x={fx} y={H - 3} textAnchor="middle" fontSize={9} style={{ fill: "#ff3b46" }}>{c.name}</text>
+        <text x={fx} y={H - 3} textAnchor="middle" fontSize={9} style={{ fill: STATUS.alert }}>{c.name}</text>
       </g>
     );
   });
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={`Macrociclo ${macro.name} · ${NW} semanas`}>
-      {ribbon}
-      {bars}
-      {intensityLine}
-      {hoyEl}
-      {flags}
-    </svg>
+    <ChartCard
+      title="Macrociclo · línea de tiempo"
+      explain={{
+        forma: "Volumen semanal (barras) + intensidad media por fase (línea) a lo largo del macro, con el taper antes de cada competencia.",
+        sirve: "Ver el camino a la competencia y cómo se reestructura el volumen para picar.",
+        lectura: "Cinta de fases arriba; 🚩 = competencia; HOY = semana actual; el taper baja las barras antes de cada 🚩.",
+      }}
+    >
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={`Macrociclo ${macro.name} · ${NW} semanas`}>
+        {ribbon}
+        {bars}
+        {intensityLine}
+        {hoyEl}
+        {flags}
+      </svg>
+    </ChartCard>
   );
 }

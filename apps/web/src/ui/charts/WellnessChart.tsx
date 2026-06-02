@@ -19,21 +19,33 @@ export function WellnessChart({ series, onPointClick }: { series: MonitorSeries;
     return linePath(arr.map((v, i) => [sx(i), sy(v)]));
   }
 
+  const valid = wsc.filter((v) => Number.isFinite(v));
+  const mean = valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : 0;
+  const std = valid.length ? Math.sqrt(valid.reduce((a, b) => a + (b - mean) ** 2, 0) / valid.length) : 0;
   const lastWsc = wsc.at(-1);
 
   return (
     <ChartCard
       title="Bienestar"
-      sub="puntaje 0–100 + ítems (1–5)"
+      sub="puntaje 0–100 vs tu normal · ítems"
       chip={lastWsc != null ? String(lastWsc) : undefined}
       explain={{
         forma: "Score de bienestar (0–100) + 6 ítems del cuestionario (fatiga, dolor, estrés, humor, motivación, sueño) como tendencias.",
         sirve: "Contexto subjetivo que complementa las señales fisiológicas.",
-        lectura: "Tendencia de cada ítem vs su normal; el score resume el conjunto.",
+        lectura: "El score se lee contra tu propia normal (banda media±desvío); cada ítem vs su tendencia.",
       }}
     >
       {/* Score area + line chart */}
       <svg viewBox={`0 0 300 ${H}`} width="100%" height={H}>
+        {valid.length > 0 && (
+          <rect x={12} y={y(Math.min(hi, mean + std))} width={300 - 24}
+            height={y(Math.max(lo, mean - std)) - y(Math.min(hi, mean + std))}
+            style={{ fill: "var(--wl-muted)", opacity: 0.12 } as React.CSSProperties} />
+        )}
+        {valid.length > 0 && (
+          <line x1={12} x2={300 - 12} y1={y(mean)} y2={y(mean)}
+            style={{ stroke: "var(--wl-muted)", opacity: 0.5 } as React.CSSProperties} strokeDasharray="3 2" />
+        )}
         {wsc.length > 0 && (
           <path
             d={linePath(wsc.map((v, i) => [x(i + 1), y(v)]))}
@@ -71,15 +83,6 @@ export function WellnessChart({ series, onPointClick }: { series: MonitorSeries;
               } as React.CSSProperties}
             >
               {key}
-            </span>
-            <span
-              style={{
-                fontFamily: "var(--mono)",
-                fontSize: 10,
-                color: "var(--wl-text)",
-              } as React.CSSProperties}
-            >
-              {arr.at(-1)}
             </span>
             <svg width={78} height={22}>
               {arr.length > 0 && (

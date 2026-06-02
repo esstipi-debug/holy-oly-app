@@ -1,17 +1,17 @@
-import { recoverySeries, recoveryState, type MonitorSeries } from "@holy-oly/core";
+import { recoverySeries, recoveryState, type CellState, type MonitorSeries } from "@holy-oly/core";
 import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 import { STATUS } from "../status";
 
 interface MiniProps {
   arr: number[];
   base: number;
-  color: string;
   label: string;
   pad: number;
+  pointState?: CellState;
   onPick?: (week: number) => void;
 }
 
-function Mini({ arr, base, color, label, pad, onPick }: MiniProps) {
+function Mini({ arr, base, label, pad, pointState, onPick }: MiniProps) {
   const weeks = arr.length;
   const mn = Math.min(...arr, base) - pad - 2;
   const mx = Math.max(...arr, base) + pad + 2;
@@ -36,11 +36,15 @@ function Mini({ arr, base, color, label, pad, onPick }: MiniProps) {
         style={{ stroke: STATUS.ok, opacity: 0.5 } as React.CSSProperties}
         strokeDasharray="3 2"
       />
-      {/* data line */}
+      {/* data line (neutra — el estado va en el último punto, no en la línea) */}
       <path
         d={linePath(arr.map((v, i) => [x(i + 1), y(v)]))}
-        style={{ fill: "none", stroke: color, strokeWidth: 2 } as React.CSSProperties}
+        style={{ fill: "none", stroke: "var(--wl-text)", strokeWidth: 2 } as React.CSSProperties}
       />
+      {arr.length > 0 && pointState && (
+        <circle cx={x(weeks)} cy={y(arr[weeks - 1]!)} r={3}
+          style={{ fill: STATUS[pointState] } as React.CSSProperties} />
+      )}
       {/* label */}
       <text
         x={14}
@@ -59,6 +63,7 @@ function Mini({ arr, base, color, label, pad, onPick }: MiniProps) {
 export function RecoveryChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
   const rec = recoverySeries(series);
   const lastRec = rec.at(-1) ?? NaN;
+  const st = recoveryState(lastRec);
 
   return (
     <ChartCard
@@ -72,8 +77,8 @@ export function RecoveryChart({ series, onPointClick }: { series: MonitorSeries;
         lectura: "Banda alrededor del baseline; fuera de banda (HRV↓ / RHR↑) = vigilar.",
       }}
     >
-      <Mini arr={series.hrv} base={series.hrvBase} color={STATUS.ok} label="HRV (ms)" pad={5} onPick={onPointClick} />
-      <Mini arr={series.rhr} base={series.rhrBase} color="#2dd4e6" label="FC reposo (lpm)" pad={3} onPick={onPointClick} />
+      <Mini arr={series.hrv} base={series.hrvBase} label="HRV (ms)" pad={5} pointState={st} onPick={onPointClick} />
+      <Mini arr={series.rhr} base={series.rhrBase} label="FC reposo (lpm)" pad={3} pointState={st} onPick={onPointClick} />
     </ChartCard>
   );
 }
