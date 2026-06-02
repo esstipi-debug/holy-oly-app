@@ -1,0 +1,191 @@
+# Holy Oly — Rulebook de dominio
+
+> **Qué es esto.** La definición canónica de *"correcto"* para Holy Oly: halterofilia olímpica + la lógica de los dos usuarios (coach / atleta) + las reglas de producto, privacidad y arquitectura que la app encode. Es la **vara del agente revisor "El Carnicero"** (`.claude/agents/el-carnicero.md`) y la referencia para humanos.
+>
+> **Cómo se lee.** Cada regla es una aserción chequeable: **MUST** / **NEVER**, con *por qué* (razón de dominio) y, cuando ayuda, *se ve como* (señal detectable en un diff) y un ancla a código (`archivo:línea`) para verificar drift doc↔código.
+>
+> **Severidad sugerida** (la final la pone el revisor): **CRITICAL** = privacidad/datos del atleta, IDOR/authz, bypass de `Repository`, falso-verde sobre dato faltante. **HIGH** = regla de deporte rota o HR-1/HR-2 en superficie clave. **MEDIUM** = mantenibilidad de dominio. **LOW** = matiz.
+>
+> Última verificación contra código: 2026-06-02.
+
+---
+
+## §0 · Misión + las dos reglas duras
+
+**Misión.** Holy Oly es una app **coach⇄atleta** de halterofilia que gestiona **macrociclos** cruzando **carga** con **recuperación**, y construye el plan **hacia atrás desde la competencia objetivo** ("el calendario manda"). Es **viz-first** y **mobile-first**: las señales se leen **contra una referencia**, no como números sueltos.
+
+Dos reglas gobiernan toda superficie de datos. Son las más citadas por El Carnicero.
+
+### HR-1 · Viz-first (gráficos, no números planos)
+- **NEVER** mostrar un número plano donde corresponde una **señal-contra-referencia** (valor dentro de su banda/corredor). *Por qué:* el valor suelto no informa una decisión; el valor-en-su-corredor sí. *Se ve como:* un `{n}`, `.toFixed()`, `%`, o `<Text>{value}</Text>` sin banda/gráfico alrededor en una superficie de monitoreo.
+- **NEVER** mostrarle al **atleta** un número que pueda *gamear*. En particular: el atleta ve **carga**, **NUNCA el ratio ACWR** ni cifras clínicas en primer plano. *Por qué:* un número optimizable corrompe el auto-reporte y la conducta. *Se ve como:* ACWR/HRV/recovery numérico crudo en una vista de atleta.
+
+### HR-2 · Siempre explicado, con contexto
+- **MUST**: todo gráfico/señal trae las tres cosas — **cómo se forma** (qué inputs, qué cálculo), **para qué sirve** (qué decisión informa) y **contra qué se lee** (su banda/referencia). *Por qué:* un gráfico sin contexto es ruido; el coach/atleta no sabe qué hacer con él. *Se ve como:* un chart sin leyenda de derivación, sin banda de referencia, o sin copy de "qué significa / qué hago".
+- Un gráfico sin contexto es **defecto**, no adorno. El mecanismo canónico del contexto es **detail-on-tap** + *action phrase* + **banda visible** (ver §4).
+
+---
+
+## §1 · Las dos personas (lentes obligatorios)
+
+El Carnicero pasa **cada** cambio por los dos lentes. Coach y atleta tienen distinta propiedad de datos, authz y privacidad.
+
+### 🏋️ Coach (análisis + triage + planificación)
+- Ve el **plantel** (heatmap de riesgo, cuadrante) y el **drill-down** por atleta (los 8 gráficos), planifica competencias, asigna planes del catálogo.
+- **MUST** operar siempre sobre atletas con **Vínculo activo** (ver §5 authz). Nunca ve datos de un atleta que no es suyo.
+- Ve el ciclo **sólo redactado** (§3). Nunca el dato crudo.
+
+### 🤸 Atleta (autocuidado + auto-reporte)
+- Ve su **propio feed** (estado de hoy, constancia, su carga, su recuperación vs su normal, su camino a la competencia).
+- **Es dueño de su dato.** **MUST** poder activar/editar/ocultar/borrar lo sensible (especialmente el ciclo).
+- **NEVER** se le muestran números gameables (HR-1). Su recuperación se muestra como tendencia **vs su propia normal**, no como cifra clínica.
+
+> Regla de lente: si un cambio toca una superficie de atleta con lógica/copy/umbral de coach (o viceversa), es sospechoso. El triage es del coach; el autocuidado es del atleta.
+
+---
+
+## §2 · Ciencia del deporte (halterofilia)
+
+Valores **verificados contra `packages/core/src/logic/`**. Si el código cambió y esto no, es drift → hallazgo.
+
+### Carga y ACWR
+- **ACWR** = aguda / crónica; **crónica** = media móvil de 4 semanas (incluye la semana actual). `monitor.ts:12,20`.
+- **Banda segura = [0.8, 1.3].** Fuera de banda → `warn`; **> 1.5 → `alert`**. `monitor.ts:7`. *MUST* leerse contra esa banda (HR-1), no como número.
+- *Por qué:* picos agudos sobre la base crónica predicen riesgo de lesión/sobrecarga.
+
+### IMR vs fase (el gráfico propio del sistema)
+- Cada fase del macro define una **banda de IMR esperada** (`phaseProfile.imrPct`). El estado se evalúa **con margen ±2**: `imr > hi+2 || imr < lo−2 → warn`. `monitor.ts:26,103`.
+- *Por qué:* el IMR (intensidad media relativa) tiene un corredor esperado por fase; salirse marca desajuste del plan vs la realidad. **MUST** graficarse como **línea + banda escalonada por fase** (la banda se mueve por fase).
+
+### Recuperación
+- `recoveryState`: **< 70 → `alert`**, **< 80 → `warn`**, si no `ok`. `monitor.ts:67`. Se lee **vs baseline propio** (HRV/RHR/sueño), no en absoluto.
+- ⚠️ La **fórmula** de `recoveryScore` es **PLACEHOLDER explícito** (`monitor.ts:30`) — derivación clínica/coaching real pendiente (decisión de producto). *Se ve como:* tratar ese número como verdad clínica fina → al menos MEDIUM.
+
+### Disciplina de "sin dato" (regla dura, CRITICAL)
+- **NEVER** renderizar un **falso verde** sobre dato faltante/degenerado. Dato ausente → estado **`"none"`**, jamás `"ok"`. `monitor.ts:43,68,73,81`.
+- `worseOf` propaga `"none"` si cualquier eje falta; `recoveryScore` devuelve `NaN` (no 100) ante input degenerado. *Por qué:* un verde falso le dice al coach "todo bien" donde hay un agujero de datos — peligroso. *Se ve como:* `?? 0`, `|| 100`, default a `ok`, o pintar celda sin chequear `none`.
+
+### Reestructuración por competencia (taper)
+- Motor: para cada semana `w` y comp en semana `c.week`, **`d = c.week − w`**; taper si `d ∈ [0,3]` con caps de volumen **d≤1→26, d≤2→40, d≤3→56**; tras la última comp, semanas a **~55%**. `restructure.ts:8`.
+- **Semana de taper** = `c.week−2 .. c.week`. `restructure.ts:30`.
+- *Por qué:* se baja volumen para **picar** en la competencia. **1 comp → adelanta** la bajada; **varias comps → se repite** el taper antes de cada una. **MUST** resaltarse el segmento reestructurado en el timeline (🚩 por comp).
+
+### 1RM, discos y verdad del kg
+- **El kg es la verdad; los discos son aproximados.** Sólo existen discos **10/15/20/25** (colores IWF: 10 verde, 15 amarillo, 20 azul, 25 rojo). `discs.ts:1`.
+- Barra 20 (hombre) / 15 (mujer); resto < 5 kg/lado → **sin discos** (no hay fraccionarios). `discs.ts:13`.
+- *Se ve como:* inventar discos de 2.5/5, o tratar la suma de discos como la verdad en vez del kg.
+
+### Semáforo — qué lo dispara y qué NO
+- El estado (ok/warn/alert) sale de **ACWR + recuperación + bienestar + IMR + vigencia 1RM**. El **ciclo menstrual NO es una sexta señal** (§3). *Se ve como:* meter el ciclo (o cualquier señal nueva) al cálculo del semáforo.
+
+---
+
+## §2b · Verdad anclada a fecha
+
+- **MUST** anclar *cuándo se entrenó / no se entrenó / cuándo es la competencia* a **fechas reales**, **NEVER** a índices de semana sueltos. Piezas: `Plan.startDate`, `Competencia.date`, `SessionMark`. `schedule.ts`.
+- El **catálogo es date-less** (semanas 1..N); el **Plan del atleta carga `startDate` real** → una competencia se elige por **fecha** y cae en la semana correcta (`weekOfDate`). `schedule.ts:5,13`. (Esto ES la distinción plantilla↔instancia de §5.)
+- Fechas ISO `YYYY-MM-DD` parseadas a **UTC-midnight** (day-diff timezone-estable). `schedule.ts:9`. *Se ve como:* `new Date(str)` local, o derivar "HOY"/semana actual del **largo de la serie** en vez de `startDate` + fecha.
+- *Por qué:* la estructura (adherencia, picos, countdown) sólo es exacta si el tiempo es real. El futuro **calendario** (coach+atleta) se revisa contra esta regla.
+
+---
+
+## §3 · Privacidad y ética — el ciclo menstrual (la zona más sensible)
+
+Fuente autoritativa: `modulo-ciclo-menstrual.md`. **Tres decisiones innegociables que gobiernan todo el módulo.** Violar cualquiera = **CRITICAL/HIGH**.
+
+1. **Opt-in por elección, NO por género.** Se activa sólo si la atleta lo decide (desde su perfil); **NEVER** se enciende a partir de un campo de sexo/género. Quien no lo usa, **no ve nada** (`activo=false`/ausente → el módulo no existe para ella).
+2. **Contextualiza, NO dispara.** El ciclo **NEVER** produce un estado ok/warn/alert propio ni es señal del semáforo. A lo sumo añade una **nota de contexto** a la recomendación cuando recuperación entra en precaución/alerta **y** la fase estimada es lútea tardía/premenstrual — **no cambia el color**; el coach decide. **NEVER** prescribe cargas/porcentajes por fase de forma rígida.
+3. **Fuera de la gamificación.** **NEVER** se premia, ni es racha/logro, ni se compara entre atletas. (Registrar puede sumar a "constancia de registro" sólo como *acto de registrar*, jamás por su contenido.)
+
+### Redacción server-side (verificada en código)
+- El coach **SÓLO** recibe la proyección redactada `{ share, inLutealNow, health, reliable }`. **NEVER** el `state` crudo, ni fase/día/síntoma. `apps/api/src/cycle.ts:9`.
+- `share==="none" → undefined` (el coach no ve nada). `amenorrhea → health:"referral"`. `reliable = state==="regular"`. *Se ve como:* una ruta/serializer de coach que devuelva el row crudo del ciclo, o que filtre client-side en vez de server-side → **CRITICAL**.
+- **MUST**: la redacción ocurre **server-side**; el coach API nunca devuelve el row crudo.
+
+### Estimación con incertidumbre
+- La fase es **siempre aproximada**; si `regular=false` o usa anticonceptivo → marcada **poco fiable** (peso interpretativo menor). `reliable` en la proyección. *Se ve como:* mostrar la fase como dato exacto/determinante.
+
+### Amenorrea — señal médica, NUNCA un logro
+- Ausencia sostenida del ciclo (cuadro RED-S / baja disponibilidad energética) es señal de salud seria. **NEVER** tratarla como racha "limpia"/positiva/número a optimizar. El sistema **sugiere de forma sobria consultar a un profesional** (`health:"referral"`); **deriva, no diagnostica**.
+
+### Visibilidad, tono y color
+- **Acceso mínimo:** sólo la atleta + su coach asignado. **NEVER** aparece en vistas de equipo agregadas ni en exportaciones compartidas salvo decisión explícita de la atleta.
+- **Lenguaje clínico y neutro**, sin eufemismos ni tono invasivo.
+- **Regla de color:** la fase **NEVER** usa la paleta de estado (verde/amarillo/rojo) — usa su **paleta neutra** propia, para no confundirse con una alerta. *Se ve como:* pintar el ciclo con `STATUS`/semáforo.
+
+### Más allá del ciclo
+- **El atleta es dueño de todos sus datos** (activar/editar/ocultar/borrar).
+- **Warm-up se muestra, no se cuenta** (no entra en el cómputo de carga/volumen).
+
+---
+
+## §4 · Viz-first detallado (charts móviles)
+
+Fuente: `graficos-formato-movil.md` (charts-spec). Charts reales en `apps/web/src/ui/charts/`.
+
+### Reglas de todos los charts
+- **MUST**: una card = un chart, vertical apilado, full-width, plot ~150–220px.
+- **MUST**: **TAP, no hover** (el detalle/explicación aparece al tocar — es el vehículo de HR-2). **NEVER** tooltips de hover ni leyendas densas.
+- **MUST**: **bandas/corredores sombreados** en vez de lectura fina de eje; label inline al final de la línea (sin cajas de leyenda); ≤3–4 labels X, 2–3 gridlines.
+- **MUST**: **color = estado** (verde/amarillo/rojo) y nada más. **NEVER** color decorativo. (Excepción: el ciclo usa su paleta neutra, §3.)
+- Series temporales **alineadas por semana**.
+
+### Prohibido (avoid-list)
+- **NEVER**: radar/spider para tendencias (usar sparklines); pie/donut para series temporales; múltiples dual-axis (el único dual-axis aceptable es volumen-barras + intensidad-línea del macro timeline); ACWR-as-gauge para el atleta (HR-1); h-scroll salvo el heatmap del plantel y el macro timeline; pinch-zoom.
+
+### Contexto obligatorio por chart (HR-2 operacionalizado)
+Para **cada** chart, El Carnicero exige las tres respuestas:
+1. **¿Cómo se forma?** — input + cálculo visibles o explicados al tap (p.ej. "ACWR = carga aguda / media 4 sem").
+2. **¿Para qué sirve?** — qué decisión informa (p.ej. "si sale de la banda, considerar descarga").
+3. **¿Contra qué se lee?** — su banda/referencia dibujada (banda ACWR 0.8–1.3; banda IMR por fase; normal de HRV; banda de categoría de peso).
+Falta cualquiera de las tres → **defecto HR-2** (HIGH si es superficie clave).
+
+### Inventario de charts (objetivo de la auditoría inaugural)
+`AcwrChart`, `CompChart`, `Heatmap`, `ImrFaseChart`, `LoadChart`, `MacroPeriodization`, `MacroTimeline`, `RecoveryChart`, `RiskQuadrant`, `WeightChart`, `WellnessChart` + `chartkit.tsx` (primitivos).
+
+---
+
+## §5 · Invariantes de dominio en la arquitectura
+
+Estos invariantes "técnicos" **son reglas de dominio** (privacidad, modelo de coaching, propiedad del dato).
+
+### Patrón Repository (CRITICAL si se viola)
+- **NEVER** una screen toca `fetch`/`localStorage`/Prisma directo. **MUST** todo lectura/escritura pasa por la interfaz `Repository` (`packages/core/src/repository.ts`). Implementaciones: `LocalRepository` / `HttpRepository` (`apps/web/src/data/`).
+- *Por qué:* el front es 100% intercambiable Local↔Http; saltearse `Repository` rompe ese contrato y suele saltear validación Zod. *Se ve como:* `fetch(`/api/...`)` o `localStorage.*` dentro de `screens/` o componentes de UI.
+- Nota de contrato: `savePlan` **ignora `plan.comps`** (los comps los posee `setComps`). `repository.ts:11`.
+
+### Authz — dos ejes (CRITICAL si se viola)
+- **Coach → atleta:** requiere sesión de coach **+ Vínculo activo** (`estado:"activo"`) → si no, **403**. Gate único `guardAthlete` para **reads y writes**. `apps/api/src/server.ts:74`. Un coach sin Vínculo a un atleta **MUST** recibir 403 (aislamiento de tenant).
+- **Atleta → sí mismo:** `requireAthlete` (scope `req.athleteId`), **sin** Vínculo. `apps/api/src/auth/guards.ts:13`. *(Eje de la futura app del atleta: atleta-sobre-sí, no requiere Vínculo.)*
+- Escrituras de coach **MUST** chequear `body.atletaId === :id` (anti cross-write). *Se ve como:* una ruta athlete-scoped sin `guardAthlete`, o confiar en un id del body sin gate.
+
+### Modelo de dos niveles (catálogo ↔ plan)
+- **Catálogo = PLANTILLA read-only**, sin fecha (24 programas / 10 escuelas). **Plan del atleta = INSTANCIA** con `startDate` + comps — es lo que se reestructura. *Se ve como:* escribirle fecha/estado al catálogo, o reestructurar la plantilla en vez de la instancia.
+
+### Redacción de ciclo server-side
+- Ver §3. **MUST** ocurrir en la API, nunca confiar en filtrado client-side. `cycle.ts:9`.
+
+### Gotchas de build (no son de revisión de PR, pero el revisor los conoce)
+- `tsup` **debe** bundlear `@holy-oly/core` (`noExternal`) — `node dist/main.js` no carga `.ts`. Correr **el bundle real**, no sólo tests (tsx sí entiende `.ts` y enmascara el bug).
+- En worktree: `prisma generate` antes de typecheck/test de la api (pnpm ignora el build script).
+
+---
+
+## §6 · Fuentes (trazabilidad)
+
+| Regla / sección | Fuente |
+|---|---|
+| Misión, "calendario manda", periodización, monitor §8 | `C:\Users\Gamer\Downloads\sistema-macrociclos-maestro.md` |
+| Viz-first, charts móviles (§0 HR-1/HR-2, §4) | `C:\Users\Gamer\Downloads\graficos-formato-movil.md` |
+| Ciclo menstrual / ética / amenorrea (§3) | `C:\Users\Gamer\Downloads\modulo-ciclo-menstrual.md` |
+| ACWR/IMR/recovery/no-data (§2) | `packages/core/src/logic/monitor.ts` |
+| Taper/reestructuración (§2) | `packages/core/src/logic/restructure.ts` |
+| Discos/IWF/kg (§2) | `packages/core/src/logic/discs.ts` |
+| Verdad anclada a fecha (§2b) | `packages/core/src/logic/schedule.ts` |
+| Redacción de ciclo server-side (§3) | `apps/api/src/cycle.ts` |
+| Authz / Vínculo (§5) | `apps/api/src/server.ts`, `apps/api/src/auth/guards.ts` |
+| Repository (§5) | `packages/core/src/repository.ts`, `apps/web/src/data/` |
+| Memory del proyecto | `charts-spec`, `ciclo-menstrual-module`, `plate-disc-system`, `design-system`, `vinculacion-coach-atleta`, `catalog-source-of-truth`, `coach-screen-slices` |
+| Specs in-repo | `docs/superpowers/specs/*` |
+
+> **Nota:** `holy-oly-resumen-ejecutivo.md` (2026-05-04) está **obsoleto** (describe otra encarnación: 28 temas, FastAPI, marcas Volta/Axon). **No** es fuente de este rulebook.
