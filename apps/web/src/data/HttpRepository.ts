@@ -1,7 +1,7 @@
 import {
   RosterSchema, MonitorSeriesSchema, MedalsSchema, CompsSchema, PlanSchema, CycleContextSchema,
   type Repository, type Atleta, type MonitorSeries, type Medal, type Competencia, type Plan,
-  type CycleShare, type CycleContext,
+  type CycleShare, type CycleContext, type SessionLog,
 } from "@holy-oly/core";
 
 interface Parser<T> {
@@ -101,5 +101,14 @@ export class HttpRepository implements Repository {
   }
   async setComps(id: string, comps: Competencia[]): Promise<void> {
     return this.mutate(this.athletePath(id, "comps"), "PUT", comps);
+  }
+
+  // Session adherence persistence lands with the athlete-app API (its endpoint + table). Until
+  // then HttpRepository can't serve it: reads are empty, a write surfaces a clear error.
+  async getSessionLog(): Promise<SessionLog> {
+    return [];
+  }
+  async setSessionLog(): Promise<void> {
+    throw new HttpError(501, "/sessions", "el registro de sesiones llega con la app del atleta");
   }
 }

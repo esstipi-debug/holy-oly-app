@@ -1,10 +1,10 @@
 import type {
   Repository, Atleta, Plan, Medal, Competencia, MonitorSeries,
-  CycleShare, CycleState, CycleContext,
+  CycleShare, CycleState, CycleContext, SessionLog,
 } from "@holy-oly/core";
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
-  CompsSchema, CycleShareSchema, CycleStateSchema,
+  CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -62,6 +62,11 @@ export class LocalRepository implements Repository {
     return r.success ? r.data : [];
   }
   async setComps(id: string, comps: Competencia[]): Promise<void> { this.s.set(KEYS.comps(id), comps); }
+  async getSessionLog(id: string): Promise<SessionLog> {
+    const r = SessionLogSchema.safeParse(this.s.getOptional<unknown>(KEYS.sessionLog(id)));
+    return r.success ? r.data : [];
+  }
+  async setSessionLog(id: string, log: SessionLog): Promise<void> { this.s.set(KEYS.sessionLog(id), log); }
 
   async getCycleShare(id: string): Promise<CycleShare> {
     const r = CycleShareSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleShare(id)));

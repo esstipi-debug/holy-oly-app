@@ -21,7 +21,9 @@ export interface Macrocycle {
   phaseProfile: MacrocyclePhase[];
 }
 
-export interface Competencia { name: string; week: number; }
+/** `week` is the macro week (always present, used by the timeline). `date` (ISO YYYY-MM-DD)
+ *  is the calendar date the coach picked; week is derived from it against the plan's startDate. */
+export interface Competencia { name: string; week: number; date?: string; }
 
 export interface Medal {
   comp: string; date: string; cat: string;
@@ -33,8 +35,18 @@ export interface RM { arranque: number; envion: number; sentadilla: number; fren
 
 export interface Plan {
   atletaId: Id; macroId: string; startWeek: number;
+  /** Calendar date (ISO YYYY-MM-DD) the plan begins — anchors macro weeks to real dates. Set
+   *  at assignment (M5); until then the drill-down derives an effective start date from the series. */
+  startDate?: string;
   rms: RM; comps: Competencia[];
 }
+
+/** Coach-tracked plan adherence: did a planned session happen? Sparse — only marked sessions are
+ *  stored (unmarked = pending). Primary source for athletes who don't use the app; later the
+ *  athlete app reports the same marks. `idx` is the session's position within its week (0-based). */
+export type SessionStatus = "done" | "missed";
+export interface SessionMark { week: number; idx: number; status: SessionStatus; }
+export type SessionLog = SessionMark[];
 
 export interface MonitorSeries {
   weeks: number;

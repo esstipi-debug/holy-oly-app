@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import type { Competencia } from "@holy-oly/core";
+import { weekOfDate, dateOfWeek, type Competencia } from "@holy-oly/core";
 import { BottomSheet } from "../../ui/BottomSheet";
 
 const input: CSSProperties = {
@@ -12,22 +12,28 @@ const label: CSSProperties = {
   color: "var(--wl-muted)", marginTop: 12, display: "block",
 };
 
-/** Coach assigns/removes the athlete's target competitions; writes reshape the macro timeline. */
+/** Coach assigns/removes the athlete's target competitions BY DATE; the picked date is placed on
+ *  the macro week (via the plan's startDate) and reshapes the timeline (volume taper toward it). */
 export function CompSheet({
-  open, onClose, comps, maxWeek, onAdd, onRemove,
+  open, onClose, comps, startDate, totalWeeks, onAdd, onRemove,
 }: {
   open: boolean;
   onClose: () => void;
   comps: Competencia[];
-  maxWeek: number;
-  onAdd: (name: string, week: number) => Promise<void>;
+  startDate: string;      // ISO date of macro week 1 for this athlete
+  totalWeeks: number;     // macro duration
+  onAdd: (name: string, date: string) => Promise<void>;
   onRemove: (index: number) => Promise<void>;
 }) {
   const nextName = `COMP ${String.fromCharCode(65 + comps.length)}`;
   const [name, setName] = useState("");
-  const [week, setWeek] = useState(maxWeek);
+  const [date, setDate] = useState(() => dateOfWeek(startDate, totalWeeks)); // default: the last week (peak)
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const week = weekOfDate(startDate, date, totalWeeks);
+  const minDate = dateOfWeek(startDate, 1);
+  const maxDate = dateOfWeek(startDate, totalWeeks);
 
   async function run(fn: () => Promise<void>): Promise<void> {
     setError(null);
@@ -42,6 +48,7 @@ export function CompSheet({
   }
 
   const sorted = comps.map((c, i) => ({ c, i })).sort((a, b) => a.c.week - b.c.week);
+  const show = (c: Competencia): string => (c.date ? c.date : `sem ${c.week}`);
 
   return (
     <BottomSheet open={open} onClose={onClose}>
@@ -53,7 +60,7 @@ export function CompSheet({
       ) : (
         sorted.map(({ c, i }) => (
           <div key={`${c.week}-${c.name}-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderTop: "1px solid color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
-            <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: "var(--wl-text)" }}>🚩 {c.name} · sem {c.week}</span>
+            <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: "var(--wl-text)" }}>🚩 {c.name} · {show(c)}</span>
             <button type="button" aria-label="quitar" disabled={busy} onClick={() => void run(() => onRemove(i))}
               style={{ width: 26, height: 26, borderRadius: 8, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-muted)", cursor: busy ? "default" : "pointer" }}>✕</button>
           </div>
@@ -63,20 +70,16 @@ export function CompSheet({
       <label style={label}>Agregar competencia</label>
       <input style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={nextName} />
 
-      <div style={{ display: "flex", gap: 6, overflowX: "auto", marginTop: 8, paddingBottom: 4 }}>
-        {Array.from({ length: maxWeek }, (_, k) => k + 1).map((w) => (
-          <button key={w} type="button" onClick={() => setWeek(w)}
-            style={{ flex: "0 0 auto", padding: "6px 10px", borderRadius: 8, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "var(--mono)", fontSize: 11,
-              border: `1px solid ${week === w ? "var(--wl-accent)" : "color-mix(in srgb,var(--wl-text) 14%,transparent)"}`,
-              background: week === w ? "color-mix(in srgb,var(--wl-accent) 16%,transparent)" : "transparent", color: "var(--wl-text)" }}>
-            Sem {w}
-          </button>
-        ))}
+      <label style={label}>Fecha de la competencia</label>
+      <input type="date" aria-label="Fecha de la competencia" style={input} value={date} min={minDate} max={maxDate}
+        onChange={(e) => setDate(e.target.value)} />
+      <div style={{ marginTop: 6, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-accent)" }}>
+        Cae en la <b>semana {week}</b> de {totalWeeks} del macro.
       </div>
 
       {error && <div role="alert" style={{ marginTop: 10, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
-      <button type="button" disabled={busy} onClick={() => void run(async () => { await onAdd(name || nextName, week); setName(""); })}
+      <button type="button" disabled={busy} onClick={() => void run(async () => { await onAdd(name || nextName, date); setName(""); })}
         style={{ width: "100%", marginTop: 12, padding: 12, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer",
           background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 14, opacity: busy ? 0.6 : 1 }}>
         {busy ? "..." : "+ Agregar y reestructurar"}

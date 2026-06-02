@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
-import { MACROCYCLES, rosterStatus, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries } from "@holy-oly/core";
+import { MACROCYCLES, rosterStatus, weekOfDate, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries, type SessionLog } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
 import { AcwrChart } from "../../ui/charts/AcwrChart";
 import { LoadChart } from "../../ui/charts/LoadChart";
@@ -15,6 +15,8 @@ import { Medal as MedalIcon } from "../../ui/Medal";
 import { Badge } from "../../ui/Badge";
 import { MedalSheet } from "./MedalSheet";
 import { CompSheet } from "./CompSheet";
+import { SessionAdherence } from "./sessions/SessionAdherence";
+import { applyToggle } from "./sessions/sessionLog";
 
 export function Drilldown() {
   const { id = "" } = useParams();
@@ -23,6 +25,8 @@ export function Drilldown() {
   const [series, setSeries] = useState<MonitorSeries | undefined>();
   const [medals, setMedals] = useState<Medal[]>([]);
   const [comps, setComps] = useState<Competencia[]>([]);
+  const [sessionLog, setSessionLog] = useState<SessionLog>([]);
+  const [sessionError, setSessionError] = useState(false);
   const [medalOpen, setMedalOpen] = useState(false);
   const [compOpen, setCompOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -31,10 +35,10 @@ export function Drilldown() {
   useEffect(() => {
     let on = true;
     setLoaded(false); setError(false); // reset on athlete change so a prior error/data doesn't stick
-    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id), repo.getComps(id)])
-      .then(([a, s, m, c]) => {
+    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id), repo.getComps(id), repo.getSessionLog(id)])
+      .then(([a, s, m, c, sl]) => {
         if (!on) return;
-        setAthlete(a); setSeries(s); setMedals(m); setComps(c); setLoaded(true);
+        setAthlete(a); setSeries(s); setMedals(m); setComps(c); setSessionLog(sl); setLoaded(true);
       })
       .catch(() => { if (on) { setError(true); setLoaded(true); } });
     return () => { on = false; };
@@ -52,24 +56,42 @@ export function Drilldown() {
   for (const m of medals) counts[m.medal]++;
 
   const maxWeek = macro?.phaseProfile.at(-1)?.weeks[1] ?? 16;
+  // Effective plan start date: real one once M5 sets it; until then anchor today to the current
+  // series week so macro weeks map to real calendar dates (and competitions can be picked by date).
+  const today = new Date().toISOString().slice(0, 10);
+  const startDate = defaultStartDate(today, series?.weeks ?? 1);
   async function onAddMedal(m: Medal): Promise<void> {
     await repo.addMedal(id, m);
     setMedals(await repo.getMedals(id));
   }
-  async function onAddComp(name: string, week: number): Promise<void> {
-    await repo.setComps(id, [...comps, { name, week }]);
+  async function onAddComp(name: string, date: string): Promise<void> {
+    const week = weekOfDate(startDate, date, maxWeek);
+    await repo.setComps(id, [...comps, { name, week, date }]);
     setComps(await repo.getComps(id));
   }
   async function onRemoveComp(i: number): Promise<void> {
     await repo.setComps(id, comps.filter((_, idx) => idx !== i));
     setComps(await repo.getComps(id));
   }
+  const perWeek = macro ? sessionsPerWeek(macro.frequency) : 0;
+  async function onToggleSession(week: number, idx: number): Promise<void> {
+    const next = applyToggle(sessionLog, week, idx);
+    setSessionLog(next); // optimistic
+    setSessionError(false);
+    try {
+      await repo.setSessionLog(id, next);
+    } catch {
+      setSessionError(true);
+      setSessionLog(await repo.getSessionLog(id)); // revert to the persisted truth
+    }
+  }
+  const compLabel = (c: Competencia): string => c.date ?? `sem ${c.week}`;
   const compSummary =
     comps.length === 0
       ? "Sin competencia asignada"
       : comps.length === 1
-        ? `${comps[0]!.name} · sem ${comps[0]!.week}`
-        : `${comps.length} competencias · sem ${[...comps].map((c) => c.week).sort((a, b) => a - b).join(", ")}`;
+        ? `${comps[0]!.name} · ${compLabel(comps[0]!)}`
+        : `${comps.length} competencias · ${[...comps].sort((a, b) => a.week - b.week).map(compLabel).join(", ")}`;
 
   return (
     <div style={{ padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)", minHeight: "100vh", maxWidth: 390, margin: "0 auto", position: "relative" }}>
@@ -111,6 +133,19 @@ export function Drilldown() {
         </div>
       )}
 
+      {macro && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+            <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Planificación · sesiones</div>
+            <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>tocá: · → ✓ → ✗</span>
+          </div>
+          {sessionError && <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "#ff3b46", marginTop: 6 }}>No se pudo guardar la sesión. Reintentá.</div>}
+          <div style={{ marginTop: 8 }}>
+            <SessionAdherence marks={sessionLog} weeks={maxWeek} perWeek={perWeek} onToggle={(w, i) => void onToggleSession(w, i)} />
+          </div>
+        </div>
+      )}
+
       <div style={{ marginTop: 16, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Palmarés · competencias</div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0" }}>
         {(["oro", "plata", "bronce"] as const).map((k) => (
@@ -139,7 +174,7 @@ export function Drilldown() {
       )}
 
       <MedalSheet open={medalOpen} onClose={() => setMedalOpen(false)} onSubmit={onAddMedal} />
-      <CompSheet open={compOpen} onClose={() => setCompOpen(false)} comps={comps} maxWeek={maxWeek} onAdd={onAddComp} onRemove={onRemoveComp} />
+      <CompSheet open={compOpen} onClose={() => setCompOpen(false)} comps={comps} startDate={startDate} totalWeeks={maxWeek} onAdd={onAddComp} onRemove={onRemoveComp} />
     </div>
   );
 }

@@ -51,8 +51,20 @@ export const MedalSchema = z.object({
 });
 export const MedalsSchema = z.array(MedalSchema);
 
-export const CompetenciaSchema = z.object({ name: z.string().max(120), week: z.number().int().min(1).max(104) });
+const IsoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "fecha ISO YYYY-MM-DD");
+export const CompetenciaSchema = z.object({
+  name: z.string().max(120),
+  week: z.number().int().min(1).max(104),
+  date: IsoDateSchema.optional(),
+});
 export const CompsSchema = z.array(CompetenciaSchema).max(200);
+
+export const SessionMarkSchema = z.object({
+  week: z.number().int().min(1).max(104),
+  idx: z.number().int().min(0).max(13),
+  status: z.enum(["done", "missed"]),
+});
+export const SessionLogSchema = z.array(SessionMarkSchema).max(2000);
 
 const KgSchema = z.number().positive().max(500); // realistic lift ceiling; positive rejects 0/NaN
 export const RMSchema = z.object({
@@ -65,6 +77,7 @@ export const PlanSchema = z.object({
   atletaId: z.string(),
   macroId: z.string(),
   startWeek: z.number(),
+  startDate: IsoDateSchema.optional(),
   rms: RMSchema,
   comps: z.array(CompetenciaSchema),
 });
