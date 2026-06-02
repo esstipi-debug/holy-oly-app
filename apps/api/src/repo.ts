@@ -1,6 +1,6 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type {
-  Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext,
+  Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
 } from "@holy-oly/core";
 import { RMSchema } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
@@ -115,5 +115,18 @@ export async function setComps(prisma: PrismaClient, athleteId: string, comps: C
   await prisma.$transaction([
     prisma.competencia.deleteMany({ where: { athleteId } }),
     prisma.competencia.createMany({ data: comps.map((c) => ({ athleteId, name: c.name, week: c.week })) }),
+  ]);
+}
+
+export async function getSessionLog(prisma: PrismaClient, athleteId: string): Promise<SessionLog> {
+  const ms = await prisma.sessionMark.findMany({ where: { athleteId }, orderBy: [{ week: "asc" }, { idx: "asc" }] });
+  return ms.map((m) => ({ week: m.week, idx: m.idx, status: m.status }));
+}
+
+/** Replace the whole session-adherence log transactionally (mirror setComps). */
+export async function setSessionLog(prisma: PrismaClient, athleteId: string, log: SessionLog): Promise<void> {
+  await prisma.$transaction([
+    prisma.sessionMark.deleteMany({ where: { athleteId } }),
+    prisma.sessionMark.createMany({ data: log.map((m) => ({ athleteId, week: m.week, idx: m.idx, status: m.status })) }),
   ]);
 }

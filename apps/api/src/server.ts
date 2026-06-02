@@ -5,7 +5,7 @@ import fastifyStatic from "@fastify/static";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { UserRole } from "@prisma/client";
-import { PlanSchema, MedalSchema, CompsSchema } from "@holy-oly/core";
+import { PlanSchema, MedalSchema, CompsSchema, SessionLogSchema } from "@holy-oly/core";
 import { prisma } from "./db/client";
 import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
@@ -158,6 +158,19 @@ export function buildServer(): FastifyInstance {
     const parsed = CompsSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid comps" });
     await repo.setComps(prisma, req.params.id, parsed.data);
+    return reply.code(200).send({ ok: true });
+  });
+
+  app.get<{ Params: { id: string } }>("/athletes/:id/sessions", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    return repo.getSessionLog(prisma, req.params.id);
+  });
+
+  app.put<{ Params: { id: string } }>("/athletes/:id/sessions", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    const parsed = SessionLogSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid sessions" });
+    await repo.setSessionLog(prisma, req.params.id, parsed.data);
     return reply.code(200).send({ ok: true });
   });
 

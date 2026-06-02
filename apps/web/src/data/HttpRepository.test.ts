@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import type { MonitorSeries, Plan, Medal, Competencia } from "@holy-oly/core";
+import type { MonitorSeries, Plan, Medal, Competencia, SessionLog } from "@holy-oly/core";
 import { HttpRepository } from "./HttpRepository";
 
 const BASE = "http://api.test";
@@ -88,6 +88,22 @@ describe("HttpRepository", () => {
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(`${BASE}/athletes/mv/comps`);
     expect(initsSeen[0]?.method).toBe("PUT");
     expect(JSON.parse(initsSeen[0]?.body ?? "{}")).toEqual(comps);
+  });
+
+  it("getSessionLog GETs the sessions path and validates the log", async () => {
+    const log = [{ week: 1, idx: 0, status: "done" }];
+    global.fetch = mock(200, log);
+    expect(await new HttpRepository(BASE).getSessionLog("mv")).toEqual(log);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(`${BASE}/athletes/mv/sessions`);
+  });
+
+  it("setSessionLog PUTs the log to the sessions path", async () => {
+    global.fetch = mock(200, { ok: true });
+    const log: SessionLog = [{ week: 2, idx: 1, status: "missed" }];
+    await new HttpRepository(BASE).setSessionLog("mv", log);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(`${BASE}/athletes/mv/sessions`);
+    expect(initsSeen[0]?.method).toBe("PUT");
+    expect(JSON.parse(initsSeen[0]?.body ?? "[]")).toEqual(log);
   });
 
   it("a failed write throws HttpError", async () => {

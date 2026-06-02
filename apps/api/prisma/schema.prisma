@@ -43,6 +43,11 @@ enum Metal {
   bronce
 }
 
+enum SessionStatus {
+  done
+  missed
+}
+
 enum UserRole {
   coach
   atleta
@@ -101,6 +106,7 @@ model Athlete {
   comps        Competencia[]
   weeks        MonitorWeek[]
   medals       Medal[]
+  sessions     SessionMark[]
   cycle        CycleConsent?
 }
 
@@ -136,6 +142,20 @@ model Competencia {
   name      String
   week      Int
 
+  @@index([athleteId])
+}
+
+/// Coach-tracked session adherence (mirrors getSessionLog/setSessionLog). Sparse — only marked
+/// sessions stored (unmarked = pending). `idx` is the session's position within its week.
+model SessionMark {
+  id        String        @id @default(uuid())
+  athleteId String
+  athlete   Athlete       @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  week      Int
+  idx       Int
+  status    SessionStatus
+
+  @@unique([athleteId, week, idx])
   @@index([athleteId])
 }
 

@@ -99,6 +99,32 @@ describe("Coach-authorized writes (integration)", () => {
     expect(got).toEqual([{ name: "Solo", week: 10 }]); // old two gone — full replace
   });
 
+  it("PUT /athletes/:id/sessions replaces the adherence log (transactional)", async () => {
+    const first = await app.inject({
+      method: "PUT", url: `/athletes/${athleteId}/sessions`, headers: coachH,
+      payload: [{ week: 1, idx: 0, status: "done" }, { week: 1, idx: 1, status: "missed" }],
+    });
+    expect(first.statusCode).toBe(200);
+    let got = (await app.inject({ method: "GET", url: `/athletes/${athleteId}/sessions`, headers: coachH })).json() as Array<{ week: number; idx: number; status: string }>;
+    expect(got).toEqual([{ week: 1, idx: 0, status: "done" }, { week: 1, idx: 1, status: "missed" }]);
+
+    const second = await app.inject({
+      method: "PUT", url: `/athletes/${athleteId}/sessions`, headers: coachH,
+      payload: [{ week: 2, idx: 0, status: "done" }],
+    });
+    expect(second.statusCode).toBe(200);
+    got = (await app.inject({ method: "GET", url: `/athletes/${athleteId}/sessions`, headers: coachH })).json() as Array<{ week: number; idx: number; status: string }>;
+    expect(got).toEqual([{ week: 2, idx: 0, status: "done" }]); // full replace
+  });
+
+  it("forbids a coach with no active Vínculo from writing sessions (403)", async () => {
+    const res = await app.inject({
+      method: "PUT", url: `/athletes/${athleteId}/sessions`, headers: strangerH,
+      payload: [{ week: 1, idx: 0, status: "done" }],
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
   it("rejects an unauthenticated write with 401", async () => {
     const res = await app.inject({
       method: "PUT", url: `/athletes/${athleteId}/comps`, payload: [{ name: "X", week: 1 }],
