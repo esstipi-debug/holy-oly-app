@@ -51,7 +51,7 @@ describe("Coach-authorized writes (integration)", () => {
 
   it("PUT /athletes/:id/plan upserts the plan (and ignores body comps)", async () => {
     const plan = {
-      atletaId: athleteId, macroId: "ruso-5d", startWeek: 1,
+      atletaId: athleteId, macroId: "ruso-5d", startWeek: 1, startDate: "2026-03-09",
       rms: { arranque: 90, envion: 115, sentadilla: 150, frente: 120 },
       comps: [{ name: "ShouldBeIgnored", week: 99 }], // savePlan must NOT write comps (setComps owns them)
     };
@@ -60,9 +60,10 @@ describe("Coach-authorized writes (integration)", () => {
 
     const get = await app.inject({ method: "GET", url: `/athletes/${athleteId}/plan`, headers: coachH });
     expect(get.statusCode).toBe(200);
-    const got = get.json() as { macroId: string; startWeek: number; rms: { arranque: number }; comps: unknown[] };
+    const got = get.json() as { macroId: string; startWeek: number; startDate?: string; rms: { arranque: number }; comps: unknown[] };
     expect(got.macroId).toBe("ruso-5d");
     expect(got.startWeek).toBe(1);
+    expect(got.startDate).toBe("2026-03-09"); // M5: plan carries its calendar anchor
     expect(got.rms.arranque).toBe(90);
     expect(got.comps).toEqual([]); // body comps ignored; Competencia table is the only comp store
   });
@@ -81,21 +82,21 @@ describe("Coach-authorized writes (integration)", () => {
     expect(list.some((m) => m.comp === "Test Open")).toBe(true);
   });
 
-  it("PUT /athletes/:id/comps replaces the whole list (transactional)", async () => {
+  it("PUT /athletes/:id/comps replaces the whole list and round-trips the date (M5)", async () => {
     const first = await app.inject({
       method: "PUT", url: `/athletes/${athleteId}/comps`, headers: coachH,
-      payload: [{ name: "Apertura", week: 6 }, { name: "Nacional", week: 14 }],
+      payload: [{ name: "Apertura", week: 6, date: "2026-03-09" }, { name: "Nacional", week: 14 }],
     });
     expect(first.statusCode).toBe(200);
-    let got = (await app.inject({ method: "GET", url: `/athletes/${athleteId}/comps`, headers: coachH })).json() as Array<{ name: string; week: number }>;
-    expect(got).toEqual([{ name: "Apertura", week: 6 }, { name: "Nacional", week: 14 }]);
+    let got = (await app.inject({ method: "GET", url: `/athletes/${athleteId}/comps`, headers: coachH })).json() as Array<{ name: string; week: number; date?: string }>;
+    expect(got).toEqual([{ name: "Apertura", week: 6, date: "2026-03-09" }, { name: "Nacional", week: 14 }]); // date persisted; the dateless one omits it
 
     const second = await app.inject({
       method: "PUT", url: `/athletes/${athleteId}/comps`, headers: coachH,
       payload: [{ name: "Solo", week: 10 }],
     });
     expect(second.statusCode).toBe(200);
-    got = (await app.inject({ method: "GET", url: `/athletes/${athleteId}/comps`, headers: coachH })).json() as Array<{ name: string; week: number }>;
+    got = (await app.inject({ method: "GET", url: `/athletes/${athleteId}/comps`, headers: coachH })).json() as Array<{ name: string; week: number; date?: string }>;
     expect(got).toEqual([{ name: "Solo", week: 10 }]); // old two gone — full replace
   });
 

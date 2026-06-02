@@ -67,7 +67,7 @@ export async function getMedals(prisma: PrismaClient, athleteId: string): Promis
 
 export async function getComps(prisma: PrismaClient, athleteId: string): Promise<Competencia[]> {
   const cs = await prisma.competencia.findMany({ where: { athleteId }, orderBy: { week: "asc" } });
-  return cs.map((c) => ({ name: c.name, week: c.week }));
+  return cs.map((c) => ({ name: c.name, week: c.week, date: c.date ?? undefined }));
 }
 
 export async function getPlan(prisma: PrismaClient, athleteId: string): Promise<Plan | undefined> {
@@ -75,7 +75,7 @@ export async function getPlan(prisma: PrismaClient, athleteId: string): Promise<
   if (!p) return undefined;
   const comps = await getComps(prisma, athleteId);
   // rms is a Json column (genuinely untyped at the DB) — validate it, don't cast.
-  return { atletaId: p.athleteId, macroId: p.macroId, startWeek: p.startWeek, rms: RMSchema.parse(p.rms), comps };
+  return { atletaId: p.athleteId, macroId: p.macroId, startWeek: p.startWeek, startDate: p.startDate ?? undefined, rms: RMSchema.parse(p.rms), comps };
 }
 
 /** Coach-facing cycle: the redacted projection only — raw consent never leaves the server. */
@@ -96,7 +96,7 @@ export async function getCycle(prisma: PrismaClient, athleteId: string): Promise
 export async function savePlan(prisma: PrismaClient, athleteId: string, plan: Plan): Promise<void> {
   // rms is a plain {lift: number} object → JSON-safe; the double cast satisfies Prisma's Json input
   // type (RM has no string index signature to overlap InputJsonValue directly).
-  const data = { macroId: plan.macroId, startWeek: plan.startWeek, rms: plan.rms as unknown as Prisma.InputJsonValue };
+  const data = { macroId: plan.macroId, startWeek: plan.startWeek, startDate: plan.startDate ?? null, rms: plan.rms as unknown as Prisma.InputJsonValue };
   await prisma.plan.upsert({ where: { athleteId }, create: { athleteId, ...data }, update: data });
 }
 
@@ -114,7 +114,7 @@ export async function addMedal(prisma: PrismaClient, athleteId: string, medal: M
 export async function setComps(prisma: PrismaClient, athleteId: string, comps: Competencia[]): Promise<void> {
   await prisma.$transaction([
     prisma.competencia.deleteMany({ where: { athleteId } }),
-    prisma.competencia.createMany({ data: comps.map((c) => ({ athleteId, name: c.name, week: c.week })) }),
+    prisma.competencia.createMany({ data: comps.map((c) => ({ athleteId, name: c.name, week: c.week, date: c.date ?? null })) }),
   ]);
 }
 

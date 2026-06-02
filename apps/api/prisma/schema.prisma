@@ -131,16 +131,18 @@ model Plan {
   athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
   macroId   String
   startWeek Int
+  startDate String? // ISO YYYY-MM-DD — the plan's calendar anchor (set at assignment, M5)
   rms       Json
 }
 
-/// Athlete-scoped competitions (mirrors getComps/setComps; reconciled with Plan in M5).
+/// Athlete-scoped competitions (mirrors getComps/setComps).
 model Competencia {
   id        String  @id @default(uuid())
   athleteId String
   athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
   name      String
   week      Int
+  date      String? // ISO YYYY-MM-DD the coach picked; week is derived from it
 
   @@index([athleteId])
 }
