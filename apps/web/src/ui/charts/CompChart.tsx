@@ -20,6 +20,11 @@ export function CompChart({ series }: { series: MonitorSeries }) {
       title="Cumplimiento"
       sub="% completado + RPE medio"
       chip={lastComp != null ? lastComp + "%" : undefined}
+      explain={{
+        forma: "Sesiones completadas sobre planificadas por semana (barras) + RPE medio reportado (línea).",
+        sirve: "Ver si el plan se cumple y a qué costo percibido.",
+        lectura: "Barras: verde ≥85%, amarillo ≥70%, rojo abajo. RPE en escala 5–10.",
+      }}
     >
       <svg viewBox={`0 0 300 ${H}`} width="100%" height={H}>
         {comp.map((v, i) => {

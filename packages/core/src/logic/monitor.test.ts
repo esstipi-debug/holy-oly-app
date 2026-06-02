@@ -4,6 +4,7 @@ import {
   recoveryScore, recoverySeries, recoveryState,
   acwrStateSafe, rosterStatus, seriesState,
   imrBandForWeek, imrStateForWeek,
+  weightBandState, imrStateForWeekSafe,
 } from "./monitor";
 import type { CellState } from "./monitor";
 import type { MonitorSeries } from "../types";
@@ -26,6 +27,20 @@ describe("monitor", () => {
     expect(acwrState(1.4)).toBe("warn");
     expect(acwrState(0.7)).toBe("warn");
     expect(acwrState(1.6)).toBe("alert");
+  });
+  it("weightBandState: dentro→ok, fuera→alert, sin banda/dato→none", () => {
+    expect(weightBandState(80.5, [80, 81])).toBe("ok");
+    expect(weightBandState(80, [80, 81])).toBe("ok");
+    expect(weightBandState(81.4, [80, 81])).toBe("alert");
+    expect(weightBandState(79.6, [80, 81])).toBe("alert");
+    expect(weightBandState(80.5, undefined)).toBe("none");
+    expect(weightBandState(undefined, [80, 81])).toBe("none");
+    expect(weightBandState(NaN, [80, 81])).toBe("none");
+  });
+  it("imrStateForWeekSafe: NaN→none (nunca falso-verde)", () => {
+    const macro = MACROCYCLES[0]!;
+    expect(imrStateForWeekSafe(NaN, macro, 1)).toBe("none");
+    expect(imrStateForWeekSafe(70, macro, 1)).not.toBe("none");
   });
   it("chronic = media móvil de 4 semanas", () => {
     expect(chronic([100, 100, 100, 100])).toEqual([100, 100, 100, 100]);

@@ -108,3 +108,16 @@ export function imrBandForWeek(macro: Macrocycle, week: number): [number, number
 export function imrStateForWeek(imr: number, macro: Macrocycle, week: number): Estado {
   return imrBandState(imr, imrBandForWeek(macro, week));
 }
+
+/** Estado del peso vs la banda de categoría [lo,hi]. Sin banda o sin dato → "none" (nunca falso-verde).
+ *  Disciplina: binario ok/alert — un "cerca del borde→warn" exigiría un margen que el rulebook no define. */
+export function weightBandState(weight: number | undefined, band: [number, number] | undefined): CellState {
+  if (band === undefined || weight === undefined || !Number.isFinite(weight)) return "none";
+  return weight >= band[0] && weight <= band[1] ? "ok" : "alert";
+}
+
+/** Guarded imrStateForWeek: un IMR no-finito (sin dato) es "none", nunca un falso "ok".
+ *  Gemelo de acwrStateSafe para el chart IMR-vs-fase. */
+export function imrStateForWeekSafe(imr: number, macro: Macrocycle, week: number): CellState {
+  return Number.isFinite(imr) ? imrStateForWeek(imr, macro, week) : "none";
+}

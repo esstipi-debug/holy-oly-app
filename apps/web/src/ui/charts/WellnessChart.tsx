@@ -26,6 +26,11 @@ export function WellnessChart({ series }: { series: MonitorSeries }) {
       title="Bienestar"
       sub="puntaje 0–100 + ítems (1–5)"
       chip={lastWsc != null ? String(lastWsc) : undefined}
+      explain={{
+        forma: "Score de bienestar (0–100) + 6 ítems del cuestionario (fatiga, dolor, estrés, humor, motivación, sueño) como tendencias.",
+        sirve: "Contexto subjetivo que complementa las señales fisiológicas.",
+        lectura: "Tendencia de cada ítem vs su normal; el score resume el conjunto.",
+      }}
     >
       {/* Score area + line chart */}
       <svg viewBox={`0 0 300 ${H}`} width="100%" height={H}>

@@ -1,4 +1,4 @@
-import { imrStateForWeek, type Macrocycle, type MonitorSeries } from "@holy-oly/core";
+import { imrStateForWeekSafe, type Macrocycle, type MonitorSeries } from "@holy-oly/core";
 import { ChartCard, linePath } from "./chartkit";
 import { STATUS } from "../status";
 
@@ -14,8 +14,13 @@ export function ImrFaseChart({ series, macro }: { series: MonitorSeries; macro: 
     <ChartCard
       title="IMR vs fase"
       sub="banda = lo que el programa espera (se mueve por fase)"
-      chip={imr.at(-1) != null ? String(imr.at(-1)) : undefined}
-      chipState={imr.at(-1) != null ? imrStateForWeek(imr.at(-1)!, macro, weeks) : undefined}
+      chip={Number.isFinite(imr.at(-1)) ? String(imr.at(-1)) : undefined}
+      chipState={imr.at(-1) != null ? imrStateForWeekSafe(imr.at(-1)!, macro, weeks) : undefined}
+      explain={{
+        forma: "IMR (intensidad media relativa) reportado vs la banda que el programa espera en cada fase.",
+        sirve: "Detectar desajuste entre el plan y la realidad; si el IMR se va de la banda de la fase, revisar cargas.",
+        lectura: "Banda escalonada por fase (se mueve con el macro), con tolerancia ±2.",
+      }}
     >
       <svg viewBox={`0 0 300 ${H}`} width="100%" height={H}>
         {/* Phase bands + separators */}
@@ -49,7 +54,7 @@ export function ImrFaseChart({ series, macro }: { series: MonitorSeries; macro: 
             cx={x(i + 1)}
             cy={y(v)}
             r={3}
-            style={{ fill: STATUS[imrStateForWeek(v, macro, i + 1)] } as React.CSSProperties}
+            style={{ fill: STATUS[imrStateForWeekSafe(v, macro, i + 1)] } as React.CSSProperties}
           />
         ))}
       </svg>

@@ -64,6 +64,11 @@ export function RecoveryChart({ series }: { series: MonitorSeries }) {
       sub="HRV ↓ y FC reposo ↑ sostenidos = alerta"
       chip={lastRec != null && !Number.isNaN(lastRec) ? String(lastRec) : undefined}
       chipState={recoveryState(lastRec)}
+      explain={{
+        forma: "HRV y FC en reposo (RHR) por semana, comparadas contra el baseline propio del atleta.",
+        sirve: "Leer la recuperación: HRV cayendo o RHR subiendo sostenidos sugieren fatiga.",
+        lectura: "Banda alrededor del baseline; fuera de banda (HRV↓ / RHR↑) = vigilar.",
+      }}
     >
       <Mini arr={series.hrv} base={series.hrvBase} color={STATUS.ok} label="HRV (ms)" pad={5} />
       <Mini arr={series.rhr} base={series.rhrBase} color="#2dd4e6" label="FC reposo (lpm)" pad={3} />

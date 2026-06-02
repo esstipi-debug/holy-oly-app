@@ -17,6 +17,11 @@ export function AcwrChart({ series }: { series: MonitorSeries }) {
       sub="banda segura 0,8–1,3 · el atleta no ve este número"
       chip={a.at(-1) != null ? a.at(-1)!.toFixed(2) : undefined}
       chipState={acwrStateSafe(a.at(-1) ?? NaN)}
+      explain={{
+        forma: "Carga aguda ÷ media móvil de 4 semanas (incluye la actual).",
+        sirve: "Detecta picos de carga que anticipan riesgo; fuera de banda → considerá descarga.",
+        lectura: "Banda segura 0,8–1,3; >1,3 precaución, >1,5 alerta. El atleta no ve este número.",
+      }}
     >
       <svg viewBox="0 0 300 128" width="100%" height={128}>
         {/* safe corridor */}

@@ -18,6 +18,11 @@ export function LoadChart({ series }: { series: MonitorSeries }) {
       title="Carga aguda vs crónica"
       sub="barras = semanal · línea = crónica (4 sem)"
       chip={acute.at(-1) != null ? String(acute.at(-1)) : undefined}
+      explain={{
+        forma: "Carga semanal (barras) y carga crónica = media móvil de 4 semanas (línea).",
+        sirve: "Ver la tendencia de carga; la crónica es la base contra la que se mide el ACWR.",
+        lectura: "La línea crónica (media móvil de 4 sem) es la referencia: barras muy por encima = pico, y eso es lo que infla el ACWR.",
+      }}
     >
       <svg viewBox="0 0 300 120" width="100%" height={H}>
         {acute.map((v, i) => (

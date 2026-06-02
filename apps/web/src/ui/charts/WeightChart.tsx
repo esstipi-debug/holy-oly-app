@@ -1,4 +1,4 @@
-import { type MonitorSeries } from "@holy-oly/core";
+import { weightBandState, type MonitorSeries } from "@holy-oly/core";
 import { ChartCard, linePath } from "./chartkit";
 import { STATUS } from "../status";
 
@@ -25,6 +25,11 @@ export function WeightChart({ series }: { series: MonitorSeries }) {
       title="Peso vs categoría"
       sub="banda objetivo de categoría"
       chip={lastWt != null ? lastWt + " kg" : undefined}
+      explain={{
+        forma: "Peso corporal por semana vs la banda de la categoría objetivo.",
+        sirve: "Seguir si el atleta da el peso de su categoría de cara a la competencia.",
+        lectura: "Banda = límites de categoría; el punto va verde dentro, rojo fuera, neutro si no hay categoría asignada.",
+      }}
     >
       <svg viewBox={`0 0 300 ${H}`} width="100%" height={H}>
         {band && (
@@ -48,7 +53,7 @@ export function WeightChart({ series }: { series: MonitorSeries }) {
             cx={x(weeks)}
             cy={y(lastWt)}
             r={3.4}
-            style={{ fill: STATUS.ok } as React.CSSProperties}
+            style={{ fill: STATUS[weightBandState(lastWt, band)] } as React.CSSProperties}
           />
         )}
       </svg>
