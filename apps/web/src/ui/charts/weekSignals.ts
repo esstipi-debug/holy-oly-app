@@ -23,7 +23,11 @@ function row(label: string, v: number | undefined, fmt: (n: number) => string, s
 /** Cross-section de todas las señales semanales para la semana `week` (1-based).
  *  Faltante/NaN → hasData:false ("sin dato"), sin estado — jamás un valor inventado ni falso-verde.
  *  Recuperación = el score canónico almacenado (`series.recovery`, el eje-y del cuadrante), no recomputado. */
-export function weekSignals(series: MonitorSeries, macro: Macrocycle | undefined, week: number): WeekSignal[] {
+export function weekSignals(series: MonitorSeries | undefined, macro: Macrocycle | undefined, week: number): WeekSignal[] {
+  if (!series) {
+    return ["ACWR", "Carga aguda", "Recuperación", "IMR", "Bienestar", "Cumplimiento", "Peso"]
+      .map((label) => ({ label, value: "—", hasData: false }));
+  }
   const i = week - 1;
   const acwrV = fin(acwr(series.acute)[i]);
   const recV = fin(series.recovery[i]);

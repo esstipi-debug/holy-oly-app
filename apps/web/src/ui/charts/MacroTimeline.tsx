@@ -1,6 +1,7 @@
 import { volumeCurve, isTaperWeek, type Competencia, type Macrocycle, type MacrocyclePhase } from "@holy-oly/core";
 import { ChartCard } from "./chartkit";
 import { STATUS } from "../status";
+import { phaseColor } from "./phasePalette";
 
 const W = 320;
 const H = 160;
@@ -8,10 +9,6 @@ const TOP = 42;
 const BOT = H - 16; // 144
 const W0 = 10;
 const WW = W - 20; // 300
-
-// Paleta neutra de fases (categórica, NO semáforo — no colisiona con STATUS verde/amarillo/rojo).
-// phaseProfile no trae color — es decisión de render, no dato.
-const RAMP = ["#6f86ff", "#22b8cf", "#a78bfa", "#94a3b8"];
 
 function xw(w: number, NW: number): number {
   return W0 + ((w - 0.5) / NW) * WW;
@@ -58,7 +55,7 @@ export function MacroTimeline({
     return (
       <g key={p.key}>
         <rect x={x0} y={10} width={Math.max(0, x1 - x0 - 2)} height={20} rx={4}
-          style={{ fill: RAMP[i % RAMP.length], opacity: 0.85 }} />
+          style={{ fill: phaseColor(i), opacity: 0.85 }} />
         <text x={(x0 + x1) / 2} y={24} textAnchor="middle" fontSize={8.5} fontWeight={700}
           style={{ fill: "#0b0b11" }} fontFamily="Chakra Petch">{p.name}</text>
       </g>

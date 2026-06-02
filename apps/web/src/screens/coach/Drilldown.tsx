@@ -19,6 +19,7 @@ import { SessionAdherence } from "./sessions/SessionAdherence";
 import { applyToggle } from "./sessions/sessionLog";
 import { weekSignals } from "../../ui/charts/weekSignals";
 import { WeekDetailSheet } from "../../ui/charts/WeekDetailSheet";
+import { PlanCalendar } from "./calendar/PlanCalendar";
 
 export function Drilldown() {
   const { id = "" } = useParams();
@@ -65,6 +66,7 @@ export function Drilldown() {
   const today = new Date().toISOString().slice(0, 10);
   // Real plan anchor once assigned (M5); else derive so today maps to the current series week.
   const startDate = plan?.startDate ?? defaultStartDate(today, series?.weeks ?? 1);
+  const hoyWeek = weekOfDate(startDate, today, maxWeek);
   async function onAddMedal(m: Medal): Promise<void> {
     await repo.addMedal(id, m);
     setMedals(await repo.getMedals(id));
@@ -139,6 +141,19 @@ export function Drilldown() {
       )}
 
       {macro && (
+        <PlanCalendar
+          macro={macro}
+          weeks={maxWeek}
+          startDate={startDate}
+          hoyWeek={hoyWeek}
+          comps={comps}
+          marks={sessionLog}
+          perWeek={perWeek}
+          onWeekClick={setSelectedWeek}
+        />
+      )}
+
+      {macro && (
         <div style={{ marginTop: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
             <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Planificación · sesiones</div>
@@ -180,7 +195,7 @@ export function Drilldown() {
 
       <MedalSheet open={medalOpen} onClose={() => setMedalOpen(false)} onSubmit={onAddMedal} />
       <CompSheet open={compOpen} onClose={() => setCompOpen(false)} comps={comps} startDate={startDate} totalWeeks={maxWeek} onAdd={onAddComp} onRemove={onRemoveComp} />
-      {series && selectedWeek != null && (
+      {selectedWeek != null && (
         <WeekDetailSheet
           open
           onClose={() => setSelectedWeek(null)}

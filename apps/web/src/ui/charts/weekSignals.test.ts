@@ -30,3 +30,9 @@ test("weekSignals: dato faltante → hasData:false, sin estado (nunca falso-verd
   expect(peso.state).toBeUndefined();
   expect(peso.value).toBe("—");
 });
+
+test("weekSignals: sin serie → 7 filas 'sin dato' (nunca falso-verde)", () => {
+  const rows = weekSignals(undefined, MACROCYCLES[0], 2);
+  expect(rows.length).toBe(7);
+  expect(rows.every((r) => !r.hasData && r.value === "—" && r.state === undefined)).toBe(true);
+});
