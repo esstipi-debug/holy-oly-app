@@ -1,5 +1,5 @@
 import { recoverySeries, recoveryState, type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath } from "./chartkit";
+import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 import { STATUS } from "../status";
 
 interface MiniProps {
@@ -8,9 +8,10 @@ interface MiniProps {
   color: string;
   label: string;
   pad: number;
+  onPick?: (week: number) => void;
 }
 
-function Mini({ arr, base, color, label, pad }: MiniProps) {
+function Mini({ arr, base, color, label, pad, onPick }: MiniProps) {
   const weeks = arr.length;
   const mn = Math.min(...arr, base) - pad - 2;
   const mx = Math.max(...arr, base) + pad + 2;
@@ -50,11 +51,12 @@ function Mini({ arr, base, color, label, pad }: MiniProps) {
       >
         {label}
       </text>
+      {onPick && <WeekTapZones weeks={weeks} x={x} top={top} bot={bot} onPick={onPick} />}
     </svg>
   );
 }
 
-export function RecoveryChart({ series }: { series: MonitorSeries }) {
+export function RecoveryChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
   const rec = recoverySeries(series);
   const lastRec = rec.at(-1) ?? NaN;
 
@@ -70,8 +72,8 @@ export function RecoveryChart({ series }: { series: MonitorSeries }) {
         lectura: "Banda alrededor del baseline; fuera de banda (HRV↓ / RHR↑) = vigilar.",
       }}
     >
-      <Mini arr={series.hrv} base={series.hrvBase} color={STATUS.ok} label="HRV (ms)" pad={5} />
-      <Mini arr={series.rhr} base={series.rhrBase} color="#2dd4e6" label="FC reposo (lpm)" pad={3} />
+      <Mini arr={series.hrv} base={series.hrvBase} color={STATUS.ok} label="HRV (ms)" pad={5} onPick={onPointClick} />
+      <Mini arr={series.rhr} base={series.rhrBase} color="#2dd4e6" label="FC reposo (lpm)" pad={3} onPick={onPointClick} />
     </ChartCard>
   );
 }

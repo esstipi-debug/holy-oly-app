@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { ChartCard, linePath } from "../charts/chartkit";
+import { ChartCard, linePath, WeekTapZones } from "../charts/chartkit";
 
 const EXPLAIN = { forma: "A ÷ B", sirve: "decidir X", lectura: "banda 0,8–1,3" };
 
@@ -25,4 +25,16 @@ test("ChartCard: el tap en la ⓘ abre el sheet con las 3 secciones de HR-2", ()
   expect(screen.getByText("A ÷ B")).toBeInTheDocument();
   expect(screen.getByText("decidir X")).toBeInTheDocument();
   expect(screen.getByText("banda 0,8–1,3")).toBeInTheDocument();
+});
+
+test("WeekTapZones: un tap en una zona llama onPick con la semana", () => {
+  const picks: number[] = [];
+  const x = (w: number) => 12 + (w - 1) * 50;
+  const { container } = render(
+    <svg viewBox="0 0 300 100"><WeekTapZones weeks={3} x={x} top={0} bot={100} onPick={(w) => picks.push(w)} /></svg>,
+  );
+  const rects = container.querySelectorAll('rect[data-week]');
+  expect(rects.length).toBe(3);
+  fireEvent.click(rects[1]!); // semana 2
+  expect(picks).toEqual([2]);
 });

@@ -1,7 +1,7 @@
 import { chronic, type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath, weekLabels } from "./chartkit";
+import { ChartCard, linePath, weekLabels, WeekTapZones } from "./chartkit";
 
-export function LoadChart({ series }: { series: MonitorSeries }) {
+export function LoadChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
   const weeks = series.weeks;
   const acute = series.acute;
   const ch = chronic(acute);
@@ -41,6 +41,7 @@ export function LoadChart({ series }: { series: MonitorSeries }) {
           strokeLinejoin="round"
         />
         {weekLabels(weeks, H - 3, x)}
+        {onPointClick && <WeekTapZones weeks={weeks} x={x} top={top} bot={bot} onPick={onPointClick} />}
       </svg>
     </ChartCard>
   );

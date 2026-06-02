@@ -1,8 +1,8 @@
 import { weightBandState, type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath } from "./chartkit";
+import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 import { STATUS } from "../status";
 
-export function WeightChart({ series }: { series: MonitorSeries }) {
+export function WeightChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
   const wt = series.bodyweight ?? [];
   const band = series.weightBand;
   const weeks = series.weeks;
@@ -56,6 +56,7 @@ export function WeightChart({ series }: { series: MonitorSeries }) {
             style={{ fill: STATUS[weightBandState(lastWt, band)] } as React.CSSProperties}
           />
         )}
+        {onPointClick && <WeekTapZones weeks={weeks} x={x} top={top} bot={bot} onPick={onPointClick} />}
       </svg>
     </ChartCard>
   );

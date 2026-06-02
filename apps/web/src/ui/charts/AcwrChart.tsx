@@ -1,8 +1,8 @@
 import { acwr, acwrStateSafe, type MonitorSeries } from "@holy-oly/core";
 import { STATUS } from "../status";
-import { ChartCard, linePath } from "./chartkit";
+import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 
-export function AcwrChart({ series }: { series: MonitorSeries }) {
+export function AcwrChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
   const a = acwr(series.acute);
   const weeks = series.weeks;
 
@@ -66,6 +66,7 @@ export function AcwrChart({ series }: { series: MonitorSeries }) {
             style={{ fill: STATUS[acwrStateSafe(v ?? NaN)] } as React.CSSProperties}
           />
         ))}
+        {onPointClick && <WeekTapZones weeks={weeks} x={x} top={top} bot={bot} onPick={onPointClick} />}
       </svg>
     </ChartCard>
   );

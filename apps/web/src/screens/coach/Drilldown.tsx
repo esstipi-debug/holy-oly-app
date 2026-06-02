@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
-import { MACROCYCLES, rosterStatus, weekOfDate, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
+import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
 import { AcwrChart } from "../../ui/charts/AcwrChart";
 import { LoadChart } from "../../ui/charts/LoadChart";
@@ -17,6 +17,8 @@ import { MedalSheet } from "./MedalSheet";
 import { CompSheet } from "./CompSheet";
 import { SessionAdherence } from "./sessions/SessionAdherence";
 import { applyToggle } from "./sessions/sessionLog";
+import { weekSignals } from "../../ui/charts/weekSignals";
+import { WeekDetailSheet } from "../../ui/charts/WeekDetailSheet";
 
 export function Drilldown() {
   const { id = "" } = useParams();
@@ -32,6 +34,7 @@ export function Drilldown() {
   const [compOpen, setCompOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
 
   useEffect(() => {
     let on = true;
@@ -121,13 +124,13 @@ export function Drilldown() {
       {series ? (
         <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
           {macro && <MacroTimeline macro={macro} hoy={series.weeks} comps={comps} />}
-          <AcwrChart series={series} />
-          <LoadChart series={series} />
-          <RecoveryChart series={series} />
-          {macro && <ImrFaseChart series={series} macro={macro} />}
-          {series.wellness.length > 0 && <WellnessChart series={series} />}
-          {series.compliance && series.compliance.length > 0 && <CompChart series={series} />}
-          {series.bodyweight && series.bodyweight.length > 0 && <WeightChart series={series} />}
+          <AcwrChart series={series} onPointClick={setSelectedWeek} />
+          <LoadChart series={series} onPointClick={setSelectedWeek} />
+          <RecoveryChart series={series} onPointClick={setSelectedWeek} />
+          {macro && <ImrFaseChart series={series} macro={macro} onPointClick={setSelectedWeek} />}
+          {series.wellness.length > 0 && <WellnessChart series={series} onPointClick={setSelectedWeek} />}
+          {series.compliance && series.compliance.length > 0 && <CompChart series={series} onPointClick={setSelectedWeek} />}
+          {series.bodyweight && series.bodyweight.length > 0 && <WeightChart series={series} onPointClick={setSelectedWeek} />}
         </div>
       ) : (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", margin: "16px 0" }}>
@@ -177,6 +180,19 @@ export function Drilldown() {
 
       <MedalSheet open={medalOpen} onClose={() => setMedalOpen(false)} onSubmit={onAddMedal} />
       <CompSheet open={compOpen} onClose={() => setCompOpen(false)} comps={comps} startDate={startDate} totalWeeks={maxWeek} onAdd={onAddComp} onRemove={onRemoveComp} />
+      {series && selectedWeek != null && (
+        <WeekDetailSheet
+          open
+          onClose={() => setSelectedWeek(null)}
+          week={selectedWeek}
+          dateISO={dateOfWeek(startDate, selectedWeek)}
+          isTaper={isTaperWeek(selectedWeek, comps)}
+          signals={weekSignals(series, macro, selectedWeek)}
+          perWeek={perWeek}
+          marks={sessionLog}
+          onToggle={(w, i) => void onToggleSession(w, i)}
+        />
+      )}
     </div>
   );
 }

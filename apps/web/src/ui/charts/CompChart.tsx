@@ -1,8 +1,8 @@
 import { type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath } from "./chartkit";
+import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 import { STATUS } from "../status";
 
-export function CompChart({ series }: { series: MonitorSeries }) {
+export function CompChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
   const comp = series.compliance ?? [];
   const rpe = series.rpe ?? [];
   const weeks = series.weeks;
@@ -49,6 +49,7 @@ export function CompChart({ series }: { series: MonitorSeries }) {
             strokeDasharray="3 2"
           />
         )}
+        {onPointClick && <WeekTapZones weeks={weeks} x={x} top={top} bot={bot} onPick={onPointClick} />}
       </svg>
     </ChartCard>
   );

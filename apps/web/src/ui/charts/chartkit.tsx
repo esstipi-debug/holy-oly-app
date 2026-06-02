@@ -21,6 +21,35 @@ export function weekLabels(weeks: number, yB: number, xAt: (w: number) => number
   ));
 }
 
+/** Zonas de tap transparentes, una por semana, sobre el plot. Hit-target grande (mobile);
+ *  funciona para charts de puntos y de líneas. Emite onPick(week). */
+export function WeekTapZones({ weeks, x, top, bot, onPick }: {
+  weeks: number; x: (w: number) => number; top: number; bot: number; onPick: (week: number) => void;
+}) {
+  if (weeks < 1) return null;
+  const half = weeks > 1 ? (x(2) - x(1)) / 2 : 150;
+  return (
+    <>
+      {Array.from({ length: weeks }, (_, i) => {
+        const w = i + 1;
+        return (
+          <rect
+            key={w}
+            data-week={w}
+            x={x(w) - half}
+            y={top}
+            width={half * 2}
+            height={bot - top}
+            fill="transparent"
+            style={{ cursor: "pointer" } as React.CSSProperties}
+            onClick={() => onPick(w)}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 /** El panel de detalle (tap) con las 3 preguntas de HR-2: cómo se forma / para qué sirve / contra qué se lee. */
 function ChartExplainSheet({ title, explain }: { title: string; explain: Explain }) {
   const rows: [string, string][] = [

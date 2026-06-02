@@ -1,8 +1,8 @@
 import { imrStateForWeekSafe, type Macrocycle, type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath } from "./chartkit";
+import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 import { STATUS } from "../status";
 
-export function ImrFaseChart({ series, macro }: { series: MonitorSeries; macro: Macrocycle }) {
+export function ImrFaseChart({ series, macro, onPointClick }: { series: MonitorSeries; macro: Macrocycle; onPointClick?: (week: number) => void }) {
   const imr = series.imr;
   const weeks = series.weeks;
 
@@ -57,6 +57,7 @@ export function ImrFaseChart({ series, macro }: { series: MonitorSeries; macro: 
             style={{ fill: STATUS[imrStateForWeekSafe(v, macro, i + 1)] } as React.CSSProperties}
           />
         ))}
+        {onPointClick && <WeekTapZones weeks={weeks} x={x} top={top} bot={bot} onPick={onPointClick} />}
       </svg>
     </ChartCard>
   );

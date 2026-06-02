@@ -1,7 +1,7 @@
 import { type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath } from "./chartkit";
+import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 
-export function WellnessChart({ series }: { series: MonitorSeries }) {
+export function WellnessChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
   const wsc = series.wellness;
   const items = series.wellnessItems ?? {};
   const weeks = series.weeks;
@@ -41,6 +41,7 @@ export function WellnessChart({ series }: { series: MonitorSeries }) {
             strokeLinejoin="round"
           />
         )}
+        {onPointClick && <WeekTapZones weeks={weeks} x={x} top={top} bot={bot} onPick={onPointClick} />}
       </svg>
 
       {/* Item sparklines grid */}
