@@ -1,8 +1,10 @@
-import type { CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { MACROCYCLES } from "@holy-oly/core";
+import { MACROCYCLES, type Atleta, type Plan } from "@holy-oly/core";
+import { useRepository } from "../../../data/RepositoryProvider";
 import { MacroPeriodization } from "../../../ui/charts/MacroPeriodization";
 import { LoadMeters } from "./LoadMeters";
+import { AssignSheet } from "./AssignSheet";
 import { levelLabel } from "./macroFilter";
 
 const page: CSSProperties = {
@@ -38,8 +40,26 @@ const sec: CSSProperties = {
 export function MacroDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const repo = useRepository();
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [athletes, setAthletes] = useState<Atleta[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => {
+    let on = true;
+    repo.getRoster().then((r) => { if (on) setAthletes(r); }).catch(() => {});
+    return () => { on = false; };
+  }, [repo]);
+
   const macro = MACROCYCLES.find((m) => m.id === id);
   if (!macro) return <Navigate to="/coach/macros" replace />;
+  const m = macro;
+
+  async function onAssign(plan: Plan): Promise<void> {
+    await repo.savePlan(plan); // throws propagate to the sheet's submit handler
+    setAssignOpen(false);
+    setToast(`✓ ${m.name} asignado a ${athletes.find((a) => a.id === plan.atletaId)?.nombre ?? "el atleta"}`);
+    window.setTimeout(() => setToast(null), 2800);
+  }
 
   return (
     <div style={page}>
@@ -68,6 +88,23 @@ export function MacroDetail() {
 
       <div style={sec}>Ideal para</div>
       <p style={{ fontSize: 12, lineHeight: 1.5, color: "var(--wl-text)", margin: 0 }}>{macro.bestFor}</p>
+
+      <button type="button" onClick={() => setAssignOpen(true)}
+        style={{ width: "100%", marginTop: 20, padding: 14, borderRadius: 14, border: 0, cursor: "pointer",
+          background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15 }}>
+        + Asignar a un atleta
+      </button>
+
+      <AssignSheet open={assignOpen} onClose={() => setAssignOpen(false)} macro={macro} athletes={athletes} onAssign={onAssign} />
+      {toast && (
+        <div role="status" style={{
+          position: "fixed", left: 14, right: 14, bottom: 78, zIndex: 40, maxWidth: 362, margin: "0 auto",
+          background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13,
+          padding: "13px 16px", borderRadius: 12, textAlign: "center", boxShadow: "0 14px 40px -12px rgba(0,0,0,.7)",
+        }}>
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

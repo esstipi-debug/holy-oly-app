@@ -1,15 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { RepositoryProvider } from "../../../data/RepositoryProvider";
+import { LocalRepository } from "../../../data/LocalRepository";
+import { MemStorage } from "../../../test-utils/MemStorage";
 import { MacroDetail } from "./MacroDetail";
 
 const renderAt = (path: string) =>
   render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/coach/macros" element={<div>CATALOGO SENTINEL</div>} />
-        <Route path="/coach/macros/:id" element={<MacroDetail />} />
-      </Routes>
-    </MemoryRouter>,
+    <RepositoryProvider repo={new LocalRepository(new MemStorage())}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/coach/macros" element={<div>CATALOGO SENTINEL</div>} />
+          <Route path="/coach/macros/:id" element={<MacroDetail />} />
+        </Routes>
+      </MemoryRouter>
+    </RepositoryProvider>,
   );
 
 test("renders the program detail (header + periodization) for a valid id", () => {

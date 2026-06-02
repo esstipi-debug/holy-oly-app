@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
-import { MACROCYCLES, rosterStatus, weekOfDate, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries, type SessionLog } from "@holy-oly/core";
+import { MACROCYCLES, rosterStatus, weekOfDate, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
 import { AcwrChart } from "../../ui/charts/AcwrChart";
 import { LoadChart } from "../../ui/charts/LoadChart";
@@ -25,6 +25,7 @@ export function Drilldown() {
   const [series, setSeries] = useState<MonitorSeries | undefined>();
   const [medals, setMedals] = useState<Medal[]>([]);
   const [comps, setComps] = useState<Competencia[]>([]);
+  const [plan, setPlan] = useState<Plan | undefined>();
   const [sessionLog, setSessionLog] = useState<SessionLog>([]);
   const [sessionError, setSessionError] = useState(false);
   const [medalOpen, setMedalOpen] = useState(false);
@@ -35,10 +36,10 @@ export function Drilldown() {
   useEffect(() => {
     let on = true;
     setLoaded(false); setError(false); // reset on athlete change so a prior error/data doesn't stick
-    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id), repo.getComps(id), repo.getSessionLog(id)])
-      .then(([a, s, m, c, sl]) => {
+    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id)])
+      .then(([a, s, m, c, sl, pl]) => {
         if (!on) return;
-        setAthlete(a); setSeries(s); setMedals(m); setComps(c); setSessionLog(sl); setLoaded(true);
+        setAthlete(a); setSeries(s); setMedals(m); setComps(c); setSessionLog(sl); setPlan(pl); setLoaded(true);
       })
       .catch(() => { if (on) { setError(true); setLoaded(true); } });
     return () => { on = false; };
@@ -59,7 +60,8 @@ export function Drilldown() {
   // Effective plan start date: real one once M5 sets it; until then anchor today to the current
   // series week so macro weeks map to real calendar dates (and competitions can be picked by date).
   const today = new Date().toISOString().slice(0, 10);
-  const startDate = defaultStartDate(today, series?.weeks ?? 1);
+  // Real plan anchor once assigned (M5); else derive so today maps to the current series week.
+  const startDate = plan?.startDate ?? defaultStartDate(today, series?.weeks ?? 1);
   async function onAddMedal(m: Medal): Promise<void> {
     await repo.addMedal(id, m);
     setMedals(await repo.getMedals(id));
