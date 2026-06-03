@@ -58,7 +58,7 @@ test("atleta con plan + serie + check-in hecho: saludo con semana, estado, racha
   renderHome();
   expect(await screen.findByText("Hola, Mara")).toBeInTheDocument();
   expect(screen.getByText(/Ruso 5D · semana 5 de 12 · Fuerza/)).toBeInTheDocument();
-  expect(screen.getByText(/Vas bien|Cuidate hoy|Pará la oreja/)).toBeInTheDocument(); // a real state, not "Sin datos aún"
+  expect(screen.getByText("Vas bien")).toBeInTheDocument(); // FLAT_SERIES (recovery 85, acwr 1.0) → estado "ok"
   expect(screen.queryByText("Sin datos aún")).not.toBeInTheDocument();
   expect(screen.getByText("Check-in de hoy, listo")).toBeInTheDocument();
   expect(screen.getByText("5")).toBeInTheDocument(); // streak

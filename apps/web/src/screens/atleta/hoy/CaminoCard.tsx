@@ -7,11 +7,11 @@ function MacroRibbon({ plan }: { plan: PlanView }) {
     <div style={{ display: "flex", gap: 3, marginTop: 4 }}>
       {plan.phases.map((p) => {
         const wks = p.to - p.from + 1;
-        const fill = Math.round(((p.imr - 60) / 45) * 78 + 16);
+        const fill = Math.round(Math.max(0, Math.min(100, ((p.imr - 60) / 45) * 78 + 16)));
         const now = plan.currentWeek >= p.from && plan.currentWeek <= p.to;
         const hasComp = plan.comps.some((c) => c.week >= p.from && c.week <= p.to);
         return (
-          <div key={p.name} className={"ho-ribbon__seg" + (now ? " now" : "")} style={{ flex: wks, "--fill": `${fill}%` } as React.CSSProperties}>
+          <div key={`${p.name}-${p.from}`} className={"ho-ribbon__seg" + (now ? " now" : "")} style={{ flex: wks, "--fill": `${fill}%` } as React.CSSProperties}>
             <div className="ho-ribbon__nm">{p.name}{hasComp ? " 🚩" : ""}{now ? " • hoy" : ""}</div>
             <div className="ho-ribbon__wk">sem {p.from}–{p.to}</div>
           </div>
@@ -43,8 +43,8 @@ export function CaminoCard({ plan }: { plan: MePlanView["plan"] }) {
       <div className="ho-card__sub" style={{ marginTop: 4 }}>cinta de fases del macro · 🚩 = competencia</div>
       {next && faltan != null ? (
         <div className="ho-count">
-          <b>{faltan <= 0 ? "0" : faltan}</b>
-          <span>{faltan <= 0 ? <>{next.name} es <b>esta semana</b></> : <>semanas para <b>{next.name}</b><br />semana {next.week} de {plan.totalWeeks}</>}</span>
+          <b>{Math.max(0, faltan)}</b>
+          <span>{faltan === 0 ? <>{next.name} es <b>esta semana</b></> : faltan < 0 ? <>{next.name} <b>ya pasó</b></> : <>semanas para <b>{next.name}</b><br />semana {next.week} de {plan.totalWeeks}</>}</span>
         </div>
       ) : null}
       <MacroRibbon plan={plan} />
