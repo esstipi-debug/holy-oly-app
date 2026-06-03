@@ -8,4 +8,5 @@ export const KEYS = {
   sessionLog: (id: string) => `ho:sessions:${id}`,
   cycleShare: (id: string) => `ho:cycleShare:${id}`,
   cycleState: (id: string) => `ho:cycleState:${id}`,
+  prescription: (id: string) => `holyoly:prescription:${id}`,
 } as const;

@@ -1,10 +1,11 @@
 import type {
   Repository, Atleta, Plan, Medal, Competencia, MonitorSeries,
-  CycleShare, CycleState, CycleContext, SessionLog,
+  CycleShare, CycleState, CycleContext, SessionLog, SessionView, PrescribedExercise, PrescriptionRow,
 } from "@holy-oly/core";
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
+  MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -49,7 +50,13 @@ export class LocalRepository implements Repository {
     const r = PlanSchema.safeParse(this.s.getOptional<unknown>(KEYS.plan(id)));
     return r.success ? r.data : undefined;
   }
-  async savePlan(plan: Plan): Promise<void> { this.s.set(KEYS.plan(plan.atletaId), plan); }
+  async savePlan(plan: Plan): Promise<void> {
+    this.s.set(KEYS.plan(plan.atletaId), plan);
+    const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+    const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+    const rows: PrescriptionRow[] = macro ? instantiatePrescription(MACRO_RECIPES, macro, totalWeeks) : [];
+    this.s.set(KEYS.prescription(plan.atletaId), rows);
+  }
   async getMedals(id: string): Promise<Medal[]> {
     const r = MedalsSchema.safeParse(this.s.getOptional<unknown>(KEYS.medals(id)));
     return r.success ? r.data : [];
@@ -67,6 +74,19 @@ export class LocalRepository implements Repository {
     return r.success ? r.data : [];
   }
   async setSessionLog(id: string, log: SessionLog): Promise<void> { this.s.set(KEYS.sessionLog(id), log); }
+
+  async getPrescriptionWeek(id: string, week: number): Promise<SessionView[]> {
+    const plan = await this.getPlan(id);
+    if (!plan) return [];
+    const all = this.s.getOptional<PrescriptionRow[]>(KEYS.prescription(id)) ?? [];
+    return buildSessionViews(all.filter((r) => r.week === week), plan.rms);
+  }
+  async setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void> {
+    const all = this.s.getOptional<PrescriptionRow[]>(KEYS.prescription(id)) ?? [];
+    const kept = all.filter((r) => !(r.week === week && r.sessionIdx === sessionIdx));
+    const added: PrescriptionRow[] = exercises.map((ex, order) => ({ ...ex, week, sessionIdx, order }));
+    this.s.set(KEYS.prescription(id), [...kept, ...added]);
+  }
 
   async getCycleShare(id: string): Promise<CycleShare> {
     const r = CycleShareSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleShare(id)));

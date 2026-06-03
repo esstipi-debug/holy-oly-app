@@ -1,6 +1,6 @@
 import type {
   Atleta, Plan, Medal, Competencia, MonitorSeries,
-  CycleShare, CycleContext, SessionLog,
+  CycleShare, CycleContext, SessionLog, SessionView, PrescribedExercise,
 } from "./types";
 
 export interface Repository {
@@ -26,4 +26,8 @@ export interface Repository {
   getCycleShare(id: string): Promise<CycleShare>;
   /** Redacted coach-facing cycle view; undefined when share === "none". */
   getCycleContext(id: string): Promise<CycleContext | undefined>;
+  /** A week's sessions with kg derived from the athlete's plan RMs. [] if no plan or no recipe. */
+  getPrescriptionWeek(id: string, week: number): Promise<SessionView[]>;
+  /** Replace one session's exercises (coach edit). */
+  setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void>;
 }
