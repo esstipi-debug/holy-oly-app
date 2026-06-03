@@ -1,3 +1,4 @@
+import { afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "../../../auth/AuthContext";
@@ -18,6 +19,8 @@ function renderCuenta() {
   );
 }
 
+afterEach(() => localStorage.clear());
+
 test("muestra la sección de vínculo, el toggle de variante y los skins", () => {
   renderCuenta();
   expect(screen.getByText("vos sos dueña de tus datos")).toBeInTheDocument();
@@ -31,5 +34,4 @@ test("elegir una skin la aplica al shell y la persiste", () => {
   fireEvent.click(screen.getByRole("button", { name: "Skin Plates" }));
   expect(container.querySelector(".ho-shell")?.classList.contains("wl--plates")).toBe(true);
   expect(localStorage.getItem("holy-oly:atleta-skin")).toBe("plates");
-  localStorage.clear();
 });

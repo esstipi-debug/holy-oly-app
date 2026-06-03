@@ -102,7 +102,7 @@ export function CheckIn({ variant, initial, onClose, onDone }: {
   const [error, setError] = useState<string | null>(null);
   const advTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const go = (n: number): void => { setStep(n); setMax((m) => Math.max(m, n)); };
+  const go = (n: number): void => { clearTimeout(advTimer.current); setStep(n); setMax((m) => Math.max(m, n)); };
   useEffect(() => () => clearTimeout(advTimer.current), []);
 
   const pickTap = (item: Item, p: number): void => {
