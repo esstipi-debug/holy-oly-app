@@ -20,6 +20,7 @@ import { applyToggle } from "./sessions/sessionLog";
 import { weekSignals } from "../../ui/charts/weekSignals";
 import { WeekDetailSheet } from "../../ui/charts/WeekDetailSheet";
 import { PlanCalendar } from "./calendar/PlanCalendar";
+import { SessionsSection } from "./sessions/SessionsSection";
 
 export function Drilldown() {
   const { id = "" } = useParams();
@@ -168,6 +169,8 @@ export function Drilldown() {
           </div>
         </div>
       )}
+
+      <SessionsSection athleteId={athlete.id} hoyWeek={hoyWeek} totalWeeks={maxWeek} />
 
       <div style={{ marginTop: 16, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Palmarés · competencias</div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0" }}>
