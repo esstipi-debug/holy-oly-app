@@ -182,7 +182,6 @@ export const PrescribedExerciseViewSchema = PrescribedExerciseSchema.extend({
 export const SessionViewSchema = z.object({
   week: z.number().int().min(1).max(104),
   sessionIdx: z.number().int().min(0).max(13),
-  label: z.string().optional(),
   exercises: z.array(PrescribedExerciseViewSchema).max(15),
 });
 export const SessionViewsSchema = z.array(SessionViewSchema).max(14);

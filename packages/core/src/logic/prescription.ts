@@ -38,7 +38,10 @@ export function instantiatePrescription(recipes: MacroRecipe[], macro: Macrocycl
 /** Group a set of prescription rows (typically one week) into per-session views with name + derived kg. */
 export function buildSessionViews(rows: PrescriptionRow[], rms: RM): SessionView[] {
   const byIdx = new Map<number, PrescriptionRow[]>();
-  for (const r of rows) (byIdx.get(r.sessionIdx) ?? byIdx.set(r.sessionIdx, []).get(r.sessionIdx)!).push(r);
+  for (const r of rows) {
+    if (!byIdx.has(r.sessionIdx)) byIdx.set(r.sessionIdx, []);
+    byIdx.get(r.sessionIdx)!.push(r);
+  }
   const views: SessionView[] = [];
   for (const [sessionIdx, sRows] of [...byIdx.entries()].sort((a, b) => a[0] - b[0])) {
     const ordered = [...sRows].sort((a, b) => a.order - b.order);

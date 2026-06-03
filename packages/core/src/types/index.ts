@@ -202,7 +202,7 @@ export interface PrescribedExercise {
   flags?: MovementFlag[];
   notes?: string;
 }
-export interface SessionTemplate { label?: string; exercises: PrescribedExercise[] }
+export interface SessionTemplate { exercises: PrescribedExercise[] }
 export interface PhaseTemplate { phaseKey: string; sessions: SessionTemplate[] } // sessions[idx], idx 0-based
 export interface MacroRecipe { macroId: string; phases: PhaseTemplate[] }
 
@@ -211,4 +211,4 @@ export interface PrescriptionRow extends PrescribedExercise { week: number; sess
 /** A prescribed exercise with its display name + derived target kg, for the front. */
 export interface PrescribedExerciseView extends PrescribedExercise { movementName: string; targetKg?: number }
 /** One instantiated session (a column in the week), kg already derived. */
-export interface SessionView { week: number; sessionIdx: number; label?: string; exercises: PrescribedExerciseView[] }
+export interface SessionView { week: number; sessionIdx: number; exercises: PrescribedExerciseView[] }

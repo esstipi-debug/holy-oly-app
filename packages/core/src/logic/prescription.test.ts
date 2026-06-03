@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { MacroRecipe, PrescribedExercise, RM } from "../types";
+import type { MacroRecipe, RM } from "../types";
 import { MACROCYCLES } from "../data/macrocycles";
 import { resolveTargetKg, sessionTemplateFor, instantiatePrescription, buildSessionViews } from "./prescription";
 
@@ -24,8 +24,10 @@ describe("resolveTargetKg", () => {
 describe("instantiatePrescription (Ruso 5D)", () => {
   it("produces rows for every week × session of the macro", () => {
     const rows = instantiatePrescription(MACRO_RECIPES_FIXTURE, ruso, 16);
-    // 16 weeks; weeks 1-12 have 5-day phases (3 exercises each in this fixture), weeks 13-16 have 2-day…
-    expect(rows.length).toBeGreaterThan(0);
+    // Fixture: hipertrofia has 2 sessions (3 exercises total: 2+1), fuerza-basica/fuerza-potencia/peaking
+    // each have 1 session (1 exercise). ruso-5d phase weeks: 1-4/5-8/9-12/13-16 (4 weeks each).
+    // Rows: hipertrofia 4wk×3ex=12, fuerza-basica 4wk×1ex=4, fuerza-potencia 4wk×1ex=4, peaking 4wk×1ex=4 → 24.
+    expect(rows.length).toBe(24);
     expect(rows.every((r) => r.week >= 1 && r.week <= 16)).toBe(true);
     const w1 = rows.filter((r) => r.week === 1);
     expect(new Set(w1.map((r) => r.sessionIdx)).size).toBe(2); // fixture: 2 sessions in the hipertrofia phase
