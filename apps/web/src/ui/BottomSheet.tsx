@@ -4,10 +4,12 @@ export function BottomSheet({
   open,
   onClose,
   children,
+  ariaLabel,
 }: {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
+  ariaLabel?: string;
 }) {
   if (!open) return null;
 
@@ -24,6 +26,9 @@ export function BottomSheet({
       }}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabel}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%",

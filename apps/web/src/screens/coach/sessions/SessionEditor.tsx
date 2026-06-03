@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { getMovement, type PrescribedExercise, type PrescribedExerciseView } from "@holy-oly/core";
+import { getMovement, PrescribedExercisesSchema, type PrescribedExercise, type PrescribedExerciseView } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 import { MovementPicker } from "./MovementPicker";
 
@@ -38,16 +38,19 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
   });
 
   async function save(): Promise<void> {
+    const exercises = rows.map((r) => ({ movementId: r.movementId, sets: r.sets, reps: r.reps, pct: r.pct, kgOverride: r.kgOverride, rpe: r.rpe }));
+    const parsed = PrescribedExercisesSchema.safeParse(exercises);
+    if (!parsed.success) { setError("Revisá los valores: sets y reps ≥ 1, % entre 1–120, RPE entre 1–10."); return; }
     setBusy(true); setError(null);
     try {
-      await onSave(rows.map((r) => ({ movementId: r.movementId, sets: r.sets, reps: r.reps, pct: r.pct, kgOverride: r.kgOverride, rpe: r.rpe })));
+      await onSave(parsed.data);
       onClose();
     } catch (e) { setError(e instanceof Error ? e.message : "No se pudo guardar"); }
     finally { setBusy(false); }
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose}>
+    <BottomSheet open={open} onClose={onClose} ariaLabel="Editar sesión">
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Sesión · sem {week} · día {sessionIdx + 1}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
         {rows.map((r, i) => (
@@ -59,8 +62,8 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
               <button type="button" style={{ ...mini, color: "#ff5e5e" }} aria-label={`Quitar ${r.movementName}`} onClick={() => remove(i)}>✕</button>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
-              <input style={num} type="number" aria-label={`sets de ${r.movementName}`} value={r.sets} onChange={(e) => patch(i, { sets: Number(e.target.value) })} />×
-              <input style={num} type="number" aria-label={`reps de ${r.movementName}`} value={r.reps} onChange={(e) => patch(i, { reps: Number(e.target.value) })} />
+              <input style={num} type="number" min={1} aria-label={`sets de ${r.movementName}`} value={r.sets} onChange={(e) => patch(i, { sets: Number(e.target.value) })} />×
+              <input style={num} type="number" min={1} aria-label={`reps de ${r.movementName}`} value={r.reps} onChange={(e) => patch(i, { reps: Number(e.target.value) })} />
               {r.pct != null && <>@<input style={num} type="number" aria-label={`% de ${r.movementName}`} value={r.pct} onChange={(e) => patch(i, { pct: Number(e.target.value) })} />%</>}
               {r.rpe != null && <>RPE<input style={num} type="number" aria-label={`rpe de ${r.movementName}`} value={r.rpe} onChange={(e) => patch(i, { rpe: Number(e.target.value) })} /></>}
               <input style={{ ...num, width: 64 }} type="number" placeholder="kg" aria-label={`kg de ${r.movementName}`} value={r.kgOverride ?? ""} onChange={(e) => patch(i, { kgOverride: e.target.value ? Number(e.target.value) : undefined })} />

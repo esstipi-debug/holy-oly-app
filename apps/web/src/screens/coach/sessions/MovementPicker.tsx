@@ -15,7 +15,7 @@ export function MovementPicker({ open, onClose, onPick }: {
   const [q, setQ] = useState("");
   const results = q.trim() ? searchMovements(q).slice(0, 30) : MOVEMENTS.filter((m) => m.id === m.baseId).slice(0, 30);
   return (
-    <BottomSheet open={open} onClose={onClose}>
+    <BottomSheet open={open} onClose={onClose} ariaLabel="Elegir un movimiento">
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Elegí un movimiento</div>
       <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar movimiento…"
         aria-label="Buscar movimiento"

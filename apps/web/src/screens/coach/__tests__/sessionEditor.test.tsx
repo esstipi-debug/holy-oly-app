@@ -21,3 +21,27 @@ test("quita un ejercicio", () => {
   fireEvent.click(screen.getByRole("button", { name: "Quitar Arranque" }));
   expect(screen.queryByLabelText("reps de Arranque")).not.toBeInTheDocument();
 });
+
+test("muestra error si onSave falla", async () => {
+  const onSave = vi.fn().mockRejectedValue(new Error("Red caída"));
+  render(<SessionEditor open week={1} sessionIdx={0} exercises={exs} onClose={() => {}} onSave={onSave} />);
+  fireEvent.click(screen.getByRole("button", { name: "Guardar sesión" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Red caída");
+  expect(screen.getByRole("button", { name: "Guardar sesión" })).not.toBeDisabled();
+});
+
+test("reordena ejercicios con las flechas", () => {
+  const two: PrescribedExerciseView[] = [
+    { movementId: "arranque", sets: 5, reps: 3, pct: 70, movementName: "Arranque", targetKg: 56 },
+    { movementId: "sentadilla", sets: 5, reps: 5, pct: 80, movementName: "Sentadilla", targetKg: 112 },
+  ];
+  render(<SessionEditor open week={1} sessionIdx={0} exercises={two} onClose={() => {}} onSave={vi.fn()} />);
+  const names = () =>
+    screen
+      .getAllByRole("button", { name: /^(subir|bajar|Quitar) (Arranque|Sentadilla)$/ })
+      .map((btn) => (btn.getAttribute("aria-label") ?? "").replace(/^(subir|bajar|Quitar) /, ""))
+      .filter((v, i, arr) => arr.indexOf(v) === i);
+  expect(names()).toEqual(["Arranque", "Sentadilla"]);
+  fireEvent.click(screen.getByRole("button", { name: "subir Sentadilla" }));
+  expect(names()).toEqual(["Sentadilla", "Arranque"]);
+});
