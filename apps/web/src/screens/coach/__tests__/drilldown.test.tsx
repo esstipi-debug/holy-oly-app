@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { RepositoryProvider } from "../../../data/RepositoryProvider";
 import { LocalRepository } from "../../../data/LocalRepository";
@@ -29,6 +29,23 @@ test("shows the athlete header, the monitor charts, and the palmarés medals (Ma
   expect(screen.getByText(/Palmar/)).toBeInTheDocument();
   expect(screen.getByText("Nacional Absoluto")).toBeInTheDocument();
   expect(container.querySelectorAll("svg").length).toBeGreaterThan(3);
+});
+
+test("el botón 'volver' lleva de vuelta a Atletas (/coach)", async () => {
+  const repo = new LocalRepository(new MemStorage());
+  render(
+    <RepositoryProvider repo={repo}>
+      <MemoryRouter initialEntries={["/coach/a/mv"]}>
+        <Routes>
+          <Route path="/coach" element={<div>ATLETAS-ROSTER</div>} />
+          <Route path="/coach/a/:id" element={<Drilldown />} />
+        </Routes>
+      </MemoryRouter>
+    </RepositoryProvider>,
+  );
+  const back = await screen.findByRole("button", { name: "Volver a Atletas" });
+  fireEvent.click(back);
+  await waitFor(() => expect(screen.getByText("ATLETAS-ROSTER")).toBeInTheDocument());
 });
 
 test("no-data athlete (Tomás) shows an empty state, not charts", async () => {
