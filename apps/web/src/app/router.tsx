@@ -12,7 +12,10 @@ import { CoachShell } from "../screens/coach/macros/CoachShell";
 import { MacroCatalog } from "../screens/coach/macros/MacroCatalog";
 import { MacroDetail } from "../screens/coach/macros/MacroDetail";
 import { CuentaStub } from "../screens/coach/macros/CuentaStub";
-import { AtletaScreen } from "../screens/atleta/AtletaScreen";
+import { AthleteShell } from "../screens/atleta/AthleteShell";
+import { HomeScreen } from "../screens/atleta/HomeScreen";
+import { ProgresoPlaceholder } from "../screens/atleta/ProgresoPlaceholder";
+import { CuentaMin } from "../screens/atleta/CuentaMin";
 
 // Explicit type annotation avoids TS2742 (pnpm virtual store internal type).
 export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter([
@@ -40,7 +43,15 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
           { path: "cuenta", element: <CuentaStub /> },
         ],
       },
-      { path: "atleta", element: <RequireAuth role="atleta"><AtletaScreen /></RequireAuth> },
+      {
+        path: "atleta",
+        element: <RequireAuth role="atleta"><AthleteShell /></RequireAuth>,
+        children: [
+          { index: true, element: <HomeScreen /> },
+          { path: "progreso", element: <ProgresoPlaceholder /> },
+          { path: "cuenta", element: <CuentaMin /> },
+        ],
+      },
       // dev-only component showcase — lazy import so it's excluded from the production bundle entirely
       ...(import.meta.env.DEV
         ? [{ path: "gallery", lazy: async () => ({ Component: (await import("../ui/Gallery")).Gallery }) }]
