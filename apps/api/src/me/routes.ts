@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { DayLogInputSchema } from "@holy-oly/core";
+import { DayLogInputSchema, SessionActualsInputSchema } from "@holy-oly/core";
 import { prisma } from "../db/client";
 import { requireAthlete } from "../auth/guards";
 import * as repo from "../repo";
@@ -48,5 +48,27 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     const parsed = DayLogInputSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid daylog" });
     return repo.upsertDayLog(prisma, athleteId, todayISO(), parsed.data);
+  });
+
+  app.get<{ Querystring: { week?: string } }>("/me/sessions", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    const week = Number(req.query.week);
+    if (!Number.isInteger(week) || week < 1 || week > 104) return reply.code(400).send({ error: "week required (1..104)" });
+    return repo.getPrescriptionWeek(prisma, athleteId, week);
+  });
+
+  app.put<{ Params: { week: string; idx: string } }>("/me/session/:week/:idx", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    const week = Number(req.params.week);
+    const idx = Number(req.params.idx);
+    if (!Number.isInteger(week) || week < 1 || week > 104 || !Number.isInteger(idx) || idx < 0 || idx > 13) {
+      return reply.code(400).send({ error: "bad week/idx" });
+    }
+    const parsed = SessionActualsInputSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid actuals" });
+    await repo.setSessionActuals(prisma, athleteId, week, idx, parsed.data, todayISO());
+    return reply.code(200).send({ ok: true });
   });
 }

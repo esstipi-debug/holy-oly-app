@@ -2,9 +2,9 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
-  PrescribedExercise, PrescriptionRow, SessionView, MovementFlag,
+  PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { redactCycle } from "./cycle";
 
@@ -203,7 +203,8 @@ export async function instantiateForPlan(tx: Prisma.TransactionClient, athleteId
   }
 }
 
-/** A week's sessions with kg derived from the athlete's plan RMs. [] if no plan. */
+/** A week's sessions with kg derived from the athlete's plan RMs, merged with any athlete actuals.
+ *  [] if no plan. Serves both the coach (`guardAthlete`) and athlete self (`/me/sessions`). */
 export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: string, week: number): Promise<SessionView[]> {
   const plan = await getPlan(prisma, athleteId);
   if (!plan) return [];
@@ -215,7 +216,30 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
     pct: r.pct ?? undefined, kgOverride: r.kgOverride ?? undefined, rpe: r.rpe ?? undefined,
     flags: r.flags.length > 0 ? (r.flags as MovementFlag[]) : undefined, notes: r.notes ?? undefined,
   }));
-  return buildSessionViews(rows, plan.rms);
+  const actualRows = await prisma.sessionActual.findMany({ where: { athleteId, week } });
+  const actuals: SessionActual[] = actualRows.map((a) => ({
+    week: a.week, sessionIdx: a.sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
+    actualKg: a.actualKg ?? undefined, actualReps: a.actualReps ?? undefined, actualRpe: a.actualRpe ?? undefined,
+    note: a.note ?? undefined, doneAt: a.doneAt ?? undefined,
+  }));
+  return mergeActuals(buildSessionViews(rows, plan.rms), actuals);
+}
+
+/** Replace one session's athlete actuals (self-written). Transactional. `today` stamps doneAt. */
+export async function setSessionActuals(
+  prisma: PrismaClient, athleteId: string, week: number, sessionIdx: number,
+  actuals: Array<{ order: number; movementId: string; done: boolean; kg?: number; reps?: number; rpe?: number; note?: string }>,
+  today: string,
+): Promise<void> {
+  await prisma.$transaction([
+    prisma.sessionActual.deleteMany({ where: { athleteId, week, sessionIdx } }),
+    prisma.sessionActual.createMany({
+      data: actuals.map((a) => ({
+        athleteId, week, sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
+        actualKg: a.kg ?? null, actualReps: a.reps ?? null, actualRpe: a.rpe ?? null, note: a.note ?? null, doneAt: today,
+      })),
+    }),
+  ]);
 }
 
 /** Replace one session's exercises (coach edit). Transactional. */
