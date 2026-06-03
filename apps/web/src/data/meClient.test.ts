@@ -42,4 +42,14 @@ describe("meClient", () => {
     global.fetch = vi.fn(async () => res(400, { error: "invalid daylog" })) as unknown as typeof fetch;
     await expect(me.putDayLog({ fatiga: 9, dolor: 1, estres: 3, humor: 4, motivacion: 5, sueno: 4 })).rejects.toThrow(/invalid daylog/);
   });
+
+  it("getMeSeries rethrows non-404 errors", async () => {
+    global.fetch = vi.fn(async () => res(401, { error: "unauthorized" })) as unknown as typeof fetch;
+    await expect(me.getMeSeries()).rejects.toThrow(/unauthorized/);
+  });
+
+  it("getMePlan throws on error (e.g. expired session)", async () => {
+    global.fetch = vi.fn(async () => res(401, { error: "unauthorized" })) as unknown as typeof fetch;
+    await expect(me.getMePlan()).rejects.toThrow(/unauthorized/);
+  });
 });

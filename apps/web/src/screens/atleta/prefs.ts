@@ -3,6 +3,7 @@ export type CheckinVariant = "tap" | "dial";
 
 const SKIN_KEY = "holy-oly:atleta-skin";
 const VARIANT_KEY = "holy-oly:atleta-checkin-variant";
+// Keep in sync with the .wl--* skin classes in theme.css.
 const SKINS = ["neon", "neonlight", "plates", "premium", "chalk"] as const;
 
 export function getSkin(): string {
