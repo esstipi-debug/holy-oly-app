@@ -31,3 +31,37 @@ export function sessionsPerWeek(frequency: string): number {
   const m = frequency.match(/\d+/);
   return m ? Number(m[0]) : 0;
 }
+
+/** Consecutive-day streak ending at the most recent logged day — counted only if that day is
+ *  today or yesterday (else the streak is broken → 0). Dates are ISO YYYY-MM-DD. Rest days are
+ *  not modeled in A1, so any calendar gap breaks the run. */
+export function computeStreak(loggedDates: string[], today: string): number {
+  if (loggedDates.length === 0) return 0;
+  const set = new Set(loggedDates);
+  const todayMs = ms(today);
+  let cur: number;
+  if (set.has(today)) cur = todayMs;
+  else if (set.has(toISO(todayMs - DAY))) cur = todayMs - DAY;
+  else return 0;
+  let count = 0;
+  while (set.has(toISO(cur))) {
+    count++;
+    cur -= DAY;
+  }
+  return count;
+}
+
+/** `weeks` Monday-first rows of 7 ISO dates, the last row containing `today`. Backs the heatmap. */
+export function calendarWeeks(today: string, weeks: number): string[][] {
+  const todayMs = ms(today);
+  const dow = (new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7; // 0=Mon … 6=Sun
+  const mondayMs = todayMs - dow * DAY;
+  const rows: string[][] = [];
+  for (let w = weeks - 1; w >= 0; w--) {
+    const start = mondayMs - w * 7 * DAY;
+    const row: string[] = [];
+    for (let d = 0; d < 7; d++) row.push(toISO(start + d * DAY));
+    rows.push(row);
+  }
+  return rows;
+}

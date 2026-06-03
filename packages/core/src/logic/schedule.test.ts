@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { weekOfDate, dateOfWeek, defaultStartDate, sessionsPerWeek } from "./schedule";
+import { weekOfDate, dateOfWeek, defaultStartDate, sessionsPerWeek, computeStreak, calendarWeeks } from "./schedule";
 
 describe("weekOfDate", () => {
   const start = "2026-01-05"; // a Monday
@@ -48,5 +48,37 @@ describe("sessionsPerWeek", () => {
   it("returns 0 when no count is present", () => {
     expect(sessionsPerWeek("var")).toBe(0);
     expect(sessionsPerWeek("")).toBe(0);
+  });
+});
+
+describe("computeStreak", () => {
+  it("counts the consecutive run ending today", () => {
+    expect(computeStreak(["2026-06-01", "2026-06-02", "2026-06-03"], "2026-06-03")).toBe(3);
+  });
+  it("stays alive when the last log was yesterday (today not yet logged)", () => {
+    expect(computeStreak(["2026-06-01", "2026-06-02"], "2026-06-03")).toBe(2);
+  });
+  it("is broken (0) when the last log is older than yesterday", () => {
+    expect(computeStreak(["2026-05-30", "2026-05-31"], "2026-06-03")).toBe(0);
+  });
+  it("stops at the first gap", () => {
+    expect(computeStreak(["2026-05-31", "2026-06-02", "2026-06-03"], "2026-06-03")).toBe(2);
+  });
+  it("ignores duplicates and unsorted input", () => {
+    expect(computeStreak(["2026-06-03", "2026-06-02", "2026-06-03"], "2026-06-03")).toBe(2);
+  });
+  it("empty history → 0", () => expect(computeStreak([], "2026-06-03")).toBe(0));
+});
+
+describe("calendarWeeks", () => {
+  it("returns `weeks` Monday-first rows of 7 ISO dates", () => {
+    const grid = calendarWeeks("2026-06-03", 8); // 2026-06-03 is a Wednesday
+    expect(grid).toHaveLength(8);
+    grid.forEach((row) => expect(row).toHaveLength(7));
+    // the last row contains today, Monday-first
+    const last = grid[grid.length - 1]!;
+    expect(last).toContain("2026-06-03");
+    expect(last[0]).toBe("2026-06-01"); // Monday of that week
+    expect(last[6]).toBe("2026-06-07"); // Sunday
   });
 });
