@@ -40,8 +40,9 @@ export function HomeScreen() {
     return <div role="alert" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>No se pudo cargar tu inicio. Probá de nuevo más tarde.</div>;
   }
 
-  const currentWeek = plan.plan?.currentWeek ?? (series ? series.weeks : 1);
-  const titularState: CellState = series ? seriesState(series, currentWeek) : "none";
+  // Without an assigned plan there is no date anchor, so there is no honest "estado de hoy"
+  // (never derive the current week from the series length). Show "none" until the coach assigns one.
+  const titularState: CellState = plan.plan && series ? seriesState(series, plan.plan.currentWeek) : "none";
   const checkedIn = daylog.entry !== null;
   const firstName = plan.athlete.nombre.split(" ")[0] || plan.athlete.nombre;
 

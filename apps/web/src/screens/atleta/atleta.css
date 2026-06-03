@@ -64,7 +64,7 @@
 }
 .ho-cta__done b { display: block; font-family: var(--wl-display); font-weight: 700; font-size: 14px; }
 .ho-cta__done span { font-family: var(--ho-mono); font-size: 9.5px; color: var(--wl-muted); }
-.ho-cta__check { width: 28px; height: 28px; border-radius: 50%; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: var(--ho-ok, #1bc98a); color: var(--wl-bg); }
+.ho-cta__check { width: 28px; height: 28px; border-radius: 50%; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: var(--wl-accent); color: var(--wl-bg); }
 
 /* streak */
 .ho-streak { display: flex; align-items: center; gap: 9px; margin-bottom: 11px; }
@@ -185,7 +185,7 @@
 
 /* check-in done */
 .ho-cidone { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
-.ho-cidone__ring { width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--ho-ok, #1bc98a) 16%, transparent); color: var(--ho-ok, #1bc98a); animation: hoPop .4s var(--ease-spring); }
+.ho-cidone__ring { width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--wl-accent) 16%, transparent); color: var(--wl-accent); animation: hoPop .4s var(--ease-spring); }
 @keyframes hoPop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .ho-cidone__h { font-family: var(--wl-display); font-weight: 800; font-size: 24px; color: var(--wl-text); text-transform: uppercase; }
 .ho-cidone__b { font-family: var(--ho-mono); font-size: 11px; color: var(--wl-muted); line-height: 1.6; max-width: 250px; }
