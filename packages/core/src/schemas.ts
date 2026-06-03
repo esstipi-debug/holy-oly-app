@@ -175,6 +175,13 @@ export const PrescribedExerciseSchema = z.object({
 });
 export const PrescribedExercisesSchema = z.array(PrescribedExerciseSchema).max(15);
 
+export const PrescriptionRowSchema = PrescribedExerciseSchema.extend({
+  week: z.number().int().min(1).max(104),
+  sessionIdx: z.number().int().min(0).max(13),
+  order: z.number().int().min(0).max(20),
+});
+export const PrescriptionRowsSchema = z.array(PrescriptionRowSchema).max(2000);
+
 export const PrescribedExerciseViewSchema = PrescribedExerciseSchema.extend({
   movementName: z.string(),
   targetKg: z.number().optional(),

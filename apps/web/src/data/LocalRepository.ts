@@ -5,6 +5,7 @@ import type {
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
+  PrescriptionRowsSchema,
   MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
@@ -75,14 +76,18 @@ export class LocalRepository implements Repository {
   }
   async setSessionLog(id: string, log: SessionLog): Promise<void> { this.s.set(KEYS.sessionLog(id), log); }
 
+  private prescriptionRows(id: string): PrescriptionRow[] {
+    const parsed = PrescriptionRowsSchema.safeParse(this.s.getOptional<unknown>(KEYS.prescription(id)));
+    return parsed.success ? parsed.data : [];
+  }
   async getPrescriptionWeek(id: string, week: number): Promise<SessionView[]> {
     const plan = await this.getPlan(id);
     if (!plan) return [];
-    const all = this.s.getOptional<PrescriptionRow[]>(KEYS.prescription(id)) ?? [];
+    const all = this.prescriptionRows(id);
     return buildSessionViews(all.filter((r) => r.week === week), plan.rms);
   }
   async setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void> {
-    const all = this.s.getOptional<PrescriptionRow[]>(KEYS.prescription(id)) ?? [];
+    const all = this.prescriptionRows(id);
     const kept = all.filter((r) => !(r.week === week && r.sessionIdx === sessionIdx));
     const added: PrescriptionRow[] = exercises.map((ex, order) => ({ ...ex, week, sessionIdx, order }));
     this.s.set(KEYS.prescription(id), [...kept, ...added]);

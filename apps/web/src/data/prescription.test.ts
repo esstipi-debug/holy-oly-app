@@ -24,6 +24,8 @@ describe("LocalRepository prescription", () => {
     const s0 = (await repo.getPrescriptionWeek("mv", 1)).find((s) => s.sessionIdx === 0)!;
     expect(s0.exercises).toHaveLength(1);
     expect(s0.exercises[0]!.movementId).toBe("arranque.potencia");
+    expect((await repo.getPrescriptionWeek("mv", 1)).length).toBe(5);
+    expect((await repo.getPrescriptionWeek("mv", 1)).find((s) => s.sessionIdx === 1)!.exercises.length).toBeGreaterThan(0);
   });
 });
 

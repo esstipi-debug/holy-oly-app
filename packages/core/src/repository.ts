@@ -28,6 +28,7 @@ export interface Repository {
   getCycleContext(id: string): Promise<CycleContext | undefined>;
   /** A week's sessions with kg derived from the athlete's plan RMs. [] if no plan or no recipe. */
   getPrescriptionWeek(id: string, week: number): Promise<SessionView[]>;
-  /** Replace one session's exercises (coach edit). */
+  /** Replace one session's exercises (coach edit). Valid after savePlan has instantiated the
+   *  athlete's prescription; coach-authorized server-side. */
   setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void>;
 }

@@ -27,6 +27,9 @@ export function MovementPicker({ open, onClose, onPick }: {
           <button key={m.id} type="button" style={item} onClick={() => { onPick(m.id); onClose(); }}>{m.name}</button>
         ))}
         {results.length === 0 && <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 10 }}>Sin resultados.</div>}
+        {q.trim() && results.length >= 30 && (
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 10 }}>Mostrando 30 — refiná la búsqueda para ver más.</div>
+        )}
       </div>
     </BottomSheet>
   );
