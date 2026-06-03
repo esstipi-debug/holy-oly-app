@@ -112,13 +112,13 @@ export interface Movement {
 ```
 complexity = baseComplexity
   + (captura === "potencia" ? -2 : 0)
-  + (origen === "bloques" || origen === "colgado" ? -1 : 0)
-  + (posicion === "alto" ? -1 : posicion === "bajo" ? +1 : 0)
+  + (origen === "bloques" || origen === "colgado" ? -2 : 0)   // hang/blocks: pull más corto, sin levantada del piso
+  + (posicion === "alto" ? -1 : posicion === "bajo" ? +1 : 0) // bajo-rodilla = pull más largo, más difícil
   + (tipoEnvion === "empuje" || tipoEnvion === "potencia" ? -1 : tipoEnvion === "fuerza" ? -2 : 0) // tijera 0
   + flags.reduce: pausa +1, deficit +1, tempo +1, "sin-recibida" -1
   → clamp(1, 12)
 ```
-Ej.: arranque base 9 → *hang power snatch (rodilla)* = 9 −2 (potencia) −1 (colgado) +0 (rodilla) = **6**.
+Ej.: arranque base 9 → *hang power snatch (rodilla)* = 9 −2 (potencia) −2 (colgado) +0 (rodilla) = **5**. El `−2` de colgado/bloques (no `−1`) garantiza orden monótono y que toda variante hang/blocks quede por debajo del lift completo desde piso (9): colgado completo alto 6 < rodilla 7 < bajo 8 < piso 9.
 
 ## 6. Helpers (`packages/core/src/logic/movements.ts`)
 

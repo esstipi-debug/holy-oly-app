@@ -23,8 +23,11 @@ describe("MOVEMENT_BASES (catalog integrity)", () => {
 describe("computeComplexity", () => {
   it("applies the deltas and clamps to 1..12", () => {
     expect(computeComplexity(9, { flags: [] })).toBe(9); // full from floor
-    expect(computeComplexity(9, { captura: "potencia", origen: "colgado", posicion: "rodilla", flags: [] })).toBe(6); // hang power snatch
-    expect(computeComplexity(9, { captura: "potencia", origen: "colgado", posicion: "alto", flags: [] })).toBe(5);
+    expect(computeComplexity(9, { captura: "potencia", origen: "colgado", posicion: "rodilla", flags: [] })).toBe(5); // hang power snatch (rodilla)
+    expect(computeComplexity(9, { captura: "potencia", origen: "colgado", posicion: "alto", flags: [] })).toBe(4); // above-knee: even easier
+    // monotonic within the hang/blocks family, and all still < the full lift from the floor (9):
+    expect(computeComplexity(9, { captura: "completo", origen: "colgado", posicion: "bajo", flags: [] })).toBe(8); // below-knee hardest of the hang variants
+    expect(computeComplexity(9, { captura: "completo", origen: "colgado", posicion: "alto", flags: [] })).toBe(6);
     expect(computeComplexity(7, { tipoEnvion: "fuerza", flags: [] })).toBe(5);
     expect(computeComplexity(2, { flags: ["pausa", "tempo"] })).toBe(4);
     expect(computeComplexity(2, { captura: "potencia", flags: [] })).toBe(1); // clamp ≥1
@@ -55,7 +58,7 @@ describe("MOVEMENTS (generation)", () => {
     const m = getMovement("arranque.potencia.colgado.rodilla");
     expect(m).toBeDefined();
     expect(m!.rmRef).toBe("arranque");
-    expect(m!.complexity).toBe(6);
+    expect(m!.complexity).toBe(5);
     expect(m!.name).toContain("potencia");
     expect(m!.name).toContain("colgado");
   });

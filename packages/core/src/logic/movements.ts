@@ -9,8 +9,9 @@ const POSICIONES: Posicion[] = ["alto", "rodilla", "bajo"];
 export function computeComplexity(baseComplexity: number, m: MovementModifiers): number {
   let c = baseComplexity;
   if (m.captura === "potencia") c -= 2;
-  if (m.origen === "bloques" || m.origen === "colgado") c -= 1;
+  if (m.origen === "bloques" || m.origen === "colgado") c -= 2; // hang/blocks: shorter pull, no floor pickup
   if (m.posicion === "alto") c -= 1;
+  else if (m.posicion === "bajo") c += 1; // below-knee = longer pull, harder than at/above knee
   if (m.tipoEnvion === "empuje" || m.tipoEnvion === "potencia") c -= 1;
   else if (m.tipoEnvion === "fuerza") c -= 2;
   for (const f of m.flags) {
