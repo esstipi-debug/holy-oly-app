@@ -117,3 +117,46 @@ export const VinculoRowsSchema = z.array(VinculoRowSchema);
 export const InviteSchema = z.object({ inviteCode: z.string().nullable() });
 export const InviteCodeSchema = z.object({ inviteCode: z.string() });
 export const AcceptResultSchema = z.object({ id: z.string(), estado: VinculoEstadoSchema });
+
+// ── Athlete self-report wire shapes (Proyecto A · /me/*). Items 1-5 + optional weight. The 6
+//    items are untrusted writer input → bound each value; date is server-assigned, not in the body. ──
+const WellnessValueSchema = z.number().int().min(1).max(5);
+
+export const DayLogInputSchema = z.object({
+  fatiga: WellnessValueSchema, dolor: WellnessValueSchema, estres: WellnessValueSchema,
+  humor: WellnessValueSchema, motivacion: WellnessValueSchema, sueno: WellnessValueSchema,
+  weight: KgSchema.optional(),
+});
+
+export const DayLogSchema = z.object({
+  date: IsoDateSchema,
+  fatiga: WellnessValueSchema, dolor: WellnessValueSchema, estres: WellnessValueSchema,
+  humor: WellnessValueSchema, motivacion: WellnessValueSchema, sueno: WellnessValueSchema,
+  weight: KgSchema.optional(),
+});
+
+export const DayLogViewSchema = z.object({
+  entry: DayLogSchema.nullable(),
+  streak: z.number().int().nonnegative(),
+  days: z.array(IsoDateSchema).max(2000),
+  today: IsoDateSchema,
+});
+
+export const DayLogResultSchema = z.object({
+  entry: DayLogSchema,
+  streak: z.number().int().nonnegative(),
+});
+
+export const MePlanViewSchema = z.object({
+  athlete: z.object({ nombre: z.string(), iniciales: z.string() }),
+  plan: z.object({
+    macroName: z.string(),
+    totalWeeks: z.number().int(),
+    currentWeek: z.number().int(),
+    currentPhase: z.string(),
+    phases: z.array(z.object({
+      name: z.string(), from: z.number().int(), to: z.number().int(), imr: z.number(),
+    })).max(20),
+    comps: z.array(z.object({ name: z.string(), week: z.number().int() })).max(50),
+  }).nullable(),
+});
