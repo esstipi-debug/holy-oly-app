@@ -1,6 +1,7 @@
 export * from "./types";
 export * from "./schemas";
 export * from "./data/macrocycles";
+export * from "./data/movements";
 export * from "./logic/discs";
 export * from "./logic/monitor";
 export * from "./logic/restructure";
@@ -8,4 +9,5 @@ export * from "./logic/schedule";
 export * from "./logic/readiness";
 export * from "./logic/wellness";
 export * from "./logic/mePlan";
+export * from "./logic/movements";
 export * from "./repository";
