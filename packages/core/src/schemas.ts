@@ -160,3 +160,29 @@ export const MePlanViewSchema = z.object({
     comps: z.array(z.object({ name: z.string(), week: z.number().int() })).max(50),
   }).nullable(),
 });
+
+// ── Prescription wire shapes (SP2). The PUT body is untrusted coach input → bounded. ──
+const MovementFlagSchema = z.enum(["pausa", "deficit", "tempo", "sin-recibida"]);
+export const PrescribedExerciseSchema = z.object({
+  movementId: z.string().min(1).max(60),
+  sets: z.number().int().min(1).max(20),
+  reps: z.number().int().min(1).max(50),
+  pct: z.number().min(1).max(120).optional(),
+  kgOverride: KgSchema.optional(),
+  rpe: z.number().min(1).max(10).optional(),
+  flags: z.array(MovementFlagSchema).max(4).optional(),
+  notes: z.string().max(200).optional(),
+});
+export const PrescribedExercisesSchema = z.array(PrescribedExerciseSchema).max(15);
+
+export const PrescribedExerciseViewSchema = PrescribedExerciseSchema.extend({
+  movementName: z.string(),
+  targetKg: z.number().optional(),
+});
+export const SessionViewSchema = z.object({
+  week: z.number().int().min(1).max(104),
+  sessionIdx: z.number().int().min(0).max(13),
+  label: z.string().optional(),
+  exercises: z.array(PrescribedExerciseViewSchema).max(15),
+});
+export const SessionViewsSchema = z.array(SessionViewSchema).max(14);
