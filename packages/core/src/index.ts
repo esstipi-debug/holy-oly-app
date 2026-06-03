@@ -12,3 +12,4 @@ export * from "./logic/mePlan";
 export * from "./logic/movements";
 export * from "./repository";
 export * from "./logic/prescription";
+export * from "./data/recipes";
