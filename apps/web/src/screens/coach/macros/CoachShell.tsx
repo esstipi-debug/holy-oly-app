@@ -6,7 +6,10 @@ import { BottomNav } from "./BottomNav";
 export function CoachShell() {
   return (
     <div className="wl wl--legend" style={{ minHeight: "100vh", background: "var(--wl-bg)" }}>
-      <Outlet />
+      {/* Clear the fixed BottomNav (~55px) so the last element of any coach screen stays tappable. */}
+      <div style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom, 0px))" }}>
+        <Outlet />
+      </div>
       <BottomNav />
     </div>
   );
