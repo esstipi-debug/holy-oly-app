@@ -85,3 +85,59 @@ export interface Atleta {
   id: Id; nombre: string; iniciales: string;
   nivel: MacrocycleLevel; macroId?: string; compite?: boolean;
 }
+
+// ── Athlete self-report (Proyecto A). `field` is the canonical key (DB column, DTO, answers map);
+//    `label` is the display name AND the existing MonitorSeries.wellnessItems key (for the future
+//    rollup). `highBad` polarity: true ⇒ a HIGH value is BAD (Fatiga/Dolor/Estrés). ──
+export type WellnessField = "fatiga" | "dolor" | "estres" | "humor" | "motivacion" | "sueno";
+
+export interface WellnessItemDef {
+  field: WellnessField;
+  label: string;
+  q: string;
+  lo: string;
+  hi: string;
+  highBad: boolean;
+}
+
+export type WellnessAnswers = Record<WellnessField, number>;
+
+/** One athlete-day self-report (private to the athlete, anchored to a calendar date). */
+export interface DayLog {
+  date: string; // ISO YYYY-MM-DD
+  fatiga: number; dolor: number; estres: number; humor: number; motivacion: number; sueno: number; // 1..5
+  weight?: number; // kg, optional (athlete may skip)
+}
+
+/** PUT /me/daylog body: the 6 items + optional weight. Date is server-assigned (today). */
+export interface DayLogInput {
+  fatiga: number; dolor: number; estres: number; humor: number; motivacion: number; sueno: number;
+  weight?: number;
+}
+
+/** GET /me/daylog response. `today` is the server's date — anchors the client heatmap/streak frame. */
+export interface DayLogView {
+  entry: DayLog | null;
+  streak: number;
+  days: string[]; // ISO dates with a logged entry (for the heatmap)
+  today: string;  // ISO
+}
+
+/** PUT /me/daylog response. */
+export interface DayLogResult {
+  entry: DayLog;
+  streak: number;
+}
+
+/** GET /me/plan response: a redaction-free, purpose-built view for the athlete's own Home. */
+export interface MePlanView {
+  athlete: { nombre: string; iniciales: string };
+  plan: {
+    macroName: string;
+    totalWeeks: number;
+    currentWeek: number;
+    currentPhase: string;
+    phases: { name: string; from: number; to: number; imr: number }[];
+    comps: { name: string; week: number }[];
+  } | null;
+}
