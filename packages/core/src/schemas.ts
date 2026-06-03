@@ -182,9 +182,31 @@ export const PrescriptionRowSchema = PrescribedExerciseSchema.extend({
 });
 export const PrescriptionRowsSchema = z.array(PrescriptionRowSchema).max(2000);
 
+// ── SP3 actuals wire shapes (untrusted athlete input → bounded). ──
+export const ExerciseActualInputSchema = z.object({
+  order: z.number().int().min(0).max(20),
+  movementId: z.string().min(1).max(60),
+  done: z.boolean(),
+  kg: KgSchema.optional(),
+  reps: z.number().int().min(0).max(100).optional(),
+  rpe: z.number().min(1).max(10).optional(),
+  note: z.string().max(200).optional(),
+});
+export const SessionActualsInputSchema = z.array(ExerciseActualInputSchema).max(15);
+
+// The actual rides the prescribed-exercise view (no `order` — positional). Extend the view schema.
+export const ExerciseActualSchema = z.object({
+  done: z.boolean(),
+  kg: z.number().optional(),
+  reps: z.number().optional(),
+  rpe: z.number().optional(),
+  note: z.string().optional(),
+});
+
 export const PrescribedExerciseViewSchema = PrescribedExerciseSchema.extend({
   movementName: z.string(),
   targetKg: z.number().optional(),
+  actual: ExerciseActualSchema.optional(),
 });
 export const SessionViewSchema = z.object({
   week: z.number().int().min(1).max(104),
