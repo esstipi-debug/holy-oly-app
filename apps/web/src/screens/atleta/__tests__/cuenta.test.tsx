@@ -20,7 +20,7 @@ function renderCuenta() {
 
 test("muestra la sección de vínculo, el toggle de variante y los skins", () => {
   renderCuenta();
-  expect(screen.getByText("Cuenta")).toBeInTheDocument();
+  expect(screen.getByText("vos sos dueña de tus datos")).toBeInTheDocument();
   expect(screen.getByLabelText("Código de invitación")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Skin Plates" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Cerrar sesión" })).toBeInTheDocument();

@@ -53,8 +53,8 @@ export function AthleteShell() {
 
       <nav className="ho-nav">
         {NAV.map((n) => (
-          <NavLink key={n.to} to={n.to} end={n.end} aria-label={n.label} className={({ isActive }) => "ho-nav__btn" + (isActive ? " is-on" : "")}>
-            {n.icon}
+          <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => "ho-nav__btn" + (isActive ? " is-on" : "")}>
+            {n.icon}<span>{n.label}</span>
           </NavLink>
         ))}
       </nav>
