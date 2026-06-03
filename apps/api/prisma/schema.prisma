@@ -108,6 +108,7 @@ model Athlete {
   medals       Medal[]
   sessions     SessionMark[]
   cycle        CycleConsent?
+  dayLogs      DayLog[]
 }
 
 /// The multi-tenancy join: a coach sees an athlete only via an `activo` Vinculo.
@@ -192,6 +193,24 @@ model WellnessItem {
   value         Int
 
   @@unique([monitorWeekId, key])
+}
+
+/// One athlete-day self-report (Proyecto A). Private to the athlete; one row per (athlete, date).
+model DayLog {
+  id         String  @id @default(uuid())
+  athleteId  String
+  athlete    Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  date       String  // ISO YYYY-MM-DD
+  fatiga     Int
+  dolor      Int
+  estres     Int
+  humor      Int
+  motivacion Int
+  sueno      Int
+  weight     Float?
+
+  @@unique([athleteId, date])
+  @@index([athleteId])
 }
 
 model Medal {
