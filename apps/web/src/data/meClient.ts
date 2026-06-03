@@ -1,6 +1,6 @@
 import {
-  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema,
-  type MePlanView, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput,
+  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema,
+  type MePlanView, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type ExerciseActualInput,
 } from "@holy-oly/core";
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
@@ -43,4 +43,22 @@ export async function putDayLog(input: DayLogInput): Promise<DayLogResult> {
   });
   if (!res.ok) return fail(res);
   return DayLogResultSchema.parse(await res.json());
+}
+
+/** The athlete's prescribed sessions for a given week (merged with their actuals). */
+export async function getMeSessions(week: number): Promise<SessionView[]> {
+  const res = await fetch(`${BASE}/me/sessions?week=${week}`, { credentials: "include" });
+  if (!res.ok) return fail(res);
+  return SessionViewsSchema.parse(await res.json());
+}
+
+/** Record (replace) the athlete's actuals for one session. */
+export async function putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void> {
+  const res = await fetch(`${BASE}/me/session/${week}/${idx}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(actuals),
+  });
+  if (!res.ok) await fail(res);
 }
