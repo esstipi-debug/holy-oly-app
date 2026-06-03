@@ -5,7 +5,7 @@ import fastifyStatic from "@fastify/static";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { UserRole } from "@prisma/client";
-import { PlanSchema, MedalSchema, CompsSchema, SessionLogSchema } from "@holy-oly/core";
+import { PlanSchema, MedalSchema, CompsSchema, SessionLogSchema, PrescribedExercisesSchema } from "@holy-oly/core";
 import { prisma } from "./db/client";
 import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
@@ -173,6 +173,26 @@ export function buildServer(): FastifyInstance {
     const parsed = SessionLogSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid sessions" });
     await repo.setSessionLog(prisma, req.params.id, parsed.data);
+    return reply.code(200).send({ ok: true });
+  });
+
+  app.get<{ Params: { id: string }; Querystring: { week?: string } }>("/athletes/:id/prescription", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    const week = Number(req.query.week);
+    if (!Number.isInteger(week) || week < 1 || week > 104) return reply.code(400).send({ error: "week required (1..104)" });
+    return repo.getPrescriptionWeek(prisma, req.params.id, week);
+  });
+
+  app.put<{ Params: { id: string; week: string; idx: string } }>("/athletes/:id/prescription/:week/:idx", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    const week = Number(req.params.week);
+    const idx = Number(req.params.idx);
+    if (!Number.isInteger(week) || week < 1 || week > 104 || !Number.isInteger(idx) || idx < 0 || idx > 13) {
+      return reply.code(400).send({ error: "bad week/idx" });
+    }
+    const parsed = PrescribedExercisesSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid session" });
+    await repo.setSession(prisma, req.params.id, week, idx, parsed.data);
     return reply.code(200).send({ ok: true });
   });
 

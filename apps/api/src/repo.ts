@@ -2,8 +2,9 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
+  PrescribedExercise, PrescriptionRow, SessionView,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { redactCycle } from "./cycle";
 
@@ -99,6 +100,7 @@ export async function savePlan(prisma: PrismaClient, athleteId: string, plan: Pl
   // type (RM has no string index signature to overlap InputJsonValue directly).
   const data = { macroId: plan.macroId, startWeek: plan.startWeek, startDate: plan.startDate ?? null, rms: plan.rms as unknown as Prisma.InputJsonValue };
   await prisma.plan.upsert({ where: { athleteId }, create: { athleteId, ...data }, update: data });
+  await instantiateForPlan(prisma, athleteId, plan); // assigning a plan (re)instantiates the prescription
 }
 
 /** Append a medal (one row — no read-modify-write, unlike the LocalRepository oracle). */
@@ -176,4 +178,52 @@ export async function upsertDayLog(prisma: PrismaClient, athleteId: string, toda
   });
   const rows = await prisma.dayLog.findMany({ where: { athleteId }, select: { date: true } });
   return { entry: toDayLog(row), streak: computeStreak(rows.map((r) => r.date), today) };
+}
+
+// ── Prescription (SP2). Coach-owned. Assigning a plan (re)instantiates from the macro recipe. ──
+
+/** (Re)instantiate the athlete's prescription from the macro recipe. Replaces all rows. No-op if
+ *  the macro has no recipe (the coach builds from scratch). Called by savePlan. */
+export async function instantiateForPlan(prisma: PrismaClient, athleteId: string, plan: Plan): Promise<void> {
+  const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+  const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+  const rows: PrescriptionRow[] = macro ? instantiatePrescription(MACRO_RECIPES, macro, totalWeeks) : [];
+  await prisma.$transaction([
+    prisma.prescribedExercise.deleteMany({ where: { athleteId } }),
+    prisma.prescribedExercise.createMany({
+      data: rows.map((r) => ({
+        athleteId, week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId,
+        sets: r.sets, reps: r.reps, pct: r.pct ?? null, kgOverride: r.kgOverride ?? null,
+        rpe: r.rpe ?? null, flags: r.flags ?? [], notes: r.notes ?? null,
+      })),
+    }),
+  ]);
+}
+
+/** A week's sessions with kg derived from the athlete's plan RMs. [] if no plan. */
+export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: string, week: number): Promise<SessionView[]> {
+  const plan = await getPlan(prisma, athleteId);
+  if (!plan) return [];
+  const dbRows = await prisma.prescribedExercise.findMany({
+    where: { athleteId, week }, orderBy: [{ sessionIdx: "asc" }, { order: "asc" }],
+  });
+  const rows: PrescriptionRow[] = dbRows.map((r) => ({
+    week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId, sets: r.sets, reps: r.reps,
+    pct: r.pct ?? undefined, kgOverride: r.kgOverride ?? undefined, rpe: r.rpe ?? undefined,
+    flags: (r.flags as PrescribedExercise["flags"]) ?? undefined, notes: r.notes ?? undefined,
+  }));
+  return buildSessionViews(rows, plan.rms);
+}
+
+/** Replace one session's exercises (coach edit). Transactional. */
+export async function setSession(prisma: PrismaClient, athleteId: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void> {
+  await prisma.$transaction([
+    prisma.prescribedExercise.deleteMany({ where: { athleteId, week, sessionIdx } }),
+    prisma.prescribedExercise.createMany({
+      data: exercises.map((ex, order) => ({
+        athleteId, week, sessionIdx, order, movementId: ex.movementId, sets: ex.sets, reps: ex.reps,
+        pct: ex.pct ?? null, kgOverride: ex.kgOverride ?? null, rpe: ex.rpe ?? null, flags: ex.flags ?? [], notes: ex.notes ?? null,
+      })),
+    }),
+  ]);
 }
