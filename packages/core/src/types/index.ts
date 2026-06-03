@@ -141,3 +141,51 @@ export interface MePlanView {
     comps: { name: string; week: number }[];
   } | null;
 }
+
+// ── Movement library (SP1 · pilar de ejecución). A Movement is a base lift × modifiers
+//    (captura/origen/posición/tipoEnvión); the catalog is generated from the bases. ──
+export type RmRef = "arranque" | "envion" | "sentadilla" | "frente" | "none";
+export type Captura = "completo" | "potencia";          // squat catch vs power
+export type Origen = "piso" | "bloques" | "colgado";    // floor / blocks / hang
+export type Posicion = "alto" | "rodilla" | "bajo";     // only when origen ∈ {bloques, colgado}
+export type TipoEnvion = "tijera" | "empuje" | "potencia" | "fuerza"; // split / push / power / strict-rack
+export type MovementFlag = "pausa" | "deficit" | "tempo" | "sin-recibida";
+
+/** Concrete modifiers of a variant. `flags` is always present (`[]` in the generated catalog). */
+export interface MovementModifiers {
+  captura?: Captura;
+  origen?: Origen;
+  posicion?: Posicion;
+  tipoEnvion?: TipoEnvion;
+  flags: MovementFlag[];
+}
+
+/** Hand-curated base lift. Declares which axes it admits; variants are generated from these. */
+export interface MovementBase {
+  id: string;            // slug: "arranque", "tiron-arranque", "sentadilla-frente"…
+  name: string;          // "Arranque"
+  aliasEn?: string;      // "Snatch" — bilingual search
+  rmRef: RmRef;
+  baseComplexity: number;
+  /** `posicion` is NOT declared per base — the generator applies all 3 when origen ∈ {bloques, colgado}. */
+  axes: {
+    captura?: Captura[];
+    origen?: Origen[];
+    tipoEnvion?: TipoEnvion[];
+  };
+  /** Flags that make sense for this base (SP2 applies them at prescription time; NOT pre-generated). */
+  allowedFlags: MovementFlag[];
+  /** Curated substitute base ids (same pattern/objetivo; may cross family). */
+  substituteBases: string[];
+  notes?: string;
+}
+
+/** A concrete variant — GENERATED from base × axes. Flag-less in the catalog. */
+export interface Movement {
+  id: string;            // "arranque.potencia.colgado.rodilla" (canonical = baseId)
+  baseId: string;
+  name: string;          // "Arranque de potencia colgado (rodilla)"
+  rmRef: RmRef;          // = base.rmRef
+  complexity: number;    // derived (1..12)
+  modifiers: MovementModifiers;
+}
