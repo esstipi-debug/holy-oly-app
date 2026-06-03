@@ -7,4 +7,5 @@ export * from "./logic/restructure";
 export * from "./logic/schedule";
 export * from "./logic/readiness";
 export * from "./logic/wellness";
+export * from "./logic/mePlan";
 export * from "./repository";
