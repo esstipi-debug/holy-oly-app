@@ -11,6 +11,7 @@ import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
 import { authRoutes, SESSION_COOKIE } from "./auth/routes";
 import { vinculoRoutes } from "./vinculo/routes";
+import { meRoutes } from "./me/routes";
 import { requireCoach } from "./auth/guards";
 
 declare module "fastify" {
@@ -67,6 +68,7 @@ export function buildServer(): FastifyInstance {
 
   app.register(authRoutes);
   app.register(vinculoRoutes);
+  app.register(meRoutes);
 
   app.get("/health", async () => ({ ok: true }));
 

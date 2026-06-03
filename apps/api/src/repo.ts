@@ -1,8 +1,9 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
+  DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
 } from "@holy-oly/core";
-import { RMSchema } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { redactCycle } from "./cycle";
 
@@ -129,4 +130,50 @@ export async function setSessionLog(prisma: PrismaClient, athleteId: string, log
     prisma.sessionMark.deleteMany({ where: { athleteId } }),
     prisma.sessionMark.createMany({ data: log.map((m) => ({ athleteId, week: m.week, idx: m.idx, status: m.status })) }),
   ]);
+}
+
+// ── Athlete self (Proyecto A). Scoped to athleteId by the caller (req.athleteId from session). ──
+
+interface DayLogRow {
+  date: string; fatiga: number; dolor: number; estres: number;
+  humor: number; motivacion: number; sueno: number; weight: number | null;
+}
+function toDayLog(r: DayLogRow): DayLog {
+  return {
+    date: r.date, fatiga: r.fatiga, dolor: r.dolor, estres: r.estres,
+    humor: r.humor, motivacion: r.motivacion, sueno: r.sueno, weight: r.weight ?? undefined,
+  };
+}
+
+/** The athlete's own plan view (greeting + camino). `plan: null` when unassigned. */
+export async function getMePlanView(prisma: PrismaClient, athleteId: string, today: string): Promise<MePlanView | undefined> {
+  const a = await prisma.athlete.findUnique({ where: { id: athleteId } });
+  if (!a) return undefined;
+  const plan = await getPlan(prisma, athleteId);
+  return buildMePlanView({ nombre: a.nombre, iniciales: a.iniciales }, plan, today);
+}
+
+/** Today's entry (or the requested date) + streak + logged days (heatmap), all as of `today`. */
+export async function getDayLogView(prisma: PrismaClient, athleteId: string, today: string, date?: string): Promise<DayLogView> {
+  const target = date ?? today;
+  const rows = await prisma.dayLog.findMany({ where: { athleteId }, select: { date: true } });
+  const days = rows.map((r) => r.date);
+  const entry = await prisma.dayLog.findUnique({ where: { athleteId_date: { athleteId, date: target } } });
+  return { entry: entry ? toDayLog(entry) : null, streak: computeStreak(days, today), days, today };
+}
+
+/** Upsert the athlete's entry for `today` (one row per athlete-day), then recompute the streak. */
+export async function upsertDayLog(prisma: PrismaClient, athleteId: string, today: string, input: DayLogInput): Promise<DayLogResult> {
+  const data = {
+    fatiga: input.fatiga, dolor: input.dolor, estres: input.estres,
+    humor: input.humor, motivacion: input.motivacion, sueno: input.sueno,
+    weight: input.weight ?? null,
+  };
+  const row = await prisma.dayLog.upsert({
+    where: { athleteId_date: { athleteId, date: today } },
+    create: { athleteId, date: today, ...data },
+    update: data,
+  });
+  const rows = await prisma.dayLog.findMany({ where: { athleteId }, select: { date: true } });
+  return { entry: toDayLog(row), streak: computeStreak(rows.map((r) => r.date), today) };
 }
