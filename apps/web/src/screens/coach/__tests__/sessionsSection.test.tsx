@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { vi } from "vitest";
 import { RepositoryProvider } from "../../../data/RepositoryProvider";
 import { LocalRepository } from "../../../data/LocalRepository";
 import { MemStorage } from "../../../test-utils/MemStorage";
@@ -24,4 +25,53 @@ test("editar una sesión la persiste y re-renderiza", async () => {
   fireEvent.click(screen.getAllByRole("button", { name: /editar sesión/i })[0]!);
   fireEvent.click(screen.getByRole("button", { name: "Guardar sesión" }));
   await waitFor(() => expect(screen.getAllByText(/Arranque/).length).toBeGreaterThan(0));
+});
+
+test("D1: muestra real vs prescrito cuando hay actual.kg", async () => {
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    {
+      week: 1,
+      sessionIdx: 0,
+      exercises: [
+        {
+          movementId: "arranque",
+          sets: 5,
+          reps: 3,
+          pct: 70,
+          movementName: "Arranque",
+          targetKg: 70,
+          actual: { done: true, kg: 72 },
+        },
+      ],
+    },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  await screen.findByText(/Arranque/);
+  expect(screen.getByText(/real 72/)).toBeInTheDocument();
+  expect(screen.getByText(/↑/)).toBeInTheDocument();
+});
+
+test("D1: muestra nota del atleta cuando actual.note está presente", async () => {
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    {
+      week: 1,
+      sessionIdx: 0,
+      exercises: [
+        {
+          movementId: "arranque",
+          sets: 5,
+          reps: 3,
+          pct: 70,
+          movementName: "Arranque",
+          targetKg: 70,
+          actual: { done: true, kg: 68, note: "molestia en rodilla" },
+        },
+      ],
+    },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  await screen.findByText(/Arranque/);
+  expect(screen.getByText(/molestia en rodilla/)).toBeInTheDocument();
 });
