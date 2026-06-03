@@ -16,6 +16,7 @@ import { AthleteShell } from "../screens/atleta/AthleteShell";
 import { HomeScreen } from "../screens/atleta/HomeScreen";
 import { ProgresoPlaceholder } from "../screens/atleta/ProgresoPlaceholder";
 import { CuentaMin } from "../screens/atleta/CuentaMin";
+import { EntrenoScreen } from "../screens/atleta/EntrenoScreen";
 
 // Explicit type annotation avoids TS2742 (pnpm virtual store internal type).
 export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter([
@@ -50,6 +51,7 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
           { index: true, element: <HomeScreen /> },
           { path: "progreso", element: <ProgresoPlaceholder /> },
           { path: "cuenta", element: <CuentaMin /> },
+          { path: "entreno/:week/:idx", element: <EntrenoScreen /> },
         ],
       },
       // dev-only component showcase — lazy import so it's excluded from the production bundle entirely
