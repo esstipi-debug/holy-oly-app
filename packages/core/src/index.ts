@@ -11,3 +11,4 @@ export * from "./logic/wellness";
 export * from "./logic/mePlan";
 export * from "./logic/movements";
 export * from "./repository";
+export * from "./logic/prescription";
