@@ -21,6 +21,11 @@ describe("mergeActuals", () => {
   it("is a no-op when there are no rows", () => {
     expect(mergeActuals(views, [])[0]!.exercises[0]!.actual).toBeUndefined();
   });
+  it("ignores a row whose order is beyond the exercise count", () => {
+    const merged = mergeActuals(views, [{ week: 1, sessionIdx: 0, order: 5, movementId: "x", done: true, actualKg: 99 }]);
+    expect(merged[0]!.exercises[0]!.actual).toBeUndefined();
+    expect(merged[0]!.exercises[1]!.actual).toBeUndefined();
+  });
 });
 
 describe("kgDeviation", () => {

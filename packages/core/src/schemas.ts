@@ -188,13 +188,14 @@ export const ExerciseActualInputSchema = z.object({
   movementId: z.string().min(1).max(60),
   done: z.boolean(),
   kg: KgSchema.optional(),
-  reps: z.number().int().min(0).max(100).optional(),
+  reps: z.number().int().min(0).max(100).optional(), // 0 = intentó pero completó 0 reps (serie fallida)
   rpe: z.number().min(1).max(10).optional(),
   note: z.string().max(200).optional(),
 });
 export const SessionActualsInputSchema = z.array(ExerciseActualInputSchema).max(15);
 
 // The actual rides the prescribed-exercise view (no `order` — positional). Extend the view schema.
+// Read-side (lo que el server ya validó al escribir) → sin bounds; el INPUT (ExerciseActualInputSchema) es el que acota.
 export const ExerciseActualSchema = z.object({
   done: z.boolean(),
   kg: z.number().optional(),
