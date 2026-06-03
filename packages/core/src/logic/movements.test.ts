@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { MOVEMENT_BASES } from "../data/movements";
-import { MOVEMENTS, computeComplexity, movementDisplayName, getMovement } from "./movements";
+import {
+  MOVEMENTS, computeComplexity, movementDisplayName, getMovement,
+  getBase, variantsOf, canonicalVariant, simplerVariants, substitutesOf, movementsForRm, searchMovements,
+} from "./movements";
 
 describe("MOVEMENT_BASES (catalog integrity)", () => {
   it("has unique base ids", () => {
@@ -65,5 +68,44 @@ describe("MOVEMENTS (generation)", () => {
   it("the jerk has no bare 'envion' id (always a tipoEnvion suffix)", () => {
     expect(getMovement("envion")).toBeUndefined();
     expect(getMovement("envion.tijera")).toBeDefined();
+  });
+});
+
+describe("query helpers", () => {
+  it("variantsOf returns a base's variants sorted by complexity desc", () => {
+    const vs = variantsOf("arranque");
+    expect(vs.length).toBe(14);
+    expect(vs[0]!.id).toBe("arranque"); // full from floor, complexity 9
+    for (let i = 1; i < vs.length; i++) expect(vs[i - 1]!.complexity).toBeGreaterThanOrEqual(vs[i]!.complexity);
+  });
+  it("canonicalVariant picks the most-complex variant (split jerk for envión)", () => {
+    expect(canonicalVariant("arranque")!.id).toBe("arranque");
+    expect(canonicalVariant("envion")!.id).toBe("envion.tijera");
+    expect(canonicalVariant("sentadilla")!.id).toBe("sentadilla");
+  });
+  it("simplerVariants = same base, lower complexity (lower the complexity)", () => {
+    const s = simplerVariants("arranque");
+    expect(s.every((m) => m.complexity < 9)).toBe(true);
+    expect(s.some((m) => m.id === "arranque")).toBe(false); // excludes the full lift itself
+    expect(s.length).toBe(13);
+  });
+  it("substitutesOf resolves substituteBases to their canonical variants", () => {
+    const subs = substitutesOf("arranque").map((m) => m.id);
+    expect(subs).toContain("tiron-arranque");
+    expect(subs).toContain("sentadilla-overhead");
+  });
+  it("movementsForRm filters by the referenced RM", () => {
+    expect(movementsForRm("frente").some((m) => m.baseId === "sentadilla-frente")).toBe(true);
+    expect(movementsForRm("frente").every((m) => m.rmRef === "frente")).toBe(true);
+  });
+  it("searchMovements matches Spanish and English terms (accent-insensitive)", () => {
+    expect(searchMovements("hang power snatch").some((m) => m.id === "arranque.potencia.colgado.rodilla")).toBe(true);
+    expect(searchMovements("arranque potencia colgado").some((m) => m.modifiers.origen === "colgado")).toBe(true);
+    expect(searchMovements("sentadilla frontal").some((m) => m.baseId === "sentadilla-frente")).toBe(true);
+    expect(searchMovements("").length).toBe(0);
+  });
+  it("getBase returns the base definition", () => {
+    expect(getBase("arranque")!.aliasEn).toBe("Snatch");
+    expect(getBase("nope")).toBeUndefined();
   });
 });

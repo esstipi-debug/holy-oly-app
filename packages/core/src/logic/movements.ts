@@ -11,7 +11,6 @@ export function computeComplexity(baseComplexity: number, m: MovementModifiers):
   if (m.captura === "potencia") c -= 2;
   if (m.origen === "bloques" || m.origen === "colgado") c -= 1;
   if (m.posicion === "alto") c -= 1;
-  else if (m.posicion === "bajo") c += 1;
   if (m.tipoEnvion === "empuje" || m.tipoEnvion === "potencia") c -= 1;
   else if (m.tipoEnvion === "fuerza") c -= 2;
   for (const f of m.flags) {
