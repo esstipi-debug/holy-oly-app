@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { hash } from "@node-rs/argon2";
 import type { MacrocycleLevel, MonitorSeries } from "@holy-oly/core";
+import { MACROCYCLES, MACRO_RECIPES, instantiatePrescription } from "@holy-oly/core";
 import { seriesToRows } from "../src/db/mapping";
 
 // Demo coach login (Fase 3). Surfaced so the front login demo + e2e can authenticate.
@@ -8,9 +9,14 @@ import { seriesToRows } from "../src/db/mapping";
 const COACH_EMAIL = (process.env.SEED_COACH_EMAIL ?? "coach@holyoly.dev").trim().toLowerCase();
 const COACH_PASSWORD = process.env.SEED_COACH_PASSWORD ?? "holyoly-demo";
 const COACH_INVITE = process.env.SEED_INVITE_CODE ?? "HOLY-DEMO";
-// Demo athlete login — left UNLINKED so the demo can walk the vínculo flow end to end.
+// Demo athlete login — left UNLINKED + empty so the demo can walk the vínculo flow end to end (and
+// so the /me empty-state tests have an honestly-empty athlete to assert against).
 const ATLETA_EMAIL = (process.env.SEED_ATLETA_EMAIL ?? "atleta@holyoly.dev").trim().toLowerCase();
 const ATLETA_PASSWORD = process.env.SEED_ATLETA_PASSWORD ?? "holyoly-demo";
+// Showcase athlete login → attached to Mara (mv), the fully-instrumented athlete, so logging in
+// shows a POPULATED athlete app (plan + estado + constancia + camino). Separate from ATLETA_*.
+const MARA_EMAIL = (process.env.SEED_MARA_EMAIL ?? "mara@holyoly.dev").trim().toLowerCase();
+const MARA_PASSWORD = process.env.SEED_MARA_PASSWORD ?? "holyoly-demo";
 
 const prisma = new PrismaClient();
 const COACH_ID = process.env.DEV_COACH_ID ?? "coach-stub";
@@ -61,10 +67,34 @@ const MARA: MonitorSeries = {
   },
 };
 
+// Mara's competition RMs (from her palmarés: Arr 92 / Env 116) → drive kg = %×RM in the prescription.
+const MARA_RMS = { arranque: 92, envion: 116, sentadilla: 150, frente: 122 };
+
+// A natural 24-day check-in history for Mara (1-5 per item; mostly good with a couple of dips).
+const DAY_PATTERNS = [
+  { fatiga: 2, dolor: 1, estres: 2, humor: 4, motivacion: 5, sueno: 4, weight: 80.8 },
+  { fatiga: 2, dolor: 2, estres: 2, humor: 4, motivacion: 4, sueno: 4, weight: 80.7 },
+  { fatiga: 3, dolor: 2, estres: 3, humor: 3, motivacion: 4, sueno: 3, weight: 80.9 },
+  { fatiga: 2, dolor: 1, estres: 2, humor: 5, motivacion: 5, sueno: 5, weight: 80.6 },
+  { fatiga: 4, dolor: 3, estres: 3, humor: 3, motivacion: 3, sueno: 2, weight: 81.0 },
+  { fatiga: 2, dolor: 2, estres: 2, humor: 4, motivacion: 4, sueno: 4, weight: 80.8 },
+  { fatiga: 3, dolor: 2, estres: 2, humor: 4, motivacion: 5, sueno: 4, weight: 80.7 },
+];
+
+/** ISO YYYY-MM-DD `n` days before now (run-time, so the streak/heatmap align with the server clock). */
+function isoDaysAgo(n: number): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
 async function main(): Promise<void> {
-  // Dev-only reset so the seed is re-runnable.
+  // Dev-only reset so the seed is re-runnable. Children before parents (FK-safe).
   await prisma.$transaction([
     prisma.session.deleteMany(),
+    prisma.prescribedExercise.deleteMany(),
+    prisma.dayLog.deleteMany(),
+    prisma.sessionMark.deleteMany(),
     prisma.wellnessItem.deleteMany(),
     prisma.monitorWeek.deleteMany(),
     prisma.medal.deleteMany(),
@@ -115,7 +145,41 @@ async function main(): Promise<void> {
   // Mara's target competition (the M4c seed: Nacional at week 16).
   await prisma.competencia.create({ data: { athleteId: "mv", name: "Nacional", week: 16 } });
 
-  // Demo athlete login (no Vínculo → can demo the join flow: enter the coach code, coach confirms).
+  // Mara's showcase athlete login + assigned plan + instantiated prescription + a check-in history,
+  // so logging in as `mara@holyoly.dev` shows the athlete app fully populated. Roster stays 8 — mv
+  // is already one of the seeded athletes; this only attaches a login and adds her own plan/daylogs.
+  const maraUser = await prisma.user.create({
+    data: { email: MARA_EMAIL, passwordHash: await hash(MARA_PASSWORD), role: "atleta" },
+  });
+  await prisma.athlete.update({ where: { id: "mv" }, data: { userId: maraUser.id } });
+
+  // Plan anchored ~7 weeks back → current week ≈ 8 (Fuerza básica); comp is the Nacional above.
+  await prisma.plan.create({
+    data: {
+      athleteId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: isoDaysAgo(49),
+      rms: MARA_RMS as unknown as Prisma.InputJsonValue,
+    },
+  });
+
+  // Instantiate Mara's prescription from the Ruso 5D recipe (kg = %×RM, derived on read).
+  const ruso = MACROCYCLES.find((m) => m.id === "ruso-5d")!;
+  const totalWeeks = ruso.phaseProfile[ruso.phaseProfile.length - 1]!.weeks[1];
+  const presc = instantiatePrescription(MACRO_RECIPES, ruso, totalWeeks);
+  await prisma.prescribedExercise.createMany({
+    data: presc.map((r) => ({
+      athleteId: "mv", week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId,
+      sets: r.sets, reps: r.reps, pct: r.pct ?? null, kgOverride: r.kgOverride ?? null,
+      rpe: r.rpe ?? null, flags: r.flags ?? [], notes: r.notes ?? null,
+    })),
+  });
+
+  // 24 consecutive daily check-ins ending today → a streak + a filled constancia heatmap.
+  for (let i = 0; i < 24; i++) {
+    const p = DAY_PATTERNS[i % DAY_PATTERNS.length]!;
+    await prisma.dayLog.create({ data: { athleteId: "mv", date: isoDaysAgo(i), ...p } });
+  }
+
+  // Demo athlete login (no Vínculo, empty → demo the join flow + the /me empty-state assertions).
   const atletaUser = await prisma.user.create({
     data: { email: ATLETA_EMAIL, passwordHash: await hash(ATLETA_PASSWORD), role: "atleta" },
   });
@@ -123,7 +187,7 @@ async function main(): Promise<void> {
     data: { id: "demo-atleta", nombre: "Demo Atleta", iniciales: "DA", nivel: "beginner", userId: atletaUser.id },
   });
 
-  console.log(`Seed complete: 1 coach + 1 demo athlete login, ${ATHLETES.length} athletes, Mara fully instrumented.`);
+  console.log(`Seed complete: coach + ${ATHLETES.length} athletes (Mara instrumented + login ${MARA_EMAIL}) + empty demo athlete login ${ATLETA_EMAIL}.`);
 }
 
 main()
