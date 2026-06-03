@@ -110,6 +110,7 @@ model Athlete {
   cycle        CycleConsent?
   dayLogs      DayLog[]
   prescription PrescribedExercise[]
+  actuals      SessionActual[]
 }
 
 /// The multi-tenancy join: a coach sees an athlete only via an `activo` Vinculo.
@@ -236,6 +237,26 @@ model CycleConsent {
   athlete   Athlete    @relation(fields: [athleteId], references: [id], onDelete: Cascade)
   share     CycleShare
   state     CycleState
+}
+
+/// What the athlete actually lifted, per prescribed exercise (SP3). Self-written (requireAthlete).
+model SessionActual {
+  id          String   @id @default(uuid())
+  athleteId   String
+  athlete     Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  week        Int
+  sessionIdx  Int
+  order       Int
+  movementId  String
+  done        Boolean  @default(true)
+  actualKg    Float?
+  actualReps  Int?
+  actualRpe   Float?
+  note        String?
+  doneAt      String?
+
+  @@unique([athleteId, week, sessionIdx, order])
+  @@index([athleteId, week])
 }
 
 /// One prescribed exercise of an athlete's plan (SP2). Coach-owned; the athlete is read-only.
