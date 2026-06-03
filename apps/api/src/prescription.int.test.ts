@@ -45,9 +45,23 @@ describe("API integration — prescription (SP2)", () => {
       payload: [{ movementId: "arranque.potencia", sets: 4, reps: 2, pct: 65 }] });
     expect(put.statusCode).toBe(200);
     const res = await app.inject({ method: "GET", url: "/athletes/mv/prescription?week=1", headers });
-    const s0 = (res.json() as Array<{ sessionIdx: number; exercises: Array<{ movementId: string }> }>).find((s) => s.sessionIdx === 0)!;
+    const sessions = (res.json() as Array<{ sessionIdx: number; exercises: Array<{ movementId: string }> }>);
+    const s0 = sessions.find((s) => s.sessionIdx === 0)!;
     expect(s0.exercises).toHaveLength(1);
     expect(s0.exercises[0]!.movementId).toBe("arranque.potencia");
+    expect(sessions.find((s) => s.sessionIdx === 1)!.exercises.length).toBeGreaterThan(0);
+  });
+
+  it("re-assigning the plan resets the prescription (coach edits are overwritten)", async () => {
+    const headers = await coach();
+    await assignRuso(headers);
+    await app.inject({ method: "PUT", url: "/athletes/mv/prescription/1/0", headers,
+      payload: [{ movementId: "press-hombros", sets: 3, reps: 5, rpe: 7 }] });
+    await assignRuso(headers); // deliberate reset
+    const res = await app.inject({ method: "GET", url: "/athletes/mv/prescription?week=1", headers });
+    const sessions = res.json() as Array<{ sessionIdx: number; exercises: Array<{ movementId: string }> }>;
+    const s0 = sessions.find((s) => s.sessionIdx === 0)!;
+    expect(s0.exercises[0]!.movementId).toBe("arranque"); // back to the recipe, edit gone
   });
 
   it("requires week, validates the body, and is coach-only (athlete 401, no-Vínculo coach 403)", async () => {

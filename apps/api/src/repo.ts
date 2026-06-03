@@ -2,7 +2,7 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
-  PrescribedExercise, PrescriptionRow, SessionView,
+  PrescribedExercise, PrescriptionRow, SessionView, MovementFlag,
 } from "@holy-oly/core";
 import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
@@ -99,8 +99,10 @@ export async function savePlan(prisma: PrismaClient, athleteId: string, plan: Pl
   // rms is a plain {lift: number} object → JSON-safe; the double cast satisfies Prisma's Json input
   // type (RM has no string index signature to overlap InputJsonValue directly).
   const data = { macroId: plan.macroId, startWeek: plan.startWeek, startDate: plan.startDate ?? null, rms: plan.rms as unknown as Prisma.InputJsonValue };
-  await prisma.plan.upsert({ where: { athleteId }, create: { athleteId, ...data }, update: data });
-  await instantiateForPlan(prisma, athleteId, plan); // assigning a plan (re)instantiates the prescription
+  await prisma.$transaction(async (tx) => {
+    await tx.plan.upsert({ where: { athleteId }, create: { athleteId, ...data }, update: data });
+    await instantiateForPlan(tx, athleteId, plan);
+  });
 }
 
 /** Append a medal (one row — no read-modify-write, unlike the LocalRepository oracle). */
@@ -182,22 +184,23 @@ export async function upsertDayLog(prisma: PrismaClient, athleteId: string, toda
 
 // ── Prescription (SP2). Coach-owned. Assigning a plan (re)instantiates from the macro recipe. ──
 
-/** (Re)instantiate the athlete's prescription from the macro recipe. Replaces all rows. No-op if
- *  the macro has no recipe (the coach builds from scratch). Called by savePlan. */
-export async function instantiateForPlan(prisma: PrismaClient, athleteId: string, plan: Plan): Promise<void> {
+/** (Re)instantiate the athlete's prescription from the macro recipe, replacing ALL existing rows —
+ *  assigning a macro is a deliberate reset (empty when the macro has no recipe → coach builds from
+ *  scratch). Runs on the given (transaction) client so it can join savePlan's atomic transaction. */
+export async function instantiateForPlan(tx: Prisma.TransactionClient, athleteId: string, plan: Plan): Promise<void> {
   const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
   const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
   const rows: PrescriptionRow[] = macro ? instantiatePrescription(MACRO_RECIPES, macro, totalWeeks) : [];
-  await prisma.$transaction([
-    prisma.prescribedExercise.deleteMany({ where: { athleteId } }),
-    prisma.prescribedExercise.createMany({
+  await tx.prescribedExercise.deleteMany({ where: { athleteId } });
+  if (rows.length > 0) {
+    await tx.prescribedExercise.createMany({
       data: rows.map((r) => ({
         athleteId, week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId,
         sets: r.sets, reps: r.reps, pct: r.pct ?? null, kgOverride: r.kgOverride ?? null,
         rpe: r.rpe ?? null, flags: r.flags ?? [], notes: r.notes ?? null,
       })),
-    }),
-  ]);
+    });
+  }
 }
 
 /** A week's sessions with kg derived from the athlete's plan RMs. [] if no plan. */
@@ -210,7 +213,7 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
   const rows: PrescriptionRow[] = dbRows.map((r) => ({
     week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId, sets: r.sets, reps: r.reps,
     pct: r.pct ?? undefined, kgOverride: r.kgOverride ?? undefined, rpe: r.rpe ?? undefined,
-    flags: (r.flags as PrescribedExercise["flags"]) ?? undefined, notes: r.notes ?? undefined,
+    flags: r.flags.length > 0 ? (r.flags as MovementFlag[]) : undefined, notes: r.notes ?? undefined,
   }));
   return buildSessionViews(rows, plan.rms);
 }
