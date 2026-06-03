@@ -1,5 +1,5 @@
 import type {
-  Captura, Movement, MovementBase, MovementFlag, MovementModifiers, Origen, Posicion, TipoEnvion,
+  Captura, Movement, MovementBase, MovementFlag, MovementModifiers, Origen, Posicion, RmRef, TipoEnvion,
 } from "../types";
 import { MOVEMENT_BASES } from "../data/movements";
 
@@ -97,8 +97,6 @@ export function getMovement(id: string): Movement | undefined {
 
 // ── Query helpers ──────────────────────────────────────────────────────────────
 
-import type { RmRef } from "../types";
-
 const BASE_BY_ID = new Map<string, MovementBase>(MOVEMENT_BASES.map((b) => [b.id, b]));
 
 export function getBase(baseId: string): MovementBase | undefined {
@@ -115,7 +113,8 @@ export function canonicalVariant(baseId: string): Movement | undefined {
   return variantsOf(baseId)[0];
 }
 
-/** Same base, strictly lower complexity — i.e. "bajar la complejidad". Sorted by complexity desc. */
+/** Same base, strictly lower complexity — i.e. "bajar la complejidad". `id` is a VARIANT id (e.g.
+ *  "arranque.potencia.colgado.rodilla"), not a base id. Sorted by complexity desc. */
 export function simplerVariants(id: string): Movement[] {
   const m = getMovement(id);
   if (!m) return [];

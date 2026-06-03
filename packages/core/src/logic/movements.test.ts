@@ -111,4 +111,8 @@ describe("query helpers", () => {
     expect(getBase("arranque")!.aliasEn).toBe("Snatch");
     expect(getBase("nope")).toBeUndefined();
   });
+  it("simplerVariants / substitutesOf return [] for an unknown id", () => {
+    expect(simplerVariants("nonexistent")).toEqual([]);
+    expect(substitutesOf("nonexistent")).toEqual([]);
+  });
 });
