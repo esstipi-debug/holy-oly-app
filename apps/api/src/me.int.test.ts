@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { buildServer } from "./server";
 import { prisma } from "./db/client";
@@ -19,6 +19,10 @@ describe("API integration — athlete self (/me/*)", () => {
   afterAll(async () => {
     await app.close();
     await prisma.$disconnect();
+  });
+
+  beforeEach(async () => {
+    await prisma.dayLog.deleteMany({ where: { athleteId: "demo-atleta" } });
   });
 
   async function loginDemoAthlete(): Promise<{ cookie: string }> {
@@ -96,6 +100,12 @@ describe("API integration — athlete self (/me/*)", () => {
   it("rejects an out-of-range daylog with 400", async () => {
     const headers = await loginDemoAthlete();
     const res = await app.inject({ method: "PUT", url: "/me/daylog", headers, payload: { fatiga: 9, dolor: 1, estres: 3, humor: 4, motivacion: 5, sueno: 4 } });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("rejects a malformed ?date= with 400", async () => {
+    const headers = await loginDemoAthlete();
+    const res = await app.inject({ method: "GET", url: "/me/daylog?date=not-a-date", headers });
     expect(res.statusCode).toBe(400);
   });
 });

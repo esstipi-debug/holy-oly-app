@@ -35,7 +35,11 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
   app.get<{ Querystring: { date?: string } }>("/me/daylog", async (req, reply) => {
     const athleteId = requireAthlete(req, reply);
     if (!athleteId) return;
-    return repo.getDayLogView(prisma, athleteId, todayISO(), req.query.date);
+    const { date } = req.query;
+    if (date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return reply.code(400).send({ error: "invalid date format" });
+    }
+    return repo.getDayLogView(prisma, athleteId, todayISO(), date);
   });
 
   app.put("/me/daylog", async (req, reply) => {
