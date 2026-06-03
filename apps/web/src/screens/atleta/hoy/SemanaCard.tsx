@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import type { SessionView } from "@holy-oly/core";
 import { getMeSessions } from "../../../data/meClient";
 
+const doneOf = (s: SessionView) => s.exercises.filter((e) => e.actual?.done).length;
+
 export function SemanaCard({ week }: { week: number }) {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
@@ -13,14 +15,31 @@ export function SemanaCard({ week }: { week: number }) {
   }, [week]);
 
   if (!sessions || sessions.length === 0) return null;
+
+  const allDone = sessions.every((s) => doneOf(s) === s.exercises.length);
+  // sessions is non-empty (guard above); `sessions[0]!` is always defined here.
+  const next = sessions.find((s) => doneOf(s) < s.exercises.length) ?? sessions[0]!;
+
   return (
     <section className="ho-card">
       <div className="ho-card__head"><span className="ho-card__t">Tu semana</span></div>
+      {allDone ? (
+        <div className="ho-card__sub">✓ Registraste toda la semana — tocá un día para editar.</div>
+      ) : (
+        <button
+          type="button"
+          className="wl-btn wl-btn--primary"
+          style={{ width: "100%", marginTop: 10 }}
+          onClick={() => navigate(`/atleta/entreno/${week}/${next.sessionIdx}`)}
+        >
+          Registrar entreno · Día {next.sessionIdx + 1}
+        </button>
+      )}
       <div className="ho-card__sub">tocá un día para registrar tu entreno</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 10 }}>
         {sessions.map((s) => {
           const total = s.exercises.length;
-          const done = s.exercises.filter((e) => e.actual?.done).length;
+          const done = doneOf(s);
           const state = done === 0 ? "pendiente" : done === total ? "hecho" : "en curso";
           const dot = state === "hecho" ? "var(--wl-accent)" : state === "en curso" ? "var(--wl-muted)" : "color-mix(in srgb,var(--wl-text) 22%,transparent)";
           return (

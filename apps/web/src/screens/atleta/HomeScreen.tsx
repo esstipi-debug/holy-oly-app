@@ -72,9 +72,9 @@ export function HomeScreen() {
         <button className="wl-btn wl-btn--primary ho-cta" onClick={() => setCheckinOpen(true)}>Hacer check-in de hoy</button>
       )}
 
+      {plan.plan && <SemanaCard week={plan.plan.currentWeek} />}
       <ConstanciaCard streak={daylog.streak} days={daylog.days} today={daylog.today} />
       <CaminoCard plan={plan.plan} />
-      {plan.plan && <SemanaCard week={plan.plan.currentWeek} />}
 
       {checkinOpen && (
         <CheckIn variant={variant} initial={daylog.entry} onClose={() => setCheckinOpen(false)} onDone={onCheckinDone} />
