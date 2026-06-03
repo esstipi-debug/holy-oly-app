@@ -52,6 +52,31 @@ test("D1: muestra real vs prescrito cuando hay actual.kg", async () => {
   expect(screen.getByText(/↑/)).toBeInTheDocument();
 });
 
+test("D1: no hecho — muestra 'no hecho' y NO muestra real aunque haya kg", async () => {
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    {
+      week: 1,
+      sessionIdx: 0,
+      exercises: [
+        {
+          movementId: "arranque",
+          sets: 5,
+          reps: 3,
+          pct: 70,
+          movementName: "Arranque",
+          targetKg: 70,
+          actual: { done: false, kg: 70 },
+        },
+      ],
+    },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  await screen.findByText(/Arranque/);
+  expect(screen.getByText(/no hecho/)).toBeInTheDocument();
+  expect(screen.queryByText(/real 70/)).not.toBeInTheDocument();
+});
+
 test("D1: muestra nota del atleta cuando actual.note está presente", async () => {
   const repo = await repoWithPlan();
   vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([

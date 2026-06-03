@@ -40,7 +40,10 @@ export function EntrenoScreen() {
     setBusy(true); setError(null);
     try {
       const actuals: ExerciseActualInput[] = rows.map((r, order) => ({
-        order, movementId: r.movementId, done: r.done, kg: r.kg, reps: r.repsActual, rpe: r.rpeActual,
+        order, movementId: r.movementId, done: r.done,
+        kg: r.done ? r.kg : undefined,
+        reps: r.done ? r.repsActual : undefined,
+        rpe: r.done ? r.rpeActual : undefined,
         note: r.note?.trim() ? r.note.trim() : undefined,
       }));
       await me.putMeSession(week, idx, actuals);
@@ -68,7 +71,7 @@ export function EntrenoScreen() {
             </label>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9, fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>
               <input style={num} type="number" inputMode="decimal" aria-label={`kg real de ${r.movementName}`} placeholder="kg" value={r.kg ?? ""} onChange={(e) => patch(i, { kg: e.target.value ? Number(e.target.value) : undefined })} />kg
-              <input style={num} type="number" inputMode="numeric" aria-label={`reps reales de ${r.movementName}`} placeholder="reps" value={r.repsActual ?? ""} onChange={(e) => patch(i, { repsActual: e.target.value ? Number(e.target.value) : undefined })} />reps
+              <input style={num} type="number" inputMode="numeric" aria-label={`reps reales de ${r.movementName}`} placeholder="reps" value={r.repsActual ?? ""} onChange={(e) => patch(i, { repsActual: e.target.value === "" ? undefined : Number(e.target.value) })} />reps
               <input style={num} type="number" inputMode="numeric" aria-label={`RPE real de ${r.movementName}`} placeholder="RPE" value={r.rpeActual ?? ""} onChange={(e) => patch(i, { rpeActual: e.target.value ? Number(e.target.value) : undefined })} />RPE
             </div>
             <input style={{ ...num, width: "100%", textAlign: "left", marginTop: 7 }} type="text" maxLength={200}

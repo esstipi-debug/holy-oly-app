@@ -57,7 +57,7 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
               <button type="button" aria-label={`editar sesión día ${s.sessionIdx + 1}`} onClick={() => setEditing(s)} style={{ border: 0, background: "transparent", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11 }}>editar ›</button>
             </div>
             {s.exercises.map((e, i) => {
-              const dev = e.actual ? kgDeviation(e.targetKg, e.actual.kg) : "none";
+              const dev = e.actual?.done ? kgDeviation(e.targetKg, e.actual.kg) : "none";
               const marker = DEVIATION_MARKER[dev];
               return (
                 <div key={i} style={{ marginTop: 4 }}>
@@ -65,9 +65,8 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
                     <span style={{ color: "var(--wl-text)" }}>{e.movementName}</span>
                     <span>
                       {e.sets}×{e.reps} · {load(e.targetKg, e.rpe)}
-                      {e.actual?.kg != null && (
-                        <> · real {e.actual.kg} kg {marker}</>
-                      )}
+                      {e.actual?.done && e.actual.kg != null && (<> · real {e.actual.kg} kg {marker}</>)}
+                      {e.actual && !e.actual.done && (<> · no hecho</>)}
                     </span>
                   </div>
                   {e.actual?.note && (
