@@ -189,3 +189,26 @@ export interface Movement {
   complexity: number;    // derived (1..12)
   modifiers: MovementModifiers;
 }
+
+// ── Prescription (SP2). The macro carries a recipe; assigning instantiates the athlete's
+//    editable prescription; kg = %×RM (or an explicit override). Reuses SP1 movements. ──
+export interface PrescribedExercise {
+  movementId: string;        // SP1 movement id (e.g. "arranque", "tiron-arranque", "envion.tijera")
+  sets: number;
+  reps: number;
+  pct?: number;              // %1RM (present when the movement derives from a RM)
+  kgOverride?: number;       // explicit kg (accessories, or the coach pins the weight) — beats pct
+  rpe?: number;              // by feel (accessories)
+  flags?: MovementFlag[];
+  notes?: string;
+}
+export interface SessionTemplate { label?: string; exercises: PrescribedExercise[] }
+export interface PhaseTemplate { phaseKey: string; sessions: SessionTemplate[] } // sessions[idx], idx 0-based
+export interface MacroRecipe { macroId: string; phases: PhaseTemplate[] }
+
+/** A concrete prescription row of an athlete (a PrescribedExercise + its location). */
+export interface PrescriptionRow extends PrescribedExercise { week: number; sessionIdx: number; order: number }
+/** A prescribed exercise with its display name + derived target kg, for the front. */
+export interface PrescribedExerciseView extends PrescribedExercise { movementName: string; targetKg?: number }
+/** One instantiated session (a column in the week), kg already derived. */
+export interface SessionView { week: number; sessionIdx: number; label?: string; exercises: PrescribedExerciseView[] }
