@@ -4,6 +4,7 @@ import * as me from "../../data/meClient";
 import { Titular } from "./hoy/Titular";
 import { ConstanciaCard } from "./hoy/ConstanciaCard";
 import { CaminoCard } from "./hoy/CaminoCard";
+import { SemanaCard } from "./hoy/SemanaCard";
 import { CheckIn } from "./CheckIn";
 import { Check } from "./primitives";
 import { useAtletaCtx } from "./AthleteShell";
@@ -73,6 +74,7 @@ export function HomeScreen() {
 
       <ConstanciaCard streak={daylog.streak} days={daylog.days} today={daylog.today} />
       <CaminoCard plan={plan.plan} />
+      {plan.plan && <SemanaCard week={plan.plan.currentWeek} />}
 
       {checkinOpen && (
         <CheckIn variant={variant} initial={daylog.entry} onClose={() => setCheckinOpen(false)} onDone={onCheckinDone} />

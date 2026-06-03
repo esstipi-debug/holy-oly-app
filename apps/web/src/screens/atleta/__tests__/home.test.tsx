@@ -10,6 +10,7 @@ vi.mock("../../../data/meClient", () => ({
   getMeSeries: vi.fn(),
   getDayLog: vi.fn(),
   putDayLog: vi.fn(),
+  getMeSessions: vi.fn().mockResolvedValue([]),
 }));
 import * as me from "../../../data/meClient";
 
