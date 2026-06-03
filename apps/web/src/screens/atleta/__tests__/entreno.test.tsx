@@ -1,8 +1,10 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
 import * as me from "../../../data/meClient";
 import { EntrenoScreen } from "../EntrenoScreen";
+
+afterEach(() => vi.restoreAllMocks());
 
 vi.spyOn(me, "getMeSessions").mockResolvedValue([
   { week: 1, sessionIdx: 0, exercises: [{ movementId: "arranque", sets: 5, reps: 3, pct: 70, movementName: "Arranque", targetKg: 56 }] },

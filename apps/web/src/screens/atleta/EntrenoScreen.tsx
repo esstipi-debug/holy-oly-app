@@ -17,6 +17,7 @@ export function EntrenoScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!Number.isInteger(week) || !Number.isInteger(idx)) { navigate("/atleta", { replace: true }); return; }
     let on = true;
     me.getMeSessions(week)
       .then((views: SessionView[]) => {
@@ -30,7 +31,7 @@ export function EntrenoScreen() {
       })
       .catch(() => { if (on) setRows([]); });
     return () => { on = false; };
-  }, [week, idx]);
+  }, [week, idx, navigate]);
 
   const patch = (i: number, p: Partial<Row>): void => setRows((rs) => (rs ? rs.map((r, j) => (j === i ? { ...r, ...p } : r)) : rs));
 
@@ -48,7 +49,7 @@ export function EntrenoScreen() {
     finally { setBusy(false); }
   }, [rows, week, idx, navigate]);
 
-  if (rows === null) return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
+  if (rows === null) return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>Cargando…</div>;
 
   // NOTE: rendered inside AthleteShell's `<main className="ho-scroll">` (child route) — do NOT add
   // another `ho-scroll` wrapper here (the shell already provides scroll padding incl. nav clearance).
@@ -56,25 +57,28 @@ export function EntrenoScreen() {
     <div>
       <button type="button" aria-label="volver" onClick={() => navigate("/atleta")} style={{ border: 0, background: "transparent", color: "var(--wl-text)", fontSize: 22, cursor: "pointer", padding: 0, marginBottom: 6 }}>‹</button>
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>Entreno · sem {week} · día {idx + 1}</div>
-      <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 2 }}>Anotá lo que levantaste. No cambia tu plan.</div>
+      <div style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 2 }}>Anotá lo que levantaste. No cambia tu plan.</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
         {rows.map((r, i) => (
-          <div key={i} style={{ background: "var(--wl-surface)", borderRadius: 12, padding: "11px 13px", opacity: r.done ? 1 : 0.92 }}>
+          <div key={r.movementId} style={{ background: "var(--wl-surface)", borderRadius: 12, padding: "11px 13px", opacity: r.done ? 1 : 0.92 }}>
             <label style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <input type="checkbox" aria-label={`hecho ${r.movementName}`} checked={r.done} onChange={(e) => patch(i, { done: e.target.checked })} style={{ width: 18, height: 18 }} />
               <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 15, color: "var(--wl-text)" }}>{r.movementName}</span>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>obj {r.sets}×{r.reps}{r.targetKg != null ? ` · ${r.targetKg}kg` : r.rpe != null ? ` · RPE ${r.rpe}` : ""}</span>
+              <span style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>obj {r.sets}×{r.reps}{r.targetKg != null ? ` · ${r.targetKg}kg` : r.rpe != null ? ` · RPE ${r.rpe}` : ""}</span>
             </label>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9, fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>
               <input style={num} type="number" inputMode="decimal" aria-label={`kg real de ${r.movementName}`} placeholder="kg" value={r.kg ?? ""} onChange={(e) => patch(i, { kg: e.target.value ? Number(e.target.value) : undefined })} />kg
-              <input style={num} type="number" aria-label={`reps reales de ${r.movementName}`} placeholder="reps" value={r.repsActual ?? ""} onChange={(e) => patch(i, { repsActual: e.target.value ? Number(e.target.value) : undefined })} />reps
-              <input style={num} type="number" aria-label={`RPE real de ${r.movementName}`} placeholder="RPE" value={r.rpeActual ?? ""} onChange={(e) => patch(i, { rpeActual: e.target.value ? Number(e.target.value) : undefined })} />RPE
+              <input style={num} type="number" inputMode="numeric" aria-label={`reps reales de ${r.movementName}`} placeholder="reps" value={r.repsActual ?? ""} onChange={(e) => patch(i, { repsActual: e.target.value ? Number(e.target.value) : undefined })} />reps
+              <input style={num} type="number" inputMode="numeric" aria-label={`RPE real de ${r.movementName}`} placeholder="RPE" value={r.rpeActual ?? ""} onChange={(e) => patch(i, { rpeActual: e.target.value ? Number(e.target.value) : undefined })} />RPE
             </div>
+            <input style={{ ...num, width: "100%", textAlign: "left", marginTop: 7 }} type="text" maxLength={200}
+              aria-label={`nota de ${r.movementName}`} placeholder="nota (opcional) — ej. molestia, lo cambié…"
+              value={r.note ?? ""} onChange={(e) => patch(i, { note: e.target.value })} />
           </div>
         ))}
-        {rows.length === 0 && <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>No hay sesión para este día.</div>}
+        {rows.length === 0 && <div style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>No hay sesión para este día.</div>}
       </div>
-      {error && <div role="alert" style={{ marginTop: 10, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
+      {error && <div role="alert" style={{ marginTop: 10, color: "#ff3b46", fontFamily: "var(--ho-mono)", fontSize: 11 }}>{error}</div>}
       {rows.length > 0 && (
         <button type="button" className="wl-btn wl-btn--primary" disabled={busy} onClick={() => void save()} style={{ width: "100%", marginTop: 16, opacity: busy ? 0.6 : 1 }}>
           {busy ? "Guardando…" : "Guardar entreno"}
