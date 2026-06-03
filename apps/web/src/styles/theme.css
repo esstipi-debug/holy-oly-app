@@ -9,7 +9,7 @@
    ============================================================ */
 
 /* ---------- fonts ---------- */
-@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700&family=Chakra+Petch:wght@500;600;700&family=Anton&family=Archivo:wght@500;600;700;800&family=Sora:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Saira:wght@600;700;800;900&family=Space+Mono:wght@400;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=Chakra+Petch:wght@500;600;700&family=Anton&family=Archivo:wght@500;600;700;800&family=Sora:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap');
 
 /* ---------- base / shared structure ---------- */
 .wl{
@@ -472,3 +472,20 @@
 .wl--neonlight .wl-field:focus-within{ border-color:var(--wl-accent); box-shadow:0 0 0 3px rgba(255,46,154,.15), 0 4px 14px rgba(255,46,154,.18); }
 .wl--neonlight .wl-step{ background:rgba(255,46,154,.1); border:1px solid rgba(255,46,154,.35); color:var(--wl-accent); border-radius:7px; box-shadow:0 2px 8px rgba(255,46,154,.12); }
 .wl--neonlight .wl-seg__bar.is-on{ background:linear-gradient(90deg,#ff62ab,#ff2e9a); box-shadow:0 0 12px rgba(255,46,154,.5); }
+
+/* ============================================================
+   6 · LEGEND / FUT — coach: metal/oro/holo, deportivo "modo leyenda"
+   Saira + Saira Condensed (nombres) + Space Mono (datos) + Archivo (body).
+   El oro (--wl-accent) es IDENTIDAD decorativa, NO color de estado.
+   ============================================================ */
+.wl--legend{
+  --wl-bg:#0A0B0E; --wl-surface:#11151A; --wl-surface-2:#20262E;
+  --wl-text:#EEF2F6; --wl-muted:#6B7480;
+  --wl-accent:#E9C46A;      /* oro — identidad legend */
+  --wl-accent-2:#2EE6A0;    /* verde-ok como secundario */
+  --wl-display:'Saira', sans-serif;
+  --wl-cond:'Saira Condensed', sans-serif;
+  --wl-body:'Archivo', sans-serif;
+  --mono:'Space Mono', ui-monospace, monospace;
+  --wl-radius:16px;
+}

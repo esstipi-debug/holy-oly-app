@@ -20,31 +20,30 @@ function renderEquipo() {
   );
 }
 
-test("shows the four-bucket counts derived from the seeds (the triage headline)", async () => {
-  const { container } = renderEquipo();
-  await waitFor(() => expect(container.querySelector('[data-testid="bucket-none"]')).toBeInTheDocument());
-  expect(container.querySelector('[data-testid="bucket-alert"]')).toHaveTextContent("2 en alerta");
-  expect(container.querySelector('[data-testid="bucket-warn"]')).toHaveTextContent("2 a vigilar");
-  expect(container.querySelector('[data-testid="bucket-ok"]')).toHaveTextContent("3 ok");
-  expect(container.querySelector('[data-testid="bucket-none"]')).toHaveTextContent("1 sin datos");
-});
-
-test("the quadrant plots exactly 7 dots and Tomás (no-data) is absent from the canvas", async () => {
-  const { container } = renderEquipo();
-  await waitFor(() => expect(container.querySelector('[data-testid="risk-quadrant"]')).toBeInTheDocument());
-  const quad = container.querySelector('[data-testid="risk-quadrant"]')!;
-  expect(quad.querySelectorAll("circle").length).toBe(7);
-  expect(quad.querySelector('g[data-id="tl"]')).toBeNull();
-});
-
-test("clicking a name navigates to /coach/a/:id", async () => {
+test("muestra la carta hero del mejor readiness + el plantel", async () => {
   renderEquipo();
-  await waitFor(() => screen.getByRole("button", { name: "Mara V." }));
-  fireEvent.click(screen.getByRole("button", { name: "Mara V." }));
+  expect(await screen.findByText(/MEJOR READINESS/i)).toBeInTheDocument();
+  expect(screen.getByText("El plantel")).toBeInTheDocument();
+  expect(screen.getByText(/8 ATLETAS/)).toBeInTheDocument();
+});
+
+test("tocar la carta hero navega al drill-down", async () => {
+  renderEquipo();
+  const hero = await screen.findByRole("button", { name: /mejor readiness/i });
+  fireEvent.click(hero);
   await waitFor(() => expect(screen.getByText("DRILLDOWN")).toBeInTheDocument());
 });
 
-test("shows an error state when the roster fails to load", async () => {
+test("una mini-card del plantel también navega al drill-down", async () => {
+  renderEquipo();
+  await screen.findByText(/MEJOR READINESS/i);
+  const minis = screen.getAllByRole("button", { name: /· readiness/i }); // mini-cards (no el hero "mejor readiness")
+  expect(minis.length).toBeGreaterThan(0);
+  fireEvent.click(minis[0]!);
+  await waitFor(() => expect(screen.getByText("DRILLDOWN")).toBeInTheDocument());
+});
+
+test("estado de error cuando el roster falla", async () => {
   class FailingRepo extends LocalRepository {
     async getRoster(): Promise<Atleta[]> { throw new Error("boom"); }
   }
