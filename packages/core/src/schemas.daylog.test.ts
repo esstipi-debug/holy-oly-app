@@ -18,6 +18,11 @@ describe("DayLogViewSchema", () => {
   it("accepts a null entry with streak + days + today", () => {
     expect(DayLogViewSchema.safeParse({ entry: null, streak: 0, days: [], today: "2026-06-03" }).success).toBe(true);
   });
+  it("validates the days[] element format", () => {
+    const base = { entry: null, streak: 0, today: "2026-06-03" };
+    expect(DayLogViewSchema.safeParse({ ...base, days: ["2026-06-03", "2026-06-02"] }).success).toBe(true);
+    expect(DayLogViewSchema.safeParse({ ...base, days: ["not-a-date"] }).success).toBe(false);
+  });
 });
 
 describe("MePlanViewSchema", () => {

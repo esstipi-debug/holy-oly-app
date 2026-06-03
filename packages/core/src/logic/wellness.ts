@@ -24,7 +24,8 @@ export function wellnessScore(answers: Partial<WellnessAnswers>): number {
   for (const item of WELLNESS_ITEMS) {
     const v = answers[item.field];
     if (v == null || !Number.isFinite(v)) continue;
-    goods.push((goodness(v, item.highBad) - 1) / 4); // 0..1
+    const bounded = Math.max(1, Math.min(5, v));
+    goods.push((goodness(bounded, item.highBad) - 1) / 4); // 0..1
   }
   if (goods.length === 0) return 0;
   return Math.round((goods.reduce((a, b) => a + b, 0) / goods.length) * 100);

@@ -35,5 +35,6 @@ describe("buildMePlanView", () => {
   it("falls back to startWeek when there is no startDate", () => {
     const plan: Plan = { atletaId: "mv", macroId: "ruso-5d", startWeek: 5, rms: { arranque: 80, envion: 100, sentadilla: 140, frente: 110 }, comps: [] };
     expect(buildMePlanView(ATH, plan, "2026-06-03").plan!.currentWeek).toBe(5);
+    expect(buildMePlanView(ATH, plan, "2026-06-03").plan!.totalWeeks).toBe(16);
   });
 });

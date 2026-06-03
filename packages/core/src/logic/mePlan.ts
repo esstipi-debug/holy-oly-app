@@ -26,7 +26,7 @@ export function buildMePlanView(
       totalWeeks,
       currentWeek,
       currentPhase: phase?.name ?? "",
-      phases: macro.phaseProfile.map((p) => ({ name: p.name, from: p.weeks[0], to: p.weeks[1], imr: p.imrPct[1] })),
+      phases: macro.phaseProfile.map((p) => ({ name: p.name, from: p.weeks[0], to: p.weeks[1], imr: p.imrPct[1] /* high-end target IMR of the phase (drives the ribbon fill) */ })),
       comps: plan.comps.map((c) => ({ name: c.name, week: c.week })),
     },
   };
