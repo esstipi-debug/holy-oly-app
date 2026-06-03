@@ -5,7 +5,9 @@ import { MOVEMENT_BASES } from "../data/movements";
 
 const POSICIONES: Posicion[] = ["alto", "rodilla", "bajo"];
 
-/** Complexity 1..12: full-from-floor is hardest; power & blocks/hang lower it; pausa/déficit/tempo raise it. */
+/** Complexity 1..12 = TECHNICAL/coordinative demand (NOT physical load/intensity — SP2 derives kg from
+ *  %×RM, never from this). Used to "lower the complexity". Full-from-floor hardest; power & blocks/hang
+ *  lower it; pausa/déficit/tempo raise it. */
 export function computeComplexity(baseComplexity: number, m: MovementModifiers): number {
   let c = baseComplexity;
   if (m.captura === "potencia") c -= 2;

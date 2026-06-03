@@ -82,18 +82,20 @@ export interface Movement {
 | `cargada` | Cargada (Clean) | envion | 8 | completo,potencia | piso,bloques,colgado | — | pausa,deficit | tiron-cargada, sentadilla-frente |
 | `envion` | Envión (Jerk) | envion | 7 | — | — | tijera,empuje,potencia,fuerza | pausa | press-empuje |
 | `cargada-envion` | Cargada y Envión (Clean & Jerk) | envion | 9 | completo,potencia | piso,bloques,colgado | — | pausa | cargada, envion |
-| `tiron-arranque` | Tirón de arranque (Snatch pull) | arranque | 5 | — | piso,bloques,colgado | — | deficit,pausa | arranque |
-| `tiron-cargada` | Tirón de cargada (Clean pull) | envion | 5 | — | piso,bloques,colgado | — | deficit,pausa | cargada |
+| `tiron-arranque` | Tirón de arranque (Snatch pull) | arranque | 5 | — | piso,bloques,colgado | — | deficit,pausa | tiron-cargada |
+| `tiron-cargada` | Tirón de cargada (Clean pull) | envion | 5 | — | piso,bloques,colgado | — | deficit,pausa | tiron-arranque, peso-muerto-rumano |
 | `sentadilla` | Sentadilla (Back squat) | sentadilla | 4 | — | — | — | pausa,tempo | sentadilla-frente |
 | `sentadilla-frente` | Sentadilla frontal (Front squat) | frente | 5 | — | — | — | pausa,tempo | sentadilla |
 | `sentadilla-overhead` | Sentadilla de arranque (Overhead squat) | none | 5 | — | — | — | pausa | sentadilla-frente |
-| `press-empuje` | Push press | none | 3 | — | — | — | pausa | envion, press-hombros |
+| `press-empuje` | Push press | none | 3 | — | — | — | pausa | press-hombros |
 | `press-hombros` | Press de hombros (Strict press) | none | 2 | — | — | — | tempo | press-empuje |
 | `peso-muerto-rumano` | Peso muerto rumano (RDL) | none | 2 | — | — | — | tempo,pausa | tiron-cargada |
 | `buenos-dias` | Buenos días (Good morning) | none | 2 | — | — | — | tempo | peso-muerto-rumano |
 | `remo` | Remo con barra (Barbell row) | none | 2 | — | — | — | pausa | — |
 
 > **rmRef a confirmar por el coach:** `sentadilla-overhead` está como `none` (kg libre / % del snatch a criterio); si querés que derive del `arranque`, lo cambio. Accesorios (`press-*`, RDL, etc.) = `none` (kg directo o RPE). Lista de accesorios **extensible** (agregás los que falten en la revisión).
+
+> **Semántica de sustitución (revisión El Carnicero):** los sustitutos son **regresión/alternativa por limitación**, de patrón similar y demanda ≤ — **nunca** el lift completo del que un movimiento es asistencia (subir complejidad ya lo da `variantsOf`/`simplerVariants`). Por eso los tirones se sustituyen entre sí / con RDL, y el push press con press de hombros (no con el lift completo). **`cargada` deriva del RM de `envion` (C&J);** como el clean aislado suele superar el C&J, SP2/coach programa el % alto (no se agrega un 5º RM — se resuelve en el `%`). **`complexity` = demanda TÉCNICA/coordinativa, NO carga física** — el coach la usa para "bajar la coordinación", jamás para derivar `%`.
 
 ## 5. Generación + derivación
 
