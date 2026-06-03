@@ -2,7 +2,7 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
-  PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual,
+  PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
 } from "@holy-oly/core";
 import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
@@ -222,13 +222,14 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
     actualKg: a.actualKg ?? undefined, actualReps: a.actualReps ?? undefined, actualRpe: a.actualRpe ?? undefined,
     note: a.note ?? undefined, doneAt: a.doneAt ?? undefined,
   }));
+  // Actuals matched to exercises POSITIONALLY (order == view index). A coach edit that reorders a session after actuals are recorded can misalign them — acceptable for SP3 (revisit in SP4).
   return mergeActuals(buildSessionViews(rows, plan.rms), actuals);
 }
 
-/** Replace one session's athlete actuals (self-written). Transactional. `today` stamps doneAt. */
+/** Replace one session's athlete actuals (self-written). Transactional. `today` stamps doneAt only when the exercise was marked done. */
 export async function setSessionActuals(
   prisma: PrismaClient, athleteId: string, week: number, sessionIdx: number,
-  actuals: Array<{ order: number; movementId: string; done: boolean; kg?: number; reps?: number; rpe?: number; note?: string }>,
+  actuals: ExerciseActualInput[],
   today: string,
 ): Promise<void> {
   await prisma.$transaction([
@@ -236,7 +237,7 @@ export async function setSessionActuals(
     prisma.sessionActual.createMany({
       data: actuals.map((a) => ({
         athleteId, week, sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
-        actualKg: a.kg ?? null, actualReps: a.reps ?? null, actualRpe: a.rpe ?? null, note: a.note ?? null, doneAt: today,
+        actualKg: a.kg ?? null, actualReps: a.reps ?? null, actualRpe: a.rpe ?? null, note: a.note ?? null, doneAt: a.done ? today : null,
       })),
     }),
   ]);

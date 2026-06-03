@@ -193,6 +193,7 @@ export const ExerciseActualInputSchema = z.object({
   note: z.string().max(200).optional(),
 });
 export const SessionActualsInputSchema = z.array(ExerciseActualInputSchema).max(15);
+export type ExerciseActualInput = z.infer<typeof ExerciseActualInputSchema>;
 
 // The actual rides the prescribed-exercise view (no `order` — positional). Extend the view schema.
 // Read-side (lo que el server ya validó al escribir) → sin bounds; el INPUT (ExerciseActualInputSchema) es el que acota.

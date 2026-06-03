@@ -39,6 +39,20 @@ describe("API integration — actuals (SP3)", () => {
     expect(cs0.exercises[0]!.actual?.kg).toBe(58); // coach sees the real next to target
   });
 
+  it("PUT [] clears a session's actuals (replace, no duplicate)", async () => {
+    const coach = sess(await login("coach@holyoly.dev"));
+    await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach,
+      payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } });
+    const athlete = sess(await login("mara@holyoly.dev"));
+    await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete, payload: [{ order: 0, movementId: "arranque", done: true, kg: 60 }] });
+    // clear it
+    const cleared = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete, payload: [] });
+    expect(cleared.statusCode).toBe(200);
+    const mine = await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: athlete });
+    const s0 = (mine.json() as Array<{ sessionIdx: number; exercises: Array<{ actual?: unknown }> }>).find((s) => s.sessionIdx === 0)!;
+    expect(s0.exercises.every((e) => e.actual === undefined)).toBe(true);
+  });
+
   it("requires week on GET, validates the body, and is athlete-self (coach → 401 on /me)", async () => {
     const athlete = sess(await login("mara@holyoly.dev"));
     expect((await app.inject({ method: "GET", url: "/me/sessions", headers: athlete })).statusCode).toBe(400);
