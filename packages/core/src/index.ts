@@ -13,3 +13,4 @@ export * from "./logic/movements";
 export * from "./repository";
 export * from "./logic/prescription";
 export * from "./data/recipes";
+export * from "./logic/actuals";
