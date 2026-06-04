@@ -186,6 +186,7 @@ export const PrescriptionRowsSchema = z.array(PrescriptionRowSchema).max(2000);
 export const ExerciseActualInputSchema = z.object({
   order: z.number().int().min(0).max(20),
   movementId: z.string().min(1).max(60),
+  prescribedMovementId: z.string().min(1).max(60).optional(),
   done: z.boolean(),
   kg: KgSchema.optional(),
   reps: z.number().int().min(0).max(100).optional(), // 0 = intentó pero completó 0 reps (serie fallida)
@@ -203,6 +204,10 @@ export const ExerciseActualSchema = z.object({
   reps: z.number().optional(),
   rpe: z.number().optional(),
   note: z.string().optional(),
+  movementId: z.string(),
+  movementName: z.string(),
+  substituted: z.boolean(),
+  desfasado: z.boolean(),
 });
 
 export const PrescribedExerciseViewSchema = PrescribedExerciseSchema.extend({
