@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { SessionView, ExerciseActualInput } from "@holy-oly/core";
+import { getMovement } from "@holy-oly/core";
 import * as me from "../../data/meClient";
+import { SubstituteSheet } from "../../ui/SubstituteSheet";
 
-interface Row { movementId: string; movementName: string; sets: number; reps: number; targetKg?: number; rpe?: number; done: boolean; kg?: number; repsActual?: number; rpeActual?: number; note?: string }
+interface Row { movementId: string; movementName: string; prescribedMovementId: string; sets: number; reps: number; targetKg?: number; rpe?: number; done: boolean; kg?: number; repsActual?: number; rpeActual?: number; note?: string }
 
 const num: CSSProperties = { width: 60, boxSizing: "border-box", padding: "7px 8px", borderRadius: 9, textAlign: "center", border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontSize: 15 };
 
@@ -15,6 +17,7 @@ export function EntrenoScreen() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subFor, setSubFor] = useState<number | null>(null);
 
   useEffect(() => {
     if (!Number.isInteger(week) || !Number.isInteger(idx)) { navigate("/atleta", { replace: true }); return; }
@@ -24,7 +27,10 @@ export function EntrenoScreen() {
         if (!on) return;
         const s = views.find((v) => v.sessionIdx === idx);
         setRows((s?.exercises ?? []).map((e) => ({
-          movementId: e.movementId, movementName: e.movementName, sets: e.sets, reps: e.reps, targetKg: e.targetKg, rpe: e.rpe,
+          movementId: e.actual?.movementId ?? e.movementId,
+          movementName: e.actual?.movementName ?? e.movementName,
+          prescribedMovementId: e.movementId,
+          sets: e.sets, reps: e.reps, targetKg: e.targetKg, rpe: e.rpe,
           done: e.actual?.done ?? false, kg: e.actual?.kg ?? e.targetKg, repsActual: e.actual?.reps ?? e.reps,
           rpeActual: e.actual?.rpe ?? e.rpe, note: e.actual?.note ?? "",
         })));
@@ -45,6 +51,7 @@ export function EntrenoScreen() {
         reps: r.done ? r.repsActual : undefined,
         rpe: r.done ? r.rpeActual : undefined,
         note: r.note?.trim() ? r.note.trim() : undefined,
+        prescribedMovementId: r.prescribedMovementId,
       }));
       await me.putMeSession(week, idx, actuals);
       navigate("/atleta");
@@ -67,8 +74,19 @@ export function EntrenoScreen() {
             <label style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <input type="checkbox" aria-label={`hecho ${r.movementName}`} checked={r.done} onChange={(e) => patch(i, { done: e.target.checked })} style={{ width: 18, height: 18 }} />
               <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 15, color: "var(--wl-text)" }}>{r.movementName}</span>
+              <button
+                type="button"
+                aria-label={`cambiar movimiento de ${r.movementName}`}
+                onClick={() => setSubFor(i)}
+                style={{ border: 0, background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--wl-display)", fontSize: 12, cursor: "pointer", padding: "2px 4px" }}
+              >⇄</button>
               <span style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>obj {r.sets}×{r.reps}{r.targetKg != null ? ` · ${r.targetKg}kg` : r.rpe != null ? ` · RPE ${r.rpe}` : ""}</span>
             </label>
+            {r.movementId !== r.prescribedMovementId && (
+              <div style={{ fontFamily: "var(--wl-display)", fontSize: 11, color: "var(--wl-muted)", marginTop: 3 }}>
+                prescripto: {getMovement(r.prescribedMovementId)?.name ?? r.prescribedMovementId}
+              </div>
+            )}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9, fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>
               <input style={num} type="number" inputMode="decimal" aria-label={`kg real de ${r.movementName}`} placeholder="kg" value={r.kg ?? ""} onChange={(e) => patch(i, { kg: e.target.value ? Number(e.target.value) : undefined })} />kg
               <input style={num} type="number" inputMode="numeric" aria-label={`reps reales de ${r.movementName}`} placeholder="reps" value={r.repsActual ?? ""} onChange={(e) => patch(i, { repsActual: e.target.value === "" ? undefined : Number(e.target.value) })} />reps
@@ -86,6 +104,21 @@ export function EntrenoScreen() {
         <button type="button" className="wl-btn wl-btn--primary" disabled={busy} onClick={() => void save()} style={{ width: "100%", marginTop: 16, opacity: busy ? 0.6 : 1 }}>
           {busy ? "Guardando…" : "Guardar entreno"}
         </button>
+      )}
+      {subFor !== null && rows[subFor] != null && (
+        <SubstituteSheet
+          open
+          movementId={rows[subFor]!.movementId}
+          onClose={() => setSubFor(null)}
+          onPick={(id) => {
+            patch(subFor, {
+              movementId: id,
+              movementName: getMovement(id)?.name ?? id,
+              kg: undefined,
+            });
+            setSubFor(null);
+          }}
+        />
       )}
     </div>
   );
