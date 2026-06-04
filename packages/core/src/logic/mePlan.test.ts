@@ -3,7 +3,7 @@ import { buildMePlanView } from "./mePlan";
 import { defaultStartDate } from "./schedule";
 import type { Plan } from "../types";
 
-const ATH = { nombre: "Mara V.", iniciales: "MV" };
+const ATH = { nombre: "Mara V.", iniciales: "MV", sexo: "F" as const };
 
 describe("buildMePlanView", () => {
   it("no plan → plan: null", () => {

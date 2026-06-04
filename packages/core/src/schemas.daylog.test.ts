@@ -27,6 +27,6 @@ describe("DayLogViewSchema", () => {
 
 describe("MePlanViewSchema", () => {
   it("accepts a null plan", () => {
-    expect(MePlanViewSchema.safeParse({ athlete: { nombre: "Mara", iniciales: "MV" }, plan: null }).success).toBe(true);
+    expect(MePlanViewSchema.safeParse({ athlete: { nombre: "Mara", iniciales: "MV", sexo: "F" }, plan: null }).success).toBe(true);
   });
 });

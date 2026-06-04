@@ -83,7 +83,7 @@ export interface Vinculo {
 
 export interface Atleta {
   id: Id; nombre: string; iniciales: string;
-  nivel: MacrocycleLevel; macroId?: string; compite?: boolean;
+  nivel: MacrocycleLevel; sexo: "M" | "F"; macroId?: string; compite?: boolean;
 }
 
 // ── Athlete self-report (Proyecto A). `field` is the canonical key (DB column, DTO, answers map);
@@ -131,7 +131,7 @@ export interface DayLogResult {
 
 /** GET /me/plan response: a redaction-free, purpose-built view for the athlete's own Home. */
 export interface MePlanView {
-  athlete: { nombre: string; iniciales: string };
+  athlete: { nombre: string; iniciales: string; sexo: "M" | "F" };
   plan: {
     macroName: string;
     totalWeeks: number;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { perSide, DISC_COLORS } from "./discs";
+import { perSide, DISC_COLORS, barKgForSexo } from "./discs";
 
 describe("perSide (barra 20kg)", () => {
   it("140kg -> 25,25,10 por lado", () => { expect(perSide(140)).toEqual([25, 25, 10]); });
@@ -11,5 +11,12 @@ describe("perSide (barra 20kg)", () => {
   });
   it("tiene colores para cada disco", () => {
     for (const d of [10,15,20,25] as const) expect(DISC_COLORS[d]).toBeTruthy();
+  });
+});
+
+describe("barKgForSexo", () => {
+  it("barra 20 para hombre, 15 para mujer", () => {
+    expect(barKgForSexo("M")).toBe(20);
+    expect(barKgForSexo("F")).toBe(15);
   });
 });

@@ -6,7 +6,7 @@ import { weekOfDate } from "./schedule";
  *  back to startWeek), current phase, the phase ribbon, and the upcoming competitions. Pure: the
  *  caller passes the server's `today`. Returns `plan: null` when there is no plan or no macro. */
 export function buildMePlanView(
-  athlete: { nombre: string; iniciales: string },
+  athlete: { nombre: string; iniciales: string; sexo: "M" | "F" },
   plan: Plan | undefined,
   today: string,
 ): MePlanView {

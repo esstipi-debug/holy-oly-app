@@ -9,6 +9,11 @@ export const DISC_COLORS: Record<Disc, [string, string, string]> = {
   25: ["#d5232b", "#a4161d", "#ec6b6f"],
 };
 
+/** Peso de la barra según sexo del atleta (IWF: hombre 20 kg, mujer 15 kg). */
+export function barKgForSexo(sexo: "M" | "F"): number {
+  return sexo === "F" ? 15 : 20;
+}
+
 /** Discos por lado para `totalKg` con barra `barKg` (20 hombre, 15 mujer). Aproximado. */
 export function perSide(totalKg: number, barKg = 20): Disc[] {
   let r = (totalKg - barKg) / 2;

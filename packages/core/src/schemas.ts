@@ -15,6 +15,7 @@ export const AtletaSchema = z.object({
   nombre: z.string(),
   iniciales: z.string(),
   nivel: MacrocycleLevelSchema,
+  sexo: z.enum(["M", "F"]),
   macroId: z.string().optional(),
   compite: z.boolean().optional(),
 });
@@ -148,7 +149,7 @@ export const DayLogResultSchema = z.object({
 });
 
 export const MePlanViewSchema = z.object({
-  athlete: z.object({ nombre: z.string(), iniciales: z.string() }),
+  athlete: z.object({ nombre: z.string(), iniciales: z.string(), sexo: z.enum(["M", "F"]) }),
   plan: z.object({
     macroName: z.string(),
     totalWeeks: z.number().int(),
