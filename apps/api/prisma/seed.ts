@@ -26,6 +26,7 @@ interface SeedAthlete {
   nombre: string;
   iniciales: string;
   nivel: MacrocycleLevel;
+  sexo?: "M" | "F";
   compite?: boolean;
   macroId?: string;
   weightBandLo?: number;
@@ -34,14 +35,14 @@ interface SeedAthlete {
 
 // 8 athletes + the metodo->macroId mappings settled for M4c. Tomás (tl) has no series.
 const ATHLETES: SeedAthlete[] = [
-  { id: "mv", nombre: "Mara V.", iniciales: "MV", nivel: "intermediate", compite: true, macroId: "ruso-5d", weightBandLo: 80, weightBandHi: 81 },
+  { id: "mv", nombre: "Mara V.", iniciales: "MV", nivel: "intermediate", sexo: "F", compite: true, macroId: "ruso-5d", weightBandLo: 80, weightBandHi: 81 },
   { id: "ds", nombre: "Diego S.", iniciales: "DS", nivel: "intermediate", compite: true, macroId: "usa-intermedio" },
-  { id: "lr", nombre: "Lucía R.", iniciales: "LR", nivel: "intermediate", compite: true, macroId: "coreano-5d" },
-  { id: "sm", nombre: "Sofía M.", iniciales: "SM", nivel: "advanced", macroId: "bulgaro-6d" },
+  { id: "lr", nombre: "Lucía R.", iniciales: "LR", nivel: "intermediate", sexo: "F", compite: true, macroId: "coreano-5d" },
+  { id: "sm", nombre: "Sofía M.", iniciales: "SM", nivel: "advanced", sexo: "F", macroId: "bulgaro-6d" },
   { id: "tl", nombre: "Tomás L.", iniciales: "TL", nivel: "beginner" },
-  { id: "ap", nombre: "Ana P.", iniciales: "AP", nivel: "intermediate", macroId: "cubano-int-5d" },
+  { id: "ap", nombre: "Ana P.", iniciales: "AP", nivel: "intermediate", sexo: "F", macroId: "cubano-int-5d" },
   { id: "bg", nombre: "Bruno G.", iniciales: "BG", nivel: "intermediate", macroId: "hibrido-5d" },
-  { id: "cf", nombre: "Caro F.", iniciales: "CF", nivel: "intermediate", macroId: "colombiano-5d" },
+  { id: "cf", nombre: "Caro F.", iniciales: "CF", nivel: "intermediate", sexo: "F", macroId: "colombiano-5d" },
 ];
 
 // Mara — the full-instrumented showcase (12 weeks, ported from the prototype seeds).
@@ -118,6 +119,7 @@ async function main(): Promise<void> {
     await prisma.athlete.create({
       data: {
         id: a.id, nombre: a.nombre, iniciales: a.iniciales, nivel: a.nivel,
+        sexo: a.sexo ?? "M",
         compite: a.compite ?? false, macroId: a.macroId ?? null,
         weightBandLo: a.weightBandLo ?? null, weightBandHi: a.weightBandHi ?? null,
       },
@@ -169,7 +171,7 @@ async function main(): Promise<void> {
     data: presc.map((r) => ({
       athleteId: "mv", week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId,
       sets: r.sets, reps: r.reps, pct: r.pct ?? null, kgOverride: r.kgOverride ?? null,
-      rpe: r.rpe ?? null, flags: r.flags ?? [], notes: r.notes ?? null,
+      flags: r.flags ?? [], notes: r.notes ?? null,
     })),
   });
 
@@ -184,7 +186,7 @@ async function main(): Promise<void> {
     data: { email: ATLETA_EMAIL, passwordHash: await hash(ATLETA_PASSWORD), role: "atleta" },
   });
   await prisma.athlete.create({
-    data: { id: "demo-atleta", nombre: "Demo Atleta", iniciales: "DA", nivel: "beginner", userId: atletaUser.id },
+    data: { id: "demo-atleta", nombre: "Demo Atleta", iniciales: "DA", nivel: "beginner", sexo: "M", userId: atletaUser.id },
   });
 
   console.log(`Seed complete: coach + ${ATHLETES.length} athletes (Mara instrumented + login ${MARA_EMAIL}) + empty demo athlete login ${ATLETA_EMAIL}.`);

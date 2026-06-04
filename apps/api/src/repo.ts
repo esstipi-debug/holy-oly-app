@@ -18,7 +18,7 @@ export async function hasActiveLink(prisma: PrismaClient, coachId: string, athle
 
 interface AthleteRow {
   id: string; nombre: string; iniciales: string; nivel: MacrocycleLevel;
-  macroId: string | null; compite: boolean;
+  macroId: string | null; compite: boolean; sexo: string;
 }
 function toAtleta(a: AthleteRow): Atleta {
   return {
@@ -28,6 +28,7 @@ function toAtleta(a: AthleteRow): Atleta {
     nivel: a.nivel,
     macroId: a.macroId ?? undefined,
     compite: a.compite,
+    sexo: (a.sexo === "F" ? "F" : "M") as "M" | "F",
   };
 }
 
@@ -154,7 +155,7 @@ export async function getMePlanView(prisma: PrismaClient, athleteId: string, tod
   const a = await prisma.athlete.findUnique({ where: { id: athleteId } });
   if (!a) return undefined;
   const plan = await getPlan(prisma, athleteId);
-  return buildMePlanView({ nombre: a.nombre, iniciales: a.iniciales }, plan, today);
+  return buildMePlanView({ nombre: a.nombre, iniciales: a.iniciales, sexo: (a.sexo === "F" ? "F" : "M") as "M" | "F" }, plan, today);
 }
 
 /** Today's entry (or the requested date) + streak + logged days (heatmap), all as of `today`. */
@@ -197,7 +198,7 @@ export async function instantiateForPlan(tx: Prisma.TransactionClient, athleteId
       data: rows.map((r) => ({
         athleteId, week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId,
         sets: r.sets, reps: r.reps, pct: r.pct ?? null, kgOverride: r.kgOverride ?? null,
-        rpe: r.rpe ?? null, flags: r.flags ?? [], notes: r.notes ?? null,
+        flags: r.flags ?? [], notes: r.notes ?? null,
       })),
     });
   }
@@ -213,14 +214,14 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
   });
   const rows: PrescriptionRow[] = dbRows.map((r) => ({
     week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId, sets: r.sets, reps: r.reps,
-    pct: r.pct ?? undefined, kgOverride: r.kgOverride ?? undefined, rpe: r.rpe ?? undefined,
+    pct: r.pct ?? undefined, kgOverride: r.kgOverride ?? undefined,
     flags: r.flags.length > 0 ? (r.flags as MovementFlag[]) : undefined, notes: r.notes ?? undefined,
   }));
   const actualRows = await prisma.sessionActual.findMany({ where: { athleteId, week } });
   const actuals: SessionActual[] = actualRows.map((a) => ({
     week: a.week, sessionIdx: a.sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
     prescribedMovementId: a.prescribedMovementId ?? undefined,
-    actualKg: a.actualKg ?? undefined, actualReps: a.actualReps ?? undefined, actualRpe: a.actualRpe ?? undefined,
+    actualKg: a.actualKg ?? undefined, actualReps: a.actualReps ?? undefined,
     note: a.note ?? undefined, doneAt: a.doneAt ?? undefined,
   }));
   // Actuals matched to exercises POSITIONALLY (order == view index). A coach edit that reorders a session after actuals are recorded can misalign them — acceptable for SP3 (revisit in SP4).
@@ -240,7 +241,7 @@ export async function setSessionActuals(
         athleteId, week, sessionIdx, order: a.order, movementId: a.movementId,
         prescribedMovementId: a.prescribedMovementId ?? null,
         done: a.done,
-        actualKg: a.kg ?? null, actualReps: a.reps ?? null, actualRpe: a.rpe ?? null, note: a.note ?? null, doneAt: a.done ? today : null,
+        actualKg: a.kg ?? null, actualReps: a.reps ?? null, note: a.note ?? null, doneAt: a.done ? today : null,
       })),
     }),
   ]);
@@ -253,7 +254,7 @@ export async function setSession(prisma: PrismaClient, athleteId: string, week: 
     prisma.prescribedExercise.createMany({
       data: exercises.map((ex, order) => ({
         athleteId, week, sessionIdx, order, movementId: ex.movementId, sets: ex.sets, reps: ex.reps,
-        pct: ex.pct ?? null, kgOverride: ex.kgOverride ?? null, rpe: ex.rpe ?? null, flags: ex.flags ?? [], notes: ex.notes ?? null,
+        pct: ex.pct ?? null, kgOverride: ex.kgOverride ?? null, flags: ex.flags ?? [], notes: ex.notes ?? null,
       })),
     }),
   ]);

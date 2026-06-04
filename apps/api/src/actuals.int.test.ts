@@ -26,7 +26,7 @@ describe("API integration — actuals (SP3)", () => {
 
     const athlete = sess(await login("mara@holyoly.dev")); // seeded login → athleteId mv
     const put = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
-      payload: [{ order: 0, movementId: "arranque", done: true, kg: 58, reps: 3, rpe: 8 }] });
+      payload: [{ order: 0, movementId: "arranque", done: true, kg: 58, reps: 3 }] });
     expect(put.statusCode).toBe(200);
 
     const mine = await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: athlete });

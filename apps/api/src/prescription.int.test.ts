@@ -56,12 +56,23 @@ describe("API integration — prescription (SP2)", () => {
     const headers = await coach();
     await assignRuso(headers);
     await app.inject({ method: "PUT", url: "/athletes/mv/prescription/1/0", headers,
-      payload: [{ movementId: "press-hombros", sets: 3, reps: 5, rpe: 7 }] });
+      payload: [{ movementId: "press-hombros", sets: 3, reps: 5 }] });
     await assignRuso(headers); // deliberate reset
     const res = await app.inject({ method: "GET", url: "/athletes/mv/prescription?week=1", headers });
     const sessions = res.json() as Array<{ sessionIdx: number; exercises: Array<{ movementId: string }> }>;
     const s0 = sessions.find((s) => s.sessionIdx === 0)!;
     expect(s0.exercises[0]!.movementId).toBe("arranque"); // back to the recipe, edit gone
+  });
+
+  it("un accesorio del plan trae kg por %×RM y NO trae rpe", async () => {
+    const headers = await coach();
+    await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers,
+      payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } });
+    const r = await app.inject({ method: "GET", url: "/athletes/mv/prescription?week=8", headers });
+    const sessions = r.json() as Array<{ exercises: Array<{ movementId: string; targetKg?: number; rpe?: number }> }>;
+    const rdl = sessions.flatMap((s) => s.exercises).find((e) => e.movementId === "peso-muerto-rumano")!;
+    expect(rdl.targetKg).toBeGreaterThan(0);
+    expect(rdl.rpe).toBeUndefined();
   });
 
   it("requires week, validates the body, and is coach-only (athlete 401, no-Vínculo coach 403)", async () => {
