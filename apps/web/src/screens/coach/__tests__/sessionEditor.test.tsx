@@ -14,6 +14,15 @@ test("edita reps y guarda los ejercicios", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Guardar sesión" }));
   await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
   expect(onSave.mock.calls[0]![0][0]).toMatchObject({ movementId: "arranque", sets: 5, reps: 2, pct: 70 });
+  // no RPE field in saved data
+  expect((onSave.mock.calls[0]![0][0] as Record<string, unknown>).rpe).toBeUndefined();
+});
+
+test("no muestra input de RPE — accesorios usan % (pct)", () => {
+  render(<SessionEditor open week={1} sessionIdx={0} exercises={exs} onClose={() => {}} onSave={vi.fn()} />);
+  expect(screen.queryByLabelText(/rpe de Arranque/i)).not.toBeInTheDocument();
+  // % input is always shown (pct present for all movements now that rmRef="none" is gone)
+  expect(screen.getByLabelText(/% de Arranque/i)).toBeInTheDocument();
 });
 
 test("quita un ejercicio", () => {

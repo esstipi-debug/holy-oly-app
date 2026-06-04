@@ -4,7 +4,7 @@ import { BottomSheet } from "../../../ui/BottomSheet";
 import { MovementPicker } from "./MovementPicker";
 import { SubstituteSheet } from "../../../ui/SubstituteSheet";
 
-interface Draft { movementId: string; movementName: string; sets: number; reps: number; pct?: number; kgOverride?: number; rpe?: number; }
+interface Draft { movementId: string; movementName: string; sets: number; reps: number; pct?: number; kgOverride?: number; }
 
 const num: CSSProperties = {
   width: 52, boxSizing: "border-box", padding: "6px 8px", borderRadius: 8, textAlign: "center",
@@ -18,7 +18,7 @@ const mini: CSSProperties = {
 function toDraft(id: string): Draft {
   const mv = getMovement(id);
   const usesPct = !!mv && mv.rmRef !== "none";
-  return { movementId: id, movementName: mv?.name ?? id, sets: 3, reps: 3, ...(usesPct ? { pct: 70 } : { rpe: 7 }) };
+  return { movementId: id, movementName: mv?.name ?? id, sets: 3, reps: 3, ...(usesPct ? { pct: 70 } : {}) };
 }
 
 function swapMovement(d: Draft, id: string): Draft {
@@ -30,7 +30,6 @@ function swapMovement(d: Draft, id: string): Draft {
     movementName: mv?.name ?? id,
     kgOverride: undefined,
     pct: usesPct ? (d.pct ?? 70) : undefined,
-    rpe: usesPct ? undefined : (d.rpe ?? 7),
   };
 }
 
@@ -39,7 +38,7 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
   onClose: () => void; onSave: (exercises: PrescribedExercise[]) => Promise<void> | void;
 }) {
   const [rows, setRows] = useState<Draft[]>(() =>
-    exercises.map((e) => ({ movementId: e.movementId, movementName: e.movementName, sets: e.sets, reps: e.reps, pct: e.pct, kgOverride: e.kgOverride, rpe: e.rpe })));
+    exercises.map((e) => ({ movementId: e.movementId, movementName: e.movementName, sets: e.sets, reps: e.reps, pct: e.pct, kgOverride: e.kgOverride })));
   const [pickerOpen, setPickerOpen] = useState(false);
   const [subFor, setSubFor] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,9 +52,9 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
   });
 
   async function save(): Promise<void> {
-    const exercises = rows.map((r) => ({ movementId: r.movementId, sets: r.sets, reps: r.reps, pct: r.pct, kgOverride: r.kgOverride, rpe: r.rpe }));
+    const exercises = rows.map((r) => ({ movementId: r.movementId, sets: r.sets, reps: r.reps, pct: r.pct, kgOverride: r.kgOverride }));
     const parsed = PrescribedExercisesSchema.safeParse(exercises);
-    if (!parsed.success) { setError("Revisá los valores: sets y reps ≥ 1, % entre 1–120, RPE entre 1–10."); return; }
+    if (!parsed.success) { setError("Revisá los valores: sets y reps ≥ 1, % entre 1–120."); return; }
     setBusy(true); setError(null);
     try {
       await onSave(parsed.data);
@@ -81,7 +80,6 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
               <input style={num} type="number" min={1} aria-label={`sets de ${r.movementName}`} value={r.sets} onChange={(e) => patch(i, { sets: Number(e.target.value) })} />×
               <input style={num} type="number" min={1} aria-label={`reps de ${r.movementName}`} value={r.reps} onChange={(e) => patch(i, { reps: Number(e.target.value) })} />
               {r.pct != null && <>@<input style={num} type="number" aria-label={`% de ${r.movementName}`} value={r.pct} onChange={(e) => patch(i, { pct: Number(e.target.value) })} />%</>}
-              {r.rpe != null && <>RPE<input style={num} type="number" aria-label={`rpe de ${r.movementName}`} value={r.rpe} onChange={(e) => patch(i, { rpe: Number(e.target.value) })} /></>}
               <input style={{ ...num, width: 64 }} type="number" placeholder="kg" aria-label={`kg de ${r.movementName}`} value={r.kgOverride ?? ""} onChange={(e) => patch(i, { kgOverride: e.target.value ? Number(e.target.value) : undefined })} />
             </div>
           </div>
