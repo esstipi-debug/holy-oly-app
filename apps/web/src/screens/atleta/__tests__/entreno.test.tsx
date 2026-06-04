@@ -63,6 +63,9 @@ test("sustituir movimiento: abre el sheet, elige variante, guarda con prescribed
     screen.getByRole("button", { name: /cambiar movimiento de Arranque/i }),
   );
 
+  // Fix 1 guard: clicking ⇄ must NOT toggle the "done" checkbox (button was outside label)
+  expect(screen.getByLabelText("hecho Arranque")).not.toBeChecked();
+
   // Sheet is open — pick the first simpler variant
   const variant = screen.getByRole("button", { name: /Arranque colgado \(bajo\)/i });
   fireEvent.click(variant);

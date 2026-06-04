@@ -70,10 +70,12 @@ export function EntrenoScreen() {
       <div style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 2 }}>Anotá lo que levantaste. No cambia tu plan.</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
         {rows.map((r, i) => (
-          <div key={r.movementId} style={{ background: "var(--wl-surface)", borderRadius: 12, padding: "11px 13px", opacity: r.done ? 1 : 0.92 }}>
-            <label style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <input type="checkbox" aria-label={`hecho ${r.movementName}`} checked={r.done} onChange={(e) => patch(i, { done: e.target.checked })} style={{ width: 18, height: 18 }} />
-              <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 15, color: "var(--wl-text)" }}>{r.movementName}</span>
+          <div key={i} style={{ background: "var(--wl-surface)", borderRadius: 12, padding: "11px 13px", opacity: r.done ? 1 : 0.92 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 9, flex: 1, cursor: "pointer", minWidth: 0 }}>
+                <input type="checkbox" aria-label={`hecho ${r.movementName}`} checked={r.done} onChange={(e) => patch(i, { done: e.target.checked })} style={{ width: 18, height: 18 }} />
+                <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 15, color: "var(--wl-text)" }}>{r.movementName}</span>
+              </label>
               <button
                 type="button"
                 aria-label={`cambiar movimiento de ${r.movementName}`}
@@ -81,7 +83,7 @@ export function EntrenoScreen() {
                 style={{ border: 0, background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--wl-display)", fontSize: 12, cursor: "pointer", padding: "2px 4px" }}
               >⇄</button>
               <span style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>obj {r.sets}×{r.reps}{r.targetKg != null ? ` · ${r.targetKg}kg` : r.rpe != null ? ` · RPE ${r.rpe}` : ""}</span>
-            </label>
+            </div>
             {r.movementId !== r.prescribedMovementId && (
               <div style={{ fontFamily: "var(--wl-display)", fontSize: 11, color: "var(--wl-muted)", marginTop: 3 }}>
                 prescripto: {getMovement(r.prescribedMovementId)?.name ?? r.prescribedMovementId}
@@ -116,7 +118,6 @@ export function EntrenoScreen() {
               movementName: getMovement(id)?.name ?? id,
               kg: undefined,
             });
-            setSubFor(null);
           }}
         />
       )}

@@ -36,7 +36,10 @@ const empty: CSSProperties = {
 
 /** SP1-guided movement swap: "bajar complejidad" (simpler variants of the same base) +
  *  "sustituir" (alternative movements). Shared by the coach editor and the athlete Entreno.
- *  Uses only --wl-* / --wl-display tokens so it renders correctly in both shells. */
+ *  Uses only --wl-* / --wl-display tokens so it renders correctly in both shells.
+ *
+ *  Self-close contract: calls `onPick(id)` then `onClose()` on selection — the sheet
+ *  self-closes on pick; callers only handle the pick, they need not close it. */
 export function SubstituteSheet({
   open,
   onClose,
