@@ -24,12 +24,11 @@ const SESSION_FIXTURE: SessionView[] = [
 ];
 
 let getPlan: MockInstance<any>;
-let getSessions: MockInstance<any>;
 let put: MockInstance<any>;
 
 beforeEach(() => {
   getPlan = vi.spyOn(me, "getMePlan").mockResolvedValue(PLAN_FIXTURE);
-  getSessions = vi.spyOn(me, "getMeSessions").mockResolvedValue(SESSION_FIXTURE);
+  vi.spyOn(me, "getMeSessions").mockResolvedValue(SESSION_FIXTURE);
   put = vi.spyOn(me, "putMeSession").mockResolvedValue(undefined);
 });
 

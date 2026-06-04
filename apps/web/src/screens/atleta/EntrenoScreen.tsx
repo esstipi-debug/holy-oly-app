@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { SessionView, ExerciseActualInput } from "@holy-oly/core";
+import type { SessionView, ExerciseActualInput, MePlanView } from "@holy-oly/core";
 import { getMovement, barKgForSexo } from "@holy-oly/core";
 import * as me from "../../data/meClient";
 import { DiscRow } from "../../ui/Disc";
@@ -31,7 +31,7 @@ export function EntrenoScreen() {
     if (!Number.isInteger(week) || !Number.isInteger(idx)) { navigate("/atleta", { replace: true }); return; }
     let on = true;
     Promise.all([me.getMePlan().catch(() => null), me.getMeSessions(week)])
-      .then(([plan, views]: [{ athlete: { sexo: "M" | "F" } } | null, SessionView[]]) => {
+      .then(([plan, views]: [MePlanView | null, SessionView[]]) => {
         if (!on) return;
         setBarKg(barKgForSexo(plan?.athlete.sexo ?? "M"));
         const s = views.find((v) => v.sessionIdx === idx);
@@ -89,7 +89,7 @@ export function EntrenoScreen() {
             {r.movementId !== r.prescribedMovementId && (
               <div style={{ fontFamily: "var(--wl-display)", fontSize: 11, color: "var(--wl-muted)", marginTop: 4 }}>prescripto: {getMovement(r.prescribedMovementId)?.name ?? r.prescribedMovementId}</div>
             )}
-            {r.notDone && <div style={{ fontFamily: "var(--wl-display)", fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>no la hice</div>}
+            {r.notDone && !r.open && <div style={{ fontFamily: "var(--wl-display)", fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>no la hice</div>}
             {!r.open ? (
               <button type="button" onClick={() => patch(i, { open: true })} style={{ marginTop: 9, border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, cursor: "pointer", padding: 0 }} aria-label={`modificar ${r.movementName}`}>✎ modificar</button>
             ) : (
@@ -101,11 +101,11 @@ export function EntrenoScreen() {
                 <div style={{ display: "flex", gap: 8, marginTop: 9, flexWrap: "wrap" }}>
                   <button type="button" style={chip} onClick={() => setSubFor(i)} aria-label={`cambiar movimiento de ${r.movementName}`}>⇄ cambiar</button>
                   <button type="button" style={chip} onClick={() => patch(i, { notDone: !r.notDone })}>{r.notDone ? "sí la hice" : "no la hice"}</button>
-                  <button type="button" style={chip} onClick={() => patch(i, { open: false })}>✓ listo</button>
+                  <button type="button" aria-label="listo" style={chip} onClick={() => patch(i, { open: false })}>✓ listo</button>
                 </div>
+                <input style={{ ...num, width: "100%", textAlign: "left", marginTop: 8 }} type="text" maxLength={200} aria-label={`nota de ${r.movementName}`} placeholder="nota (opcional)" value={r.note ?? ""} onChange={(e) => patch(i, { note: e.target.value })} />
               </div>
             )}
-            <input style={{ ...num, width: "100%", textAlign: "left", marginTop: 8 }} type="text" maxLength={200} aria-label={`nota de ${r.movementName}`} placeholder="nota (opcional)" value={r.note ?? ""} onChange={(e) => patch(i, { note: e.target.value })} />
           </div>
         ))}
         {rows.length === 0 && <div style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>No hay sesión para este día.</div>}
