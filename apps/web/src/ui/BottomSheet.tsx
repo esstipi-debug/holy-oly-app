@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useFocusTrap } from "./useFocusTrap";
 
 export function BottomSheet({
   open,
@@ -11,6 +12,8 @@ export function BottomSheet({
   children: ReactNode;
   ariaLabel?: string;
 }) {
+  // WCAG 2.2: move focus into the sheet on open, trap it, restore it to the trigger on close.
+  const dialogRef = useFocusTrap(open);
   if (!open) return null;
 
   return (
@@ -26,9 +29,11 @@ export function BottomSheet({
       }}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%",
