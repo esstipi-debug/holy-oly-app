@@ -71,6 +71,7 @@ describe("API integration — prescription (SP2)", () => {
     const r = await app.inject({ method: "GET", url: "/athletes/mv/prescription?week=8", headers });
     const sessions = r.json() as Array<{ exercises: Array<{ movementId: string; targetKg?: number; rpe?: number }> }>;
     const rdl = sessions.flatMap((s) => s.exercises).find((e) => e.movementId === "peso-muerto-rumano")!;
+    expect(rdl).toBeDefined();
     expect(rdl.targetKg).toBeGreaterThan(0);
     expect(rdl.rpe).toBeUndefined();
   });

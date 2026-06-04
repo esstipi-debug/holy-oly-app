@@ -16,6 +16,8 @@ export async function hasActiveLink(prisma: PrismaClient, coachId: string, athle
   return v?.estado === "activo";
 }
 
+function narrowSexo(s: string): "M" | "F" { return s === "F" ? "F" : "M"; }
+
 interface AthleteRow {
   id: string; nombre: string; iniciales: string; nivel: MacrocycleLevel;
   macroId: string | null; compite: boolean; sexo: string;
@@ -28,7 +30,7 @@ function toAtleta(a: AthleteRow): Atleta {
     nivel: a.nivel,
     macroId: a.macroId ?? undefined,
     compite: a.compite,
-    sexo: (a.sexo === "F" ? "F" : "M") as "M" | "F",
+    sexo: narrowSexo(a.sexo),
   };
 }
 
@@ -155,7 +157,7 @@ export async function getMePlanView(prisma: PrismaClient, athleteId: string, tod
   const a = await prisma.athlete.findUnique({ where: { id: athleteId } });
   if (!a) return undefined;
   const plan = await getPlan(prisma, athleteId);
-  return buildMePlanView({ nombre: a.nombre, iniciales: a.iniciales, sexo: (a.sexo === "F" ? "F" : "M") as "M" | "F" }, plan, today);
+  return buildMePlanView({ nombre: a.nombre, iniciales: a.iniciales, sexo: narrowSexo(a.sexo) }, plan, today);
 }
 
 /** Today's entry (or the requested date) + streak + logged days (heatmap), all as of `today`. */
