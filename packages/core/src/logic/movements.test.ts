@@ -116,3 +116,14 @@ describe("query helpers", () => {
     expect(substitutesOf("nonexistent")).toEqual([]);
   });
 });
+
+describe("accesorios rmRef", () => {
+  it("accesorios referencian su RM (no quedan 'none')", () => {
+    expect(getMovement("sentadilla-overhead")?.rmRef).toBe("arranque");
+    expect(getMovement("press-empuje")?.rmRef).toBe("envion");
+    expect(getMovement("press-hombros")?.rmRef).toBe("envion");
+    expect(getMovement("peso-muerto-rumano")?.rmRef).toBe("sentadilla");
+    expect(getMovement("buenos-dias")?.rmRef).toBe("sentadilla");
+    expect(getMovement("remo")?.rmRef).toBe("envion");
+  });
+});
