@@ -11,7 +11,7 @@ export function mergeActuals(views: SessionView[], rows: SessionActual[]): Sessi
       if (!a) return e;
       const prescribed = a.prescribedMovementId ?? e.movementId;
       const actual: ExerciseActual = {
-        done: a.done, kg: a.actualKg, reps: a.actualReps, rpe: a.actualRpe, note: a.note,
+        done: a.done, kg: a.actualKg, reps: a.actualReps, note: a.note,
         movementId: a.movementId,
         movementName: getMovement(a.movementId)?.name ?? a.movementId,
         substituted: a.movementId !== prescribed,

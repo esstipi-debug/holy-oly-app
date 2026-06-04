@@ -9,13 +9,13 @@ const views: SessionView[] = [{
   ],
 }];
 const rows: SessionActual[] = [
-  { week: 1, sessionIdx: 0, order: 0, movementId: "arranque", done: true, actualKg: 58, actualReps: 3, actualRpe: 8 },
+  { week: 1, sessionIdx: 0, order: 0, movementId: "arranque", done: true, actualKg: 58, actualReps: 3 },
 ];
 
 describe("mergeActuals", () => {
   it("attaches the actual to the matching exercise by (week, sessionIdx, order=index)", () => {
     const merged = mergeActuals(views, rows);
-    expect(merged[0]!.exercises[0]!.actual).toMatchObject({ done: true, kg: 58, reps: 3, rpe: 8, note: undefined });
+    expect(merged[0]!.exercises[0]!.actual).toMatchObject({ done: true, kg: 58, reps: 3, note: undefined });
     expect(merged[0]!.exercises[1]!.actual).toBeUndefined();
   });
   it("is a no-op when there are no rows", () => {
@@ -68,6 +68,14 @@ describe("mergeActuals", () => {
     const a = mergeActuals(v, r)[0]!.exercises[0]!.actual!;
     expect(a.substituted).toBe(true);
     expect(a.desfasado).toBe(true);
+  });
+
+  it("el actual mergeado no expone rpe", () => {
+    const v: SessionView[] = [{ week: 1, sessionIdx: 0, exercises: [
+      { movementId: "arranque", sets: 5, reps: 2, pct: 80, movementName: "Arranque", targetKg: 64 } ]}];
+    const rows: SessionActual[] = [{ week: 1, sessionIdx: 0, order: 0, movementId: "arranque", done: true, actualKg: 60 }];
+    const a = mergeActuals(v, rows)[0]!.exercises[0]!.actual!;
+    expect((a as { rpe?: number }).rpe).toBeUndefined();
   });
 });
 

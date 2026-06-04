@@ -190,7 +190,6 @@ export const ExerciseActualInputSchema = z.object({
   done: z.boolean(),
   kg: KgSchema.optional(),
   reps: z.number().int().min(0).max(100).optional(), // 0 = intentó pero completó 0 reps (serie fallida)
-  rpe: z.number().min(1).max(10).optional(),
   note: z.string().max(200).optional(),
 });
 export const SessionActualsInputSchema = z.array(ExerciseActualInputSchema).max(15);
@@ -202,7 +201,6 @@ export const ExerciseActualSchema = z.object({
   done: z.boolean(),
   kg: z.number().optional(),
   reps: z.number().optional(),
-  rpe: z.number().optional(),
   note: z.string().optional(),
   movementId: z.string(),
   movementName: z.string(),

@@ -4,14 +4,13 @@ import { SessionActualsInputSchema, ExerciseActualSchema } from "./schemas";
 describe("SessionActualsInputSchema", () => {
   it("accepts a valid per-exercise actuals body", () => {
     expect(SessionActualsInputSchema.safeParse([
-      { order: 0, movementId: "arranque", done: true, kg: 58, reps: 3, rpe: 8 },
+      { order: 0, movementId: "arranque", done: true, kg: 58, reps: 3 },
       { order: 1, movementId: "sentadilla", done: false, note: "molestia rodilla" },
     ]).success).toBe(true);
   });
-  it("rejects bad order / kg / rpe / reps", () => {
+  it("rejects bad order / kg / reps", () => {
     expect(SessionActualsInputSchema.safeParse([{ order: -1, movementId: "x", done: true }]).success).toBe(false);
     expect(SessionActualsInputSchema.safeParse([{ order: 0, movementId: "x", done: true, kg: 999 }]).success).toBe(false);
-    expect(SessionActualsInputSchema.safeParse([{ order: 0, movementId: "x", done: true, rpe: 11 }]).success).toBe(false);
     expect(SessionActualsInputSchema.safeParse([{ order: 0, movementId: "x", done: true, reps: 200 }]).success).toBe(false);
   });
   it("accepts an item with prescribedMovementId (SP4)", () => {
@@ -32,7 +31,6 @@ describe("ExerciseActualSchema (view-side)", () => {
       done: true,
       kg: 60,
       reps: 3,
-      rpe: 8,
       note: "bien",
       movementId: "arranque-pausa",
       movementName: "Arranque con Pausa",
