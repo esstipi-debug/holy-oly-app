@@ -46,6 +46,7 @@ describe("mergeActuals", () => {
     const r: SessionActual[] = [{ week: 1, sessionIdx: 0, order: 0, movementId: "arranque", prescribedMovementId: "arranque", done: true, actualKg: 60 }];
     const a = mergeActuals(v, r)[0]!.exercises[0]!.actual!;
     expect(a.desfasado).toBe(true);
+    expect(a.substituted).toBe(false);
   });
 
   it("SP3 rows (no prescribedMovementId) are not substituted/desfasado", () => {
@@ -56,7 +57,17 @@ describe("mergeActuals", () => {
     const a = mergeActuals(v, r)[0]!.exercises[0]!.actual!;
     expect(a.substituted).toBe(false);
     expect(a.desfasado).toBe(false);
+    expect(a.movementId).toBe("arranque");
     expect(a.movementName).toMatch(/Arranque/);
+  });
+  it("flags both substituted and desfasado: athlete swapped, then coach edited the slot", () => {
+    const v: SessionView[] = [{ week: 1, sessionIdx: 0, exercises: [
+      { movementId: "sentadilla", sets: 5, reps: 5, pct: 80, movementName: "Sentadilla", targetKg: 112 },
+    ] }];
+    const r: SessionActual[] = [{ week: 1, sessionIdx: 0, order: 0, movementId: "arranque.potencia.colgado.rodilla", prescribedMovementId: "arranque", done: true, actualKg: 55 }];
+    const a = mergeActuals(v, r)[0]!.exercises[0]!.actual!;
+    expect(a.substituted).toBe(true);
+    expect(a.desfasado).toBe(true);
   });
 });
 
