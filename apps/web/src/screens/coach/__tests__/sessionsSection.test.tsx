@@ -130,6 +130,31 @@ test("SP4: muestra desfasado con aviso y SIN marcador de desvío", async () => {
   expect(screen.queryByText(/↓/)).not.toBeInTheDocument();
 });
 
+test("SP4 Fase D: desfasado gana sobre sustituido cuando ambos son true", async () => {
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    {
+      week: 1,
+      sessionIdx: 0,
+      exercises: [
+        {
+          movementId: "arranque",
+          sets: 5,
+          reps: 3,
+          pct: 70,
+          movementName: "Arranque",
+          targetKg: 56,
+          actual: { done: true, kg: 50, movementId: "arranque.colgado.bajo", movementName: "Arranque colgado (bajo)", substituted: true, desfasado: true },
+        },
+      ],
+    },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  expect((await screen.findAllByText(/Arranque/)).length).toBeGreaterThan(0);
+  expect(screen.getByText(/desfasado/)).toBeInTheDocument();
+  expect(screen.queryByText(/\(sustituido\)/)).not.toBeInTheDocument();
+});
+
 test("D1: muestra nota del atleta cuando actual.note está presente", async () => {
   const repo = await repoWithPlan();
   vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
