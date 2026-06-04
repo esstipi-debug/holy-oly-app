@@ -98,6 +98,7 @@ model Athlete {
   nivel        Nivel
   macroId      String?
   compite      Boolean       @default(false)
+  sexo         String        @default("M")
   weightBandLo Float?
   weightBandHi Float?
   createdAt    DateTime      @default(now())
@@ -252,7 +253,6 @@ model SessionActual {
   done        Boolean  @default(true)
   actualKg    Float?
   actualReps  Int?
-  actualRpe   Float?
   note        String?
   doneAt      String?
 
@@ -273,7 +273,6 @@ model PrescribedExercise {
   reps        Int
   pct         Float?
   kgOverride  Float?
-  rpe         Float?
   flags       String[]
   notes       String?
 
