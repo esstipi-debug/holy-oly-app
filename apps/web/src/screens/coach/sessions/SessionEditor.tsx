@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from "react";
 import { getMovement, PrescribedExercisesSchema, type PrescribedExercise, type PrescribedExerciseView } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 import { MovementPicker } from "./MovementPicker";
+import { SubstituteSheet } from "../../../ui/SubstituteSheet";
 
 interface Draft { movementId: string; movementName: string; sets: number; reps: number; pct?: number; kgOverride?: number; rpe?: number; }
 
@@ -20,6 +21,19 @@ function toDraft(id: string): Draft {
   return { movementId: id, movementName: mv?.name ?? id, sets: 3, reps: 3, ...(usesPct ? { pct: 70 } : { rpe: 7 }) };
 }
 
+function swapMovement(d: Draft, id: string): Draft {
+  const mv = getMovement(id);
+  const usesPct = !!mv && mv.rmRef !== "none";
+  return {
+    ...d,
+    movementId: id,
+    movementName: mv?.name ?? id,
+    kgOverride: undefined,
+    pct: usesPct ? (d.pct ?? 70) : undefined,
+    rpe: usesPct ? undefined : (d.rpe ?? 7),
+  };
+}
+
 export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSave }: {
   open: boolean; week: number; sessionIdx: number; exercises: PrescribedExerciseView[];
   onClose: () => void; onSave: (exercises: PrescribedExercise[]) => Promise<void> | void;
@@ -27,6 +41,7 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
   const [rows, setRows] = useState<Draft[]>(() =>
     exercises.map((e) => ({ movementId: e.movementId, movementName: e.movementName, sets: e.sets, reps: e.reps, pct: e.pct, kgOverride: e.kgOverride, rpe: e.rpe })));
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [subFor, setSubFor] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +72,7 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
           <div key={i} style={{ background: "var(--wl-surface)", borderRadius: 10, padding: "8px 10px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14, color: "var(--wl-text)" }}>{r.movementName}</span>
+              <button type="button" style={mini} aria-label={`cambiar ${r.movementName}`} onClick={() => setSubFor(i)}>⇄</button>
               <button type="button" style={mini} aria-label={`subir ${r.movementName}`} onClick={() => move(i, -1)}>↑</button>
               <button type="button" style={mini} aria-label={`bajar ${r.movementName}`} onClick={() => move(i, 1)}>↓</button>
               <button type="button" style={{ ...mini, color: "#ff5e5e" }} aria-label={`Quitar ${r.movementName}`} onClick={() => remove(i)}>✕</button>
@@ -79,6 +95,14 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
         {busy ? "Guardando…" : "Guardar sesión"}
       </button>
       <MovementPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={(id) => setRows((rs) => [...rs, toDraft(id)])} />
+      {subFor !== null && rows[subFor] && (
+        <SubstituteSheet
+          open
+          movementId={rows[subFor]!.movementId}
+          onClose={() => setSubFor(null)}
+          onPick={(id) => setRows((rs) => rs.map((r, j) => (j === subFor ? swapMovement(r, id) : r)))}
+        />
+      )}
     </BottomSheet>
   );
 }
