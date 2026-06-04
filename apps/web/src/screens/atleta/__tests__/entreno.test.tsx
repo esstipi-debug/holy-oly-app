@@ -1,29 +1,43 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { afterEach, beforeEach, vi, type MockInstance } from "vitest";
-import type { ExerciseActualInput } from "@holy-oly/core";
+import type { ExerciseActualInput, MePlanView, SessionView } from "@holy-oly/core";
 import * as me from "../../../data/meClient";
 import { EntrenoScreen } from "../EntrenoScreen";
 
-// simplerVariants("arranque")[0] = "arranque.colgado.bajo" (complexity 8, full from hang below knee)
+// simplerVariants("arranque")[0] = "arranque.colgado.bajo" (complexity 8, hang below knee)
 // name: "Arranque colgado (bajo)"
 
-const SESSION_FIXTURE = [
-  { week: 1, sessionIdx: 0, exercises: [{ movementId: "arranque", sets: 5, reps: 3, pct: 70, movementName: "Arranque", targetKg: 56 }] },
-] as never;
+const PLAN_FIXTURE: MePlanView = {
+  athlete: { nombre: "Mara V.", iniciales: "MV", sexo: "F" },
+  plan: { macroName: "Ruso 5D", totalWeeks: 12, currentWeek: 8, currentPhase: "Fuerza", phases: [], comps: [] },
+};
 
+const SESSION_FIXTURE: SessionView[] = [
+  {
+    week: 8,
+    sessionIdx: 0,
+    exercises: [
+      { movementId: "arranque", movementName: "Arranque", sets: 5, reps: 2, pct: 80, targetKg: 64 },
+    ],
+  },
+];
+
+let getPlan: MockInstance<any>;
+let getSessions: MockInstance<any>;
 let put: MockInstance<any>;
 
 beforeEach(() => {
-  vi.spyOn(me, "getMeSessions").mockResolvedValue(SESSION_FIXTURE);
+  getPlan = vi.spyOn(me, "getMePlan").mockResolvedValue(PLAN_FIXTURE);
+  getSessions = vi.spyOn(me, "getMeSessions").mockResolvedValue(SESSION_FIXTURE);
   put = vi.spyOn(me, "putMeSession").mockResolvedValue(undefined);
 });
 
 afterEach(() => vi.restoreAllMocks());
 
-function renderEntrenamo() {
+function renderEntreno() {
   return render(
-    <MemoryRouter initialEntries={["/atleta/entreno/1/0"]}>
+    <MemoryRouter initialEntries={["/atleta/entreno/8/0"]}>
       <Routes>
         <Route path="/atleta/entreno/:week/:idx" element={<EntrenoScreen />} />
         <Route path="/atleta" element={<div>HOY</div>} />
@@ -32,61 +46,76 @@ function renderEntrenamo() {
   );
 }
 
-test("carga la sesión, registra lo real y guarda", async () => {
-  renderEntrenamo();
+test("render: muestra series×reps, kg y discos; SIN checkbox ni input siempre visible", async () => {
+  renderEntreno();
   expect(await screen.findByText("Arranque")).toBeInTheDocument();
-  fireEvent.click(screen.getByLabelText("hecho Arranque"));
-  fireEvent.change(screen.getByLabelText("kg real de Arranque"), { target: { value: "58" } });
-  fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
-  await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
-  const sent1 = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!;
-  expect(sent1).toMatchObject({ order: 0, movementId: "arranque", kg: 58 });
+  expect(screen.getByText(/5 series × 2 repeticiones/)).toBeInTheDocument();
+  expect(screen.getByText("64")).toBeInTheDocument();
+  // DiscRow renders at least one SVG (disc)
+  const svgs = document.querySelectorAll("svg");
+  expect(svgs.length).toBeGreaterThanOrEqual(1);
+  // No always-visible "hecho" checkbox
+  expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  // No always-visible kg input (only after "modificar")
+  expect(screen.queryByLabelText(/kg real de Arranque/i)).not.toBeInTheDocument();
 });
 
-test("ejercicio no marcado como hecho no envía reals (sin-dato)", async () => {
-  renderEntrenamo();
+test("guardar sin modificar → done:true, kg:64, reps:2, movementId:arranque", async () => {
+  renderEntreno();
   expect(await screen.findByText("Arranque")).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("kg real de Arranque"), { target: { value: "58" } });
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
-  const sent2 = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!;
-  expect(sent2).toMatchObject({ order: 0, done: false });
-  expect(sent2.kg).toBeUndefined();
+  const sent = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!;
+  expect(sent).toMatchObject({ done: true, kg: 64, reps: 2, movementId: "arranque", prescribedMovementId: "arranque" });
 });
 
-test("sustituir movimiento: abre el sheet, elige variante, guarda con prescribedMovementId", async () => {
-  renderEntrenamo();
+test("modificar peso (✎ modificar → kg=60) → guardar → done:true, kg:60", async () => {
+  renderEntreno();
+  expect(await screen.findByText("Arranque")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: /modificar Arranque/i }));
+  fireEvent.change(screen.getByLabelText(/kg real de Arranque/i), { target: { value: "60" } });
+  fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
+  await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
+  const sent = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!;
+  expect(sent).toMatchObject({ done: true, kg: 60 });
+});
+
+test("no la hice → guardar → done:false", async () => {
+  renderEntreno();
+  expect(await screen.findByText("Arranque")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: /modificar Arranque/i }));
+  fireEvent.click(screen.getByRole("button", { name: /no la hice/i }));
+  fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
+  await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
+  const sent = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!;
+  expect(sent).toMatchObject({ done: false });
+});
+
+test("sustituir → ⇄ → arranque.colgado.bajo → kg limpio → kg=50 → guardar → movementId correcto", async () => {
+  renderEntreno();
   expect(await screen.findByText("Arranque")).toBeInTheDocument();
 
-  // Click the swap button to open SubstituteSheet
-  fireEvent.click(
-    screen.getByRole("button", { name: /cambiar movimiento de Arranque/i }),
-  );
+  // Open modify to get the swap button
+  fireEvent.click(screen.getByRole("button", { name: /modificar Arranque/i }));
+  // Open substitute sheet
+  fireEvent.click(screen.getByRole("button", { name: /cambiar movimiento de Arranque/i }));
 
-  // Fix 1 guard: clicking ⇄ must NOT toggle the "done" checkbox (button was outside label)
-  expect(screen.getByLabelText("hecho Arranque")).not.toBeChecked();
-
-  // Sheet is open — pick the first simpler variant
-  const variant = screen.getByRole("button", { name: /Arranque colgado \(bajo\)/i });
+  // Pick the first simpler variant
+  const variant = await screen.findByRole("button", { name: /Arranque colgado \(bajo\)/i });
   fireEvent.click(variant);
 
-  // Row now shows the new movement name; kg should be cleared
+  // Row shows the new movement name; kg should be cleared
   expect(screen.getByText("Arranque colgado (bajo)")).toBeInTheDocument();
   expect(screen.getByLabelText(/kg real de Arranque colgado/i)).toHaveValue(null);
 
-  // Mark done and save
-  fireEvent.click(
-    screen.getByLabelText(/hecho Arranque colgado/i),
-  );
-  fireEvent.change(
-    screen.getByLabelText(/kg real de Arranque colgado/i),
-    { target: { value: "55" } },
-  );
+  // Enter kg and save
+  fireEvent.change(screen.getByLabelText(/kg real de Arranque colgado/i), { target: { value: "50" } });
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
 
   const sent = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!;
   expect(sent.movementId).toBe("arranque.colgado.bajo");
   expect(sent.prescribedMovementId).toBe("arranque");
-  expect(sent.kg).toBe(55);
+  expect(sent.kg).toBe(50);
+  expect(sent.done).toBe(true);
 });
