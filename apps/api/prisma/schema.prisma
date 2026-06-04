@@ -247,7 +247,8 @@ model SessionActual {
   week        Int
   sessionIdx  Int
   order       Int
-  movementId  String
+  movementId           String
+  prescribedMovementId String?
   done        Boolean  @default(true)
   actualKg    Float?
   actualReps  Int?
