@@ -219,6 +219,7 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
   const actualRows = await prisma.sessionActual.findMany({ where: { athleteId, week } });
   const actuals: SessionActual[] = actualRows.map((a) => ({
     week: a.week, sessionIdx: a.sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
+    prescribedMovementId: a.prescribedMovementId ?? undefined,
     actualKg: a.actualKg ?? undefined, actualReps: a.actualReps ?? undefined, actualRpe: a.actualRpe ?? undefined,
     note: a.note ?? undefined, doneAt: a.doneAt ?? undefined,
   }));
@@ -236,7 +237,9 @@ export async function setSessionActuals(
     prisma.sessionActual.deleteMany({ where: { athleteId, week, sessionIdx } }),
     prisma.sessionActual.createMany({
       data: actuals.map((a) => ({
-        athleteId, week, sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
+        athleteId, week, sessionIdx, order: a.order, movementId: a.movementId,
+        prescribedMovementId: a.prescribedMovementId ?? null,
+        done: a.done,
         actualKg: a.kg ?? null, actualReps: a.reps ?? null, actualRpe: a.rpe ?? null, note: a.note ?? null, doneAt: a.done ? today : null,
       })),
     }),
