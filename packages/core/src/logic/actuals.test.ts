@@ -15,7 +15,7 @@ const rows: SessionActual[] = [
 describe("mergeActuals", () => {
   it("attaches the actual to the matching exercise by (week, sessionIdx, order=index)", () => {
     const merged = mergeActuals(views, rows);
-    expect(merged[0]!.exercises[0]!.actual).toEqual({ done: true, kg: 58, reps: 3, rpe: 8, note: undefined });
+    expect(merged[0]!.exercises[0]!.actual).toMatchObject({ done: true, kg: 58, reps: 3, rpe: 8, note: undefined });
     expect(merged[0]!.exercises[1]!.actual).toBeUndefined();
   });
   it("is a no-op when there are no rows", () => {
@@ -25,6 +25,38 @@ describe("mergeActuals", () => {
     const merged = mergeActuals(views, [{ week: 1, sessionIdx: 0, order: 5, movementId: "x", done: true, actualKg: 99 }]);
     expect(merged[0]!.exercises[0]!.actual).toBeUndefined();
     expect(merged[0]!.exercises[1]!.actual).toBeUndefined();
+  });
+
+  it("flags a substitution: actual.movementId ≠ prescribedMovementId", () => {
+    const v: SessionView[] = [{ week: 1, sessionIdx: 0, exercises: [
+      { movementId: "arranque", sets: 5, reps: 2, pct: 80, movementName: "Arranque", targetKg: 64 },
+    ] }];
+    const r: SessionActual[] = [{ week: 1, sessionIdx: 0, order: 0, movementId: "arranque.potencia.colgado.rodilla", prescribedMovementId: "arranque", done: true, actualKg: 55 }];
+    const a = mergeActuals(v, r)[0]!.exercises[0]!.actual!;
+    expect(a.substituted).toBe(true);
+    expect(a.desfasado).toBe(false);
+    expect(a.movementId).toBe("arranque.potencia.colgado.rodilla");
+    expect(a.movementName).toMatch(/Arranque de potencia colgado/);
+  });
+
+  it("flags desfase: prescribedMovementId ≠ the current slot's movement (coach edited after)", () => {
+    const v: SessionView[] = [{ week: 1, sessionIdx: 0, exercises: [
+      { movementId: "sentadilla", sets: 5, reps: 5, pct: 80, movementName: "Sentadilla", targetKg: 112 },
+    ] }];
+    const r: SessionActual[] = [{ week: 1, sessionIdx: 0, order: 0, movementId: "arranque", prescribedMovementId: "arranque", done: true, actualKg: 60 }];
+    const a = mergeActuals(v, r)[0]!.exercises[0]!.actual!;
+    expect(a.desfasado).toBe(true);
+  });
+
+  it("SP3 rows (no prescribedMovementId) are not substituted/desfasado", () => {
+    const v: SessionView[] = [{ week: 1, sessionIdx: 0, exercises: [
+      { movementId: "arranque", sets: 5, reps: 3, pct: 70, movementName: "Arranque", targetKg: 56 },
+    ] }];
+    const r: SessionActual[] = [{ week: 1, sessionIdx: 0, order: 0, movementId: "arranque", done: true, actualKg: 58 }];
+    const a = mergeActuals(v, r)[0]!.exercises[0]!.actual!;
+    expect(a.substituted).toBe(false);
+    expect(a.desfasado).toBe(false);
+    expect(a.movementName).toMatch(/Arranque/);
   });
 });
 

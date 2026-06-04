@@ -216,7 +216,16 @@ export interface SessionView { week: number; sessionIdx: number; exercises: Pres
 // ── SP3 actuals: what the athlete actually lifted, per prescribed exercise. ──
 export interface SessionActual {
   week: number; sessionIdx: number; order: number; movementId: string;
+  /** The plan's movement at that slot when recorded (SP4). SP3 rows omit this. */
+  prescribedMovementId?: string;
   done: boolean; actualKg?: number; actualReps?: number; actualRpe?: number; note?: string; doneAt?: string;
 }
 /** The flattened actual attached to a prescribed-exercise view (no location — it rides the exercise). */
-export interface ExerciseActual { done: boolean; kg?: number; reps?: number; rpe?: number; note?: string }
+export interface ExerciseActual {
+  done: boolean; kg?: number; reps?: number; rpe?: number; note?: string;
+  /** SP4 substitution fields. */
+  movementId: string;
+  movementName: string;
+  substituted: boolean;
+  desfasado: boolean;
+}
