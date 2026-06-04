@@ -4,8 +4,8 @@ import { AssignSheet } from "./AssignSheet";
 
 const ruso = MACROCYCLES.find((m) => m.id === "ruso-5d")!;
 const athletes: Atleta[] = [
-  { id: "mv", nombre: "Mara V.", iniciales: "MV", nivel: "intermediate", compite: true },
-  { id: "ds", nombre: "Diego S.", iniciales: "DS", nivel: "intermediate", compite: true },
+  { id: "mv", nombre: "Mara V.", iniciales: "MV", nivel: "intermediate", sexo: "F", compite: true },
+  { id: "ds", nombre: "Diego S.", iniciales: "DS", nivel: "intermediate", sexo: "M", compite: true },
 ];
 
 function fillRms() {

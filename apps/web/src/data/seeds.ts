@@ -6,14 +6,14 @@ export const SEED_VERSION = 4;
 export interface RosterMeta { metodo: string; }
 
 export const SEED_ROSTER: Atleta[] = [
-  { id: "mv", nombre: "Mara V.",  iniciales: "MV", nivel: "intermediate", compite: true,  macroId: "ruso-5d" },
-  { id: "ds", nombre: "Diego S.", iniciales: "DS", nivel: "intermediate", compite: true,  macroId: "usa-intermedio" },
-  { id: "lr", nombre: "Lucía R.", iniciales: "LR", nivel: "intermediate", compite: true,  macroId: "coreano-5d" },
-  { id: "sm", nombre: "Sofía M.", iniciales: "SM", nivel: "advanced",                     macroId: "bulgaro-6d" },
-  { id: "tl", nombre: "Tomás L.", iniciales: "TL", nivel: "beginner" }, // NO series ni macro → no-data exemplar
-  { id: "ap", nombre: "Ana P.",   iniciales: "AP", nivel: "intermediate",                 macroId: "cubano-int-5d" },
-  { id: "bg", nombre: "Bruno G.", iniciales: "BG", nivel: "intermediate",                 macroId: "hibrido-5d" },
-  { id: "cf", nombre: "Caro F.",  iniciales: "CF", nivel: "intermediate",                 macroId: "colombiano-5d" },
+  { id: "mv", nombre: "Mara V.",  iniciales: "MV", nivel: "intermediate", sexo: "F", compite: true,  macroId: "ruso-5d" },
+  { id: "ds", nombre: "Diego S.", iniciales: "DS", nivel: "intermediate", sexo: "M", compite: true,  macroId: "usa-intermedio" },
+  { id: "lr", nombre: "Lucía R.", iniciales: "LR", nivel: "intermediate", sexo: "F", compite: true,  macroId: "coreano-5d" },
+  { id: "sm", nombre: "Sofía M.", iniciales: "SM", nivel: "advanced",     sexo: "F",                 macroId: "bulgaro-6d" },
+  { id: "tl", nombre: "Tomás L.", iniciales: "TL", nivel: "beginner",     sexo: "M" }, // NO series ni macro → no-data exemplar
+  { id: "ap", nombre: "Ana P.",   iniciales: "AP", nivel: "intermediate", sexo: "F",                 macroId: "cubano-int-5d" },
+  { id: "bg", nombre: "Bruno G.", iniciales: "BG", nivel: "intermediate", sexo: "M",                 macroId: "hibrido-5d" },
+  { id: "cf", nombre: "Caro F.",  iniciales: "CF", nivel: "intermediate", sexo: "F",                 macroId: "colombiano-5d" },
 ];
 
 // Mara's target competition (M4c seed). Others start with no comp → assigned from the sheet.

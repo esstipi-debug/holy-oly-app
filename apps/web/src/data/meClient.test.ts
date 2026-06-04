@@ -9,7 +9,7 @@ function res(status: number, body: unknown): Response {
 
 describe("meClient", () => {
   it("getMePlan parses the view (plan may be null)", async () => {
-    global.fetch = vi.fn(async () => res(200, { athlete: { nombre: "Demo", iniciales: "DA" }, plan: null })) as unknown as typeof fetch;
+    global.fetch = vi.fn(async () => res(200, { athlete: { nombre: "Demo", iniciales: "DA", sexo: "F" }, plan: null })) as unknown as typeof fetch;
     expect((await me.getMePlan()).plan).toBeNull();
   });
 

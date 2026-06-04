@@ -13,7 +13,7 @@ describe("meClient sessions", () => {
     const wk = await me.getMeSessions(1);
     expect(wk[0]!.exercises[0]!.actual?.kg).toBe(58);
     expect(seen).toContain("/me/sessions?week=1");
-    await me.putMeSession(1, 0, [{ order: 0, movementId: "arranque", done: true, kg: 58, reps: 3, rpe: 8 }]);
+    await me.putMeSession(1, 0, [{ order: 0, movementId: "arranque", done: true, kg: 58, reps: 3 }]);
     expect(seen).toBe("PUT /me/session/1/0");
   });
 });

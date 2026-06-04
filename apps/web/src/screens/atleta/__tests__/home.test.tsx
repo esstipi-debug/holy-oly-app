@@ -35,7 +35,7 @@ const FLAT_SERIES: MonitorSeries = {
 beforeEach(() => vi.clearAllMocks());
 
 test("atleta nuevo: saludo sin plan, Titular sin datos, racha empieza hoy, CTA primario", async () => {
-  vi.mocked(me.getMePlan).mockResolvedValue({ athlete: { nombre: "Demo Atleta", iniciales: "DA" }, plan: null });
+  vi.mocked(me.getMePlan).mockResolvedValue({ athlete: { nombre: "Demo Atleta", iniciales: "DA", sexo: "M" }, plan: null });
   vi.mocked(me.getMeSeries).mockResolvedValue(undefined);
   vi.mocked(me.getDayLog).mockResolvedValue({ entry: null, streak: 0, days: [], today: "2026-06-03" });
 
@@ -50,7 +50,7 @@ test("atleta nuevo: saludo sin plan, Titular sin datos, racha empieza hoy, CTA p
 
 test("atleta con plan + serie + check-in hecho: saludo con semana, estado, racha, CTA listo", async () => {
   vi.mocked(me.getMePlan).mockResolvedValue({
-    athlete: { nombre: "Mara V.", iniciales: "MV" },
+    athlete: { nombre: "Mara V.", iniciales: "MV", sexo: "F" },
     plan: { macroName: "Ruso 5D", totalWeeks: 12, currentWeek: 5, currentPhase: "Fuerza", phases: [{ name: "Fuerza", from: 1, to: 12, imr: 88 }], comps: [{ name: "Nacional", week: 12 }] },
   });
   vi.mocked(me.getMeSeries).mockResolvedValue(FLAT_SERIES);
