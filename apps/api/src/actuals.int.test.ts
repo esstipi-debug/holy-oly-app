@@ -54,24 +54,34 @@ describe("API integration — actuals (SP3)", () => {
   });
 
   it("athlete substitutes a movement in-session; coach sees it as substituted (real movement + kg, no false deviation)", async () => {
-    // This test REQUIRES B3 (persist + return prescribedMovementId).
-    // Setup: prescription has order=0 = "sentadilla".
-    // Athlete does: movementId="sentadilla", prescribedMovementId="arranque" (athlete overrides the
-    //   prescribed column to say "I was meant to do arranque but did sentadilla").
-    // WITHOUT B3: prescribedMovementId is not stored; server fallback = e.movementId = "sentadilla";
-    //   substituted = ("sentadilla" !== "sentadilla") = false → assertion fails.
-    // WITH B3: prescribedMovementId="arranque" is stored; server returns it;
-    //   substituted = ("sentadilla" !== "arranque") = true → assertion passes.
+    // This test is the RED/GREEN gate for B3 (persist + return prescribedMovementId).
+    //
+    // Scenario:
+    //   1. Coach assigns plan → coach edits slot order=0 to "sentadilla".
+    //   2. Athlete records: movementId="sentadilla", prescribedMovementId="arranque"
+    //      (athlete annotates the original intent before the coach's edit, i.e. they know
+    //      the macro default was "arranque" and that the slot was changed — or they simply
+    //      note they substituted).  Both `substituted` AND `desfasado` apply here.
+    //   3. Coach view: substituted=true (slot movement "sentadilla" ≠ prescribedMovementId "arranque"),
+    //      no false kg-deviation (kg=50 is stored as-is, no target to deviate from).
+    //
+    // WITHOUT B3: prescribedMovementId not stored → server fallback = actual.movementId = "sentadilla"
+    //   → substituted = ("sentadilla" !== "sentadilla") = false → assertion FAILS.
+    // WITH B3: prescribedMovementId="arranque" stored + returned
+    //   → substituted = ("sentadilla" !== "arranque") = true → assertion PASSES.
     const coach = sess(await login("coach@holyoly.dev"));
-    await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach, payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } });
-    // Override prescription order=0 to "sentadilla"
-    await app.inject({ method: "PUT", url: "/athletes/mv/prescription/1/0", headers: coach,
-      payload: [{ movementId: "sentadilla", sets: 5, reps: 3 }] });
+    // Precondition 1: assign plan so the prescription row exists.
+    expect((await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach,
+      payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } })).statusCode).toBe(200);
+    // Precondition 2 (critical gate): override slot order=0 week=1 idx=0 to "sentadilla".
+    // If this fails silently the slot stays "arranque" == movementId "arranque" → substituted=false
+    // and the test would pass WITHOUT B3 (false negative).
+    expect((await app.inject({ method: "PUT", url: "/athletes/mv/prescription/1/0", headers: coach,
+      payload: [{ movementId: "sentadilla", sets: 5, reps: 3 }] })).statusCode).toBe(200);
     const athlete = sess(await login("mara@holyoly.dev"));
-    // Athlete did "sentadilla" at order=0, but prescribedMovementId = "arranque" (the original intent
-    //   before the coach edited — or the athlete's own annotation that they substituted)
-    await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
-      payload: [{ order: 0, movementId: "sentadilla", prescribedMovementId: "arranque", done: true, kg: 50 }] });
+    // Athlete records: did "sentadilla" but prescribedMovementId="arranque" (the original macro intent).
+    expect((await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
+      payload: [{ order: 0, movementId: "sentadilla", prescribedMovementId: "arranque", done: true, kg: 50 }] })).statusCode).toBe(200);
     const coachView = await app.inject({ method: "GET", url: "/athletes/mv/prescription?week=1", headers: coach });
     const s0 = (coachView.json() as Array<{ sessionIdx: number; exercises: Array<{ movementId: string; actual?: { substituted: boolean; movementId: string; movementName: string; kg?: number } }> }>).find((s) => s.sessionIdx === 0)!;
     expect(s0.exercises[0]!.actual?.substituted).toBe(true);
