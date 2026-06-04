@@ -77,6 +77,59 @@ test("D1: no hecho — muestra 'no hecho' y NO muestra real aunque haya kg", asy
   expect(screen.queryByText(/real 70/)).not.toBeInTheDocument();
 });
 
+test("SP4: muestra sustituido con nombre del movimiento real y SIN marcador de desvío", async () => {
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    {
+      week: 1,
+      sessionIdx: 0,
+      exercises: [
+        {
+          movementId: "arranque",
+          sets: 5,
+          reps: 3,
+          pct: 70,
+          movementName: "Arranque",
+          targetKg: 56,
+          actual: { done: true, kg: 50, movementId: "arranque.colgado.bajo", movementName: "Arranque colgado (bajo)", substituted: true, desfasado: false },
+        },
+      ],
+    },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  await screen.findByText("Arranque");
+  expect(screen.getByText(/sustituido/)).toBeInTheDocument();
+  expect(screen.getByText(/Arranque colgado \(bajo\)/)).toBeInTheDocument();
+  expect(screen.queryByText(/↑/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/↓/)).not.toBeInTheDocument();
+});
+
+test("SP4: muestra desfasado con aviso y SIN marcador de desvío", async () => {
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    {
+      week: 1,
+      sessionIdx: 0,
+      exercises: [
+        {
+          movementId: "arranque",
+          sets: 5,
+          reps: 3,
+          pct: 70,
+          movementName: "Arranque",
+          targetKg: 56,
+          actual: { done: true, kg: 50, movementId: "sentadilla-overhead", movementName: "Sentadilla de arranque", substituted: false, desfasado: true },
+        },
+      ],
+    },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  await screen.findByText(/Arranque/);
+  expect(screen.getByText(/desfasado/)).toBeInTheDocument();
+  expect(screen.queryByText(/↑/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/↓/)).not.toBeInTheDocument();
+});
+
 test("D1: muestra nota del atleta cuando actual.note está presente", async () => {
   const repo = await repoWithPlan();
   vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([

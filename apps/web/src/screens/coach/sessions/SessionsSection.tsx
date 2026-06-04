@@ -65,8 +65,15 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
                     <span style={{ color: "var(--wl-text)" }}>{e.movementName}</span>
                     <span>
                       {e.sets}×{e.reps} · {load(e.targetKg, e.rpe)}
-                      {e.actual?.done && e.actual.kg != null && (<> · real {e.actual.kg} kg {marker}</>)}
-                      {e.actual && !e.actual.done && (<> · no hecho</>)}
+                      {e.actual?.desfasado ? (
+                        <span style={{ color: "var(--wl-muted)" }}>{" · ⚠ desfasado · registró "}{e.actual.movementName}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}</span>
+                      ) : e.actual?.substituted ? (
+                        <span style={{ color: "var(--wl-accent)" }}>{" · real "}{e.actual.movementName}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}{" (sustituido)"}</span>
+                      ) : e.actual?.done && e.actual.kg != null ? (
+                        <span style={{ color: "var(--wl-accent)" }}>{" · real "}{e.actual.kg} kg {marker}</span>
+                      ) : e.actual && !e.actual.done ? (
+                        <span style={{ color: "var(--wl-muted)" }}>{" · no hecho"}</span>
+                      ) : null}
                     </span>
                   </div>
                   {e.actual?.note && (
