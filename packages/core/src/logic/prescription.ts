@@ -5,7 +5,7 @@ import { phaseForWeek } from "../data/macrocycles";
 import { getMovement } from "./movements";
 
 /** Target kg of a prescribed exercise: explicit override wins; else %1RM × the movement's reference RM
- *  (rounded to 1 kg). Accessories (rmRef "none") have no derivation → undefined (use kgOverride/rpe). */
+ *  (rounded to 1 kg). Explicit override → kgOverride; no pct and no override → undefined. */
 export function resolveTargetKg(ex: PrescribedExercise, rms: RM): number | undefined {
   if (ex.kgOverride != null) return ex.kgOverride;
   const mv = getMovement(ex.movementId);
@@ -50,7 +50,7 @@ export function buildSessionViews(rows: PrescriptionRow[], rms: RM): SessionView
       sessionIdx,
       exercises: ordered.map((r) => ({
         movementId: r.movementId, sets: r.sets, reps: r.reps, pct: r.pct, kgOverride: r.kgOverride,
-        rpe: r.rpe, flags: r.flags, notes: r.notes,
+        flags: r.flags, notes: r.notes,
         movementName: getMovement(r.movementId)?.name ?? r.movementId,
         targetKg: resolveTargetKg(r, rms),
       })),

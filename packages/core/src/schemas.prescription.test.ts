@@ -5,13 +5,12 @@ describe("PrescribedExercisesSchema", () => {
   it("accepts a valid session body", () => {
     expect(PrescribedExercisesSchema.safeParse([
       { movementId: "arranque", sets: 5, reps: 2, pct: 80 },
-      { movementId: "peso-muerto-rumano", sets: 3, reps: 8, rpe: 7, flags: ["pausa"] },
+      { movementId: "peso-muerto-rumano", sets: 3, reps: 8, flags: ["pausa"] },
     ]).success).toBe(true);
   });
-  it("rejects out-of-range pct / non-positive sets / bad rpe", () => {
+  it("rejects out-of-range pct / non-positive sets", () => {
     expect(PrescribedExercisesSchema.safeParse([{ movementId: "arranque", sets: 0, reps: 2 }]).success).toBe(false);
     expect(PrescribedExercisesSchema.safeParse([{ movementId: "arranque", sets: 5, reps: 2, pct: 130 }]).success).toBe(false);
-    expect(PrescribedExercisesSchema.safeParse([{ movementId: "x", sets: 5, reps: 2, rpe: 11 }]).success).toBe(false);
   });
 });
 

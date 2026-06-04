@@ -15,8 +15,9 @@ describe("resolveTargetKg", () => {
   it("kgOverride beats pct", () => {
     expect(resolveTargetKg({ movementId: "arranque", sets: 1, reps: 1, pct: 70, kgOverride: 62.5 }, RMS)).toBe(62.5);
   });
-  it("rmRef 'none' (accessory) without override → undefined (use rpe/kg)", () => {
-    expect(resolveTargetKg({ movementId: "peso-muerto-rumano", sets: 3, reps: 8, rpe: 7 }, RMS)).toBeUndefined();
+  it("no pct → undefined; kgOverride → exact value", () => {
+    // pct omitted → undefined even when rmRef is valid (no % to multiply)
+    expect(resolveTargetKg({ movementId: "peso-muerto-rumano", sets: 3, reps: 8 }, RMS)).toBeUndefined();
     expect(resolveTargetKg({ movementId: "peso-muerto-rumano", sets: 3, reps: 8, kgOverride: 90 }, RMS)).toBe(90);
   });
 });
@@ -46,6 +47,14 @@ describe("buildSessionViews", () => {
     const s0 = views.find((v) => v.sessionIdx === 0)!;
     expect(s0.exercises[0]!.movementName).toContain("Arranque");
     expect(s0.exercises[0]!.targetKg).toBe(54); // arranque 68% of 80 = 54.4 → 54
+  });
+});
+
+describe("accesorios por %×RM (sin RPE)", () => {
+  it("un accesorio resuelve kg por %×RM de su referencia (sin RPE)", () => {
+    const rms = { arranque: 92, envion: 116, sentadilla: 150, frente: 122 };
+    expect(resolveTargetKg({ movementId: "peso-muerto-rumano", sets: 3, reps: 6, pct: 68 }, rms)).toBe(102);
+    expect(resolveTargetKg({ movementId: "press-empuje", sets: 4, reps: 4, pct: 62 }, rms)).toBe(72);
   });
 });
 

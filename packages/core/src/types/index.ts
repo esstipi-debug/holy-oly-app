@@ -198,7 +198,6 @@ export interface PrescribedExercise {
   reps: number;
   pct?: number;              // %1RM (present when the movement derives from a RM)
   kgOverride?: number;       // explicit kg (accessories, or the coach pins the weight) — beats pct
-  rpe?: number;              // by feel (accessories)
   flags?: MovementFlag[];
   notes?: string;
 }

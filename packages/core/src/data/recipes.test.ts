@@ -3,6 +3,16 @@ import { MACRO_RECIPES } from "./recipes";
 import { MACROCYCLES } from "./macrocycles";
 import { getMovement } from "../logic/movements";
 
+describe("Ruso 5D — sin RPE", () => {
+  it("la receta Ruso 5D no usa RPE — los accesorios traen pct", () => {
+    const fb = MACRO_RECIPES[0]!.phases.find((p) => p.phaseKey === "fuerza-basica")!;
+    const rdl = fb.sessions[1]!.exercises[2]!;
+    expect(rdl.movementId).toBe("peso-muerto-rumano");
+    expect(rdl.pct).toBe(68);
+    expect((rdl as { rpe?: number }).rpe).toBeUndefined();
+  });
+});
+
 describe("MACRO_RECIPES integrity", () => {
   it("Ruso 5D recipe exists and references the real phase keys", () => {
     const r = MACRO_RECIPES.find((x) => x.macroId === "ruso-5d")!;

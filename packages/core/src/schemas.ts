@@ -170,7 +170,6 @@ export const PrescribedExerciseSchema = z.object({
   reps: z.number().int().min(1).max(50),
   pct: z.number().min(1).max(120).optional(),
   kgOverride: KgSchema.optional(),
-  rpe: z.number().min(1).max(10).optional(),
   flags: z.array(MovementFlagSchema).max(4).optional(),
   notes: z.string().max(200).optional(),
 });
