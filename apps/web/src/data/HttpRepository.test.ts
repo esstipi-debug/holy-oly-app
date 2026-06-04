@@ -17,7 +17,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const roster = [{ id: "mv", nombre: "Mara V.", iniciales: "MV", nivel: "intermediate", compite: true }];
+const roster = [{ id: "mv", nombre: "Mara V.", iniciales: "MV", nivel: "intermediate", sexo: "F", compite: true }];
 const series: MonitorSeries = {
   weeks: 1, acute: [300], hrv: [70], hrvBase: 70, rhr: [50], rhrBase: 50, imr: [70], wellness: [80], recovery: [80],
 };

@@ -15,8 +15,8 @@ const DEVIATION_MARKER: Record<"none" | "igual" | "mas" | "menos", string> = {
   menos: "↓",
 };
 
-function load(targetKg: number | undefined, rpe: number | undefined): string {
-  return targetKg != null ? `${targetKg} kg` : rpe != null ? `RPE ${rpe}` : "—";
+function load(targetKg: number | undefined): string {
+  return targetKg != null ? `${targetKg} kg` : "—";
 }
 
 export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId: string; hoyWeek: number; totalWeeks: number }) {
@@ -64,7 +64,7 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
                   <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
                     <span style={{ color: "var(--wl-text)" }}>{e.movementName}</span>
                     <span>
-                      {e.sets}×{e.reps} · {load(e.targetKg, e.rpe)}
+                      {e.sets}×{e.reps} · {load(e.targetKg)}
                       {e.actual?.desfasado ? (
                         <span style={{ color: "var(--wl-muted)" }}>{" · ⚠ desfasado · registró "}{e.actual.movementName}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}</span>
                       ) : e.actual?.substituted ? (
