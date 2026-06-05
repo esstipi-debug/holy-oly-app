@@ -3,6 +3,7 @@ import type {
 } from "../types";
 import { phaseForWeek } from "../data/macrocycles";
 import { getMovement } from "./movements";
+import { warmupForExercise } from "./warmup";
 
 /** Target kg of a prescribed exercise: explicit override wins; else %1RM × the movement's reference RM
  *  (rounded to 1 kg). Explicit override → kgOverride; no pct and no override → undefined. */
@@ -35,8 +36,9 @@ export function instantiatePrescription(recipes: MacroRecipe[], macro: Macrocycl
   return rows;
 }
 
-/** Group a set of prescription rows (typically one week) into per-session views with name + derived kg. */
-export function buildSessionViews(rows: PrescriptionRow[], rms: RM): SessionView[] {
+/** Group a set of prescription rows (typically one week) into per-session views with name + derived kg
+ *  + the calentamiento (rampa) of each exercise. `barKg` = barra del atleta (20 ♂ / 15 ♀). */
+export function buildSessionViews(rows: PrescriptionRow[], rms: RM, barKg = 20): SessionView[] {
   const byIdx = new Map<number, PrescriptionRow[]>();
   for (const r of rows) {
     if (!byIdx.has(r.sessionIdx)) byIdx.set(r.sessionIdx, []);
@@ -48,11 +50,12 @@ export function buildSessionViews(rows: PrescriptionRow[], rms: RM): SessionView
     views.push({
       week: ordered[0]!.week,
       sessionIdx,
-      exercises: ordered.map((r) => ({
+      exercises: ordered.map((r, i) => ({
         movementId: r.movementId, sets: r.sets, reps: r.reps, pct: r.pct, kgOverride: r.kgOverride,
         flags: r.flags, notes: r.notes,
         movementName: getMovement(r.movementId)?.name ?? r.movementId,
         targetKg: resolveTargetKg(r, rms),
+        warmup: warmupForExercise({ movementId: r.movementId, pct: r.pct, order: i }, rms, barKg),
       })),
     });
   }
