@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { SessionView, SessionActual } from "../types";
-import { mergeActuals, kgDeviation } from "./actuals";
+import type { SessionView, SessionActual, SetActual } from "../types";
+import { mergeActuals, kgDeviation, summarizeSets } from "./actuals";
 
 const views: SessionView[] = [{
   week: 1, sessionIdx: 0, exercises: [
@@ -86,5 +86,20 @@ describe("kgDeviation", () => {
     expect(kgDeviation(56, 56)).toBe("igual");
     expect(kgDeviation(undefined, 56)).toBe("none");
     expect(kgDeviation(56, undefined)).toBe("none");
+  });
+});
+
+describe("summarizeSets", () => {
+  it("resumen = top set (máximo kg hecho)", () => {
+    const sets: SetActual[] = [
+      { kg: 90, reps: 2, done: true }, { kg: 90, reps: 2, done: true }, { kg: 85, reps: 2, done: true },
+    ];
+    expect(summarizeSets(sets)).toEqual({ done: true, kg: 90, reps: 2 });
+  });
+  it("ninguna serie hecha → done:false sin kg", () => {
+    expect(summarizeSets([{ kg: 90, reps: 2, done: false }])).toEqual({ done: false });
+  });
+  it("series hechas sin kg (sustituido) → done:true, kg undefined", () => {
+    expect(summarizeSets([{ reps: 3, done: true }])).toEqual({ done: true, kg: undefined, reps: 3 });
   });
 });

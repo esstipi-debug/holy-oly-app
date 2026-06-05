@@ -213,11 +213,16 @@ export interface PrescribedExerciseView extends PrescribedExercise { movementNam
 export interface SessionView { week: number; sessionIdx: number; exercises: PrescribedExerciseView[] }
 
 // ── SP3 actuals: what the athlete actually lifted, per prescribed exercise. ──
+/** Una serie de trabajo registrada (Opción B: registro por serie). */
+export interface SetActual { kg?: number; reps?: number; done: boolean; }
+
 export interface SessionActual {
   week: number; sessionIdx: number; order: number; movementId: string;
   /** The plan's movement at that slot when recorded (SP4). SP3 rows omit this. */
   prescribedMovementId?: string;
   done: boolean; actualKg?: number; actualReps?: number; note?: string; doneAt?: string;
+  /** Detalle por serie (Opción B). El resumen (actualKg/actualReps/done) se deriva del top set. */
+  sets?: SetActual[];
 }
 /** The flattened actual attached to a prescribed-exercise view (no location — it rides the exercise). */
 export interface ExerciseActual {
@@ -227,6 +232,8 @@ export interface ExerciseActual {
   movementName: string;
   substituted: boolean;
   desfasado: boolean;
+  /** Series registradas (Opción B), para el reproductor del atleta al reabrir. */
+  sets?: SetActual[];
 }
 
 /** Un set de calentamiento (se muestra, NO cuenta). `label:"barra"` = barra vacía del 1er movimiento. */
