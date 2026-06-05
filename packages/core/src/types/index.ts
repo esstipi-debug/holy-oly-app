@@ -208,7 +208,7 @@ export interface MacroRecipe { macroId: string; phases: PhaseTemplate[] }
 /** A concrete prescription row of an athlete (a PrescribedExercise + its location). */
 export interface PrescriptionRow extends PrescribedExercise { week: number; sessionIdx: number; order: number }
 /** A prescribed exercise with its display name + derived target kg, for the front. */
-export interface PrescribedExerciseView extends PrescribedExercise { movementName: string; targetKg?: number; actual?: ExerciseActual }
+export interface PrescribedExerciseView extends PrescribedExercise { movementName: string; targetKg?: number; actual?: ExerciseActual; warmup?: WarmupSet[] }
 /** One instantiated session (a column in the week), kg already derived. */
 export interface SessionView { week: number; sessionIdx: number; exercises: PrescribedExerciseView[] }
 

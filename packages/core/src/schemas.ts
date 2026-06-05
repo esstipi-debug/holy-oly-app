@@ -208,10 +208,18 @@ export const ExerciseActualSchema = z.object({
   desfasado: z.boolean(),
 });
 
+export const WarmupSetSchema = z.object({
+  pct: z.number(),
+  kg: z.number(),
+  reps: z.number().int(),
+  label: z.enum(["barra", "rampa"]),
+});
+
 export const PrescribedExerciseViewSchema = PrescribedExerciseSchema.extend({
   movementName: z.string(),
   targetKg: z.number().optional(),
   actual: ExerciseActualSchema.optional(),
+  warmup: z.array(WarmupSetSchema).max(8).default([]),
 });
 export const SessionViewSchema = z.object({
   week: z.number().int().min(1).max(104),
