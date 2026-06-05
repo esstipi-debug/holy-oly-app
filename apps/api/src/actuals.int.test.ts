@@ -96,4 +96,22 @@ describe("API integration — actuals (SP3)", () => {
     const coach = sess(await login("coach@holyoly.dev"));
     expect((await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: coach })).statusCode).toBe(401);
   });
+
+  it("registra series (sets): resumen=top set, GET devuelve las series, warmup presente en la vista", async () => {
+    const coach = sess(await login("coach@holyoly.dev"));
+    expect((await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach,
+      payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } })).statusCode).toBe(200);
+    const athlete = sess(await login("mara@holyoly.dev"));
+    const put = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
+      payload: [{ order: 0, movementId: "arranque", done: true, sets: [
+        { kg: 64, reps: 2, done: true }, { kg: 64, reps: 2, done: true }, { kg: 60, reps: 2, done: true },
+      ] }] });
+    expect(put.statusCode).toBe(200);
+
+    const mine = await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: athlete });
+    const s0 = (mine.json() as Array<{ sessionIdx: number; exercises: Array<{ warmup?: unknown[]; actual?: { kg?: number; sets?: unknown[] } }> }>).find((s) => s.sessionIdx === 0)!;
+    expect(s0.exercises[0]!.actual?.kg).toBe(64);          // top set
+    expect(s0.exercises[0]!.actual?.sets).toHaveLength(3); // series devueltas
+    expect(Array.isArray(s0.exercises[0]!.warmup)).toBe(true); // la vista trae el calentamiento
+  });
 });

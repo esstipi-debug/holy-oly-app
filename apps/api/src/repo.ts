@@ -1,10 +1,10 @@
-import type { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client";
 import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { redactCycle } from "./cycle";
 
@@ -220,14 +220,20 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
     flags: r.flags.length > 0 ? (r.flags as MovementFlag[]) : undefined, notes: r.notes ?? undefined,
   }));
   const actualRows = await prisma.sessionActual.findMany({ where: { athleteId, week } });
-  const actuals: SessionActual[] = actualRows.map((a) => ({
-    week: a.week, sessionIdx: a.sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
-    prescribedMovementId: a.prescribedMovementId ?? undefined,
-    actualKg: a.actualKg ?? undefined, actualReps: a.actualReps ?? undefined,
-    note: a.note ?? undefined, doneAt: a.doneAt ?? undefined,
-  }));
+  const actuals: SessionActual[] = actualRows.map((a) => {
+    const parsedSets = a.sets != null ? SetActualsSchema.safeParse(a.sets) : null;
+    return {
+      week: a.week, sessionIdx: a.sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
+      prescribedMovementId: a.prescribedMovementId ?? undefined,
+      actualKg: a.actualKg ?? undefined, actualReps: a.actualReps ?? undefined,
+      note: a.note ?? undefined, doneAt: a.doneAt ?? undefined,
+      sets: parsedSets && parsedSets.success ? parsedSets.data : undefined,
+    };
+  });
   // Actuals matched to exercises POSITIONALLY (order == view index). A coach edit that reorders a session after actuals are recorded can misalign them — acceptable for SP3 (revisit in SP4).
-  return mergeActuals(buildSessionViews(rows, plan.rms), actuals);
+  const athlete = await prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } });
+  const barKg = barKgForSexo((athlete?.sexo as "M" | "F" | undefined) ?? "M");
+  return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals);
 }
 
 /** Replace one session's athlete actuals (self-written). Transactional. `today` stamps doneAt only when the exercise was marked done. */
@@ -239,12 +245,17 @@ export async function setSessionActuals(
   await prisma.$transaction([
     prisma.sessionActual.deleteMany({ where: { athleteId, week, sessionIdx } }),
     prisma.sessionActual.createMany({
-      data: actuals.map((a) => ({
-        athleteId, week, sessionIdx, order: a.order, movementId: a.movementId,
-        prescribedMovementId: a.prescribedMovementId ?? null,
-        done: a.done,
-        actualKg: a.kg ?? null, actualReps: a.reps ?? null, note: a.note ?? null, doneAt: a.done ? today : null,
-      })),
+      data: actuals.map((a) => {
+        const sum = a.sets && a.sets.length > 0 ? summarizeSets(a.sets) : { done: a.done, kg: a.kg, reps: a.reps };
+        return {
+          athleteId, week, sessionIdx, order: a.order, movementId: a.movementId,
+          prescribedMovementId: a.prescribedMovementId ?? null,
+          done: sum.done,
+          actualKg: sum.kg ?? null, actualReps: sum.reps ?? null, note: a.note ?? null,
+          sets: a.sets && a.sets.length > 0 ? (a.sets as Prisma.InputJsonValue) : Prisma.JsonNull,
+          doneAt: sum.done ? today : null,
+        };
+      }),
     }),
   ]);
 }
