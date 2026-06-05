@@ -228,3 +228,6 @@ export interface ExerciseActual {
   substituted: boolean;
   desfasado: boolean;
 }
+
+/** Un set de calentamiento (se muestra, NO cuenta). `label:"barra"` = barra vacía del 1er movimiento. */
+export interface WarmupSet { pct: number; kg: number; reps: number; label: "barra" | "rampa"; }
