@@ -255,6 +255,7 @@ model SessionActual {
   actualReps  Int?
   note        String?
   doneAt      String?
+  sets        Json?
 
   @@unique([athleteId, week, sessionIdx, order])
   @@index([athleteId, week])
