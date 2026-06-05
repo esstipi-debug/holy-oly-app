@@ -70,6 +70,16 @@ describe("mergeActuals", () => {
     expect(a.desfasado).toBe(true);
   });
 
+  it("adjunta las series (sets) del row al actual mergeado", () => {
+    const r: SessionActual[] = [{
+      week: 1, sessionIdx: 0, order: 0, movementId: "arranque", done: true, actualKg: 64,
+      sets: [{ kg: 64, reps: 2, done: true }, { kg: 60, reps: 2, done: true }],
+    }];
+    const a = mergeActuals(views, r)[0]!.exercises[0]!.actual!;
+    expect(a.sets).toHaveLength(2);
+    expect(a.sets![1]).toEqual({ kg: 60, reps: 2, done: true });
+  });
+
   it("el actual mergeado no expone rpe", () => {
     const v: SessionView[] = [{ week: 1, sessionIdx: 0, exercises: [
       { movementId: "arranque", sets: 5, reps: 2, pct: 80, movementName: "Arranque", targetKg: 64 } ]}];

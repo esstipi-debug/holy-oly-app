@@ -16,6 +16,7 @@ export function mergeActuals(views: SessionView[], rows: SessionActual[]): Sessi
         movementName: getMovement(a.movementId)?.name ?? a.movementId,
         substituted: a.movementId !== prescribed,
         desfasado: a.prescribedMovementId != null && a.prescribedMovementId !== e.movementId,
+        sets: a.sets,
       };
       return { ...e, actual };
     }),
