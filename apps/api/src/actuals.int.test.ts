@@ -114,4 +114,25 @@ describe("API integration — actuals (SP3)", () => {
     expect(s0.exercises[0]!.actual?.sets).toHaveLength(3); // series devueltas
     expect(Array.isArray(s0.exercises[0]!.warmup)).toBe(true); // la vista trae el calentamiento
   });
+
+  it("registra series SIN kg (sustitución/degrade): round-trip honesto, resumen done sin kg (jamás un 0 falso)", async () => {
+    const coach = sess(await login("coach@holyoly.dev"));
+    expect((await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach,
+      payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } })).statusCode).toBe(200);
+    const athlete = sess(await login("mara@holyoly.dev"));
+    // El atleta hizo las series pero sin registrar kg (p.ej. tras sustituir un movimiento → kg limpio).
+    const put = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
+      payload: [{ order: 0, movementId: "arranque", done: true, sets: [
+        { reps: 2, done: true }, { reps: 2, done: true },
+      ] }] });
+    expect(put.statusCode).toBe(200);
+
+    const mine = await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: athlete });
+    const s0 = (mine.json() as Array<{ sessionIdx: number; exercises: Array<{ actual?: { done: boolean; kg?: number; sets?: Array<{ kg?: number; done: boolean }> } }> }>).find((s) => s.sessionIdx === 0)!;
+    const actual = s0.exercises[0]!.actual!;
+    expect(actual.done).toBe(true);              // hechas
+    expect(actual.kg).toBeUndefined();           // sin kg → resumen sin kg, nunca un 0 inventado
+    expect(actual.sets).toHaveLength(2);
+    expect(actual.sets![0]!.kg).toBeUndefined(); // la serie vuelve sin kg
+  });
 });
