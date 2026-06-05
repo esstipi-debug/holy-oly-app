@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SessionActualsInputSchema, ExerciseActualSchema } from "./schemas";
+import { SessionActualsInputSchema, ExerciseActualSchema, ExerciseActualInputSchema } from "./schemas";
 
 describe("SessionActualsInputSchema", () => {
   it("accepts a valid per-exercise actuals body", () => {
@@ -42,5 +42,19 @@ describe("ExerciseActualSchema (view-side)", () => {
     expect(ExerciseActualSchema.safeParse({ done: true }).success).toBe(false);
     expect(ExerciseActualSchema.safeParse({ done: true, movementId: "x", movementName: "X", substituted: true }).success).toBe(false);
     expect(ExerciseActualSchema.safeParse({ done: true, movementId: "x", movementName: "X", desfasado: false }).success).toBe(false);
+  });
+});
+
+describe("ExerciseActualInputSchema · sets", () => {
+  it("acepta sets acotados", () => {
+    const r = ExerciseActualInputSchema.parse({
+      order: 0, movementId: "arranque", done: true,
+      sets: [{ kg: 90, reps: 2, done: true }, { reps: 0, done: false }],
+    });
+    expect(r.sets).toHaveLength(2);
+  });
+  it("rechaza más de 20 series", () => {
+    const many = Array.from({ length: 21 }, () => ({ kg: 50, reps: 1, done: true }));
+    expect(ExerciseActualInputSchema.safeParse({ order: 0, movementId: "x", done: true, sets: many }).success).toBe(false);
   });
 });

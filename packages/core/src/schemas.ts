@@ -183,6 +183,13 @@ export const PrescriptionRowSchema = PrescribedExerciseSchema.extend({
 export const PrescriptionRowsSchema = z.array(PrescriptionRowSchema).max(2000);
 
 // ── SP3 actuals wire shapes (untrusted athlete input → bounded). ──
+export const SetActualInputSchema = z.object({
+  kg: KgSchema.optional(),
+  reps: z.number().int().min(0).max(100).optional(),
+  done: z.boolean(),
+});
+export const SetActualsSchema = z.array(SetActualInputSchema).max(20);
+
 export const ExerciseActualInputSchema = z.object({
   order: z.number().int().min(0).max(20),
   movementId: z.string().min(1).max(60),
@@ -191,6 +198,7 @@ export const ExerciseActualInputSchema = z.object({
   kg: KgSchema.optional(),
   reps: z.number().int().min(0).max(100).optional(), // 0 = intentó pero completó 0 reps (serie fallida)
   note: z.string().max(200).optional(),
+  sets: SetActualsSchema.optional(),
 });
 export const SessionActualsInputSchema = z.array(ExerciseActualInputSchema).max(15);
 export type ExerciseActualInput = z.infer<typeof ExerciseActualInputSchema>;
@@ -206,6 +214,7 @@ export const ExerciseActualSchema = z.object({
   movementName: z.string(),
   substituted: z.boolean(),
   desfasado: z.boolean(),
+  sets: SetActualsSchema.optional(),
 });
 
 export const WarmupSetSchema = z.object({
