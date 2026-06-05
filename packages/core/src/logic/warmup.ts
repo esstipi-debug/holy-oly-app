@@ -1,4 +1,5 @@
-import type { WarmupSet } from "../types";
+import type { RM, WarmupSet } from "../types";
+import { getMovement, getBase } from "./movements";
 
 const FRACTIONS: ReadonlyArray<{ f: number; reps: number; minW?: number }> = [
   { f: 0.50, reps: 5 },
@@ -47,3 +48,30 @@ export function warmupSets(workingPct: number, rm: number, barKg: number, isFirs
 }
 
 export { rampSet, dedupeAndGuard, FRACTIONS };
+
+/** Decide la forma del calentamiento por ejercicio:
+ *  - OHS no-primero → 2 feelers (movilidad overhead)
+ *  - accesorio (baseComplexity<=3) no-primero → 1 feeler (ya está caliente)
+ *  - resto (lifts, sentadillas, tirones, y cualquiera cuando es el 1er mov) → rampa completa
+ *  Sin movimiento / rmRef "none" / sin pct / RM<=0 → []. `order===0` = 1er movimiento. */
+export function warmupForExercise(
+  args: { movementId: string; pct?: number; order: number },
+  rms: RM, barKg: number,
+): WarmupSet[] {
+  const mv = getMovement(args.movementId);
+  if (!mv || mv.rmRef === "none" || args.pct == null) return [];
+  const rm = rms[mv.rmRef];
+  if (!Number.isFinite(rm) || rm <= 0) return [];
+  const W = args.pct;
+  const isFirst = args.order === 0;
+  const workingKg = Math.round((W / 100) * rm);
+  const base = getBase(mv.baseId);
+
+  if (!isFirst && mv.baseId === "sentadilla-overhead") {
+    return dedupeAndGuard([rampSet(0.5, 5, W, rm), rampSet(0.7, 3, W, rm)], workingKg, barKg);
+  }
+  if (!isFirst && base != null && base.baseComplexity <= 3) {
+    return dedupeAndGuard([rampSet(0.6, 5, W, rm)], workingKg, barKg);
+  }
+  return warmupSets(W, rm, barKg, isFirst);
+}
