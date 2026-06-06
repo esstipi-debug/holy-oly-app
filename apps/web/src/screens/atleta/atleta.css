@@ -1,7 +1,14 @@
 /* Holy Oly · atleta.css — port del prototipo de bienestar (lee --wl-* → anda en cualquier skin).
    Sin el chrome del mockup (status-bar, marco de teléfono, tweaks). Mobile-first, una columna. */
 
-:root { --ho-mono: 'JetBrains Mono', ui-monospace, monospace; }
+:root {
+  --ho-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* STATUS — semáforo (verde/ámbar/rojo) + oro de hito; fijos, no por-skin */
+  --ok: #3FB55B;
+  --warn: #E0A23B;
+  --alert: #E5484D;
+  --gold: #E8B23A;
+}
 * { box-sizing: border-box; }
 
 /* shell (frameless: columna centrada, scroll de página) */
