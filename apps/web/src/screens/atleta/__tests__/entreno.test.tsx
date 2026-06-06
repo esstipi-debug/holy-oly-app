@@ -36,6 +36,7 @@ function renderEntreno() {
     <MemoryRouter initialEntries={["/atleta/entreno/8/0"]}>
       <Routes>
         <Route path="/atleta/entreno/:week/:idx" element={<EntrenoScreen />} />
+        <Route path="/atleta/entreno/:week/:idx/victoria" element={<div>VICTORIA</div>} />
         <Route path="/atleta" element={<div>HOY</div>} />
       </Routes>
     </MemoryRouter>,
