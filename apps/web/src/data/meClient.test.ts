@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import * as me from "./meClient";
+import * as me from "./httpMeClient";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -7,7 +7,7 @@ function res(status: number, body: unknown): Response {
   return { ok: status >= 200 && status < 300, status, json: async () => body } as Response;
 }
 
-describe("meClient", () => {
+describe("httpMeClient", () => {
   it("getMePlan parses the view (plan may be null)", async () => {
     global.fetch = vi.fn(async () => res(200, { athlete: { nombre: "Demo", iniciales: "DA", sexo: "F" }, plan: null })) as unknown as typeof fetch;
     expect((await me.getMePlan()).plan).toBeNull();

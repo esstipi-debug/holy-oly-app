@@ -9,4 +9,7 @@ export const KEYS = {
   cycleShare: (id: string) => `ho:cycleShare:${id}`,
   cycleState: (id: string) => `ho:cycleState:${id}`,
   prescription: (id: string) => `holyoly:prescription:${id}`,
+  // Athlete-self stores (offline `LocalMeClient`, mirroring the API's DayLog / SessionActual tables).
+  dayLog: (id: string) => `ho:daylog:${id}`,
+  sessionActuals: (id: string) => `ho:actuals:${id}`,
 } as const;

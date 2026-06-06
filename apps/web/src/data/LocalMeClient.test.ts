@@ -1,0 +1,106 @@
+import { describe, it, expect, beforeEach } from "vitest";
+import type { Atleta, MonitorSeries, Plan, PrescriptionRow, DayLog } from "@holy-oly/core";
+import { MemStorage } from "../test-utils/MemStorage";
+import { JsonStore } from "./storage";
+import { KEYS } from "./keys";
+import { LocalMeClient } from "./LocalMeClient";
+
+const TODAY = "2026-06-06";
+const ID = "kv";
+
+const ROSTER: Atleta[] = [
+  { id: "kv", nombre: "Kevin A.", iniciales: "KV", nivel: "intermediate", sexo: "M", compite: true, macroId: "ruso-5d" },
+];
+const PLAN: Plan = {
+  atletaId: "kv", macroId: "ruso-5d", startWeek: 1,
+  startDate: "2026-04-04", // 63 days before TODAY → currentWeek 10
+  rms: { arranque: 98, envion: 122, sentadilla: 165, frente: 132 },
+  comps: [{ name: "Sudamericano", week: 16 }],
+};
+const SERIES: MonitorSeries = {
+  weeks: 12,
+  acute: Array(12).fill(360), hrv: Array(12).fill(70), hrvBase: 70,
+  rhr: Array(12).fill(50), rhrBase: 50, imr: Array(12).fill(78),
+  wellness: Array(12).fill(82), recovery: Array(12).fill(85),
+};
+const RX: PrescriptionRow[] = [
+  { week: 10, sessionIdx: 0, order: 0, movementId: "arranque", sets: 5, reps: 3, pct: 70 },
+  { week: 10, sessionIdx: 0, order: 1, movementId: "sentadilla", sets: 5, reps: 5, pct: 75 },
+];
+
+function seed(store: MemStorage, opts: { dayLogs?: DayLog[] } = {}): void {
+  const s = new JsonStore(store);
+  s.set(KEYS.roster, ROSTER);
+  s.set(KEYS.plan(ID), PLAN);
+  s.set(KEYS.series(ID), SERIES);
+  s.set(KEYS.prescription(ID), RX);
+  if (opts.dayLogs) s.set(KEYS.dayLog(ID), opts.dayLogs);
+}
+
+const log = (date: string): DayLog => ({ date, fatiga: 2, dolor: 1, estres: 2, humor: 4, motivacion: 4, sueno: 4 });
+const me = (store: MemStorage): LocalMeClient => new LocalMeClient(ID, store, () => TODAY);
+
+describe("LocalMeClient", () => {
+  let store: MemStorage;
+  beforeEach(() => { store = new MemStorage(); });
+
+  it("getMePlan anchors currentWeek to the plan's startDate", async () => {
+    seed(store);
+    const v = await me(store).getMePlan();
+    expect(v.athlete.nombre).toBe("Kevin A.");
+    expect(v.plan).not.toBeNull();
+    expect(v.plan!.currentWeek).toBe(10);
+    expect(v.plan!.totalWeeks).toBe(16);
+    expect(v.plan!.comps).toEqual([{ name: "Sudamericano", week: 16 }]);
+  });
+
+  it("getMePlan throws when the athlete is absent (mirrors the API 404)", async () => {
+    await expect(me(store).getMePlan()).rejects.toThrow(/no athlete/);
+  });
+
+  it("getMeSeries returns the stored series, undefined when absent", async () => {
+    expect(await me(store).getMeSeries()).toBeUndefined();
+    seed(store);
+    expect((await me(store).getMeSeries())?.weeks).toBe(12);
+  });
+
+  it("getDayLog computes the streak from logged days as of today", async () => {
+    seed(store, { dayLogs: [log("2026-06-04"), log("2026-06-05"), log("2026-06-06")] });
+    const v = await me(store).getDayLog();
+    expect(v.today).toBe(TODAY);
+    expect(v.streak).toBe(3);
+    expect(v.entry?.date).toBe("2026-06-06");
+    expect(v.days).toHaveLength(3);
+  });
+
+  it("putDayLog upserts today's entry and recomputes the streak", async () => {
+    seed(store, { dayLogs: [log("2026-06-05")] });
+    const r = await me(store).putDayLog({ fatiga: 3, dolor: 2, estres: 2, humor: 4, motivacion: 5, sueno: 4 });
+    expect(r.entry.date).toBe(TODAY);
+    expect(r.streak).toBe(2); // 06-05 + 06-06
+    // idempotent on the same day (no duplicate)
+    await me(store).putDayLog({ fatiga: 1, dolor: 1, estres: 1, humor: 5, motivacion: 5, sueno: 5 });
+    expect((await me(store).getDayLog()).days.filter((d) => d === TODAY)).toHaveLength(1);
+  });
+
+  it("getMeSessions derives kg from plan RMs; putMeSession records the top-set actual", async () => {
+    seed(store);
+    const before = await me(store).getMeSessions(10);
+    expect(before).toHaveLength(1);
+    expect(before[0]!.exercises[0]!.targetKg).toBe(69); // round(70% × 98)
+    expect(before[0]!.exercises[0]!.actual).toBeUndefined();
+
+    await me(store).putMeSession(10, 0, [
+      { order: 0, movementId: "arranque", done: true, sets: [{ kg: 70, reps: 3, done: true }, { kg: 74, reps: 2, done: true }] },
+    ]);
+    const after = await me(store).getMeSessions(10);
+    expect(after[0]!.exercises[0]!.actual?.done).toBe(true);
+    expect(after[0]!.exercises[0]!.actual?.kg).toBe(74); // top set
+  });
+
+  it("getMeSessions is [] without a plan", async () => {
+    const s = new JsonStore(store);
+    s.set(KEYS.roster, ROSTER); // athlete but no plan
+    expect(await me(store).getMeSessions(10)).toEqual([]);
+  });
+});

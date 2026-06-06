@@ -114,6 +114,28 @@ End If
 $vbs = $vbs -replace '__EDGE__', ($Edge ?? '')
 Set-Content -Path "$Base\Holy Oly.vbs" -Value $vbs -Encoding ASCII
 
+# --- 4b) Lanzador del ATLETA (Kevin) — abre directo en /atleta ----------------
+$vbsK = @'
+Option Explicit
+Dim sh, fso, edge, base, q
+Set sh = CreateObject("WScript.Shell")
+Set fso = CreateObject("Scripting.FileSystemObject")
+q = Chr(34)
+base = "C:\HolyOlyDemo"
+sh.Run "node " & q & base & "\server.mjs" & q, 0, False
+WScript.Sleep 900
+edge = "__EDGE__"
+If Not fso.FileExists(edge) Then edge = sh.ExpandEnvironmentStrings("%ProgramFiles%") & "\Microsoft\Edge\Application\msedge.exe"
+If Not fso.FileExists(edge) Then edge = sh.ExpandEnvironmentStrings("%ProgramFiles(x86)%") & "\Microsoft\Edge\Application\msedge.exe"
+If fso.FileExists(edge) Then
+  sh.Run q & edge & q & " --app=http://127.0.0.1:8765/atleta --window-size=430,860 --user-data-dir=" & q & base & "\browser-kevin" & q, 1, False
+Else
+  sh.Run "http://127.0.0.1:8765/atleta", 1, False
+End If
+'@
+$vbsK = $vbsK -replace '__EDGE__', ($Edge ?? '')
+Set-Content -Path "$Base\Holy Oly - Kevin.vbs" -Value $vbsK -Encoding ASCII
+
 # --- 5) Script de actualizacion -----------------------------------------------
 Copy-Item "$PSScriptRoot\actualizar.ps1" "$Base\actualizar.ps1" -Force
 
@@ -129,7 +151,8 @@ function New-Lnk($path, $target, $arguments, $icon, $desc) {
   $s.Save()
 }
 foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
-  New-Lnk "$dir\Holy Oly.lnk" "C:\HolyOlyDemo\Holy Oly.vbs" $null "C:\HolyOlyDemo\Holy Oly.ico" "Holy Oly - demo local"
+  New-Lnk "$dir\Holy Oly.lnk" "C:\HolyOlyDemo\Holy Oly.vbs" $null "C:\HolyOlyDemo\Holy Oly.ico" "Holy Oly - demo local (coach)"
+  New-Lnk "$dir\Holy Oly - Kevin.lnk" "C:\HolyOlyDemo\Holy Oly - Kevin.vbs" $null "C:\HolyOlyDemo\Holy Oly.ico" "Holy Oly - vista del atleta Kevin (demo)"
   New-Lnk "$dir\Actualizar Holy Oly.lnk" "powershell.exe" `
     '-NoProfile -ExecutionPolicy Bypass -File "C:\HolyOlyDemo\actualizar.ps1"' `
     "C:\HolyOlyDemo\Holy Oly.ico" "Actualizar el demo de Holy Oly"

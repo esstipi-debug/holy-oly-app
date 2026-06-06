@@ -17,7 +17,7 @@ describe("getRosterRows", () => {
   it("derives a row per athlete; the no-data athlete has undefined acwr/rec and cell none", async () => {
     const repo = new LocalRepository(new MemStorage()); repo.init();
     const rows = await getRosterRows(repo);
-    expect(rows).toHaveLength(8);
+    expect(rows).toHaveLength(9);
     const tomas = rows.find((r) => r.id === "tl")!;
     expect(tomas.acwr).toBeUndefined();
     expect(tomas.rec).toBeUndefined();

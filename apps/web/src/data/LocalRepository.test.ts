@@ -11,9 +11,15 @@ describe("LocalRepository", () => {
   let repo: LocalRepository;
   beforeEach(() => { store = new MemStorage(); repo = new LocalRepository(store); repo.init(); });
 
-  it("seeds a roster of 8 with Mara having a series", async () => {
-    expect((await repo.getRoster())).toHaveLength(8);
+  it("seeds a roster of 9 with Mara having a series", async () => {
+    expect((await repo.getRoster())).toHaveLength(9);
     expect(await repo.getSeries("mv")).toBeDefined();
+  });
+
+  it("seeds the offline athlete Kevin with a plan, prescription and a year of check-ins", async () => {
+    expect(await repo.getPlan("kv")).toBeDefined();
+    expect((await repo.getSeries("kv"))?.weeks).toBe(52);
+    expect((await repo.getPrescriptionWeek("kv", 12)).length).toBeGreaterThan(0);
   });
 
   it("getSeries is undefined for the no-data athlete (Tomás)", async () => {
@@ -63,7 +69,7 @@ describe("LocalRepository", () => {
     old.setItem(KEYS.roster, JSON.stringify([]));     // stale empty roster
     const repo2 = new LocalRepository(old);
     repo2.init();                                      // stale version → re-seed
-    expect(await repo2.getRoster()).toHaveLength(8);
+    expect(await repo2.getRoster()).toHaveLength(9);
     expect(await repo2.getMedals("mv")).not.toHaveLength(0); // medals now seeded
   });
 

@@ -1,7 +1,10 @@
-import { recoverySeries, type Atleta, type Competencia, type Medal, type MonitorSeries, type CycleShare, type CycleState } from "@holy-oly/core";
+import { recoverySeries, type Atleta, type Competencia, type Medal, type MonitorSeries, type CycleShare, type CycleState, type RM, type DayLog } from "@holy-oly/core";
 
-/** Bump when SEED_* shapes change so already-seeded browsers re-seed (M4a medals → v2; M4c macroIds + comps → v4). */
-export const SEED_VERSION = 4;
+/** Bump when SEED_* shapes change so already-seeded browsers re-seed (M4a medals → v2; M4c macroIds + comps → v4; A-offline Kevin + plan/daylog seeds → v5). */
+export const SEED_VERSION = 5;
+
+/** Clamp to an integer in [lo, hi] — keeps generated telemetry inside the domain's valid ranges. */
+const clampInt = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, Math.round(v)));
 
 export interface RosterMeta { metodo: string; }
 
@@ -14,11 +17,15 @@ export const SEED_ROSTER: Atleta[] = [
   { id: "ap", nombre: "Ana P.",   iniciales: "AP", nivel: "intermediate", sexo: "F",                 macroId: "cubano-int-5d" },
   { id: "bg", nombre: "Bruno G.", iniciales: "BG", nivel: "intermediate", sexo: "M",                 macroId: "hibrido-5d" },
   { id: "cf", nombre: "Caro F.",  iniciales: "CF", nivel: "intermediate", sexo: "F",                 macroId: "colombiano-5d" },
+  // Kevin — the offline ATHLETE demo "me" (LocalMeClient). Seeded with a year of data: a 52-week
+  // monitor series, an active Ruso 5D plan (week ~12/16) and ~a year of check-ins. sexo M → barra 20.
+  { id: "kv", nombre: "Kevin A.", iniciales: "KV", nivel: "intermediate", sexo: "M", compite: true,  macroId: "ruso-5d" },
 ];
 
 // Mara's target competition (M4c seed). Others start with no comp → assigned from the sheet.
 export const SEED_COMPS: Record<string, Competencia[]> = {
   mv: [{ name: "Nacional", week: 16 }],
+  kv: [{ name: "Sudamericano", week: 16 }],
 };
 
 export const ROSTER_META: Record<string, RosterMeta> = {
@@ -26,6 +33,7 @@ export const ROSTER_META: Record<string, RosterMeta> = {
   lr: { metodo: "Coreano 5D" },     sm: { metodo: "Búlgaro 6D" },
   tl: { metodo: "Polaco 5D" },      ap: { metodo: "Cubano Int." },
   bg: { metodo: "Híbrido 5D" },     cf: { metodo: "Colombiano 5D" },
+  kv: { metodo: "Ruso 5D" },
 };
 
 // Mara — real 12-week arrays from _mockup/coach.html; recovery precomputed.
@@ -56,6 +64,35 @@ const MARA_BASE: Omit<MonitorSeries, "recovery"> = {
 const withRec = (b: Omit<MonitorSeries, "recovery">): MonitorSeries =>
   ({ ...b, recovery: recoverySeries({ ...b, recovery: [] }) });
 
+// Kevin — a deterministic full YEAR (52 weeks) of plausible telemetry: four ~13-week mesocycles
+// (8-week build → peak → deload), progressive chronic load, HRV/RHR/wellness dipping on the hard
+// weeks. No RNG/Date → reproducible. Drives the coach drill-down's year-long charts; the athlete
+// Titular reads the current plan week off it.
+function genYearBase(): Omit<MonitorSeries, "recovery"> {
+  const N = 52;
+  const mk = (f: (i: number) => number): number[] => Array.from({ length: N }, (_, i) => f(i));
+  const meso = (i: number): number => i % 13;                 // 0..12; deload at 11-12
+  const hard = (i: number): boolean => meso(i) >= 8 && meso(i) <= 10; // peak-load weeks
+  const wave = (i: number): number => Math.cos(i / 2.5);
+  const acute = mk((i) => clampInt(300 + i * 1.4 + (meso(i) < 11 ? meso(i) * 14 : -30), 240, 760));
+  const hrv = mk((i) => clampInt(72 - (hard(i) ? 5 : 0) + 2 * wave(i), 58, 78));
+  const rhr = mk((i) => clampInt(49 + (hard(i) ? 4 : 0) - 2 * wave(i), 46, 58));
+  const imr = mk((i) => clampInt(64 + meso(i) * 2 + i / 12, 60, 95));
+  const wellness = mk((i) => clampInt(82 - (hard(i) ? 10 : 0) + 3 * wave(i), 55, 92));
+  const compliance = mk((i) => clampInt(94 - (hard(i) ? 6 : 0) + (meso(i) < 2 ? 2 : 0), 70, 100));
+  const bodyweight = mk((i) => Math.round((80.5 + 0.4 * Math.sin(i / 6)) * 10) / 10);
+  const item = (base: number, amp: number, invert = false): number[] =>
+    mk((i) => clampInt(base + (hard(i) ? (invert ? -amp : amp) : 0) + (invert ? -1 : 1) * wave(i), 1, 5));
+  return {
+    weeks: N, acute, hrv, hrvBase: 71, rhr, rhrBase: 50, imr, wellness,
+    compliance, bodyweight, weightBand: [80, 82],
+    wellnessItems: {
+      Fatiga: item(2, 2), Dolor: item(2, 1), Estrés: item(2, 1),
+      Humor: item(4, 2, true), Motivación: item(4, 1, true), Sueño: item(4, 2, true),
+    },
+  };
+}
+
 // Each of the 5 authored series below is plausible athlete telemetry steered to a
 // chosen DERIVED current-week cell (verified by rosterStatus, pinned in Task 27).
 // The lever for the cell is the LAST week: recovery from hrv[11]/rhr[11]/wellness[11],
@@ -63,6 +100,7 @@ const withRec = (b: Omit<MonitorSeries, "recovery">): MonitorSeries =>
 // part of the roster-cell derivation.
 export const SEED_SERIES: Record<string, MonitorSeries> = {
   mv: withRec(MARA_BASE),
+  kv: withRec(genYearBase()), // Kevin — a full year (52 weeks)
 
   // Diego — steady build, then a late crash week (HRV down, RHR up, wellness low) →
   // last-week recovery 66 < 70. acwr ~1.0 (ok), but recovery alert dominates → alert.
@@ -143,4 +181,51 @@ export const SEED_MEDALS: Record<string, Medal[]> = {
     { comp: "Nacional Absoluto", date: "2026-03", cat: "−81", medal: "oro", sn: 92, cj: 116, place: "1º" },
     { comp: "Apertura Regional", date: "2025-11", cat: "−81", medal: "plata", sn: 88, cj: 110, place: "2º" },
   ],
+  kv: [
+    { comp: "Metropolitano", date: "2026-02", cat: "−89", medal: "oro", sn: 96, cj: 120, place: "1º" },
+    { comp: "Apertura", date: "2025-09", cat: "−89", medal: "bronce", sn: 90, cj: 114, place: "3º" },
+  ],
 };
+
+/**
+ * Athletes seeded with an assigned plan (and, paired with it, a year of check-ins) — the offline
+ * ATHLETE demo. `LocalRepository.init` builds the Plan (startDate anchored so `currentWeek` lands
+ * mid-macro) and instantiates its prescription, exactly as the coach's `savePlan` would.
+ */
+export const SEED_PLAN_INPUTS: Record<string, { macroId: string; currentWeek: number; rms: RM; comps: Competencia[] }> = {
+  kv: {
+    macroId: "ruso-5d",
+    currentWeek: 12, // of 16 → mid-plan: an active Camino + a real session to train today
+    rms: { arranque: 98, envion: 122, sentadilla: 165, frente: 132 },
+    comps: [{ name: "Sudamericano", week: 16 }],
+  },
+};
+
+/**
+ * A deterministic ~year of daily check-ins ending `today`: mostly-daily with sparse older gaps,
+ * the last 45 days continuous so the streak reads as a committed athlete. Built at seed time
+ * (init) so the dates are always relative to the real today. Pure given `today`.
+ */
+export function makeDayLogYear(today: string, span = 364): DayLog[] {
+  const DAY = 86_400_000;
+  const t0 = new Date(`${today}T00:00:00Z`).getTime();
+  const out: DayLog[] = [];
+  for (let d = span; d >= 0; d--) {
+    const recent = d <= 45;                 // keep the recent stretch unbroken (streak)
+    if (!recent && d % 9 === 4) continue;   // sparse older gaps
+    const date = new Date(t0 - d * DAY).toISOString().slice(0, 10);
+    const wob = Math.cos(d / 5);            // gentle -1..1 wobble
+    const dip = d % 28 < 5;                 // a recurring rough patch (deload/overreach feel)
+    out.push({
+      date,
+      fatiga: clampInt(2 + (dip ? 1 : 0) + wob, 1, 5),
+      dolor: clampInt(2 + (d % 40 < 4 ? 1 : 0), 1, 5),
+      estres: clampInt(2 - wob, 1, 5),
+      humor: clampInt(4 - (dip ? 1 : 0) - wob, 1, 5),
+      motivacion: clampInt(4 + wob, 1, 5),
+      sueno: clampInt(4 - (dip ? 1 : 0), 1, 5),
+      weight: Math.round((80.5 + 0.4 * Math.sin(d / 12)) * 10) / 10,
+    });
+  }
+  return out;
+}
