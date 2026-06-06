@@ -73,7 +73,7 @@ export function VictoriaScreen() {
       <div style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.5 }}>Día {idx + 1} — {dayMoves}<br />{fecha}</div>
 
       {/* carga total del día */}
-      {didWork && (
+      {didWork && tonnage > 0 && (
         <div className="ho-card">
           <div className="ho-card__head"><span className="ho-card__t">Carga total del día</span><span className="ho-card__end" style={{ color: "var(--wl-muted)" }}>kg</span></div>
           <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 48, lineHeight: 1, color: "var(--wl-text)", fontVariantNumeric: "tabular-nums", marginTop: 6 }}>
@@ -121,7 +121,7 @@ export function VictoriaScreen() {
 
       {/* CTAs */}
       <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 16 }} onClick={() => navigate("/atleta")}>Listo</button>
-      <button type="button" className="wl-btn" style={{ width: "100%", marginTop: 10 }} onClick={() => navigate("/atleta")}>Registrar bienestar</button>
+      <button type="button" className="wl-btn" style={{ width: "100%", marginTop: 10 }} onClick={() => navigate("/atleta", { state: { openCheckin: true } })}>Registrar bienestar</button>
     </div>
   );
 }

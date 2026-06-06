@@ -82,6 +82,28 @@ test("series hechas sin kg → sin tarjeta de serie más pesada (honesto)", asyn
   expect(screen.queryByText("Tu serie más pesada hoy")).not.toBeInTheDocument();
 });
 
+test("ejercicio hecho pero sin kg → sin tarjeta de carga total (no «0 kg»)", async () => {
+  const doneNoKg: SessionView[] = [{
+    week: 8, sessionIdx: 0,
+    exercises: [
+      { movementId: "arranque", movementName: "Arranque", sets: 1, reps: 2, pct: 80, targetKg: 64,
+        actual: actual({ movementId: "arranque", movementName: "Arranque", done: true, sets: [{ kg: undefined, reps: 2, done: true }] }) },
+    ],
+  }];
+  vi.spyOn(me, "getMeSessions").mockResolvedValue(doneNoKg);
+  renderVictoria();
+  expect(await screen.findByText("Sesión completada")).toBeInTheDocument();
+  expect(screen.queryByText("Carga total del día")).not.toBeInTheDocument();
+  expect(screen.queryByText("Tu serie más pesada hoy")).not.toBeInTheDocument();
+});
+
+test("«Registrar bienestar» navega al inicio", async () => {
+  vi.spyOn(me, "getMeSessions").mockResolvedValue(sessions());
+  renderVictoria();
+  fireEvent.click(await screen.findByRole("button", { name: /registrar bienestar/i }));
+  await waitFor(() => expect(screen.getByText("HOY")).toBeInTheDocument());
+});
+
 test("«Listo» navega al inicio", async () => {
   vi.spyOn(me, "getMeSessions").mockResolvedValue(sessions());
   renderVictoria();

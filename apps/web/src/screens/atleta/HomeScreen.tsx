@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { seriesState, type CellState, type DayLogInput, type DayLogView, type MePlanView, type MonitorSeries } from "@holy-oly/core";
 import * as me from "../../data/meClient";
 import { Titular } from "./hoy/Titular";
@@ -13,11 +14,12 @@ type Load = "loading" | "ready" | "error";
 
 export function HomeScreen() {
   const { variant } = useAtletaCtx();
+  const location = useLocation();
   const [plan, setPlan] = useState<MePlanView | null>(null);
   const [series, setSeries] = useState<MonitorSeries | undefined>(undefined);
   const [daylog, setDaylog] = useState<DayLogView | null>(null);
   const [load, setLoad] = useState<Load>("loading");
-  const [checkinOpen, setCheckinOpen] = useState(false);
+  const [checkinOpen, setCheckinOpen] = useState(() => Boolean((location.state as { openCheckin?: boolean } | null)?.openCheckin));
 
   useEffect(() => {
     let on = true;
