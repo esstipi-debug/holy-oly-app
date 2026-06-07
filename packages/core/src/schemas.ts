@@ -160,6 +160,7 @@ export const MePlanViewSchema = z.object({
     currentPhase: z.string(),
     phases: z.array(z.object({
       name: z.string(), from: z.number().int(), to: z.number().int(), imr: z.number(),
+      imrLo: z.number(), imrHi: z.number(), volRel: z.number(), focus: z.string().max(120),
     })).max(20),
     comps: z.array(z.object({ name: z.string(), week: z.number().int() })).max(50),
   }).nullable(),

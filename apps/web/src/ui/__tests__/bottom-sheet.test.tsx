@@ -73,6 +73,19 @@ test("devuelve el foco al disparador al cerrar", () => {
   expect(document.activeElement).toBe(trigger);
 });
 
+test("Escape cierra el diálogo y devuelve el foco al disparador", () => {
+  render(<Harness />);
+  const trigger = screen.getByRole("button", { name: "Abrir" });
+  trigger.focus();
+  open();
+  expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+  fireEvent.keyDown(window, { key: "Escape" });
+
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(document.activeElement).toBe(trigger);
+});
+
 test("atrapa Tab: desde el último elemento vuelve al primero", () => {
   render(<Harness />);
   open();

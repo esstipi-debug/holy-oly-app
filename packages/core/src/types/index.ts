@@ -137,7 +137,7 @@ export interface MePlanView {
     totalWeeks: number;
     currentWeek: number;
     currentPhase: string;
-    phases: { name: string; from: number; to: number; imr: number }[];
+    phases: { name: string; from: number; to: number; imr: number; imrLo: number; imrHi: number; volRel: number; focus: string }[];
     comps: { name: string; week: number }[];
   } | null;
 }

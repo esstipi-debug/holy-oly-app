@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { MePlanView } from "@holy-oly/core";
+import { PlanDetailSheet } from "../PlanDetailSheet";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
 
@@ -23,6 +25,9 @@ function MacroRibbon({ plan }: { plan: PlanView }) {
 
 /** Countdown a la próxima comp + cinta de fases. Empty (no plan) → honest empty variant. */
 export function CaminoCard({ plan }: { plan: MePlanView["plan"] }) {
+  // Hook must precede the early-return (Rules of Hooks); only meaningful when plan != null
+  // (the no-plan branch renders no trigger/sheet, so `open` stays dormant there).
+  const [open, setOpen] = useState(false);
   if (!plan) {
     return (
       <div className="ho-card">
@@ -48,6 +53,10 @@ export function CaminoCard({ plan }: { plan: MePlanView["plan"] }) {
         </div>
       ) : null}
       <MacroRibbon plan={plan} />
+      <button type="button" className="ho-plan__trigger" onClick={() => setOpen(true)}>
+        Ver detalle del plan <span aria-hidden>›</span>
+      </button>
+      <PlanDetailSheet plan={plan} open={open} onClose={() => setOpen(false)} />
     </div>
   );
 }

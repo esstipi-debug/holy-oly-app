@@ -55,7 +55,7 @@ test("atleta nuevo: saludo sin plan, Titular sin datos, racha empieza hoy, CTA p
 test("atleta con plan + serie + check-in hecho: saludo con semana, estado, racha, CTA listo", async () => {
   vi.mocked(me.getMePlan).mockResolvedValue({
     athlete: { nombre: "Mara V.", iniciales: "MV", sexo: "F" },
-    plan: { macroName: "Ruso 5D", totalWeeks: 12, currentWeek: 5, currentPhase: "Fuerza", phases: [{ name: "Fuerza", from: 1, to: 12, imr: 88 }], comps: [{ name: "Nacional", week: 12 }] },
+    plan: { macroName: "Ruso 5D", totalWeeks: 12, currentWeek: 5, currentPhase: "Fuerza", phases: [{ name: "Fuerza", from: 1, to: 12, imr: 88, imrLo: 80, imrHi: 88, volRel: 70, focus: "fuerza" }], comps: [{ name: "Nacional", week: 12 }] },
   });
   vi.mocked(me.getMeSeries).mockResolvedValue(FLAT_SERIES);
   vi.mocked(me.getDayLog).mockResolvedValue({ entry: { date: "2026-06-03", fatiga: 2, dolor: 1, estres: 2, humor: 4, motivacion: 5, sueno: 4 }, streak: 5, days: ["2026-06-03"], today: "2026-06-03" });
@@ -102,7 +102,7 @@ test("usa el cliente inyectado, no el módulo global (rinde sin AthleteShell)", 
 test("preview oculta la SemanaCard; sin preview la muestra", async () => {
   vi.mocked(me.getMePlan).mockResolvedValue({
     athlete: { nombre: "Kevin A.", iniciales: "KV", sexo: "M" },
-    plan: { macroName: "Ruso 5D", totalWeeks: 16, currentWeek: 3, currentPhase: "Base", phases: [{ name: "Base", from: 1, to: 16, imr: 80 }], comps: [] },
+    plan: { macroName: "Ruso 5D", totalWeeks: 16, currentWeek: 3, currentPhase: "Base", phases: [{ name: "Base", from: 1, to: 16, imr: 80, imrLo: 70, imrHi: 80, volRel: 90, focus: "base" }], comps: [] },
   });
   vi.mocked(me.getMeSeries).mockResolvedValue(undefined);
   vi.mocked(me.getDayLog).mockResolvedValue({ entry: null, streak: 0, days: [], today: "2026-06-07" });
