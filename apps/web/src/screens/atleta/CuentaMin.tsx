@@ -42,7 +42,7 @@ function VincularSection() {
         </div>
       ) : (
         <form onSubmit={onSubmit} className="ho-card">
-          <div className="ho-acct__rowsub" style={{ marginBottom: 10 }}>Ingresá el código que te pasó tu coach. Cuando lo confirme, quedás vinculada.</div>
+          <div className="ho-acct__rowsub" style={{ marginBottom: 10 }}>Ingresá el código que te pasó tu coach. Cuando lo confirme, queda hecho el vínculo.</div>
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
@@ -65,7 +65,7 @@ export function CuentaMin() {
   const { skin, setSkin, variant, setVariant } = useAtletaCtx();
   return (
     <>
-      <div className="ho-greet"><div className="ho-greet__h">Cuenta</div><div className="ho-greet__s">vos sos dueña de tus datos</div></div>
+      <div className="ho-greet"><div className="ho-greet__h">Cuenta</div><div className="ho-greet__s">tus datos son tuyos</div></div>
 
       <VincularSection />
 
