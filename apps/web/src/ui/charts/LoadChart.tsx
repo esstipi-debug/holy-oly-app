@@ -1,7 +1,9 @@
 import { chronic, type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath, weekLabels, WeekTapZones } from "./chartkit";
+import { ChartCard, linePath, weekLabels, WeekTapZones, type Explain } from "./chartkit";
 
-export function LoadChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
+// Copy defaults to the coach framing (drilldown). The athlete screen overrides title/sub/explain
+// to drop ACWR and speak in 2nd person — same rendering, athlete-safe voice.
+export function LoadChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
   const weeks = series.weeks;
   const acute = series.acute;
   const ch = chronic(acute);
@@ -15,10 +17,10 @@ export function LoadChart({ series, onPointClick }: { series: MonitorSeries; onP
 
   return (
     <ChartCard
-      title="Carga aguda vs crónica"
-      sub="barras = semanal · línea = crónica (4 sem)"
+      title={title ?? "Carga aguda vs crónica"}
+      sub={sub ?? "barras = semanal · línea = crónica (4 sem)"}
       chip={acute.at(-1) != null ? String(acute.at(-1)) : undefined}
-      explain={{
+      explain={explain ?? {
         forma: "Carga semanal (barras) y carga crónica = media móvil de 4 semanas (línea).",
         sirve: "Ver la tendencia de carga; la crónica es la base contra la que se mide el ACWR.",
         lectura: "La línea crónica (media móvil de 4 sem) es la referencia: barras muy por encima = pico, y eso es lo que infla el ACWR.",

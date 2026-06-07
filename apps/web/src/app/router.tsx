@@ -15,7 +15,7 @@ import { MacroDetail } from "../screens/coach/macros/MacroDetail";
 import { CuentaStub } from "../screens/coach/macros/CuentaStub";
 import { AthleteShell } from "../screens/atleta/AthleteShell";
 import { HomeScreen } from "../screens/atleta/HomeScreen";
-import { ProgresoPlaceholder } from "../screens/atleta/ProgresoPlaceholder";
+import { ProgresoScreen } from "../screens/atleta/ProgresoScreen";
 import { CuentaMin } from "../screens/atleta/CuentaMin";
 import { EntrenoScreen } from "../screens/atleta/EntrenoScreen";
 import { VictoriaScreen } from "../screens/atleta/entreno/VictoriaScreen";
@@ -50,7 +50,7 @@ const routes: RouteObject[] = [
         element: <RequireAuth role="atleta"><AthleteShell /></RequireAuth>,
         children: [
           { index: true, element: <HomeScreen /> },
-          { path: "progreso", element: <ProgresoPlaceholder /> },
+          { path: "progreso", element: <ProgresoScreen /> },
           { path: "cuenta", element: <CuentaMin /> },
           { path: "entreno/:week/:idx", element: <EntrenoScreen /> },
           { path: "entreno/:week/:idx/victoria", element: <VictoriaScreen /> },

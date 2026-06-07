@@ -1,8 +1,8 @@
 import { weightBandState, type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath, WeekTapZones } from "./chartkit";
+import { ChartCard, linePath, WeekTapZones, type Explain } from "./chartkit";
 import { STATUS } from "../status";
 
-export function WeightChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
+export function WeightChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
   const wt = series.bodyweight ?? [];
   const band = series.weightBand;
   const weeks = series.weeks;
@@ -22,10 +22,10 @@ export function WeightChart({ series, onPointClick }: { series: MonitorSeries; o
 
   return (
     <ChartCard
-      title="Peso vs categoría"
-      sub="banda objetivo de categoría"
+      title={title ?? "Peso vs categoría"}
+      sub={sub ?? "banda objetivo de categoría"}
       chip={lastWt != null ? lastWt + " kg" : undefined}
-      explain={{
+      explain={explain ?? {
         forma: "Peso corporal por semana vs la banda de la categoría objetivo.",
         sirve: "Seguir si el atleta da el peso de su categoría de cara a la competencia.",
         lectura: "Banda = límites de categoría; el punto va verde dentro, rojo fuera, neutro si no hay categoría asignada.",

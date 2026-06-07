@@ -1,7 +1,7 @@
 import { type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath, WeekTapZones } from "./chartkit";
+import { ChartCard, linePath, WeekTapZones, type Explain } from "./chartkit";
 
-export function WellnessChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
+export function WellnessChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
   const wsc = series.wellness;
   const items = series.wellnessItems ?? {};
   const weeks = series.weeks;
@@ -26,10 +26,10 @@ export function WellnessChart({ series, onPointClick }: { series: MonitorSeries;
 
   return (
     <ChartCard
-      title="Bienestar"
-      sub="puntaje 0–100 vs tu normal · ítems"
+      title={title ?? "Bienestar"}
+      sub={sub ?? "puntaje 0–100 vs tu normal · ítems"}
       chip={lastWsc != null ? String(lastWsc) : undefined}
-      explain={{
+      explain={explain ?? {
         forma: "Score de bienestar (0–100) + 6 ítems del cuestionario (fatiga, dolor, estrés, humor, motivación, sueño) como tendencias.",
         sirve: "Contexto subjetivo que complementa las señales fisiológicas.",
         lectura: "El score se lee contra tu propia normal (banda media±desvío); cada ítem vs su tendencia.",
