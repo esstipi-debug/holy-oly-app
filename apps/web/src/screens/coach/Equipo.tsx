@@ -6,6 +6,7 @@ import { AtletasHero } from "./atletas/AtletasHero";
 import { AtletaMiniCard } from "./atletas/AtletaMiniCard";
 import { DemoSalesStrip } from "./atletas/DemoSalesStrip";
 import { DemoTourCard } from "./atletas/DemoTourCard";
+import { LeadCaptureButton } from "./LeadCaptureButton";
 import { API_ENABLED } from "../../data/apiConfig";
 import { resetDemoStorage } from "../../data/resetDemo";
 
@@ -49,10 +50,13 @@ export function Equipo() {
           <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>{rows.length} ATLETAS</span>
           <Link to="/coach/invitaciones" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-accent)", textDecoration: "none" }}>Invitaciones ›</Link>
           {!API_ENABLED && (
-            <button type="button" onClick={onResetDemo}
-              style={{ minHeight: 28, marginTop: 2, padding: "4px 10px", borderRadius: 8, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 10, cursor: "pointer" }}>
-              ↻ Reiniciar demo
-            </button>
+            <>
+              <LeadCaptureButton variant="discreet" />
+              <button type="button" onClick={onResetDemo}
+                style={{ minHeight: 28, marginTop: 2, padding: "4px 10px", borderRadius: 8, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 10, cursor: "pointer" }}>
+                ↻ Reiniciar demo
+              </button>
+            </>
           )}
         </div>
       </div>
