@@ -104,6 +104,34 @@
 .ho-ribbon__nm { position: relative; z-index: 1; font-family: var(--wl-display); font-weight: 700; font-size: 9px; line-height: 1.05; color: var(--wl-text); overflow-wrap: anywhere; }
 .ho-ribbon__wk { position: relative; z-index: 1; font-family: var(--ho-mono); font-size: 8px; color: var(--wl-muted); margin-top: 3px; }
 
+/* «Ver detalle del plan» trigger (Camino card) + the PlanDetailSheet meso drill-in */
+.ho-plan__trigger { width: 100%; min-height: 40px; margin-top: 11px; padding: 9px 12px; border: 1px solid color-mix(in srgb, var(--wl-text) 12%, transparent); background: transparent; border-radius: var(--wl-radius); color: var(--wl-muted); font-family: var(--ho-mono); font-size: 11px; letter-spacing: .02em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.ho-plan__trigger:hover { color: var(--wl-text); border-color: color-mix(in srgb, var(--wl-accent) 50%, transparent); }
+.ho-plan__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.ho-plan__macro { font-family: var(--wl-display); font-weight: 800; font-size: 20px; line-height: 1; color: var(--wl-text); }
+.ho-plan__wk { font-family: var(--ho-mono); font-size: 11px; color: var(--wl-muted); margin-top: 5px; }
+.ho-plan__close { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 9px; border: 1px solid color-mix(in srgb, var(--wl-text) 14%, transparent); background: var(--wl-bg); color: var(--wl-muted); font-size: 14px; line-height: 1; cursor: pointer; }
+.ho-plan__count { display: flex; align-items: baseline; gap: 10px; margin: 0 0 14px; }
+.ho-plan__count b { font-family: var(--wl-display); font-weight: 800; font-size: 30px; color: var(--wl-accent); line-height: .9; }
+.ho-plan__count span { font-family: var(--ho-mono); font-size: 10.5px; color: var(--wl-muted); line-height: 1.4; }
+.ho-plan__count span b { color: var(--wl-text); font-weight: 700; font-size: inherit; }
+.ho-plan__periodlabel { font-family: var(--ho-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--wl-muted); margin-bottom: 6px; }
+.ho-plan__strip { display: flex; gap: 3px; align-items: flex-end; height: 46px; margin-bottom: 16px; }
+.ho-plan__seg { position: relative; min-width: 0; height: 100%; display: flex; align-items: flex-end; background: color-mix(in srgb, var(--wl-text) 6%, transparent); border: 1px solid color-mix(in srgb, var(--wl-text) 9%, transparent); border-radius: 6px; overflow: hidden; }
+.ho-plan__seg.now { border-color: var(--wl-accent); }
+.ho-plan__segbar { width: 100%; background: var(--wl-accent); opacity: .30; border-radius: 0 0 5px 5px; }
+.ho-plan__seg.now .ho-plan__segbar { opacity: .65; }
+.ho-plan__mesos { display: flex; flex-direction: column; gap: 9px; }
+.ho-plan__meso { background: var(--wl-bg); border: 1px solid color-mix(in srgb, var(--wl-text) 9%, transparent); border-radius: var(--wl-radius); padding: 11px 12px; }
+.ho-plan__meso.now { border-color: color-mix(in srgb, var(--wl-accent) 55%, transparent); background: color-mix(in srgb, var(--wl-accent) 7%, transparent); }
+.ho-plan__mesohead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.ho-plan__mesonm { font-family: var(--wl-display); font-weight: 700; font-size: 14px; color: var(--wl-text); }
+.ho-plan__hoy { font-family: var(--ho-mono); font-size: 10px; color: var(--wl-accent); font-weight: 700; }
+.ho-plan__mesowk { font-family: var(--ho-mono); font-size: 9.5px; color: var(--wl-muted); white-space: nowrap; flex: 0 0 auto; }
+.ho-plan__mesofocus { font-family: var(--ho-mono); font-size: 11px; color: var(--wl-muted); margin-top: 4px; }
+.ho-plan__mesometrics { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-family: var(--ho-mono); font-size: 11px; color: var(--wl-muted); }
+.ho-plan__mesometrics b { color: var(--wl-text); font-weight: 700; }
+
 /* "sin dato" honesto */
 .ho-nodata { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 22px 14px; text-align: center; }
 .ho-nodata__icon { width: 34px; height: 34px; border-radius: 50%; border: 1.5px dashed color-mix(in srgb, var(--wl-text) 26%, transparent); color: var(--wl-muted); display: flex; align-items: center; justify-content: center; font-size: 17px; }

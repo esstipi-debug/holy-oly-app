@@ -32,6 +32,17 @@ describe("buildMePlanView", () => {
     expect(view.plan!.comps).toEqual([{ name: "Nacional", week: 16 }]);
   });
 
+  it("enriquece cada fase con foco, volumen e intensidad (corredor) para el detalle del macro", () => {
+    const plan: Plan = { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, rms: { arranque: 80, envion: 100, sentadilla: 140, frente: 110 }, comps: [] };
+    const phases = buildMePlanView(ATH, plan, "2026-06-03").plan!.phases;
+    // first meso of ruso-5d: Hipertrofia, weeks 1–4, imrPct 65–72, volRel 100
+    expect(phases[0]).toEqual({
+      name: "Hipertrofia", from: 1, to: 4, imr: 72, imrLo: 65, imrHi: 72, volRel: 100, focus: "hipertrofia · GPP",
+    });
+    // last meso = Peaking
+    expect(phases[phases.length - 1]).toMatchObject({ name: "Peaking", imrLo: 92, imrHi: 102, volRel: 45 });
+  });
+
   it("falls back to startWeek when there is no startDate", () => {
     const plan: Plan = { atletaId: "mv", macroId: "ruso-5d", startWeek: 5, rms: { arranque: 80, envion: 100, sentadilla: 140, frente: 110 }, comps: [] };
     expect(buildMePlanView(ATH, plan, "2026-06-03").plan!.currentWeek).toBe(5);

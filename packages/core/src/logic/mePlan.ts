@@ -26,7 +26,12 @@ export function buildMePlanView(
       totalWeeks,
       currentWeek,
       currentPhase: phase?.name ?? "",
-      phases: macro.phaseProfile.map((p) => ({ name: p.name, from: p.weeks[0], to: p.weeks[1], imr: p.imrPct[1] /* high-end target IMR of the phase (drives the ribbon fill) */ })),
+      // `imr` (= imrPct high end) drives the ribbon fill; imrLo/imrHi/volRel/focus power the
+      // meso detail sheet (the athlete drill-in). All athlete-safe: intensity %, not RPE.
+      phases: macro.phaseProfile.map((p) => ({
+        name: p.name, from: p.weeks[0], to: p.weeks[1],
+        imr: p.imrPct[1], imrLo: p.imrPct[0], imrHi: p.imrPct[1], volRel: p.volRel, focus: p.focus,
+      })),
       comps: plan.comps.map((c) => ({ name: c.name, week: c.week })),
     },
   };
