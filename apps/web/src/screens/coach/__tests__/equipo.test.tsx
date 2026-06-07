@@ -27,6 +27,14 @@ test("muestra la carta hero del mejor readiness + el plantel", async () => {
   expect(screen.getByText(/9 ATLETAS/)).toBeInTheDocument();
 });
 
+test("modo demo: muestra la guía de venta y el botón reiniciar demo", async () => {
+  renderEquipo();
+  await screen.findByText(/MEJOR READINESS/i);
+  expect(screen.getByTestId("demo-sales-strip")).toBeInTheDocument();
+  expect(screen.getByText(/Triage en rojo/)).toBeInTheDocument(); // ds hint
+  expect(screen.getByRole("button", { name: /Reiniciar demo/i })).toBeInTheDocument();
+});
+
 test("tocar la carta hero navega al drill-down", async () => {
   renderEquipo();
   const hero = await screen.findByRole("button", { name: /mejor readiness/i });

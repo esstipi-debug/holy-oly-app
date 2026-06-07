@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { barKgForSexo, type SessionView } from "@holy-oly/core";
 import { LocalMeClient } from "../../data/LocalMeClient";
 import { DiscRow } from "../../ui/Disc";
+import { LeadCaptureButton } from "./LeadCaptureButton";
 
 /** The slice of the athlete client this preview needs (lets tests inject a fake). */
 export interface AthletePreviewClient {
@@ -78,6 +79,8 @@ export function AtletaPreview({
           ))}
         </section>
       ))}
+      <p style={{ fontSize: 12.5, color: "var(--wl-muted)", margin: "14px 0 0", textAlign: "center" }}>Esto es lo que recibe tu atleta, con los discos. ¿Lo querés para tu equipo?</p>
+      <LeadCaptureButton variant="primary" />
     </div>
   );
 }
