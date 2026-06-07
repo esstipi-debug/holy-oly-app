@@ -1,19 +1,32 @@
 import { useCallback, useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useOutletContext } from "react-router-dom";
 import { seriesState, type CellState, type DayLogInput, type DayLogView, type MePlanView, type MonitorSeries } from "@holy-oly/core";
-import * as me from "../../data/meClient";
+import { meClient, type MeClient } from "../../data/meClient";
+import type { CheckinVariant } from "./prefs";
 import { Titular } from "./hoy/Titular";
 import { ConstanciaCard } from "./hoy/ConstanciaCard";
 import { CaminoCard } from "./hoy/CaminoCard";
 import { SemanaCard } from "./hoy/SemanaCard";
 import { CheckIn } from "./CheckIn";
 import { Check } from "./primitives";
-import { useAtletaCtx } from "./AthleteShell";
+import type { AtletaOutletCtx } from "./AthleteShell";
 
 type Load = "loading" | "ready" | "error";
 
-export function HomeScreen() {
-  const { variant } = useAtletaCtx();
+/**
+ * The athlete Home. Normally rendered inside `AthleteShell`'s Outlet for the logged-in athlete,
+ * but the coach "ver como atleta" toggle reuses it standalone: it injects an id-scoped `client`,
+ * renders with no Outlet context, and sets `preview` (drops the navigation-only SemanaCard, since
+ * the entreno route isn't reachable from the coach drill-down).
+ */
+export function HomeScreen({ client = meClient, variant: variantProp, preview = false }: {
+  client?: MeClient;
+  variant?: CheckinVariant;
+  preview?: boolean;
+} = {}) {
+  // Tolerate a missing Outlet (preview mode): useOutletContext returns null outside an <Outlet>.
+  const ctx = useOutletContext<AtletaOutletCtx | null>();
+  const variant: CheckinVariant = variantProp ?? ctx?.variant ?? "tap";
   const location = useLocation();
   const [plan, setPlan] = useState<MePlanView | null>(null);
   const [series, setSeries] = useState<MonitorSeries | undefined>(undefined);
@@ -24,17 +37,17 @@ export function HomeScreen() {
   useEffect(() => {
     let on = true;
     setLoad("loading");
-    Promise.all([me.getMePlan(), me.getMeSeries(), me.getDayLog()])
+    Promise.all([client.getMePlan(), client.getMeSeries(), client.getDayLog()])
       .then(([p, s, d]) => { if (on) { setPlan(p); setSeries(s); setDaylog(d); setLoad("ready"); } })
       .catch(() => { if (on) setLoad("error"); });
     return () => { on = false; };
-  }, []);
+  }, [client]);
 
   const onCheckinDone = useCallback(async (input: DayLogInput) => {
-    await me.putDayLog(input);
-    const fresh = await me.getDayLog();
+    await client.putDayLog(input);
+    const fresh = await client.getDayLog();
     setDaylog(fresh);
-  }, []);
+  }, [client]);
 
   if (load === "loading") {
     return <div aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>Cargando…</div>;
@@ -74,7 +87,7 @@ export function HomeScreen() {
         <button className="wl-btn wl-btn--primary ho-cta" onClick={() => setCheckinOpen(true)}>Hacer check-in de hoy</button>
       )}
 
-      {plan.plan && <SemanaCard week={plan.plan.currentWeek} />}
+      {plan.plan && !preview && <SemanaCard week={plan.plan.currentWeek} client={client} />}
       <ConstanciaCard streak={daylog.streak} days={daylog.days} today={daylog.today} />
       <CaminoCard plan={plan.plan} />
 

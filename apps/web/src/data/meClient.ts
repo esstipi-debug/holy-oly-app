@@ -30,3 +30,20 @@ export function getMeSessions(week: number): Promise<SessionView[]> {
 export function putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void> {
   return API_ENABLED ? http.putMeSession(week, idx, actuals) : local().putMeSession(week, idx, actuals);
 }
+
+/**
+ * The athlete-self data contract. The module above is the app-wide singleton ("me" = the logged-in
+ * athlete, or demo Kevin), but the coach drill-down's "ver como atleta" toggle needs an id-scoped
+ * instance (`new LocalMeClient(athleteId)`), so the athlete screens take a `MeClient` they can swap.
+ */
+export interface MeClient {
+  getMePlan(): Promise<MePlanView>;
+  getMeSeries(): Promise<MonitorSeries | undefined>;
+  getDayLog(date?: string): Promise<DayLogView>;
+  putDayLog(input: DayLogInput): Promise<DayLogResult>;
+  getMeSessions(week: number): Promise<SessionView[]>;
+  putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void>;
+}
+
+/** The module singleton as a `MeClient` object — the default client for the athlete screens. */
+export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, putMeSession };

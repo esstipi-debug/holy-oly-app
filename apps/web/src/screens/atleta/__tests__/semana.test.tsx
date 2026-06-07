@@ -2,7 +2,10 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 
-vi.mock("../../../data/meClient", () => ({ getMeSessions: vi.fn() }));
+vi.mock("../../../data/meClient", () => {
+  const getMeSessions = vi.fn();
+  return { getMeSessions, meClient: { getMeSessions } };
+});
 
 import * as me from "../../../data/meClient";
 import { SemanaCard } from "../hoy/SemanaCard";

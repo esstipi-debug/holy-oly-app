@@ -4,14 +4,18 @@ import { vi, beforeEach } from "vitest";
 import type { MonitorSeries } from "@holy-oly/core";
 import { AthleteShell } from "../AthleteShell";
 import { HomeScreen } from "../HomeScreen";
+import type { MeClient } from "../../../data/meClient";
 
-vi.mock("../../../data/meClient", () => ({
-  getMePlan: vi.fn(),
-  getMeSeries: vi.fn(),
-  getDayLog: vi.fn(),
-  putDayLog: vi.fn(),
-  getMeSessions: vi.fn().mockResolvedValue([]),
-}));
+vi.mock("../../../data/meClient", () => {
+  const getMePlan = vi.fn();
+  const getMeSeries = vi.fn();
+  const getDayLog = vi.fn();
+  const putDayLog = vi.fn();
+  const getMeSessions = vi.fn().mockResolvedValue([]);
+  const putMeSession = vi.fn();
+  const meClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, putMeSession };
+  return { ...meClient, meClient };
+});
 import * as me from "../../../data/meClient";
 
 function renderHome() {
@@ -71,4 +75,46 @@ test("error de carga → mensaje honesto", async () => {
   vi.mocked(me.getDayLog).mockResolvedValue({ entry: null, streak: 0, days: [], today: "2026-06-03" });
   renderHome();
   await waitFor(() => expect(screen.getByText(/No se pudo cargar/)).toBeInTheDocument());
+});
+
+// ── T1b: HomeScreen reusable in the coach toggle ────────────────────────────
+// The toggle renders the athlete Home OUTSIDE the AthleteShell/Outlet, scoped to a specific
+// athlete via an injected client. So HomeScreen must (a) read from an injected MeClient, not the
+// module singleton, (b) render without an Outlet context, (c) drop the navigation-only SemanaCard
+// in preview (where navigating into the entreno route doesn't apply).
+
+test("usa el cliente inyectado, no el módulo global (rinde sin AthleteShell)", async () => {
+  const fake: MeClient = {
+    getMePlan: vi.fn().mockResolvedValue({ athlete: { nombre: "Caro F.", iniciales: "CF", sexo: "F" }, plan: null }),
+    getMeSeries: vi.fn().mockResolvedValue(undefined),
+    getDayLog: vi.fn().mockResolvedValue({ entry: null, streak: 0, days: [], today: "2026-06-07" }),
+    putDayLog: vi.fn(),
+    getMeSessions: vi.fn().mockResolvedValue([]),
+    putMeSession: vi.fn(),
+  };
+  // No <AthleteShell>/<Outlet> wrapper — proves HomeScreen tolerates a missing Outlet context.
+  render(<MemoryRouter><HomeScreen client={fake} preview /></MemoryRouter>);
+  expect(await screen.findByText("Hola, Caro")).toBeInTheDocument();
+  expect(fake.getMePlan).toHaveBeenCalled();
+  expect(me.getMePlan).not.toHaveBeenCalled(); // el módulo global no se tocó
+});
+
+test("preview oculta la SemanaCard; sin preview la muestra", async () => {
+  vi.mocked(me.getMePlan).mockResolvedValue({
+    athlete: { nombre: "Kevin A.", iniciales: "KV", sexo: "M" },
+    plan: { macroName: "Ruso 5D", totalWeeks: 16, currentWeek: 3, currentPhase: "Base", phases: [{ name: "Base", from: 1, to: 16, imr: 80 }], comps: [] },
+  });
+  vi.mocked(me.getMeSeries).mockResolvedValue(undefined);
+  vi.mocked(me.getDayLog).mockResolvedValue({ entry: null, streak: 0, days: [], today: "2026-06-07" });
+  vi.mocked(me.getMeSessions).mockResolvedValue([
+    { week: 3, sessionIdx: 0, exercises: [{ movementId: "arranque", sets: 5, reps: 2, pct: 80, movementName: "Arranque", targetKg: 64 }] },
+  ] as never);
+
+  const { unmount } = render(<MemoryRouter><HomeScreen /></MemoryRouter>);
+  expect(await screen.findByText("Tu semana")).toBeInTheDocument();
+  unmount();
+
+  render(<MemoryRouter><HomeScreen preview /></MemoryRouter>);
+  expect(await screen.findByText("Hola, Kevin")).toBeInTheDocument();
+  expect(screen.queryByText("Tu semana")).not.toBeInTheDocument();
 });

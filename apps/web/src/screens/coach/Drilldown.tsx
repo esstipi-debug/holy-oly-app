@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
 import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
@@ -22,6 +22,8 @@ import { WeekDetailSheet } from "../../ui/charts/WeekDetailSheet";
 import { PlanCalendar } from "./calendar/PlanCalendar";
 import { SessionsSection } from "./sessions/SessionsSection";
 import { AtletaPreview } from "./AtletaPreview";
+import { HomeScreen } from "../atleta/HomeScreen";
+import { LocalMeClient } from "../../data/LocalMeClient";
 import { API_ENABLED } from "../../data/apiConfig";
 
 export function Drilldown() {
@@ -42,6 +44,9 @@ export function Drilldown() {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   // P1 demo-only "ver como atleta": swap the coach body for the athlete's own view of THIS athlete.
   const [asAthlete, setAsAthlete] = useState(false);
+  // Id-scoped athlete client for the preview — reads the SAME localStorage the coach just wrote,
+  // so a freshly edited plan/weight lands when the toggle remounts the athlete view.
+  const previewClient = useMemo(() => new LocalMeClient(id), [id]);
 
   useEffect(() => {
     let on = true;
@@ -145,7 +150,14 @@ export function Drilldown() {
         </div>
       )}
 
-      {asAthlete && <AtletaPreview athleteId={id} week={hoyWeek} sexo={athlete.sexo} />}
+      {asAthlete && (
+        <div style={{ marginTop: 14 }}>
+          {/* Full athlete Home (greeting · estado · constancia · camino), then the money-shot
+              prescription with discs. Both read the same id-scoped client → the coach's edit shows. */}
+          <HomeScreen client={previewClient} variant="tap" preview />
+          <AtletaPreview athleteId={id} week={hoyWeek} sexo={athlete.sexo} client={previewClient} />
+        </div>
+      )}
 
       {!asAthlete && (<>
       {series ? (
