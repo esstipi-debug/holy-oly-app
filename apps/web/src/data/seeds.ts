@@ -36,6 +36,22 @@ export const ROSTER_META: Record<string, RosterMeta> = {
   kv: { metodo: "Ruso 5D" },
 };
 
+/**
+ * Demo-only (T3) sales annotations — "por qué mirar a este". Each hint MATCHES the athlete's pinned
+ * readiness cell (we annotate the seeded series, we don't re-steer them): ds/bg = alerta, mv/sm =
+ * vigilar, cf/ap = ok, tl = sin datos, kv = el atleta demo. Shown by `DemoSalesStrip`, gated !API_ENABLED.
+ */
+export const ROSTER_HINTS: Record<string, string> = {
+  ds: "Triage en rojo: HRV abajo y carga arriba. El caso donde frenás una lesión antes de que pase.",
+  bg: "Sobre-alcance al final del bloque — otra alerta para leer fino antes de la próxima semana.",
+  mv: "Rumbo al Nacional: mirá el macro-timeline y la recuperación en el taper.",
+  sm: "Avanzada, algo cargada al cierre del bloque — para vigilar sin frenar.",
+  cf: "Bloque sano, con contexto de ciclo (opt-in) — el diferenciador femenino.",
+  ap: "Atleta consistente que cumple — el caso 'todo en verde'.",
+  tl: "Sin datos aún — el estado vacío honesto (cuando registre HRV/carga aparece).",
+  kv: "El atleta demo: un año de datos + Entreno guiado + pantalla de victoria.",
+};
+
 // Mara — real 12-week arrays from _mockup/coach.html; recovery precomputed.
 // Derived current-week cell: warn (acwr 0.74 deload + recovery 77).
 // M4b optional fields seeded only for Mara (showcase athlete); others stay as-is.

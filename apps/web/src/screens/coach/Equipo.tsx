@@ -4,6 +4,16 @@ import { useRepository } from "../../data/RepositoryProvider";
 import { getRosterRows, type RosterRow } from "./roster";
 import { AtletasHero } from "./atletas/AtletasHero";
 import { AtletaMiniCard } from "./atletas/AtletaMiniCard";
+import { DemoSalesStrip } from "./atletas/DemoSalesStrip";
+import { API_ENABLED } from "../../data/apiConfig";
+import { resetDemoStorage } from "../../data/resetDemo";
+
+function onResetDemo(): void {
+  if (window.confirm("¿Reiniciar el demo al estado inicial? Se borran los cambios de esta sesión (pesos, registros, recorrido).")) {
+    resetDemoStorage(window.localStorage);
+    window.location.reload();
+  }
+}
 
 /** Plantel (coach) — layout "FUT": carta dorada del mejor readiness + grilla de mini-cards.
  *  El estado (semáforo) sale de los datos; el oro es identidad decorativa. */
@@ -37,6 +47,12 @@ export function Equipo() {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
           <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>{rows.length} ATLETAS</span>
           <Link to="/coach/invitaciones" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-accent)", textDecoration: "none" }}>Invitaciones ›</Link>
+          {!API_ENABLED && (
+            <button type="button" onClick={onResetDemo}
+              style={{ minHeight: 28, marginTop: 2, padding: "4px 10px", borderRadius: 8, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 10, cursor: "pointer" }}>
+              ↻ Reiniciar demo
+            </button>
+          )}
         </div>
       </div>
 
@@ -46,6 +62,7 @@ export function Equipo() {
         <div aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "16px 0" }}>Cargando plantel…</div>
       ) : (
         <>
+          {!API_ENABLED && <DemoSalesStrip rows={rows} />}
           {hero && <AtletasHero row={hero} onPick={onPick} />}
           <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "16px 0 11px" }}>
             <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 13, letterSpacing: 1, color: "var(--wl-muted)", textTransform: "uppercase" }}>El plantel</span>
