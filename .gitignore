@@ -18,6 +18,8 @@ dist/
 .env
 .env.*
 !.env.example
+# build-config env (no secrets — sets VITE_HASH_ROUTER for the single-file demo build)
+!apps/web/.env.singlefile
 
 # embedded-postgres ephemeral data dirs (db-verify orchestrator)
 .pgdata*/

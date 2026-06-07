@@ -1,4 +1,5 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, createHashRouter, type RouteObject } from "react-router-dom";
+import { isHashRouting } from "./routerMode";
 import { App } from "./App";
 import { RepositoryProvider } from "../data/RepositoryProvider";
 import { AuthProvider } from "../auth/AuthContext";
@@ -19,8 +20,7 @@ import { CuentaMin } from "../screens/atleta/CuentaMin";
 import { EntrenoScreen } from "../screens/atleta/EntrenoScreen";
 import { VictoriaScreen } from "../screens/atleta/entreno/VictoriaScreen";
 
-// Explicit type annotation avoids TS2742 (pnpm virtual store internal type).
-export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter([
+const routes: RouteObject[] = [
   {
     path: "/",
     element: (
@@ -62,4 +62,10 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
         : []),
     ],
   },
-]);
+];
+
+// History routing by default (clean URLs). The single-file `file://` demo build flips to hash
+// routing via VITE_HASH_ROUTER — see routerMode.ts. Explicit annotation avoids TS2742; the union
+// covers both factories honestly (identical RemixRouter today, defensive if RRD ever diverges).
+export const router: ReturnType<typeof createBrowserRouter> | ReturnType<typeof createHashRouter> =
+  isHashRouting() ? createHashRouter(routes) : createBrowserRouter(routes);
