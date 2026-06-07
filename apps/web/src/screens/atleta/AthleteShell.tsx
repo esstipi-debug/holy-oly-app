@@ -2,6 +2,11 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useOutletContext } from "react-router-dom";
 import { getSkin, setSkin as persistSkin, getVariant, setVariant as persistVariant, type CheckinVariant } from "./prefs";
 import { NavIcon } from "./primitives";
+// Imported (not "/icon.svg"): Vite inlines it as a data URI, so the logo survives the single-file
+// `file://` demo build where an absolute "/icon.svg" path would 404. Benefits the normal build too.
+// NOTE: this is a copy of public/icon.svg (which stays as the favicon source for index.html / the
+// normal build) — keep the two in sync if the icon ever changes.
+import iconUrl from "../../assets/icon.svg";
 import "./atleta.css";
 
 export interface AtletaOutletCtx {
@@ -34,7 +39,7 @@ export function AthleteShell() {
   return (
     <div className={`ho-shell wl wl--${skin}`}>
       <header className="ho-hobar">
-        <img className="ho-hobar__logo" src="/icon.svg" alt="" />
+        <img className="ho-hobar__logo" src={iconUrl} alt="" />
         <div className="ho-hobar__brand">
           <span className="ho-hobar__name">Holy Oly</span>
           <span className="ho-hobar__motto">smart training · zero burnout</span>
