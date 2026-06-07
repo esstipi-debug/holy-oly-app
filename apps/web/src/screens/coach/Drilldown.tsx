@@ -21,6 +21,8 @@ import { weekSignals } from "../../ui/charts/weekSignals";
 import { WeekDetailSheet } from "../../ui/charts/WeekDetailSheet";
 import { PlanCalendar } from "./calendar/PlanCalendar";
 import { SessionsSection } from "./sessions/SessionsSection";
+import { AtletaPreview } from "./AtletaPreview";
+import { API_ENABLED } from "../../data/apiConfig";
 
 export function Drilldown() {
   const { id = "" } = useParams();
@@ -38,10 +40,12 @@ export function Drilldown() {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  // P1 demo-only "ver como atleta": swap the coach body for the athlete's own view of THIS athlete.
+  const [asAthlete, setAsAthlete] = useState(false);
 
   useEffect(() => {
     let on = true;
-    setLoaded(false); setError(false); // reset on athlete change so a prior error/data doesn't stick
+    setLoaded(false); setError(false); setAsAthlete(false); // reset on athlete change (incl. the athlete-view toggle)
     Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id)])
       .then(([a, s, m, c, sl, pl]) => {
         if (!on) return;
@@ -127,6 +131,23 @@ export function Drilldown() {
           style={{ flex: "0 0 auto", padding: "7px 14px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Asignar</button>
       </div>
 
+      {!API_ENABLED && (
+        <div role="group" aria-label="Ver como" style={{ display: "flex", gap: 0, marginTop: 12, width: "fit-content", background: "var(--wl-surface)", borderRadius: 10, padding: 3, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+          {([["coach", "Coach"], ["atleta", "Atleta"]] as const).map(([key, label]) => {
+            const active = (key === "atleta") === asAthlete;
+            return (
+              <button key={key} type="button" aria-pressed={active} onClick={() => setAsAthlete(key === "atleta")}
+                style={{ minHeight: 44, padding: "0 18px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, letterSpacing: ".02em", background: active ? "var(--wl-accent)" : "transparent", color: active ? "var(--wl-bg)" : "var(--wl-muted)" }}>
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {asAthlete && <AtletaPreview athleteId={id} week={hoyWeek} sexo={athlete.sexo} />}
+
+      {!asAthlete && (<>
       {series ? (
         <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
           {macro && <MacroTimeline macro={macro} hoy={series.weeks} comps={comps} />}
@@ -198,6 +219,7 @@ export function Drilldown() {
         <button type="button" onClick={() => setMedalOpen(true)}
           style={{ marginTop: 12, padding: "8px 14px", borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-accent) 50%,transparent)", background: "color-mix(in srgb,var(--wl-accent) 12%,transparent)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>+ Añadir medalla</button>
       )}
+      </>)}
 
       <MedalSheet open={medalOpen} onClose={() => setMedalOpen(false)} onSubmit={onAddMedal} />
       <CompSheet open={compOpen} onClose={() => setCompOpen(false)} comps={comps} startDate={startDate} totalWeeks={maxWeek} onAdd={onAddComp} onRemove={onRemoveComp} />

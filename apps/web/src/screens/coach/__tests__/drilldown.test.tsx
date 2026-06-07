@@ -48,6 +48,17 @@ test("el botón 'volver' lleva de vuelta a Atletas (/coach)", async () => {
   await waitFor(() => expect(screen.getByText("ATLETAS-ROSTER")).toBeInTheDocument());
 });
 
+test("'ver como atleta' (demo) swaps the coach body for the athlete preview, and back", async () => {
+  renderAt("mv");
+  await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
+  expect(screen.getByText("ACWR")).toBeInTheDocument(); // coach body present
+  fireEvent.click(screen.getByRole("button", { name: "Atleta" }));
+  await waitFor(() => expect(screen.getByTestId("atleta-preview")).toBeInTheDocument());
+  expect(screen.queryByText("ACWR")).not.toBeInTheDocument(); // coach charts swapped out
+  fireEvent.click(screen.getByRole("button", { name: "Coach" }));
+  await waitFor(() => expect(screen.getByText("ACWR")).toBeInTheDocument()); // back to coach
+});
+
 test("no-data athlete (Tomás) shows an empty state, not charts", async () => {
   renderAt("tl");
   await waitFor(() => expect(screen.getByText("Tomás L.")).toBeInTheDocument());
