@@ -1,5 +1,5 @@
 import { recoverySeries, recoveryState, type CellState, type MonitorSeries } from "@holy-oly/core";
-import { ChartCard, linePath, WeekTapZones } from "./chartkit";
+import { ChartCard, linePath, WeekTapZones, type Explain } from "./chartkit";
 import { STATUS } from "../status";
 
 interface MiniProps {
@@ -60,18 +60,18 @@ function Mini({ arr, base, label, pad, pointState, onPick }: MiniProps) {
   );
 }
 
-export function RecoveryChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
+export function RecoveryChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
   const rec = recoverySeries(series);
   const lastRec = rec.at(-1) ?? NaN;
   const st = recoveryState(lastRec);
 
   return (
     <ChartCard
-      title="Recuperación"
-      sub="HRV ↓ y FC reposo ↑ sostenidos = alerta"
+      title={title ?? "Recuperación"}
+      sub={sub ?? "HRV ↓ y FC reposo ↑ sostenidos = alerta"}
       chip={lastRec != null && !Number.isNaN(lastRec) ? String(lastRec) : undefined}
       chipState={recoveryState(lastRec)}
-      explain={{
+      explain={explain ?? {
         forma: "HRV y FC en reposo (RHR) por semana, comparadas contra el baseline propio del atleta.",
         sirve: "Leer la recuperación: HRV cayendo o RHR subiendo sostenidos sugieren fatiga.",
         lectura: "Banda alrededor del baseline; fuera de banda (HRV↓ / RHR↑) = vigilar.",
