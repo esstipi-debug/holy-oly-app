@@ -111,6 +111,7 @@
 .ho-plan__macro { font-family: var(--wl-display); font-weight: 800; font-size: 20px; line-height: 1; color: var(--wl-text); }
 .ho-plan__wk { font-family: var(--ho-mono); font-size: 11px; color: var(--wl-muted); margin-top: 5px; }
 .ho-plan__close { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 9px; border: 1px solid color-mix(in srgb, var(--wl-text) 14%, transparent); background: var(--wl-bg); color: var(--wl-muted); font-size: 14px; line-height: 1; cursor: pointer; }
+.ho-plan__close:focus-visible { outline: 2px solid var(--wl-accent); outline-offset: 2px; }
 .ho-plan__count { display: flex; align-items: baseline; gap: 10px; margin: 0 0 14px; }
 .ho-plan__count b { font-family: var(--wl-display); font-weight: 800; font-size: 30px; color: var(--wl-accent); line-height: .9; }
 .ho-plan__count span { font-family: var(--ho-mono); font-size: 10.5px; color: var(--wl-muted); line-height: 1.4; }

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useFocusTrap } from "./useFocusTrap";
 
 export function BottomSheet({
@@ -14,6 +14,14 @@ export function BottomSheet({
 }) {
   // WCAG 2.2: move focus into the sheet on open, trap it, restore it to the trigger on close.
   const dialogRef = useFocusTrap(open);
+  // ARIA dialog pattern / WCAG 2.1.2: Escape dismisses the modal. Re-subscribes per render so the
+  // latest onClose is used (no stale closure); cheap and correct for an open modal.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
   if (!open) return null;
 
   return (

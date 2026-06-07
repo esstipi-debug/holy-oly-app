@@ -39,6 +39,8 @@ export function PlanDetailSheet({ plan, open, onClose }: { plan: PlanView; open:
       )}
 
       <div className="ho-plan__periodlabel">Periodización · volumen por fase</div>
+      {/* Decorative volume bars — the same data is conveyed textually in the meso cards below,
+          so this is intentionally aria-hidden (no info loss for screen readers). */}
       <div className="ho-plan__strip" aria-hidden>
         {plan.phases.map((p) => {
           const now = plan.currentWeek >= p.from && plan.currentWeek <= p.to;
