@@ -1,7 +1,7 @@
 import { recoverySeries, type Atleta, type Competencia, type Medal, type MonitorSeries, type CycleShare, type CycleState, type RM, type DayLog } from "@holy-oly/core";
 
 /** Bump when SEED_* shapes change so already-seeded browsers re-seed (M4a medals → v2; M4c macroIds + comps → v4; A-offline Kevin + plan/daylog seeds → v5). */
-export const SEED_VERSION = 5;
+export const SEED_VERSION = 6; // bump → demo localStorage re-seeds (adds Mara's plan/prescription)
 
 /** Clamp to an integer in [lo, hi] — keeps generated telemetry inside the domain's valid ranges. */
 const clampInt = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, Math.round(v)));
@@ -214,6 +214,16 @@ export const SEED_PLAN_INPUTS: Record<string, { macroId: string; currentWeek: nu
     currentWeek: 12, // of 16 → mid-plan: an active Camino + a real session to train today
     rms: { arranque: 98, envion: 122, sentadilla: 165, frente: 132 },
     comps: [{ name: "Sudamericano", week: 16 }],
+  },
+  // Mara — the featured first card. So "ver como atleta" lands the money shot (discs) on her too,
+  // not only Kevin. macroId matches her roster (ruso-5d, the only macro with a MACRO_RECIPES recipe
+  // → the only one that instantiates a prescription); currentWeek 12 aligns with her 12wk of series;
+  // comp matches SEED_COMPS.mv (Nacional/16). Female RMs + sexo "F" → the 15 kg bar in the discs.
+  mv: {
+    macroId: "ruso-5d",
+    currentWeek: 12,
+    rms: { arranque: 78, envion: 98, sentadilla: 130, frente: 105 },
+    comps: [{ name: "Nacional", week: 16 }],
   },
 };
 

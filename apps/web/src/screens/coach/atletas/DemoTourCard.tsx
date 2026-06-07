@@ -22,9 +22,14 @@ export function DemoTourCard({ storage = window.localStorage, onDismiss }: { sto
   const dismiss = () => { markTourSeen(storage); setOpen(false); onDismiss?.(); };
 
   return (
-    <section
-      aria-label="Recorrido de la demo"
-      data-testid="demo-tour-card"
+    <>
+      {/* In-flow spacer so the `position:fixed` card never traps the last roster cards underneath
+          it (Kevin — the money-shot athlete — is the last card). Sits next to the card in the
+          scroll flow, so it appears/vanishes WITH the card on dismiss (no `seen` desync). */}
+      <div aria-hidden style={{ height: 280 }} />
+      <section
+        aria-label="Recorrido de la demo"
+        data-testid="demo-tour-card"
       style={{ position: "fixed", left: "50%", transform: "translateX(-50%)", bottom: 16, width: "min(92vw, 400px)", zIndex: 50, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 12%,transparent)", borderRadius: 12, padding: "14px 16px", boxShadow: "0 10px 30px rgba(0,0,0,.45)" }}
     >
       <div style={{ fontFamily: "var(--wl-display)", fontSize: 11, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Recorrido de la demo</div>
@@ -44,6 +49,7 @@ export function DemoTourCard({ storage = window.localStorage, onDismiss }: { sto
       >
         Entendido, empezar
       </button>
-    </section>
+      </section>
+    </>
   );
 }
