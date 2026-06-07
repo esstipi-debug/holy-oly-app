@@ -5,6 +5,7 @@ import { getRosterRows, type RosterRow } from "./roster";
 import { AtletasHero } from "./atletas/AtletasHero";
 import { AtletaMiniCard } from "./atletas/AtletaMiniCard";
 import { DemoSalesStrip } from "./atletas/DemoSalesStrip";
+import { DemoTourCard } from "./atletas/DemoTourCard";
 import { API_ENABLED } from "../../data/apiConfig";
 import { resetDemoStorage } from "../../data/resetDemo";
 
@@ -73,6 +74,7 @@ export function Equipo() {
           </div>
         </>
       )}
+      {!API_ENABLED && <DemoTourCard />}
     </div>
   );
 }
