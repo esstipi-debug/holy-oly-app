@@ -51,6 +51,13 @@ test("sin serie: estado vacío honesto, sin gráficos", async () => {
   expect(screen.queryByText("Tu carga")).not.toBeInTheDocument();
 });
 
+test("error de red: muestra role=alert, sin gráficos", async () => {
+  vi.mocked(me.getMeSeries).mockRejectedValue(new Error("network"));
+  render(<ProgresoScreen />);
+  expect(await screen.findByRole("alert")).toBeInTheDocument();
+  expect(screen.queryByText("Tu carga")).not.toBeInTheDocument();
+});
+
 test("sin bodyweight: no muestra «Tu peso»", async () => {
   vi.mocked(me.getMeSeries).mockResolvedValue({ ...SERIES, bodyweight: undefined, weightBand: undefined });
   render(<ProgresoScreen />);

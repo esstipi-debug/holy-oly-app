@@ -34,7 +34,7 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
   );
 
   if (load === "loading") {
-    return <>{header}<div aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>Cargando tu progreso…</div></>;
+    return <>{header}<div role="status" aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>Cargando tu progreso…</div></>;
   }
   if (load === "error") {
     return <>{header}<div role="alert" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>No se pudo cargar tu progreso. Probá de nuevo más tarde.</div></>;
