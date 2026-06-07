@@ -24,7 +24,7 @@ test("muestra la carta hero del mejor readiness + el plantel", async () => {
   renderEquipo();
   expect(await screen.findByText(/MEJOR READINESS/i)).toBeInTheDocument();
   expect(screen.getByText("El plantel")).toBeInTheDocument();
-  expect(screen.getByText(/8 ATLETAS/)).toBeInTheDocument();
+  expect(screen.getByText(/9 ATLETAS/)).toBeInTheDocument();
 });
 
 test("tocar la carta hero navega al drill-down", async () => {

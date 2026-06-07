@@ -1,64 +1,32 @@
-import {
-  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema,
-  type MePlanView, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type ExerciseActualInput,
-} from "@holy-oly/core";
+/**
+ * Athlete-self client. Single import surface for the athlete screens; delegates to the API
+ * (`httpMeClient`) when the app talks to a backend, or to `LocalMeClient` (localStorage, demo
+ * athlete Kevin) when standalone — the exact mirror of how `RepositoryProvider` picks Http vs Local.
+ */
+import type { MePlanView, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, ExerciseActualInput } from "@holy-oly/core";
+import { API_ENABLED } from "./apiConfig";
+import * as http from "./httpMeClient";
+import { LocalMeClient } from "./LocalMeClient";
 
-const BASE = import.meta.env.VITE_API_URL ?? "";
+// Lazy so the standalone client (which touches localStorage) is only built when actually used.
+let _local: LocalMeClient | null = null;
+const local = (): LocalMeClient => (_local ??= new LocalMeClient());
 
-async function fail(res: Response): Promise<never> {
-  const body = (await res.json().catch(() => null)) as { error?: string } | null;
-  throw new Error(body?.error ?? `request failed (${res.status})`);
+export function getMePlan(): Promise<MePlanView> {
+  return API_ENABLED ? http.getMePlan() : local().getMePlan();
 }
-
-/** The athlete's own plan view (greeting + camino). plan is null when unassigned. */
-export async function getMePlan(): Promise<MePlanView> {
-  const res = await fetch(`${BASE}/me/plan`, { credentials: "include" });
-  if (!res.ok) return fail(res);
-  return MePlanViewSchema.parse(await res.json());
+export function getMeSeries(): Promise<MonitorSeries | undefined> {
+  return API_ENABLED ? http.getMeSeries() : local().getMeSeries();
 }
-
-/** The athlete's own series (Titular state). undefined when there is none (404). */
-export async function getMeSeries(): Promise<MonitorSeries | undefined> {
-  const res = await fetch(`${BASE}/me/series`, { credentials: "include" });
-  if (res.status === 404) return undefined;
-  if (!res.ok) return fail(res);
-  return MonitorSeriesSchema.parse(await res.json());
+export function getDayLog(date?: string): Promise<DayLogView> {
+  return API_ENABLED ? http.getDayLog(date) : local().getDayLog(date);
 }
-
-/** Today's entry (or `date`) + streak + logged days + server today. */
-export async function getDayLog(date?: string): Promise<DayLogView> {
-  const q = date ? `?date=${encodeURIComponent(date)}` : "";
-  const res = await fetch(`${BASE}/me/daylog${q}`, { credentials: "include" });
-  if (!res.ok) return fail(res);
-  return DayLogViewSchema.parse(await res.json());
+export function putDayLog(input: DayLogInput): Promise<DayLogResult> {
+  return API_ENABLED ? http.putDayLog(input) : local().putDayLog(input);
 }
-
-/** Upsert today's self-report. */
-export async function putDayLog(input: DayLogInput): Promise<DayLogResult> {
-  const res = await fetch(`${BASE}/me/daylog`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  if (!res.ok) return fail(res);
-  return DayLogResultSchema.parse(await res.json());
+export function getMeSessions(week: number): Promise<SessionView[]> {
+  return API_ENABLED ? http.getMeSessions(week) : local().getMeSessions(week);
 }
-
-/** The athlete's prescribed sessions for a given week (merged with their actuals). */
-export async function getMeSessions(week: number): Promise<SessionView[]> {
-  const res = await fetch(`${BASE}/me/sessions?week=${week}`, { credentials: "include" });
-  if (!res.ok) return fail(res);
-  return SessionViewsSchema.parse(await res.json());
-}
-
-/** Record (replace) the athlete's actuals for one session. */
-export async function putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void> {
-  const res = await fetch(`${BASE}/me/session/${week}/${idx}`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(actuals),
-  });
-  if (!res.ok) await fail(res);
+export function putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void> {
+  return API_ENABLED ? http.putMeSession(week, idx, actuals) : local().putMeSession(week, idx, actuals);
 }

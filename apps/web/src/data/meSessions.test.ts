@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import * as me from "./meClient";
+import * as me from "./httpMeClient";
 
-describe("meClient sessions", () => {
+describe("httpMeClient sessions", () => {
   afterEach(() => vi.restoreAllMocks());
   it("getMeSessions GETs ?week and parses; putMeSession PUTs the actuals", async () => {
     let seen = "";

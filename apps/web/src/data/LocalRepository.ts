@@ -6,11 +6,11 @@ import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
   PrescriptionRowsSchema,
-  MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews,
+  MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
-import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE, SEED_MEDALS, SEED_COMPS, SEED_VERSION } from "./seeds";
+import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE, SEED_MEDALS, SEED_COMPS, SEED_VERSION, SEED_PLAN_INPUTS, makeDayLogYear } from "./seeds";
 
 export class LocalRepository implements Repository {
   private s: JsonStore;
@@ -30,6 +30,21 @@ export class LocalRepository implements Repository {
       const cyc = SEED_CYCLE[a.id] ?? { share: "min" as CycleShare, state: "regular" as CycleState };
       this.s.set(KEYS.cycleShare(a.id), cyc.share);
       this.s.set(KEYS.cycleState(a.id), cyc.state);
+    }
+    // Athlete-demo seed: an assigned plan (+ its instantiated prescription) and a year of check-ins,
+    // so the offline athlete app (LocalMeClient) opens fully populated. startDate anchors today to
+    // the chosen currentWeek; the prescription is instantiated exactly as savePlan would.
+    const today = new Date().toISOString().slice(0, 10);
+    for (const [id, inp] of Object.entries(SEED_PLAN_INPUTS)) {
+      const macro = MACROCYCLES.find((m) => m.id === inp.macroId);
+      const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+      const plan: Plan = {
+        atletaId: id, macroId: inp.macroId, startWeek: 1,
+        startDate: defaultStartDate(today, inp.currentWeek), rms: inp.rms, comps: inp.comps,
+      };
+      this.s.set(KEYS.plan(id), plan);
+      this.s.set(KEYS.prescription(id), macro ? instantiatePrescription(MACRO_RECIPES, macro, totalWeeks) : []);
+      this.s.set(KEYS.dayLog(id), makeDayLogYear(today));
     }
     this.s.set(KEYS.seeded, SEED_VERSION);
   }
