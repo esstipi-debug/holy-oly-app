@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { SessionView } from "@holy-oly/core";
-import { getMeSessions } from "../../../data/meClient";
+import { meClient, type MeClient } from "../../../data/meClient";
 
 const doneOf = (s: SessionView) => s.exercises.filter((e) => e.actual?.done).length;
 
-export function SemanaCard({ week }: { week: number }) {
+export function SemanaCard({ week, client = meClient }: { week: number; client?: MeClient }) {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
   useEffect(() => {
     let on = true;
-    getMeSessions(week).then((s) => { if (on) setSessions(s); }).catch(() => { if (on) setSessions([]); });
+    client.getMeSessions(week).then((s) => { if (on) setSessions(s); }).catch(() => { if (on) setSessions([]); });
     return () => { on = false; };
-  }, [week]);
+  }, [client, week]);
 
   if (!sessions || sessions.length === 0) return null;
 

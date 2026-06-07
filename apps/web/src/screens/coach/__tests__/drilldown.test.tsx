@@ -1,5 +1,6 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { afterEach } from "vitest";
 import { RepositoryProvider } from "../../../data/RepositoryProvider";
 import { LocalRepository } from "../../../data/LocalRepository";
 import { MemStorage } from "../../../test-utils/MemStorage";
@@ -58,6 +59,28 @@ test("'ver como atleta' (demo) swaps the coach body for the athlete preview, and
   fireEvent.click(screen.getByRole("button", { name: "Coach" }));
   await waitFor(() => expect(screen.getByText("ACWR")).toBeInTheDocument()); // back to coach
 });
+
+test("'ver como atleta' muestra la Home COMPLETA del atleta (saludo) + la sesión con discos", async () => {
+  // The preview's LocalMeClient reads the GLOBAL localStorage; seed it there (not MemStorage) so
+  // the toggle finds the seeded athlete. Isolated by clearing before and after.
+  localStorage.clear();
+  const repo = new LocalRepository(); // global localStorage
+  repo.init();
+  render(
+    <RepositoryProvider repo={repo}>
+      <MemoryRouter initialEntries={["/coach/a/kv"]}>
+        <Routes><Route path="/coach/a/:id" element={<Drilldown />} /></Routes>
+      </MemoryRouter>
+    </RepositoryProvider>,
+  );
+  await waitFor(() => expect(screen.getByText("Kevin A.")).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Atleta" }));
+  // Full athlete home (greeting) AND the money-shot prescription with discs both render.
+  expect(await screen.findByText("Hola, Kevin")).toBeInTheDocument();
+  expect(screen.getByTestId("atleta-preview")).toBeInTheDocument();
+});
+
+afterEach(() => localStorage.clear());
 
 test("no-data athlete (Tomás) shows an empty state, not charts", async () => {
   renderAt("tl");

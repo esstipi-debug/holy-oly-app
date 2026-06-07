@@ -20,12 +20,13 @@ import {
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
+import type { MeClient } from "./meClient";
 
 /** The demo athlete ("me") — Kevin. The coach `LocalRepository` seeds his roster row, series,
  *  plan/prescription and a year of check-ins. */
 export const DEMO_ATHLETE_ID = "kv";
 
-export class LocalMeClient {
+export class LocalMeClient implements MeClient {
   private s: JsonStore;
   constructor(
     private readonly id: string = DEMO_ATHLETE_ID,
