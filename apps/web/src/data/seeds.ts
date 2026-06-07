@@ -203,7 +203,7 @@ export const SEED_PLAN_INPUTS: Record<string, { macroId: string; currentWeek: nu
 
 /**
  * A deterministic ~year of daily check-ins ending `today`: mostly-daily with sparse older gaps,
- * the last 45 days continuous so the streak reads as a committed athlete. Built at seed time
+ * at least the last 45 days continuous so the streak reads as a committed athlete. Built at seed time
  * (init) so the dates are always relative to the real today. Pure given `today`.
  */
 export function makeDayLogYear(today: string, span = 364): DayLog[] {

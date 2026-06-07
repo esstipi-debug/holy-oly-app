@@ -136,6 +136,9 @@ export const DayLogSchema = z.object({
   weight: KgSchema.optional(),
 });
 
+/** Stored array of own-written check-ins — validates the LocalMeClient localStorage read. */
+export const DayLogsSchema = z.array(DayLogSchema).max(2000);
+
 export const DayLogViewSchema = z.object({
   entry: DayLogSchema.nullable(),
   streak: z.number().int().nonnegative(),
@@ -216,6 +219,23 @@ export const ExerciseActualSchema = z.object({
   desfasado: z.boolean(),
   sets: SetActualsSchema.optional(),
 });
+
+// Stored session actual (read-side: the API/LocalMeClient already validated it on write) → no
+// bounds, like ExerciseActualSchema above. Validates own-written localStorage reads in LocalMeClient.
+export const SessionActualSchema = z.object({
+  week: z.number().int(),
+  sessionIdx: z.number().int(),
+  order: z.number().int(),
+  movementId: z.string(),
+  prescribedMovementId: z.string().optional(),
+  done: z.boolean(),
+  actualKg: z.number().optional(),
+  actualReps: z.number().optional(),
+  note: z.string().optional(),
+  doneAt: z.string().optional(),
+  sets: SetActualsSchema.optional(),
+});
+export const SessionActualsSchema = z.array(SessionActualSchema).max(2000);
 
 export const WarmupSetSchema = z.object({
   pct: z.number(),

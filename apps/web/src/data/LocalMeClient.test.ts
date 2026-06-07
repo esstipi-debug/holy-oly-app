@@ -103,4 +103,20 @@ describe("LocalMeClient", () => {
     s.set(KEYS.roster, ROSTER); // athlete but no plan
     expect(await me(store).getMeSessions(10)).toEqual([]);
   });
+
+  it("degrades to empty when own-written localStorage is corrupt (validated reads)", async () => {
+    seed(store);
+    const s = new JsonStore(store);
+    s.set(KEYS.dayLog(ID), [{ date: "2026-06-06", fatiga: 99 }]);       // out-of-range + missing fields
+    s.set(KEYS.sessionActuals(ID), [{ week: 10, bogus: true }]);         // missing required fields
+
+    const dl = await me(store).getDayLog();
+    expect(dl.days).toEqual([]);
+    expect(dl.streak).toBe(0);
+    expect(dl.entry).toBeNull();
+
+    const sessions = await me(store).getMeSessions(10); // plan intact → sessions, but actual dropped
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]!.exercises[0]!.actual).toBeUndefined();
+  });
 });

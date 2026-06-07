@@ -4,7 +4,7 @@
 // corriendo y sale sin error (el lanzador puede invocarlo siempre).
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
-import { join, normalize, extname, dirname } from "node:path";
+import { join, normalize, extname, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -49,8 +49,10 @@ const server = createServer(async (req, res) => {
     if (pathname === "/") pathname = "/index.html";
 
     // Anti path-traversal: resolver y exigir que quede dentro de ROOT.
+    // Comparar contra `ROOT + sep` (no sólo `startsWith(ROOT)`) para que un hermano
+    // con prefijo común — p.ej. C:\HolyOlyDemo\app-backup — no pase el guardia.
     const candidate = normalize(join(ROOT, pathname));
-    if (!candidate.startsWith(ROOT)) {
+    if (candidate !== ROOT && !candidate.startsWith(ROOT + sep)) {
       res.writeHead(403).end("Forbidden");
       return;
     }

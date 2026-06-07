@@ -16,6 +16,7 @@ import {
   buildMePlanView, computeStreak, mergeActuals, buildSessionViews, summarizeSets, barKgForSexo,
   DayLogInputSchema, SessionActualsInputSchema,
   MonitorSeriesSchema, PlanSchema, RosterSchema, PrescriptionRowsSchema,
+  DayLogsSchema, SessionActualsSchema,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -48,11 +49,14 @@ export class LocalMeClient {
     return r.success ? r.data : [];
   }
   private dayLogs(): DayLog[] {
-    // Own-written data (putDayLog) — trust it, defaulting to empty when absent/corrupt.
-    return this.s.getOptional<DayLog[]>(KEYS.dayLog(this.id)) ?? [];
+    // Own-written (putDayLog), but localStorage is an untrusted boundary (extensions/DevTools/
+    // future bugs) — validate per storage.ts's "domain reads MUST validate" rule; corrupt → [].
+    const r = DayLogsSchema.safeParse(this.s.getOptional<unknown>(KEYS.dayLog(this.id)));
+    return r.success ? r.data : [];
   }
   private actuals(): SessionActual[] {
-    return this.s.getOptional<SessionActual[]>(KEYS.sessionActuals(this.id)) ?? [];
+    const r = SessionActualsSchema.safeParse(this.s.getOptional<unknown>(KEYS.sessionActuals(this.id)));
+    return r.success ? r.data : [];
   }
 
   /** Greeting + camino. Mirrors repo.getMePlanView (throws "no athlete" → screen error state). */
