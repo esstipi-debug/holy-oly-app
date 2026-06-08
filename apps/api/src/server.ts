@@ -11,7 +11,7 @@ import { PlanSchema, MedalSchema, CompsSchema, SessionLogSchema, PrescribedExerc
 import { prisma } from "./db/client";
 import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
-import { authRoutes, SESSION_COOKIE } from "./auth/routes";
+import { authRoutes, SESSION_COOKIE, cookieOpts } from "./auth/routes";
 import { vinculoRoutes } from "./vinculo/routes";
 import { meRoutes } from "./me/routes";
 import { requireCoach } from "./auth/guards";
@@ -114,11 +114,12 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   });
 
   // Resolve the session cookie → set the principal (coachId/athleteId) on the request.
-  app.addHook("onRequest", async (req: FastifyRequest) => {
+  app.addHook("onRequest", async (req: FastifyRequest, reply: FastifyReply) => {
     const token = req.cookies?.[SESSION_COOKIE];
     if (!token) return;
-    const user = await validateSessionToken(prisma, token);
-    if (!user) return;
+    const result = await validateSessionToken(prisma, token);
+    if (!result) return;
+    const { user, refreshedExpiresAt } = result;
     req.userId = user.id;
     req.role = user.role;
     if (user.role === "coach") {
@@ -127,6 +128,10 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     } else {
       const a = await prisma.athlete.findUnique({ where: { userId: user.id } });
       req.athleteId = a?.id;
+    }
+    // Sliding renewal slid the DB expiry forward → re-issue the cookie so the browser tracks it (B4).
+    if (refreshedExpiresAt) {
+      reply.setCookie(SESSION_COOKIE, token, cookieOpts(refreshedExpiresAt));
     }
   });
 

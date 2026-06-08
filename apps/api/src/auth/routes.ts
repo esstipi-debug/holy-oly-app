@@ -1,21 +1,22 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "../db/client";
 import { hashPassword, verifyPassword, dummyHash } from "./password";
-import { createSession, invalidateSessionToken } from "./session";
+import { createSession, invalidateSessionToken, invalidateSessionsByUserId } from "./session";
 import { SignupSchema, LoginSchema } from "./schemas";
 import { LOGIN_RATE_LIMIT, SIGNUP_RATE_LIMIT } from "./rateLimits";
 import { isAccountLocked, recordLoginFailure, clearLoginFailures } from "./lockout";
 
 export const SESSION_COOKIE = "session";
 
-function cookieOpts(expires?: Date) {
+export function cookieOpts(expires?: Date) {
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
-    // Omitted when absent so the same options can clear the cookie (clearCookie sets its own expiry).
-    ...(expires ? { expires } : {}),
+    // Set both expires (absolute) and maxAge (relative seconds — preferred by modern browsers and
+    // robust to client clock skew). Omitted when clearing (clearCookie sets its own expiry) (B4).
+    ...(expires ? { expires, maxAge: Math.max(0, Math.floor((expires.getTime() - Date.now()) / 1000)) } : {}),
   };
 }
 
@@ -73,6 +74,10 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(401).send({ error: "invalid credentials" });
     }
     clearLoginFailures(email);
+    // Optional single-session policy (B3): a new login revokes the user's other sessions.
+    if (process.env.SINGLE_SESSION_LOGIN === "true") {
+      await invalidateSessionsByUserId(prisma, user.id);
+    }
     const { token, expiresAt } = await createSession(prisma, user.id);
     reply.setCookie(SESSION_COOKIE, token, cookieOpts(expiresAt));
     return { id: user.id, email: user.email, role: user.role };
@@ -88,5 +93,13 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.get("/auth/me", async (req, reply) => {
     if (!req.userId) return reply.code(401).send({ error: "not authenticated" });
     return { id: req.userId, role: req.role, coachId: req.coachId ?? null, athleteId: req.athleteId ?? null };
+  });
+
+  // Revoke every session for the current user (B3): "log out everywhere". Clears this cookie too.
+  app.post("/auth/sessions/revoke-all", async (req, reply) => {
+    if (!req.userId) return reply.code(401).send({ error: "not authenticated" });
+    await invalidateSessionsByUserId(prisma, req.userId);
+    reply.clearCookie(SESSION_COOKIE, cookieOpts());
+    return { ok: true };
   });
 }
