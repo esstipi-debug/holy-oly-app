@@ -10,7 +10,10 @@ vi.mock("../../../data/apiConfig", () => ({ API_ENABLED: true, API_BASE: "" }));
 
 // Mockable auth: each test sets what useAuthMaybe returns before rendering.
 const useAuthMaybeMock = vi.fn();
-vi.mock("../../../auth/AuthContext", () => ({ useAuthMaybe: () => useAuthMaybeMock() }));
+vi.mock("../../../auth/AuthContext", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../auth/AuthContext")>();
+  return { ...actual, useAuthMaybe: () => useAuthMaybeMock() };
+});
 
 import { Equipo } from "../Equipo";
 
@@ -39,6 +42,13 @@ describe("Equipo onboarding (real-user mode)", () => {
 
   it("does not show the onboarding card when there is no signed-in user", async () => {
     useAuthMaybeMock.mockReturnValue({ user: null });
+    renderEquipo();
+    await screen.findByText(/MEJOR READINESS/i);
+    expect(screen.queryByTestId("onboarding-card")).not.toBeInTheDocument();
+  });
+
+  it("does not show the onboarding card when there is no AuthProvider (useAuthMaybe returns null)", async () => {
+    useAuthMaybeMock.mockReturnValue(null);
     renderEquipo();
     await screen.findByText(/MEJOR READINESS/i);
     expect(screen.queryByTestId("onboarding-card")).not.toBeInTheDocument();
