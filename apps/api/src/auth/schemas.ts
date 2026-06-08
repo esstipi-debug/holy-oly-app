@@ -28,5 +28,6 @@ export const LoginSchema = z.object({
 // Exact 12-char format (A6): rejects malformed input before the DB lookup, so a wrong-format
 // guess returns 400 (not 404) — removing the 400-vs-404 oracle that confirms code shape.
 export const AcceptCodeSchema = z.object({
-  code: z.string().regex(/^[A-Z2-9]{12}$/),
+  // Exact 12-char, matching the generator alphabet (no I/O/0/1) — consistent with genInviteCode.
+  code: z.string().regex(/^[A-HJ-NP-Z2-9]{12}$/),
 });

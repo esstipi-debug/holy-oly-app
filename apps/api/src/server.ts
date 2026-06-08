@@ -15,6 +15,7 @@ import { authRoutes, SESSION_COOKIE } from "./auth/routes";
 import { vinculoRoutes } from "./vinculo/routes";
 import { meRoutes } from "./me/routes";
 import { requireCoach } from "./auth/guards";
+import { dummyHash } from "./auth/password";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -92,6 +93,10 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     app.register(cors, { origin: webOrigin ?? true, credentials: true });
   }
 
+  // Prime the anti-enumeration dummy hash so the first unknown-email login isn't measurably
+  // slower than later ones (B1).
+  void dummyHash();
+
   app.setErrorHandler((err: FastifyError, _req, reply) => {
     const status = err.statusCode ?? 500;
     if (status >= 500) {
@@ -99,7 +104,12 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
       reply.log.error(err);
       return reply.code(500).send({ error: "internal server error" });
     }
-    // Client errors (4xx, incl. 429 from rate limiting / validation) pass through their message.
+    // 400s reaching here are framework body/parse errors whose message can echo request input
+    // (e.g. a JSON SyntaxError char) — return a generic body. Our own validation 400s reply directly.
+    if (status === 400) {
+      return reply.code(400).send({ error: "bad request" });
+    }
+    // Other client errors (413 too-large, 429 rate-limited) have static, safe messages.
     return reply.code(status).send({ error: err.message });
   });
 

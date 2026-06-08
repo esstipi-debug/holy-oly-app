@@ -4,6 +4,7 @@ import {
   recordLoginFailure,
   clearLoginFailures,
   resetLockoutStore,
+  lockoutStoreSize,
   MAX_LOGIN_FAILS,
   LOGIN_LOCK_MS,
 } from "./lockout";
@@ -38,5 +39,13 @@ describe("login lockout (per-account, IP-independent)", () => {
     for (let i = 0; i < MAX_LOGIN_FAILS; i++) recordLoginFailure("a@x.com", t0);
     expect(isAccountLocked("a@x.com", t0)).toBe(true);
     expect(isAccountLocked("a@x.com", t0 + LOGIN_LOCK_MS + 1)).toBe(false);
+  });
+
+  it("evicts an expired entry on read (no unbounded growth — DoS guard)", () => {
+    const t0 = 2_000_000;
+    for (let i = 0; i < MAX_LOGIN_FAILS; i++) recordLoginFailure("z@x.com", t0);
+    expect(lockoutStoreSize()).toBe(1);
+    expect(isAccountLocked("z@x.com", t0 + LOGIN_LOCK_MS + 1)).toBe(false);
+    expect(lockoutStoreSize()).toBe(0);
   });
 });
