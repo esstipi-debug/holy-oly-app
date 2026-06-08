@@ -272,3 +272,34 @@ export async function setSession(prisma: PrismaClient, athleteId: string, week: 
     }),
   ]);
 }
+
+/** D3: everything the athlete owns, for a self-service data export (the athlete gets RAW cycle). */
+export async function exportAthleteData(prisma: PrismaClient, athleteId: string): Promise<unknown> {
+  const [athlete, plan, cycle, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks] =
+    await Promise.all([
+      prisma.athlete.findUnique({ where: { id: athleteId } }),
+      prisma.plan.findUnique({ where: { athleteId } }),
+      prisma.cycleConsent.findUnique({ where: { athleteId } }),
+      prisma.dayLog.findMany({ where: { athleteId }, orderBy: { date: "asc" } }),
+      prisma.sessionActual.findMany({ where: { athleteId } }),
+      prisma.medal.findMany({ where: { athleteId } }),
+      prisma.competencia.findMany({ where: { athleteId } }),
+      prisma.prescribedExercise.findMany({ where: { athleteId } }),
+      prisma.monitorWeek.findMany({ where: { athleteId }, include: { items: true } }),
+      prisma.sessionMark.findMany({ where: { athleteId } }),
+    ]);
+  return { athlete, plan, cycle, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks };
+}
+
+/**
+ * D4: delete the athlete's account. Deleting the Athlete row cascades ALL athlete-owned data
+ * (daylogs, cycle, actuals, plan, vínculos, …); deleting the User cascades its sessions. Run as a
+ * transaction. This is why we must delete explicitly (Athlete.user is onDelete: SetNull, so deleting
+ * only the User would orphan the health data).
+ */
+export async function deleteAthleteAccount(prisma: PrismaClient, athleteId: string, userId: string): Promise<void> {
+  await prisma.$transaction([
+    prisma.athlete.delete({ where: { id: athleteId } }),
+    prisma.user.delete({ where: { id: userId } }),
+  ]);
+}

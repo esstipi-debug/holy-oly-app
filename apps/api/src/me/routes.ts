@@ -2,6 +2,8 @@ import type { FastifyInstance } from "fastify";
 import { DayLogInputSchema, SessionActualsInputSchema } from "@holy-oly/core";
 import { prisma } from "../db/client";
 import { requireAthlete } from "../auth/guards";
+import { SESSION_COOKIE, cookieOpts } from "../auth/routes";
+import { recordAudit } from "../audit";
 import * as repo from "../repo";
 
 /** Server's calendar date (UTC). A1 anchors the athlete loop to this; per-athlete timezones are a
@@ -69,6 +71,28 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     const parsed = SessionActualsInputSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid actuals" });
     await repo.setSessionActuals(prisma, athleteId, week, idx, parsed.data, todayISO());
+    return reply.code(200).send({ ok: true });
+  });
+
+  // D3: the athlete downloads everything they own (RGPD-style). They get their RAW cycle (it's theirs).
+  app.get("/me/export", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    const data = await repo.exportAthleteData(prisma, athleteId);
+    await recordAudit(prisma, { action: "data.export", actorUserId: req.userId ?? null, actorRole: req.role ?? null, targetAthleteId: athleteId, ip: req.ip });
+    reply.header("Content-Disposition", 'attachment; filename="holy-oly-export.json"');
+    return data;
+  });
+
+  // D4: the athlete deletes their own account. Cascades all their data; no orphaned health data.
+  app.delete("/me/account", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    const userId = req.userId;
+    if (!userId) return reply.code(401).send({ error: "not authenticated" });
+    await repo.deleteAthleteAccount(prisma, athleteId, userId);
+    await recordAudit(prisma, { action: "account.delete", actorUserId: userId, actorRole: "atleta", targetAthleteId: athleteId, ip: req.ip });
+    reply.clearCookie(SESSION_COOKIE, cookieOpts());
     return reply.code(200).send({ ok: true });
   });
 }
