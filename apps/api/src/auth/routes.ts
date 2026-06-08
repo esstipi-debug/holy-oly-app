@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "../db/client";
-import { hashPassword, verifyPassword } from "./password";
+import { hashPassword, verifyPassword, dummyHash } from "./password";
 import { createSession, invalidateSessionToken } from "./session";
 import { SignupSchema, LoginSchema } from "./schemas";
 import { LOGIN_RATE_LIMIT, SIGNUP_RATE_LIMIT } from "./rateLimits";
@@ -64,8 +64,11 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(429).send({ error: "too many attempts, try again later" });
     }
     const user = await prisma.user.findUnique({ where: { email } });
-    // Verify even on missing user is ideal to avoid enumeration; here we keep it simple + generic.
-    if (!user || !(await verifyPassword(user.passwordHash, parsed.data.password))) {
+    // Run Argon2 verify in BOTH branches (dummy hash when the email is unknown) so response time
+    // doesn't reveal whether an account exists — anti-enumeration (B1). Body is already uniform.
+    const passwordHash = user?.passwordHash ?? (await dummyHash());
+    const ok = await verifyPassword(passwordHash, parsed.data.password);
+    if (!user || !ok) {
       recordLoginFailure(email);
       return reply.code(401).send({ error: "invalid credentials" });
     }

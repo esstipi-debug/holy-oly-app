@@ -31,7 +31,7 @@ describe("Vínculo invite flow (integration)", () => {
 
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `a-${u}@x.dev`, password: "ath-pass-1", role: "atleta", name: "Atleta Flow" },
+      payload: { email: `a-${u}@x.dev`, password: "athlete-pwd-01", role: "atleta", name: "Atleta Flow" },
     });
     expect(ath.statusCode).toBe(201);
     const athH = cookieOf(ath);
@@ -57,7 +57,7 @@ describe("Vínculo invite flow (integration)", () => {
     const u = Date.now();
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `a2-${u}@x.dev`, password: "ath-pass-2", role: "atleta" },
+      payload: { email: `a2-${u}@x.dev`, password: "athlete-pwd-02", role: "atleta" },
     });
     // 12-char, valid alphabet, just not a real code → passes schema, fails the DB lookup.
     const accept = await app.inject({ method: "POST", url: "/vinculos/accept", headers: cookieOf(ath), payload: { code: "ZZZZ23456789" } });
@@ -68,7 +68,7 @@ describe("Vínculo invite flow (integration)", () => {
     const u = Date.now();
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `a3-${u}@x.dev`, password: "ath-pass-3", role: "atleta" },
+      payload: { email: `a3-${u}@x.dev`, password: "athlete-pwd-03", role: "atleta" },
     });
     // 8 chars (old format) → rejected by the exact-length schema before any DB lookup.
     const accept = await app.inject({ method: "POST", url: "/vinculos/accept", headers: cookieOf(ath), payload: { code: "ABCD1234" } });

@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
+import Fastify, { type FastifyError, type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
@@ -63,7 +63,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     app.register(cors, { origin: webOrigin ?? true, credentials: true });
   }
 
-  app.setErrorHandler((err, _req, reply) => {
+  app.setErrorHandler((err: FastifyError, _req, reply) => {
     const status = err.statusCode ?? 500;
     if (status >= 500) {
       // Server errors: log full detail server-side, return a generic body (no internals leak).

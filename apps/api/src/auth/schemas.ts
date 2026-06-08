@@ -1,8 +1,21 @@
 import { z } from "zod";
 
+// A small block-list of the most common passwords (B5). Not exhaustive — a defense-in-depth
+// layer on top of the 12-char minimum + Argon2id. Extend or swap for zxcvbn if needed.
+const COMMON_PASSWORDS = new Set([
+  "123456789012", "password1234", "qwertyuiop12", "111111111111", "000000000000",
+  "123123123123", "abcabcabcabc", "passwordword", "qwerty123456", "1q2w3e4r5t6y",
+  "iloveyou1234", "admin1234567", "welcome12345", "letmein12345", "monkey123456",
+  "dragon123456", "football1234", "baseball1234", "superman1234", "trustno12345",
+]);
+
 export const SignupSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8).max(200),
+  password: z
+    .string()
+    .min(12)
+    .max(200)
+    .refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), "password is too common"),
   role: z.enum(["coach", "atleta"]),
   name: z.string().min(1).max(120).optional(),
 });
