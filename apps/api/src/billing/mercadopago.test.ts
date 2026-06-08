@@ -1,6 +1,8 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
+import { getCoachPlan, withIva } from "@holy-oly/core";
 import {
+  buildPreapprovalPlanBody,
   mapMercadoPagoPreapprovalStatus,
   mercadoPagoWebhookEventId,
   verifyMercadoPagoSignature,
@@ -23,22 +25,8 @@ describe("mercadopago adapter", () => {
     const dataId = "abc123";
     const requestId = "req-1";
     const xSignature = sign({ dataId, requestId, ts });
-    expect(
-      verifyMercadoPagoSignature({
-        xSignature,
-        xRequestId: requestId,
-        dataId,
-        secret,
-      }),
-    ).toBe(true);
-    expect(
-      verifyMercadoPagoSignature({
-        xSignature: "ts=1,v1=deadbeef",
-        xRequestId: requestId,
-        dataId,
-        secret,
-      }),
-    ).toBe(false);
+    expect(verifyMercadoPagoSignature({ xSignature, xRequestId: requestId, dataId, secret })).toBe(true);
+    expect(verifyMercadoPagoSignature({ xSignature: "ts=1,v1=deadbeef", xRequestId: requestId, dataId, secret })).toBe(false);
   });
 
   it("maps preapproval status to subscription status", () => {
@@ -49,11 +37,23 @@ describe("mercadopago adapter", () => {
   });
 
   it("builds stable webhook event ids", () => {
-    expect(
-      mercadoPagoWebhookEventId({
-        type: "subscription_preapproval",
-        data: { id: "pre-99" },
-      }),
-    ).toBe("mp:subscription_preapproval:pre-99");
+    expect(mercadoPagoWebhookEventId({ type: "subscription_preapproval", data: { id: "pre-99" } })).toBe(
+      "mp:subscription_preapproval:pre-99",
+    );
+  });
+
+  it("builds the preapproval_plan body: annual → years, gross (net+IVA) amount", () => {
+    const b = buildPreapprovalPlanBody(getCoachPlan("coach"), "annual", "https://x.app");
+    expect(b.auto_recurring.frequency).toBe(1);
+    expect(b.auto_recurring.frequency_type).toBe("years");
+    expect(b.auto_recurring.transaction_amount).toBe(withIva(199_000));
+    expect(b.auto_recurring.currency_id).toBe("CLP");
+    expect(b.back_url).toContain("/coach/suscripcion");
+  });
+
+  it("monthly → months + monthly gross amount", () => {
+    const b = buildPreapprovalPlanBody(getCoachPlan("pro"), "monthly", "https://x.app");
+    expect(b.auto_recurring.frequency_type).toBe("months");
+    expect(b.auto_recurring.transaction_amount).toBe(withIva(39_900));
   });
 });

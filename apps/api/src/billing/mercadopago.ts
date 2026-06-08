@@ -5,6 +5,9 @@ import {
   BillingPeriodSchema,
   getCoachPlan,
   mercadoPagoPlanEnvKey,
+  planPriceClp,
+  withIva,
+  type CoachPlan,
   type CoachPlanId,
   type BillingPeriod,
 } from "@holy-oly/core";
@@ -170,6 +173,43 @@ export async function applyMercadoPagoPreapproval(
     providerSubId: preapproval.id,
     planId: planId ?? undefined,
   });
+}
+
+export interface PreapprovalPlanBody {
+  reason: string;
+  auto_recurring: { frequency: number; frequency_type: "months" | "years"; transaction_amount: number; currency_id: "CLP" };
+  back_url: string;
+}
+
+/**
+ * MP `preapproval_plan` payload for a tier+period. `transaction_amount` is GROSS (net price + IVA),
+ * which is what MP actually charges; annual → 1×/year, monthly → 1×/month.
+ */
+export function buildPreapprovalPlanBody(plan: CoachPlan, period: BillingPeriod, origin: string): PreapprovalPlanBody {
+  return {
+    reason: `Holy Oly — ${plan.name} (${period === "annual" ? "Anual" : "Mensual"})`,
+    auto_recurring: {
+      frequency: 1,
+      frequency_type: period === "annual" ? "years" : "months",
+      transaction_amount: withIva(planPriceClp(plan, period)),
+      currency_id: "CLP",
+    },
+    back_url: `${origin}/coach/suscripcion?checkout=return`,
+  };
+}
+
+/** Create a `preapproval_plan` in Mercado Pago; returns its id (for MERCADOPAGO_PLAN_* env). */
+export async function createPreapprovalPlan(body: PreapprovalPlanBody): Promise<string> {
+  const token = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
+  if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
+  const res = await fetch(`${MP_API}/preapproval_plan`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = (await res.json().catch(() => ({}))) as { id?: string };
+  if (!res.ok || !data.id) throw new Error(`preapproval_plan create failed (${res.status})`);
+  return data.id;
 }
 
 export function parseCheckoutPlanId(raw: unknown): CoachPlanId {

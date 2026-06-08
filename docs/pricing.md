@@ -57,7 +57,14 @@ MERCADOPAGO_PLAN_PRO_MONTHLY=""     MERCADOPAGO_PLAN_PRO_ANNUAL=""
 MERCADOPAGO_PLAN_ELITE_MONTHLY=""   MERCADOPAGO_PLAN_ELITE_ANNUAL=""
 MERCADOPAGO_PLAN_BOX_MONTHLY=""     MERCADOPAGO_PLAN_BOX_ANNUAL=""
 ```
-> El monto que se carga en MP es el **bruto** (net × 1,19) — usar `withIva()` de core al crear los planes. En dev, `BILLING_PROVIDER=mock` (checkout demo sin MP).
+**Crear los 8 planes automáticamente** (lee la grilla + IVA y devuelve los `MERCADOPAGO_PLAN_*`):
+```bash
+# previsualizar los montos (no llama a MP):
+pnpm --filter @holy-oly/api exec tsx scripts/mp-setup-plans.ts --dry-run
+# crear de verdad (sandbox o prod según el token) e imprimir los ids para el env:
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-... APP_ORIGIN=https://tu-dominio pnpm --filter @holy-oly/api exec tsx scripts/mp-setup-plans.ts
+```
+> El monto que se carga en MP es el **bruto** (net × 1,19, vía `withIva()`). En dev, `BILLING_PROVIDER=mock` (checkout demo sin MP).
 
 ## Caveats (de la investigación)
 - Precios de competidores provienen en parte de blogs/agregadores (las páginas oficiales ocultan precios) → indicativos, sujetos a cambio.
