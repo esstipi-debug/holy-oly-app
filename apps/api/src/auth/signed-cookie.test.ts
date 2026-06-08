@@ -9,7 +9,9 @@ describe("signed-cookie", () => {
     const ok = verifyCookiePayload<{ nonce: string; exp: number }>(signed, secret);
     expect(ok?.nonce).toBe("abc");
 
-    const tampered = signed.replace("abc", "abd");
+    // Flip a real character in the base64url body (the literal "abc" is encoded, so a string
+    // replace of "abc" would be a no-op and not actually tamper anything).
+    const tampered = (signed[0] === "A" ? "B" : "A") + signed.slice(1);
     expect(verifyCookiePayload(tampered, secret)).toBeNull();
   });
 

@@ -2,9 +2,11 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Prisma, PrismaClient, SubscriptionStatus } from "@prisma/client";
 import {
   CoachPlanIdSchema,
+  BillingPeriodSchema,
   getCoachPlan,
   mercadoPagoPlanEnvKey,
   type CoachPlanId,
+  type BillingPeriod,
 } from "@holy-oly/core";
 import { ensureCoachSubscription, setSubscriptionStatus } from "./subscription";
 
@@ -33,8 +35,8 @@ export function mercadoPagoConfigured(): boolean {
   return Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN?.trim());
 }
 
-export function resolveMercadoPagoPlanId(planId: CoachPlanId): string | null {
-  const fromEnv = process.env[mercadoPagoPlanEnvKey(planId)]?.trim();
+export function resolveMercadoPagoPlanId(planId: CoachPlanId, period: BillingPeriod): string | null {
+  const fromEnv = process.env[mercadoPagoPlanEnvKey(planId, period)]?.trim();
   return fromEnv || null;
 }
 
@@ -109,6 +111,7 @@ export async function fetchMercadoPagoPreapproval(preapprovalId: string): Promis
 export async function createMercadoPagoCheckout(opts: {
   coachId: string;
   planId: CoachPlanId;
+  period: BillingPeriod;
   payerEmail: string;
   origin: string;
 }): Promise<{ checkoutUrl: string; preapprovalId: string }> {
@@ -116,10 +119,12 @@ export async function createMercadoPagoCheckout(opts: {
   if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
 
   const plan = getCoachPlan(opts.planId);
-  const preapprovalPlanId = resolveMercadoPagoPlanId(opts.planId);
+  // The MP preapproval_plan (created in the dashboard) defines the cadence (monthly/annual) and amount.
+  const preapprovalPlanId = resolveMercadoPagoPlanId(opts.planId, opts.period);
   if (!preapprovalPlanId) {
-    throw new Error(`Mercado Pago plan not configured for tier "${opts.planId}" (${mercadoPagoPlanEnvKey(opts.planId)})`);
+    throw new Error(`Mercado Pago plan not configured for "${opts.planId}/${opts.period}" (${mercadoPagoPlanEnvKey(opts.planId, opts.period)})`);
   }
+  const periodLabel = opts.period === "annual" ? "Anual" : "Mensual";
 
   const res = await fetch(`${MP_API}/preapproval`, {
     method: "POST",
@@ -132,7 +137,7 @@ export async function createMercadoPagoCheckout(opts: {
       payer_email: opts.payerEmail,
       back_url: `${opts.origin}/coach/suscripcion?checkout=return`,
       external_reference: opts.coachId,
-      reason: `Holy Oly — ${plan.name}`,
+      reason: `Holy Oly — ${plan.name} (${periodLabel})`,
     }),
   });
 
@@ -171,4 +176,9 @@ export function parseCheckoutPlanId(raw: unknown): CoachPlanId {
   const parsed = CoachPlanIdSchema.safeParse(raw);
   if (!parsed.success) throw new Error("invalid planId");
   return parsed.data;
+}
+
+/** Billing period from the checkout body; defaults to annual (the pushed option). */
+export function parseCheckoutPeriod(raw: unknown): BillingPeriod {
+  return BillingPeriodSchema.safeParse(raw).data ?? "annual";
 }

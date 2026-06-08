@@ -25,13 +25,14 @@ import {
   mercadoPagoConfigured,
   mercadoPagoWebhookEventId,
   parseCheckoutPlanId,
+  parseCheckoutPeriod,
   verifyMercadoPagoSignature,
   type MercadoPagoWebhookNotification,
 } from "./mercadopago";
 
 const PROVIDER = process.env.BILLING_PROVIDER ?? "mock";
 
-const CheckoutBodySchema = z.object({ planId: z.string().optional() }).optional();
+const CheckoutBodySchema = z.object({ planId: z.string().optional(), period: z.string().optional() }).optional();
 
 /** Coach billing status, checkout, and provider webhooks (E3–E5). */
 export async function billingRoutes(app: FastifyInstance): Promise<void> {
@@ -40,7 +41,8 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
       id: p.id,
       name: p.name,
       description: p.description,
-      priceClp: p.priceClp,
+      priceClpMonthly: p.priceClpMonthly,
+      priceClpAnnual: p.priceClpAnnual,
       maxAthletes: p.maxAthletes,
       features: [...p.features],
     })),
@@ -65,6 +67,7 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
 
     const body = CheckoutBodySchema.parse(req.body ?? {});
     const planId = parseCheckoutPlanId(body?.planId ?? "basico");
+    const period = parseCheckoutPeriod(body?.period); // defaults to "annual" (pushed option)
     await ensureCoachSubscription(prisma, coachId, PROVIDER);
     const origin = appOrigin();
 
@@ -79,6 +82,7 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
         const { checkoutUrl, preapprovalId } = await createMercadoPagoCheckout({
           coachId,
           planId,
+          period,
           payerEmail: coach.user.email,
           origin,
         });
@@ -86,7 +90,7 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
           where: { coachId },
           data: { provider: "mercadopago", planId, providerSubId: preapprovalId },
         });
-        return { checkoutUrl, provider: "mercadopago", planId };
+        return { checkoutUrl, provider: "mercadopago", planId, period };
       } catch (e) {
         const msg = e instanceof Error ? e.message : "checkout failed";
         return reply.code(503).send({ error: msg });
@@ -95,7 +99,7 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
 
     if (PROVIDER === "mock" || process.env.NODE_ENV !== "production") {
       await prisma.subscription.update({ where: { coachId }, data: { planId } }).catch(() => undefined);
-      return { checkoutUrl: mockCheckoutUrl(coachId, origin), provider: "mock", planId };
+      return { checkoutUrl: mockCheckoutUrl(coachId, origin), provider: "mock", planId, period };
     }
 
     return reply.code(501).send({ error: "billing provider not configured" });
