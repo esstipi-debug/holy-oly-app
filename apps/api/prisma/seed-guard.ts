@@ -48,7 +48,7 @@ export function loadSeedConfig(env: Env = process.env): SeedConfig {
   return {
     coachEmail: secret("SEED_COACH_EMAIL", "coach@holyoly.dev", env).trim().toLowerCase(),
     coachPassword: secret("SEED_COACH_PASSWORD", "holyoly-demo", env),
-    coachInvite: secret("SEED_INVITE_CODE", "HOLY-DEMO", env),
+    coachInvite: secret("SEED_INVITE_CODE", "HALTER234567", env), // 12-char demo code (A6 format)
     atletaEmail: secret("SEED_ATLETA_EMAIL", "atleta@holyoly.dev", env).trim().toLowerCase(),
     atletaPassword: secret("SEED_ATLETA_PASSWORD", "holyoly-demo", env),
     maraEmail: secret("SEED_MARA_EMAIL", "mara@holyoly.dev", env).trim().toLowerCase(),

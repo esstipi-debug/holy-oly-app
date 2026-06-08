@@ -27,7 +27,7 @@ describe("Vínculo invite flow (integration)", () => {
     const rot = await app.inject({ method: "POST", url: "/invite/rotate", headers: coachH });
     expect(rot.statusCode).toBe(200);
     const code = (rot.json() as { inviteCode: string }).inviteCode;
-    expect(code).toMatch(/^[A-Z2-9]{8}$/);
+    expect(code).toMatch(/^[A-Z2-9]{12}$/); // 12 chars × 32-alphabet = 60 bits (A6)
 
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
@@ -53,14 +53,26 @@ describe("Vínculo invite flow (integration)", () => {
     expect(names).toContain("Atleta Flow");
   });
 
-  it("accept with an unknown code → 404", async () => {
+  it("accept with a well-formed but unknown code → 404", async () => {
     const u = Date.now();
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
       payload: { email: `a2-${u}@x.dev`, password: "ath-pass-2", role: "atleta" },
     });
-    const accept = await app.inject({ method: "POST", url: "/vinculos/accept", headers: cookieOf(ath), payload: { code: "NOPE2345" } });
+    // 12-char, valid alphabet, just not a real code → passes schema, fails the DB lookup.
+    const accept = await app.inject({ method: "POST", url: "/vinculos/accept", headers: cookieOf(ath), payload: { code: "ZZZZ23456789" } });
     expect(accept.statusCode).toBe(404);
+  });
+
+  it("accept with a malformed code (wrong length/chars) → 400, not 404 (no 400-vs-404 oracle)", async () => {
+    const u = Date.now();
+    const ath = await app.inject({
+      method: "POST", url: "/auth/signup",
+      payload: { email: `a3-${u}@x.dev`, password: "ath-pass-3", role: "atleta" },
+    });
+    // 8 chars (old format) → rejected by the exact-length schema before any DB lookup.
+    const accept = await app.inject({ method: "POST", url: "/vinculos/accept", headers: cookieOf(ath), payload: { code: "ABCD1234" } });
+    expect(accept.statusCode).toBe(400);
   });
 
   it("a coach cannot confirm a vínculo it does not own → 404", async () => {

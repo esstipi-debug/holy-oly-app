@@ -7,7 +7,8 @@ import { AcceptCodeSchema } from "../auth/schemas";
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function genInviteCode(): string {
-  const bytes = new Uint8Array(8);
+  // 12 chars × log2(32) = 60 bits of entropy (A6). No modulo bias: 256 % 32 === 0.
+  const bytes = new Uint8Array(12);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => CODE_ALPHABET[b % CODE_ALPHABET.length]!).join("");
 }
