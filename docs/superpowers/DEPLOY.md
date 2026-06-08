@@ -62,8 +62,31 @@ ALLOW_DEMO_SEED=true \
   probable son detalles del entorno (versión de pnpm/corepack, resolución de `prisma`). El código,
   los builds y los tests están verdes localmente.
 
+## Backups, RPO/RTO y recuperación (A4a)
+> ⚠️ **El Postgres free NO tiene backups automáticos y se borra a los ~90 días** → riesgo operativo
+> #1 (pérdida total). Antes de tener usuarios reales:
+
+1. **Subir el Postgres a un plan pago** (`render.yaml` `databases[0].plan` o el dashboard) — habilita
+   **backups diarios automáticos + PITR**.
+2. **RPO** (pérdida máxima): backup diario ≈ ≤24 h; PITR ≈ minutos.
+3. **RTO** (tiempo de restore): desde el dashboard de Render — medir y registrar tras la 1ª prueba.
+4. **Probar un restore una vez** (no asumir que el backup sirve) y anotar pasos/tiempos.
+5. **Fallback interino (mientras siga free):** `pg_dump` periódico, guardado FUERA de Render:
+   ```
+   pg_dump "$DATABASE_URL" -Fc -f holyoly-$(date +%F).dump
+   # restore: pg_restore --clean --no-owner -d "$DATABASE_URL" holyoly-YYYY-MM-DD.dump
+   ```
+
+> Acción del **owner**: el upgrade de plan es facturación → no lo puedo hacer yo.
+
 ## Pendiente para producción "completa"
 - **Fase 5 — cobro:** suscripción Mercado Pago (tu cuenta + credenciales server-side como env vars).
-- **Fase 6 — hardening:** CSP/HSTS, rate-limiting (auth+writes), backups de Postgres,
-  monitoring/error-tracking, E2E Playwright. (El `render.yaml` ya trae headers base.)
+- **Hardening — HECHO (plan de seguridad, Oleadas A–C):** rate-limit + lockout (A1/A1b), CSP/HSTS
+  vía helmet (C1/C2), body/timeout (A7), seed-guard (A2/A3), CI + audit + gitleaks (A5/A8), invite
+  60-bit (A6), anti-enumeración + passwords (B1/B5), revocación de sesiones (B3/B4), headers en una
+  capa + logs sin PII (C5/C6). El `render.yaml` ahora delega los headers a helmet (sólo conserva
+  Permissions-Policy).
+- **Pendiente del plan de seguridad:** backups+plan pago (A4a, arriba), audit log (A9), cifrado de
+  ciclo en reposo (D1), export/borrado de datos (D3/D4), índice de sesiones (D5), E2E Playwright (E6).
+- **Monitoring/error-tracking (E5):** Sentry o similar — ver `docs/INCIDENT-RESPONSE.md`.
 - **App del atleta** (productor de telemetría) — diseño + build (Fase 4 slices 4-5).

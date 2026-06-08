@@ -10,6 +10,34 @@
 
 ---
 
+## Estado de implementación (2026-06-07 · rama `claude/frosty-austin-cb8ed8`)
+
+Implementado con TDD (tests verdes: core 152 · api 34 unit + 43 int + e2e) y un pase de
+`security-reviewer` cuyas observaciones se aplicaron (lockout cap+evicción anti memory-DoS, regex de
+invite alineada al generador, prime de dummyHash, 400 genérico).
+
+| Ítem | Estado |
+|------|--------|
+| A1 rate-limit · A1b lockout · A7 body/timeout | ✅ |
+| A2 seed-guard · A3 secretos requeridos | ✅ |
+| A5 CI (typecheck/test/build) · A8 gitleaks · Dependabot | ✅ |
+| A6 invite 60-bit + largo exacto | ✅ |
+| B1 anti-enumeración · B5 política de passwords | ✅ |
+| B3 revocación de sesiones · B4 TTL/cookie maxAge/renovación | ✅ |
+| C1 CSP · C2 HSTS · C5 logs sin PII · C6 headers en una capa | ✅ |
+| C4 CORS fail-fast (ya estaba) + test de regresión | ✅ |
+| D7 validación de movementId · 403 cross-coach en writes | ✅ |
+| A4a backups/RPO/RTO | ⏳ doc en `DEPLOY.md`; **upgrade de plan = acción del owner** |
+| E7 runbook de incidente · E8 ADR de región | ✅ (docs) |
+| **A9** audit log · **D1** cifrado de ciclo · **D2/D3/D4/D5** export/borrado/uuid/índice | ⛔ **pendiente — requieren migración Prisma** |
+| B2 signup no-filtrante · B0/B6 recuperación+verificación email | ⛔ diferido (requiere proveedor de email) |
+| E1/E3/E4/E5 registro/pagos/monitoring | ⛔ Fase 5 (Mercado Pago no construido) |
+
+**Próximo lote (migración):** D5 índice (trivial) → A9 audit → D1 cifrado (con backfill) → D4 borrado
+(`Athlete.user` es `onDelete: SetNull` → bug) + D3 export + D2 seed-uuid. Workflow: `apps/api/scripts/make-migration.ts`.
+
+---
+
 ## 0. Qué cambió respecto a la v1 (el valor de la auditoría)
 
 La pasada read-only era buena, pero al mirar el código real aparecieron correcciones de **hecho**, de **severidad** y de **secuencia**. Las más importantes:
