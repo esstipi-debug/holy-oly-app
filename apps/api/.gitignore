@@ -1,0 +1,4 @@
+# Playwright (E6)
+/playwright-report/
+/test-results/
+/.pgdata-e2e-browser/
