@@ -10,6 +10,11 @@ import { SemanaCard } from "./hoy/SemanaCard";
 import { CheckIn } from "./CheckIn";
 import { Check } from "./primitives";
 import type { AtletaOutletCtx } from "./AthleteShell";
+import { useAuthMaybe } from "../../auth/AuthContext";
+import { API_ENABLED } from "../../data/apiConfig";
+import { OnboardingCard } from "../../onboarding/OnboardingCard";
+import { onboardingKey } from "../../onboarding/onboardingSeen";
+import { ATLETA_STEPS, ONBOARDING_TITLE_ATLETA } from "../../onboarding/steps";
 
 type Load = "loading" | "ready" | "error";
 
@@ -28,6 +33,7 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
   const ctx = useOutletContext<AtletaOutletCtx | null>();
   const variant: CheckinVariant = variantProp ?? ctx?.variant ?? "tap";
   const location = useLocation();
+  const user = useAuthMaybe()?.user ?? null;
   const [plan, setPlan] = useState<MePlanView | null>(null);
   const [series, setSeries] = useState<MonitorSeries | undefined>(undefined);
   const [daylog, setDaylog] = useState<DayLogView | null>(null);
@@ -93,6 +99,13 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
 
       {checkinOpen && (
         <CheckIn variant={variant} initial={daylog.entry} onClose={() => setCheckinOpen(false)} onDone={onCheckinDone} />
+      )}
+      {API_ENABLED && user && !preview && (
+        <OnboardingCard
+          title={ONBOARDING_TITLE_ATLETA}
+          steps={ATLETA_STEPS}
+          storageKey={onboardingKey(user.id)}
+        />
       )}
     </>
   );
