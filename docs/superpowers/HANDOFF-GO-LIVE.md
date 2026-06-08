@@ -43,7 +43,7 @@
 - **Promo coach fundador 20%** (precio grandfathered): set de planes "founding" al 80% o cupón. (No construir hasta fijar precio post-Volt.)
 - **Nudge anual día 60–90** (no empujar anual en el registro; ofrecerlo cuando vio valor).
 - **Upgrade automático prorrateado** al superar el tope de atletas.
-- (Opcional) **E6 Playwright** security E2E en CI nightly.
+- ✅ **E6 Playwright** security E2E en CI nightly — HECHO (`apps/api/e2e/`, workflow `.github/workflows/e2e-nightly.yml`; 4 specs verdes: login UI, cross-coach 403, ciclo redactado, headers helmet). Correr local: `VITE_API_ENABLED=true pnpm --filter @holy-oly/web build && pnpm --filter @holy-oly/api e2e:browser`. **Sin mergear a `main` todavía** (rama `claude/serene-goldstine-e55c71`).
 
 ## 5. GOTCHAS (no romper)
 - **Push a `main` = auto-deploy a Render prod.** No pushear sin OK.
