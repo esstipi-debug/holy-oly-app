@@ -45,11 +45,17 @@ export default async function globalSetup(): Promise<void> {
   process.env.WEB_DIST_PATH = WEB_DIST;
   delete process.env.NODE_ENV;
 
-  const { buildServer } = await import("../src/server");
-  const app = buildServer();
-  await app.listen({ port: APP_PORT, host: "127.0.0.1" });
-
-  handle.app = app;
-  handle.pg = pg;
-  handle.dataDir = DATA_DIR;
+  try {
+    const { buildServer } = await import("../src/server");
+    const app = buildServer();
+    await app.listen({ port: APP_PORT, host: "127.0.0.1" });
+    handle.app = app;
+    handle.pg = pg;
+    handle.dataDir = DATA_DIR;
+  } catch (err) {
+    // Playwright won't call globalTeardown if globalSetup throws → stop PG here so we don't orphan it.
+    await pg.stop().catch(() => undefined);
+    rmSync(DATA_DIR, { recursive: true, force: true });
+    throw err;
+  }
 }
