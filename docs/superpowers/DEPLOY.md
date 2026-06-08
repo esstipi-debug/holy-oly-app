@@ -86,7 +86,43 @@ ALLOW_DEMO_SEED=true \
   60-bit (A6), anti-enumeración + passwords (B1/B5), revocación de sesiones (B3/B4), headers en una
   capa + logs sin PII (C5/C6). El `render.yaml` ahora delega los headers a helmet (sólo conserva
   Permissions-Policy).
-- **Pendiente del plan de seguridad:** backups+plan pago (A4a, arriba), audit log (A9), cifrado de
-  ciclo en reposo (D1), export/borrado de datos (D3/D4), índice de sesiones (D5), E2E Playwright (E6).
+- **Plan de seguridad — HECHO también:** audit log (A9), cifrado de ciclo en reposo (D1),
+  export/borrado de datos (D3/D4), índice de sesiones (D5), seed uuid (D2). **Pendiente:**
+  backups+plan pago (A4a, arriba), E2E Playwright (E6), y lo gateado por vos: email→recuperación
+  (B0/B6), Mercado Pago (E3–E5).
 - **Monitoring/error-tracking (E5):** Sentry o similar — ver `docs/INCIDENT-RESPONSE.md`.
 - **App del atleta** (productor de telemetría) — diseño + build (Fase 4 slices 4-5).
+
+## Subir a una plataforma (Railway / Render / cualquier contenedor)
+La app es agnóstica de plataforma (12-factor): un solo servicio Node sirve API + SPA en el mismo
+origen y todo se configura por env. Hay un **`Dockerfile`** portable (multi-stage) → deploya igual
+en Railway, Fly.io, Render o cualquier host de contenedores.
+
+### Variables de entorno
+| Var | Requerida | Qué hace |
+|-----|-----------|----------|
+| `DATABASE_URL` | **sí** | Postgres manejado del proveedor. |
+| `NODE_ENV=production` | sí | cookie `secure`, HSTS, logs (el Dockerfile ya lo setea). |
+| `SERVE_WEB=true` | sí | Fastify sirve el SPA + API mismo origen (el Dockerfile ya lo setea). |
+| `PORT` | la inyecta la plataforma | puerto de escucha (Railway/Render lo dan; main.ts bindea 0.0.0.0). |
+| `CYCLE_ENCRYPTION_KEY` | recomendada | 64 hex (32 bytes) → cifra el ciclo en reposo (D1). Generá: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. **No rotar sin re-cifrar.** |
+| `SESSION_TTL_DAYS` | opcional | TTL de sesión (default 30). |
+| `SINGLE_SESSION_LOGIN` | opcional | `true` → un login revoca las sesiones previas. |
+| `WEB_ORIGIN` | sólo si separás front/API | origen del SPA (CORS). Con `SERVE_WEB=true` no hace falta. |
+| `ALLOW_DEMO_SEED` + `SEED_*` | sólo para sembrar | requeridas para correr el seed en prod (guard A2/A3). |
+
+### Railway (recomendado: always-on + Postgres persistente)
+1. New Project → Deploy from GitHub repo (detecta el `Dockerfile` vía `railway.json`).
+2. Add → **PostgreSQL** (Railway inyecta `DATABASE_URL`).
+3. Variables: `NODE_ENV=production`, `SERVE_WEB=true`, `CYCLE_ENCRYPTION_KEY=<hex>` (PORT lo inyecta Railway).
+4. Deploy → `start:prod` corre `prisma migrate deploy` y arranca; healthcheck `/health`.
+5. (Opcional) Sembrar demo una vez: `ALLOW_DEMO_SEED=true SEED_COACH_*` + `pnpm --filter @holy-oly/api db:seed`.
+
+### Render
+Ya hay `render.yaml` (build Node). Alternativamente puede usar el `Dockerfile`. Sembrar: Shell con
+`ALLOW_DEMO_SEED=true` + `SEED_*` (§2).
+
+### Paridad con la carta de oro local
+El runner local (`apps/api/scripts/local-app.mjs`) corre **el mismo `dist/main.js`** que el
+contenedor; la única diferencia es el origen de Postgres (embebido local vs managed en la nube).
+Lo que probás local = lo que corre en la plataforma.

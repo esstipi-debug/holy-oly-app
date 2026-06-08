@@ -1,0 +1,14 @@
+# Build context hygiene — let the image build deps + dist fresh from source.
+**/node_modules
+**/dist
+**/.tsbuildinfo
+.git
+.github
+.claude
+.pgdata*
+**/.pgdata*
+*.log
+.env
+.env.*
+!.env.example
+_mockup
