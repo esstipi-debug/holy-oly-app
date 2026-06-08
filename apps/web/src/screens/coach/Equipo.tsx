@@ -9,6 +9,10 @@ import { DemoTourCard } from "./atletas/DemoTourCard";
 import { LeadCaptureButton } from "./LeadCaptureButton";
 import { API_ENABLED } from "../../data/apiConfig";
 import { resetDemoStorage } from "../../data/resetDemo";
+import { useAuthMaybe } from "../../auth/AuthContext";
+import { OnboardingCard } from "../../onboarding/OnboardingCard";
+import { onboardingKey } from "../../onboarding/onboardingSeen";
+import { COACH_STEPS, ONBOARDING_TITLE_COACH } from "../../onboarding/steps";
 
 function onResetDemo(): void {
   if (window.confirm("¿Reiniciar el demo al estado inicial? Se borran los cambios de esta sesión (pesos, registros, recorrido).")) {
@@ -22,6 +26,8 @@ function onResetDemo(): void {
 export function Equipo() {
   const repo = useRepository();
   const navigate = useNavigate();
+  const auth = useAuthMaybe();
+  const user = auth?.user ?? null;
   const [rows, setRows] = useState<RosterRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -79,6 +85,13 @@ export function Equipo() {
         </>
       )}
       {!API_ENABLED && <DemoTourCard />}
+      {API_ENABLED && user && (
+        <OnboardingCard
+          title={ONBOARDING_TITLE_COACH}
+          steps={COACH_STEPS}
+          storageKey={onboardingKey(user.id)}
+        />
+      )}
     </div>
   );
 }

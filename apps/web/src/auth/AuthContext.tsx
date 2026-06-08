@@ -58,3 +58,9 @@ export function useAuth(): AuthValue {
   if (!v) throw new Error("useAuth must be used within <AuthProvider>");
   return v;
 }
+
+/** Safe variant — returns null when called outside <AuthProvider> (e.g. demo/test mode).
+ *  Use this only in components that already guard on API_ENABLED. */
+export function useAuthMaybe(): AuthValue | null {
+  return useContext(AuthCtx);
+}
