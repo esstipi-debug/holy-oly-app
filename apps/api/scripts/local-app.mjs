@@ -29,7 +29,10 @@ const log = (m) => console.log(`[holy-oly] ${m}`);
 async function healthy() {
   try {
     const r = await fetch(`${APP_URL}health`);
-    return r.ok;
+    if (!r.ok) return false;
+    // Must be the real API (the old static server answers /health with index.html → not JSON).
+    const j = await r.json().catch(() => null);
+    return j != null && j.ok === true;
   } catch {
     return false;
   }
