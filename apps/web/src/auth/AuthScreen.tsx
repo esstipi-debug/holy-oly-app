@@ -1,7 +1,8 @@
-import { useState, type CSSProperties, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, type CSSProperties, type FormEvent } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import type { Role } from "./authClient";
+import { googleAuthEnabled, googleAuthStart } from "./authClient";
 import { HolyOlyIcon } from "../ui/HolyOlyIcon";
 
 const input: CSSProperties = {
@@ -14,6 +15,9 @@ const label: CSSProperties = { fontFamily: "var(--mono)", fontSize: 10, letterSp
 export function AuthScreen() {
   const { login, signup } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [googleEnabled, setGoogleEnabled] = useState(false);
+  useEffect(() => { void googleAuthEnabled().then(setGoogleEnabled); }, []);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +25,17 @@ export function AuthScreen() {
   const [role, setRole] = useState<Role>("coach");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [website, setWebsite] = useState("");
+  const googleError = searchParams.get("error") === "google";
+
+  function onGoogle(): void {
+    setError(null);
+    if (mode === "signup") {
+      googleAuthStart({ intent: "signup", role, name: name || undefined });
+    } else {
+      googleAuthStart({ intent: "login" });
+    }
+  }
 
   async function onSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
@@ -28,7 +43,7 @@ export function AuthScreen() {
     setBusy(true);
     try {
       if (mode === "login") await login(email, password);
-      else await signup(email, password, role, name || undefined);
+      else await signup(email, password, role, name || undefined, website);
       navigate("/", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo completar");
@@ -70,9 +85,44 @@ export function AuthScreen() {
         <label style={label}>Contraseña</label>
         <input style={input} type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
 
+        {mode === "signup" && (
+          <input
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden
+            name="website"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            style={{ position: "absolute", left: -9999, width: 1, height: 1, opacity: 0 }}
+          />
+        )}
+
+        {mode === "login" && (
+          <Link to="/login/forgot" style={{ display: "block", marginTop: 10, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
+            ¿Olvidaste tu contraseña?
+          </Link>
+        )}
+
+        {googleError && (
+          <div role="alert" style={{ marginTop: 12, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>
+            No se pudo completar el ingreso con Google. Intentá de nuevo.
+          </div>
+        )}
+
         {error && <div role="alert" style={{ marginTop: 12, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
-        <button type="submit" disabled={busy} style={{ width: "100%", marginTop: 18, padding: 12, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer",
+        {googleEnabled && (
+          <>
+            <button type="button" onClick={onGoogle} style={{ width: "100%", marginTop: 14, padding: 12, borderRadius: 12, cursor: "pointer",
+              border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-text)",
+              fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14 }}>
+              Continuar con Google
+            </button>
+            <div style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", textAlign: "center" }}>o</div>
+          </>
+        )}
+
+        <button type="submit" disabled={busy} style={{ width: "100%", marginTop: googleEnabled ? 14 : 18, padding: 12, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer",
           background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, opacity: busy ? 0.6 : 1 }}>
           {busy ? "..." : mode === "login" ? "Ingresar" : "Crear cuenta"}
         </button>
@@ -81,6 +131,12 @@ export function AuthScreen() {
           style={{ width: "100%", marginTop: 10, padding: 8, border: 0, background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 12, cursor: "pointer" }}>
           {mode === "login" ? "¿No tenés cuenta? Registrate" : "¿Ya tenés cuenta? Ingresá"}
         </button>
+
+        {mode === "signup" && (
+          <p style={{ marginTop: 12, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
+            Al registrarte aceptás los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.
+          </p>
+        )}
       </form>
     </div>
   );

@@ -104,6 +104,8 @@ export const AuthUserSchema = z.object({
   role: RoleSchema,
   coachId: z.string().nullable(),
   athleteId: z.string().nullable(),
+  email: z.string().email().nullable().optional(),
+  emailVerified: z.boolean().optional(),
 });
 
 export const VinculoEstadoSchema = z.enum(["pendiente", "activo", "rechazado", "revocado"]);

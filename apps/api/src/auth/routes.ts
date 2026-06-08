@@ -2,10 +2,18 @@ import type { FastifyInstance } from "fastify";
 import { prisma } from "../db/client";
 import { hashPassword, verifyPassword, dummyHash } from "./password";
 import { createSession, invalidateSessionToken, invalidateSessionsByUserId } from "./session";
-import { SignupSchema, LoginSchema } from "./schemas";
-import { LOGIN_RATE_LIMIT, SIGNUP_RATE_LIMIT } from "./rateLimits";
+import { SignupSchema, LoginSchema, ForgotPasswordSchema, ResetPasswordSchema, VerifyEmailSchema } from "./schemas";
+import {
+  LOGIN_RATE_LIMIT,
+  SIGNUP_RATE_LIMIT,
+  FORGOT_PASSWORD_RATE_LIMIT,
+  RESET_PASSWORD_RATE_LIMIT,
+} from "./rateLimits";
 import { isAccountLocked, recordLoginFailure, clearLoginFailures } from "./lockout";
 import { recordAudit } from "../audit";
+import { generateOneTimeToken, tokenIdFromRaw } from "./one-time-token";
+import { sendCoachVerificationEmail, provisionUserRecords } from "./provision-user";
+import { sendEmail, appOrigin } from "../email";
 
 export const SESSION_COOKIE = "session";
 
@@ -21,10 +29,6 @@ export function cookieOpts(expires?: Date) {
   };
 }
 
-function profileName(name: string | undefined, email: string): string {
-  return name ?? email.split("@")[0] ?? "Usuario";
-}
-
 /** Auth endpoints: signup / login / logout / me. Sets a session cookie on signup+login. */
 export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post("/auth/signup", { config: { rateLimit: SIGNUP_RATE_LIMIT } }, async (req, reply) => {
@@ -32,30 +36,25 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     if (!parsed.success) return reply.code(400).send({ error: "invalid input" });
     const { password, role, name } = parsed.data;
     const email = parsed.data.email.trim().toLowerCase();
+    if (parsed.data.website?.trim()) {
+      return reply.code(400).send({ error: "invalid input" });
+    }
 
     if (await prisma.user.findUnique({ where: { email } })) {
       return reply.code(409).send({ error: "email already registered" });
     }
-    // Hash before opening the transaction so argon2's CPU work doesn't hold a DB tx open.
     const passwordHash = await hashPassword(password);
-    // User + role profile are created atomically: a User without its Coach/Athlete row would
-    // authenticate but resolve to no coachId/athleteId, silently 401-ing every scoped route.
-    const user = await prisma.$transaction(async (tx) => {
-      const u = await tx.user.create({ data: { email, passwordHash, role } });
-      if (role === "coach") {
-        await tx.coach.create({ data: { userId: u.id, name: profileName(name, email) } });
-      } else {
-        const display = profileName(name, email);
-        await tx.athlete.create({
-          data: { userId: u.id, nombre: display, iniciales: display.slice(0, 2).toUpperCase(), nivel: "beginner" },
-        });
-      }
-      return u;
-    });
+    const emailVerified = role !== "coach";
+    const user = await prisma.$transaction(async (tx) =>
+      provisionUserRecords(tx, { email, role, name, emailVerified, passwordHash }),
+    );
+    if (role === "coach") {
+      await sendCoachVerificationEmail(prisma, user.id, email);
+    }
     const { token, expiresAt } = await createSession(prisma, user.id);
     reply.setCookie(SESSION_COOKIE, token, cookieOpts(expiresAt));
     await recordAudit(prisma, { action: "signup", actorUserId: user.id, actorRole: role, ip: req.ip });
-    return reply.code(201).send({ id: user.id, email: user.email, role: user.role });
+    return reply.code(201).send({ id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified });
   });
 
   app.post("/auth/login", { config: { rateLimit: LOGIN_RATE_LIMIT } }, async (req, reply) => {
@@ -67,10 +66,10 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(429).send({ error: "too many attempts, try again later" });
     }
     const user = await prisma.user.findUnique({ where: { email } });
-    // Run Argon2 verify in BOTH branches (dummy hash when the email is unknown) so response time
-    // doesn't reveal whether an account exists — anti-enumeration (B1). Body is already uniform.
+    // Run Argon2 verify in BOTH branches (dummy hash when the email is unknown or OAuth-only) so
+    // response time doesn't reveal whether an account exists — anti-enumeration (B1).
     const passwordHash = user?.passwordHash ?? (await dummyHash());
-    const ok = await verifyPassword(passwordHash, parsed.data.password);
+    const ok = user?.passwordHash ? await verifyPassword(passwordHash, parsed.data.password) : false;
     if (!user || !ok) {
       recordLoginFailure(email);
       await recordAudit(prisma, { action: "login.fail", actorUserId: user?.id ?? null, ip: req.ip });
@@ -97,7 +96,80 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
 
   app.get("/auth/me", async (req, reply) => {
     if (!req.userId) return reply.code(401).send({ error: "not authenticated" });
-    return { id: req.userId, role: req.role, coachId: req.coachId ?? null, athleteId: req.athleteId ?? null };
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { emailVerified: true, email: true },
+    });
+    return {
+      id: req.userId,
+      role: req.role,
+      coachId: req.coachId ?? null,
+      athleteId: req.athleteId ?? null,
+      email: user?.email ?? null,
+      emailVerified: user?.emailVerified ?? false,
+    };
+  });
+
+  app.post("/auth/password/forgot", { config: { rateLimit: FORGOT_PASSWORD_RATE_LIMIT } }, async (req, reply) => {
+    const parsed = ForgotPasswordSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid input" });
+    const email = parsed.data.email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user) {
+      const raw = generateOneTimeToken();
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+      await prisma.passwordResetToken.create({ data: { id: tokenIdFromRaw(raw), userId: user.id, expiresAt } });
+      const resetUrl = `${appOrigin()}/login/reset?token=${encodeURIComponent(raw)}`;
+      await sendEmail(email, "password_reset", { resetUrl });
+      await recordAudit(prisma, { action: "password.forgot", actorUserId: user.id, actorRole: user.role, ip: req.ip });
+    }
+    return { ok: true };
+  });
+
+  app.post("/auth/password/reset", { config: { rateLimit: RESET_PASSWORD_RATE_LIMIT } }, async (req, reply) => {
+    const parsed = ResetPasswordSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid input" });
+    const tokenId = tokenIdFromRaw(parsed.data.token);
+    const row = await prisma.passwordResetToken.findUnique({ where: { id: tokenId } });
+    if (!row || row.usedAt || row.expiresAt.getTime() < Date.now()) {
+      return reply.code(400).send({ error: "invalid or expired token" });
+    }
+    const passwordHash = await hashPassword(parsed.data.password);
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: row.userId }, data: { passwordHash } });
+      await tx.passwordResetToken.update({ where: { id: tokenId }, data: { usedAt: new Date() } });
+    });
+    await invalidateSessionsByUserId(prisma, row.userId);
+    await recordAudit(prisma, { action: "password.reset", actorUserId: row.userId, ip: req.ip });
+    return { ok: true };
+  });
+
+  app.post("/auth/email/verify", async (req, reply) => {
+    const parsed = VerifyEmailSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid input" });
+    const tokenId = tokenIdFromRaw(parsed.data.token);
+    const row = await prisma.emailVerificationToken.findUnique({ where: { id: tokenId } });
+    if (!row || row.usedAt || row.expiresAt.getTime() < Date.now()) {
+      return reply.code(400).send({ error: "invalid or expired token" });
+    }
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: row.userId }, data: { emailVerified: true } });
+      await tx.emailVerificationToken.update({ where: { id: tokenId }, data: { usedAt: new Date() } });
+    });
+    await recordAudit(prisma, { action: "email.verify", actorUserId: row.userId, ip: req.ip });
+    return { ok: true };
+  });
+
+  app.post("/auth/email/resend", async (req, reply) => {
+    if (!req.userId || req.role !== "coach") return reply.code(401).send({ error: "coach session required" });
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || user.emailVerified) return { ok: true };
+    const raw = generateOneTimeToken();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await prisma.emailVerificationToken.create({ data: { id: tokenIdFromRaw(raw), userId: user.id, expiresAt } });
+    const verifyUrl = `${appOrigin()}/login/verify?token=${encodeURIComponent(raw)}`;
+    await sendEmail(user.email, "email_verify", { verifyUrl });
+    return { ok: true };
   });
 
   // Revoke every session for the current user (B3): "log out everywhere". Clears this cookie too.

@@ -6,6 +6,12 @@ import { AuthProvider } from "../auth/AuthContext";
 import { RequireAuth } from "../auth/RequireAuth";
 import { RoleLanding } from "../auth/RoleLanding";
 import { AuthScreen } from "../auth/AuthScreen";
+import { ForgotPasswordScreen } from "../auth/ForgotPasswordScreen";
+import { ResetPasswordScreen } from "../auth/ResetPasswordScreen";
+import { VerifyEmailScreen } from "../auth/VerifyEmailScreen";
+import { GoogleCompleteScreen } from "../auth/GoogleCompleteScreen";
+import { PrivacidadPage, TerminosPage } from "../screens/legal/LegalPages";
+import { SuscripcionScreen } from "../screens/coach/SuscripcionScreen";
 import { Equipo } from "../screens/coach/Equipo";
 import { Drilldown } from "../screens/coach/Drilldown";
 import { InvitacionesScreen } from "../screens/coach/InvitacionesScreen";
@@ -33,6 +39,12 @@ const routes: RouteObject[] = [
     children: [
       { index: true, element: <RoleLanding /> }, // redirects by role (or to /login)
       { path: "login", element: <AuthScreen /> },
+      { path: "login/forgot", element: <ForgotPasswordScreen /> },
+      { path: "login/reset", element: <ResetPasswordScreen /> },
+      { path: "login/verify", element: <VerifyEmailScreen /> },
+      { path: "login/google-complete", element: <GoogleCompleteScreen /> },
+      { path: "privacidad", element: <PrivacidadPage /> },
+      { path: "terminos", element: <TerminosPage /> },
       {
         path: "coach",
         element: <RequireAuth role="coach"><CoachShell /></RequireAuth>,
@@ -43,6 +55,7 @@ const routes: RouteObject[] = [
           { path: "a/:id", element: <Drilldown /> },
           { path: "invitaciones", element: <InvitacionesScreen /> },
           { path: "cuenta", element: <CuentaStub /> },
+          { path: "suscripcion", element: <SuscripcionScreen /> },
         ],
       },
       {

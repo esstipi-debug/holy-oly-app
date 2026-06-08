@@ -7,3 +7,5 @@ export const LOGIN_RATE_LIMIT = { max: 10, timeWindow: "1 minute" } as const;
 export const SIGNUP_RATE_LIMIT = { max: 10, timeWindow: "1 minute" } as const;
 export const ACCEPT_RATE_LIMIT = { max: 5, timeWindow: "1 minute" } as const;
 export const ROTATE_RATE_LIMIT = { max: 3, timeWindow: "1 minute" } as const;
+export const FORGOT_PASSWORD_RATE_LIMIT = { max: 5, timeWindow: "1 minute" } as const;
+export const RESET_PASSWORD_RATE_LIMIT = { max: 10, timeWindow: "1 minute" } as const;

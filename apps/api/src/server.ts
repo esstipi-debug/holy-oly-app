@@ -12,9 +12,12 @@ import { prisma } from "./db/client";
 import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
 import { authRoutes, SESSION_COOKIE, cookieOpts } from "./auth/routes";
+import { googleAuthRoutes } from "./auth/google-routes";
 import { vinculoRoutes } from "./vinculo/routes";
 import { meRoutes } from "./me/routes";
 import { requireCoach } from "./auth/guards";
+import { requireCoachWrite } from "./auth/coach-writes";
+import { billingRoutes } from "./billing/routes";
 import { dummyHash } from "./auth/password";
 import { recordAudit } from "./audit";
 
@@ -137,7 +140,9 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   });
 
   app.register(authRoutes);
+  app.register(googleAuthRoutes);
   app.register(vinculoRoutes);
+  app.register(billingRoutes);
   app.register(meRoutes);
 
   app.get("/health", async () => ({ ok: true }));
@@ -155,6 +160,12 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
       return false;
     }
     return true;
+  };
+
+  const guardAthleteWrite = async (req: FastifyRequest, reply: FastifyReply, id: string): Promise<boolean> => {
+    if (!(await guardAthlete(req, reply, id))) return false;
+    const coachId = await requireCoachWrite(prisma, req, reply);
+    return coachId !== undefined;
   };
 
   app.get("/roster", async (req, reply) => {
@@ -208,7 +219,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   // ── Coach-authorized writes (Fase 4). Same gate as the reads (coach session + active Vinculo). ──
 
   app.put<{ Params: { id: string } }>("/athletes/:id/plan", async (req, reply) => {
-    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    if (!(await guardAthleteWrite(req, reply, req.params.id))) return;
     const parsed = PlanSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid plan" });
     // The path id is the authorized athlete; reject a body that targets a different one.
@@ -221,7 +232,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   });
 
   app.post<{ Params: { id: string } }>("/athletes/:id/medals", async (req, reply) => {
-    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    if (!(await guardAthleteWrite(req, reply, req.params.id))) return;
     const parsed = MedalSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid medal" });
     await repo.addMedal(prisma, req.params.id, parsed.data);
@@ -230,7 +241,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   });
 
   app.put<{ Params: { id: string } }>("/athletes/:id/comps", async (req, reply) => {
-    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    if (!(await guardAthleteWrite(req, reply, req.params.id))) return;
     const parsed = CompsSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid comps" });
     await repo.setComps(prisma, req.params.id, parsed.data);
@@ -244,7 +255,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   });
 
   app.put<{ Params: { id: string } }>("/athletes/:id/sessions", async (req, reply) => {
-    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    if (!(await guardAthleteWrite(req, reply, req.params.id))) return;
     const parsed = SessionLogSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid sessions" });
     await repo.setSessionLog(prisma, req.params.id, parsed.data);
@@ -260,7 +271,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   });
 
   app.put<{ Params: { id: string; week: string; idx: string } }>("/athletes/:id/prescription/:week/:idx", async (req, reply) => {
-    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    if (!(await guardAthleteWrite(req, reply, req.params.id))) return;
     const week = Number(req.params.week);
     const idx = Number(req.params.idx);
     if (!Number.isInteger(week) || week < 1 || week > 104 || !Number.isInteger(idx) || idx < 0 || idx > 13) {

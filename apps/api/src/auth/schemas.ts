@@ -9,20 +9,42 @@ const COMMON_PASSWORDS = new Set([
   "dragon123456", "football1234", "baseball1234", "superman1234", "trustno12345",
 ]);
 
+const passwordField = z
+  .string()
+  .min(12)
+  .max(200)
+  .refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), "password is too common");
+
 export const SignupSchema = z.object({
   email: z.string().email(),
-  password: z
-    .string()
-    .min(12)
-    .max(200)
-    .refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), "password is too common"),
+  password: passwordField,
   role: z.enum(["coach", "atleta"]),
   name: z.string().min(1).max(120).optional(),
+  // E1 honeypot — bots fill hidden fields; humans leave empty.
+  website: z.string().max(200).optional(),
+});
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(20).max(200),
+  password: passwordField,
+});
+
+export const VerifyEmailSchema = z.object({
+  token: z.string().min(20).max(200),
 });
 
 export const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1).max(200),
+});
+
+export const GoogleCompleteSchema = z.object({
+  role: z.enum(["coach", "atleta"]),
+  name: z.string().min(1).max(120).optional(),
 });
 
 // Exact 12-char format (A6): rejects malformed input before the DB lookup, so a wrong-format

@@ -53,16 +53,40 @@ enum UserRole {
   atleta
 }
 
-/// Auth identity (login) for both coaches and athletes — email/password (argon2).
+enum SubscriptionStatus {
+  none
+  active
+  past_due
+  canceled
+}
+
+/// Auth identity (login) for both coaches and athletes — email/password (argon2) and/or OAuth.
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
-  passwordHash String
+  passwordHash String?
   role         UserRole
+  emailVerified Boolean  @default(false)
   createdAt    DateTime  @default(now())
   sessions     Session[]
   coach        Coach?
   athlete      Athlete?
+  oauthAccounts          OAuthAccount[]
+  passwordResetTokens      PasswordResetToken[]
+  emailVerificationTokens  EmailVerificationToken[]
+}
+
+/// External login provider linked to a User (Google, etc.).
+model OAuthAccount {
+  id             String   @id @default(cuid())
+  provider       String
+  providerUserId String
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
 }
 
 /// Server-side, revocable session. `id` is the SHA-256 (hex) of the token held in the
@@ -102,6 +126,52 @@ model Coach {
   inviteCode String?   @unique
   createdAt  DateTime  @default(now())
   vinculos   Vinculo[]
+  subscription Subscription?
+}
+
+/// B2B coach subscription (E3–E5). Athletes are free; only coaches pay.
+model Subscription {
+  id                 String             @id @default(cuid())
+  coachId            String             @unique
+  coach              Coach              @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  provider           String             @default("mock")
+  providerCustomerId String?
+  providerSubId      String?
+  planId             String?
+  status             SubscriptionStatus @default(none)
+  currentPeriodEnd   DateTime?
+  updatedAt          DateTime           @updatedAt
+}
+
+/// Idempotent billing webhook processing (E3).
+model WebhookEvent {
+  id          String   @id
+  provider    String
+  processedAt DateTime @default(now())
+}
+
+/// Single-use password reset token (B6). `id` = SHA-256(raw token) hex — raw token never stored.
+model PasswordResetToken {
+  id        String    @id
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Single-use email verification token (B6b).
+model EmailVerificationToken {
+  id        String    @id
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 /// Athlete. Ownership is modeled through Vinculo (not a direct coachId) so athletes

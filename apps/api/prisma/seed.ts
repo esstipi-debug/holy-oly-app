@@ -93,6 +93,10 @@ async function main(): Promise<void> {
     prisma.competencia.deleteMany(),
     prisma.plan.deleteMany(),
     prisma.cycleConsent.deleteMany(),
+    prisma.webhookEvent.deleteMany(),
+    prisma.passwordResetToken.deleteMany(),
+    prisma.emailVerificationToken.deleteMany(),
+    prisma.subscription.deleteMany(),
     prisma.vinculo.deleteMany(),
     prisma.athlete.deleteMany(),
     prisma.coach.deleteMany(),
@@ -100,10 +104,23 @@ async function main(): Promise<void> {
   ]);
 
   const coachUser = await prisma.user.create({
-    data: { email: cfg.coachEmail, passwordHash: await hash(cfg.coachPassword), role: "coach" },
+    data: {
+      email: cfg.coachEmail,
+      passwordHash: await hash(cfg.coachPassword),
+      role: "coach",
+      emailVerified: true,
+    },
   });
   const coach = await prisma.coach.create({
     data: { id: cfg.coachId, userId: coachUser.id, name: "Coach Demo", inviteCode: cfg.coachInvite },
+  });
+  await prisma.subscription.create({
+    data: {
+      coachId: coach.id,
+      provider: "mock",
+      status: "active",
+      currentPeriodEnd: new Date(Date.now() + 365 * 86400_000),
+    },
   });
 
   for (const a of ATHLETES) {
@@ -146,7 +163,7 @@ async function main(): Promise<void> {
   // so logging in as `mara@holyoly.dev` shows the athlete app fully populated. Roster stays 8 — mv
   // is already one of the seeded athletes; this only attaches a login and adds her own plan/daylogs.
   const maraUser = await prisma.user.create({
-    data: { email: cfg.maraEmail, passwordHash: await hash(cfg.maraPassword), role: "atleta" },
+    data: { email: cfg.maraEmail, passwordHash: await hash(cfg.maraPassword), role: "atleta", emailVerified: true },
   });
   await prisma.athlete.update({ where: { id: "mv" }, data: { userId: maraUser.id } });
 

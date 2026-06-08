@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { prisma } from "../db/client";
 import { requireCoach, requireAthlete } from "../auth/guards";
+import { requireCoachWrite } from "../auth/coach-writes";
 import { AcceptCodeSchema } from "../auth/schemas";
 import { ACCEPT_RATE_LIMIT, ROTATE_RATE_LIMIT } from "../auth/rateLimits";
 import { recordAudit } from "../audit";
@@ -18,7 +19,7 @@ function genInviteCode(): string {
 /** Vínculo (coach⇄athlete) lifecycle: rotate code → athlete accepts → coach confirms/denies. */
 export async function vinculoRoutes(app: FastifyInstance): Promise<void> {
   app.post("/invite/rotate", { config: { rateLimit: ROTATE_RATE_LIMIT } }, async (req, reply) => {
-    const coachId = requireCoach(req, reply);
+    const coachId = await requireCoachWrite(prisma, req, reply);
     if (!coachId) return;
     const inviteCode = genInviteCode();
     await prisma.coach.update({ where: { id: coachId }, data: { inviteCode } });
@@ -66,7 +67,9 @@ export async function vinculoRoutes(app: FastifyInstance): Promise<void> {
     reply: FastifyReply,
     estado: "activo" | "rechazado",
   ): Promise<unknown> {
-    const coachId = requireCoach(req, reply);
+    const coachId = await requireCoachWrite(prisma, req, reply, {
+      requireEmailVerified: estado === "activo",
+    });
     if (!coachId) return undefined;
     const v = await prisma.vinculo.findUnique({ where: { id: req.params.id } });
     if (!v || v.coachId !== coachId) {

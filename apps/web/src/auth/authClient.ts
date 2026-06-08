@@ -7,6 +7,8 @@ export interface AuthUser {
   role: Role;
   coachId: string | null;
   athleteId: string | null;
+  email?: string | null;
+  emailVerified?: boolean;
 }
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
@@ -38,10 +40,44 @@ export function login(email: string, password: string): Promise<void> {
   return authPost("/auth/login", { email, password });
 }
 
-export function signup(email: string, password: string, role: Role, name?: string): Promise<void> {
-  return authPost("/auth/signup", { email, password, role, name });
+export function signup(email: string, password: string, role: Role, name?: string, website?: string): Promise<void> {
+  return authPost("/auth/signup", { email, password, role, name, website: website ?? "" });
 }
 
 export function logout(): Promise<void> {
   return authPost("/auth/logout", {});
+}
+
+export function forgotPassword(email: string): Promise<void> {
+  return authPost("/auth/password/forgot", { email });
+}
+
+export function resetPassword(token: string, password: string): Promise<void> {
+  return authPost("/auth/password/reset", { token, password });
+}
+
+export function verifyEmail(token: string): Promise<void> {
+  return authPost("/auth/email/verify", { token });
+}
+
+export function resendVerificationEmail(): Promise<void> {
+  return authPost("/auth/email/resend", {});
+}
+
+export async function googleAuthEnabled(): Promise<boolean> {
+  const res = await fetch(`${BASE}/auth/google/config`, { credentials: "include" });
+  if (!res.ok) return false;
+  const body = (await res.json()) as { enabled?: boolean };
+  return body.enabled === true;
+}
+
+export function googleAuthStart(params: { intent: "login" | "signup"; role?: Role; name?: string }): void {
+  const q = new URLSearchParams({ intent: params.intent });
+  if (params.role) q.set("role", params.role);
+  if (params.name?.trim()) q.set("name", params.name.trim());
+  window.location.href = `${BASE}/auth/google/start?${q}`;
+}
+
+export function completeGoogleSignup(role: Role, name?: string): Promise<void> {
+  return authPost("/auth/google/complete", { role, name });
 }

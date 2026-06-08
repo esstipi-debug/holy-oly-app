@@ -23,6 +23,7 @@ export function CuentaStub() {
       </div>
 
       <Link to="/coach/invitaciones" style={row}>Invitaciones ›</Link>
+      {apiEnabled && <Link to="/coach/suscripcion" style={row}>Suscripción ›</Link>}
 
       <button
         type="button"
@@ -33,7 +34,9 @@ export function CuentaStub() {
       </button>
 
       <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 16, lineHeight: 1.5 }}>
-        Perfil y suscripción llegan más adelante.
+        <Link to="/privacidad" style={{ color: "inherit" }}>Privacidad</Link>
+        {" · "}
+        <Link to="/terminos" style={{ color: "inherit" }}>Términos</Link>
       </div>
     </div>
   );
