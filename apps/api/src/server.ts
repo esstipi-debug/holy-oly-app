@@ -2,6 +2,7 @@ import Fastify, { type FastifyError, type FastifyInstance, type FastifyReply, ty
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
+import helmet from "@fastify/helmet";
 import fastifyStatic from "@fastify/static";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -36,7 +37,12 @@ export interface BuildServerOptions {
 
 export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   const app = Fastify({
-    logger: true,
+    // C5 — keep credentials out of logs. Fastify's default serializers don't log headers/bodies,
+    // but redact is belt-and-suspenders if a custom serializer or debug level is ever enabled.
+    logger: {
+      level: process.env.LOG_LEVEL ?? "info",
+      redact: { paths: ["req.headers.cookie", "req.headers.authorization"], remove: true },
+    },
     // A7 — DoS guards: cap body size and slow-request/connection time so a single client
     // can't exhaust memory or hold connections open. 256 KiB is generous for our JSON payloads.
     bodyLimit: 256 * 1024,
@@ -44,6 +50,29 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     connectionTimeout: 10_000,
   });
   app.register(cookie);
+  // C1/C2/C6 — security headers owned in-app (one layer). CSP allows the SPA's inline styles and
+  // Google Fonts; scripts stay 'self' (Vite emits external hashed chunks). HSTS only in prod.
+  app.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'"],
+        frameAncestors: ["'none'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+      },
+    },
+    xFrameOptions: { action: "deny" },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    hsts:
+      process.env.NODE_ENV === "production"
+        ? { maxAge: 31_536_000, includeSubDomains: true, preload: true }
+        : false,
+  });
   // Opt-in per route via config.rateLimit. Off under test so the int suite isn't throttled;
   // the dedicated ratelimit.int.test.ts enables it explicitly.
   const rateLimitEnabled = opts.rateLimit ?? process.env.NODE_ENV !== "test";

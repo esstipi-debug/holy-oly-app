@@ -99,6 +99,10 @@ async function main(): Promise<void> {
     console.log("   401 unauth · login → roster 8 · cycle redacted · signup→accept(pendiente)→confirm(activo) → roster 9");
   } finally {
     await app.close();
+    // Disconnect the Prisma singleton before stopping Postgres, else the open connection logs a
+    // benign reset on teardown (now visible since the client logs errors).
+    const { prisma } = await import("../src/db/client");
+    await prisma.$disconnect().catch(() => undefined);
     await pg.stop();
     rmSync(DATA_DIR, { recursive: true, force: true });
   }
