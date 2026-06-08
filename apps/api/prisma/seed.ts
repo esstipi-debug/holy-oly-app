@@ -4,6 +4,7 @@ import type { MacrocycleLevel, MonitorSeries } from "@holy-oly/core";
 import { MACROCYCLES, MACRO_RECIPES, instantiatePrescription } from "@holy-oly/core";
 import { seriesToRows } from "../src/db/mapping";
 import { loadSeedConfig } from "./seed-guard";
+import { encryptAtRest } from "../src/crypto-at-rest";
 
 const prisma = new PrismaClient();
 
@@ -116,7 +117,11 @@ async function main(): Promise<void> {
     });
     await prisma.vinculo.create({ data: { coachId: coach.id, athleteId: a.id, estado: "activo" } });
     await prisma.cycleConsent.create({
-      data: { athleteId: a.id, share: a.id === "mv" ? "full" : "min", state: "regular" },
+      data: {
+        athleteId: a.id,
+        share: encryptAtRest(a.id === "mv" ? "full" : "min"),
+        state: encryptAtRest("regular"),
+      },
     });
   }
 

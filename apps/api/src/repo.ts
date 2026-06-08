@@ -3,10 +3,12 @@ import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
+  CycleShare, CycleState,
 } from "@holy-oly/core";
 import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { redactCycle } from "./cycle";
+import { decryptAtRest } from "./crypto-at-rest";
 
 /** Authorization primitive: the coach sees an athlete only via an `activo` Vinculo. */
 export async function hasActiveLink(prisma: PrismaClient, coachId: string, athleteId: string): Promise<boolean> {
@@ -87,7 +89,8 @@ export async function getPlan(prisma: PrismaClient, athleteId: string): Promise<
 export async function getCycle(prisma: PrismaClient, athleteId: string): Promise<CycleContext | undefined> {
   const c = await prisma.cycleConsent.findUnique({ where: { athleteId } });
   if (!c) return undefined;
-  return redactCycle(c.share, c.state);
+  // Decrypt at rest (D1) before redacting; legacy plaintext passes through unchanged.
+  return redactCycle(decryptAtRest(c.share) as CycleShare, decryptAtRest(c.state) as CycleState);
 }
 
 // ── Writes (Fase 4). Inverse of the reads above; mirror LocalRepository's semantics so the
@@ -288,7 +291,11 @@ export async function exportAthleteData(prisma: PrismaClient, athleteId: string)
       prisma.monitorWeek.findMany({ where: { athleteId }, include: { items: true } }),
       prisma.sessionMark.findMany({ where: { athleteId } }),
     ]);
-  return { athlete, plan, cycle, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks };
+  // The athlete owns their cycle → return it decrypted (raw values), not redacted.
+  const cycleRaw = cycle
+    ? { ...cycle, share: decryptAtRest(cycle.share), state: decryptAtRest(cycle.state) }
+    : null;
+  return { athlete, plan, cycle: cycleRaw, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks };
 }
 
 /**

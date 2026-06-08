@@ -10,7 +10,8 @@
 //   HOLYOLY_NO_BROWSER  si está, no abre Edge (para pruebas/headless)
 import EmbeddedPostgres from "embedded-postgres";
 import { execSync, spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { join, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -80,6 +81,15 @@ async function main() {
       "[holy-oly] Falta el build. Corré 'Actualizar Holy Oly' (compila api + web modo-API).",
     );
     process.exit(1);
+  }
+
+  // D1: machine-local key so cycle data is encrypted at rest locally too. Stored under the demo
+  // dir (NOT in the repo). Must be set before seed/server so writes encrypt and reads decrypt.
+  if (!process.env.CYCLE_ENCRYPTION_KEY) {
+    const keyFile = join(DEMO_DIR, ".cycle-key");
+    const k = existsSync(keyFile) ? readFileSync(keyFile, "utf8").trim() : randomBytes(32).toString("hex");
+    if (!existsSync(keyFile)) writeFileSync(keyFile, k);
+    process.env.CYCLE_ENCRYPTION_KEY = k;
   }
 
   const firstInit = !existsSync(join(PG_DATA, "PG_VERSION"));

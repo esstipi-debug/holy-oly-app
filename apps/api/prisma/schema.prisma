@@ -251,10 +251,12 @@ model Medal {
 /// Athlete-private cycle consent. The coach NEVER reads this directly — only the
 /// server-computed, redacted CycleContext is exposed (no raw share/state to a coach).
 model CycleConsent {
-  athleteId String     @id
-  athlete   Athlete    @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  share     CycleShare
-  state     CycleState
+  athleteId String  @id
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  // D1: stored encrypted-at-rest (AES-256-GCM) when CYCLE_ENCRYPTION_KEY is set; values are the
+  // CycleShare/CycleState string unions (validated app-side). TEXT to hold ciphertext or plaintext.
+  share     String
+  state     String
 }
 
 /// What the athlete actually lifted, per prescribed exercise (SP3). Self-written (requireAthlete).
