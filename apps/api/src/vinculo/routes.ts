@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { prisma } from "../db/client";
 import { requireCoach, requireAthlete } from "../auth/guards";
 import { AcceptCodeSchema } from "../auth/schemas";
+import { ACCEPT_RATE_LIMIT, ROTATE_RATE_LIMIT } from "../auth/rateLimits";
 
 // Unambiguous alphabet (no 0/O/1/I) for human-typed invite codes.
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -15,7 +16,7 @@ function genInviteCode(): string {
 
 /** Vínculo (coach⇄athlete) lifecycle: rotate code → athlete accepts → coach confirms/denies. */
 export async function vinculoRoutes(app: FastifyInstance): Promise<void> {
-  app.post("/invite/rotate", async (req, reply) => {
+  app.post("/invite/rotate", { config: { rateLimit: ROTATE_RATE_LIMIT } }, async (req, reply) => {
     const coachId = requireCoach(req, reply);
     if (!coachId) return;
     const inviteCode = genInviteCode();
@@ -30,7 +31,7 @@ export async function vinculoRoutes(app: FastifyInstance): Promise<void> {
     return { inviteCode: coach?.inviteCode ?? null };
   });
 
-  app.post("/vinculos/accept", async (req, reply) => {
+  app.post("/vinculos/accept", { config: { rateLimit: ACCEPT_RATE_LIMIT } }, async (req, reply) => {
     const athleteId = requireAthlete(req, reply);
     if (!athleteId) return;
     const parsed = AcceptCodeSchema.safeParse(req.body);

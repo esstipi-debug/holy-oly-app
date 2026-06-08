@@ -1,6 +1,7 @@
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,9 +29,20 @@ declare module "fastify" {
  * onRequest hook resolves it to coachId/athleteId. Coach-scoped reads require a coach
  * session AND an active Vinculo to the athlete (Fase 1 authz, now with real identity).
  */
-export function buildServer(): FastifyInstance {
+export interface BuildServerOptions {
+  /** Enable per-route rate limiting (A1). Defaults to on, except under NODE_ENV=test. */
+  rateLimit?: boolean;
+}
+
+export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   const app = Fastify({ logger: true });
   app.register(cookie);
+  // Opt-in per route via config.rateLimit. Off under test so the int suite isn't throttled;
+  // the dedicated ratelimit.int.test.ts enables it explicitly.
+  const rateLimitEnabled = opts.rateLimit ?? process.env.NODE_ENV !== "test";
+  if (rateLimitEnabled) {
+    app.register(rateLimit, { global: false });
+  }
   // SERVE_WEB = the single-service deploy where Fastify also serves the built SPA → same origin,
   // so CORS isn't involved at all. Otherwise (split origin) the front sends the session cookie
   // cross-origin: in production an explicit WEB_ORIGIN is REQUIRED (credentialed CORS can't be a
@@ -45,8 +57,14 @@ export function buildServer(): FastifyInstance {
   }
 
   app.setErrorHandler((err, _req, reply) => {
-    reply.log.error(err);
-    reply.code(500).send({ error: "internal server error" });
+    const status = err.statusCode ?? 500;
+    if (status >= 500) {
+      // Server errors: log full detail server-side, return a generic body (no internals leak).
+      reply.log.error(err);
+      return reply.code(500).send({ error: "internal server error" });
+    }
+    // Client errors (4xx, incl. 429 from rate limiting / validation) pass through their message.
+    return reply.code(status).send({ error: err.message });
   });
 
   // Resolve the session cookie → set the principal (coachId/athleteId) on the request.
