@@ -35,7 +35,14 @@ export interface BuildServerOptions {
 }
 
 export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
-  const app = Fastify({ logger: true });
+  const app = Fastify({
+    logger: true,
+    // A7 — DoS guards: cap body size and slow-request/connection time so a single client
+    // can't exhaust memory or hold connections open. 256 KiB is generous for our JSON payloads.
+    bodyLimit: 256 * 1024,
+    requestTimeout: 15_000,
+    connectionTimeout: 10_000,
+  });
   app.register(cookie);
   // Opt-in per route via config.rateLimit. Off under test so the int suite isn't throttled;
   // the dedicated ratelimit.int.test.ts enables it explicitly.
