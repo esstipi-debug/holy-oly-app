@@ -54,7 +54,7 @@ export function loadSeedConfig(env: Env = process.env): SeedConfig {
     maraEmail: secret("SEED_MARA_EMAIL", "mara@holyoly.dev", env).trim().toLowerCase(),
     maraPassword: secret("SEED_MARA_PASSWORD", "holyoly-demo", env),
     // The coach id is an internal identifier, not a secret, so it is never prod-required.
-    // (D2 will switch this default to a generated UUID to avoid a predictable id.)
-    coachId: env.DEV_COACH_ID?.trim() || "coach-stub",
+    // D2: default to a random UUID (no predictable "coach-stub" id); overridable via DEV_COACH_ID.
+    coachId: env.DEV_COACH_ID?.trim() || crypto.randomUUID(),
   };
 }

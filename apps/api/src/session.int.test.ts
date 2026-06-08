@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { buildServer } from "./server";
 import { prisma } from "./db/client";
-import { generateSessionToken, sessionIdFromToken } from "./auth/session";
+import { generateSessionToken, sessionIdFromToken, purgeExpiredSessions } from "./auth/session";
 
 interface Res {
   cookies: Array<{ name: string; value: string; maxAge?: number }>;
@@ -66,6 +66,18 @@ describe("session lifecycle (B3/B4)", () => {
       if (prev === undefined) delete process.env.SINGLE_SESSION_LOGIN;
       else process.env.SINGLE_SESSION_LOGIN = prev;
     }
+  });
+
+  it("purgeExpiredSessions deletes expired rows (D5)", async () => {
+    const su = await signup();
+    const me = (await app.inject({ method: "GET", url: "/auth/me", headers: { cookie: cookieHdr(su) } })).json() as { id: string };
+    const token = generateSessionToken();
+    await prisma.session.create({
+      data: { id: sessionIdFromToken(token), userId: me.id, expiresAt: new Date(Date.now() - 1000) },
+    });
+    const n = await purgeExpiredSessions(prisma);
+    expect(n).toBeGreaterThanOrEqual(1);
+    expect(await prisma.session.findUnique({ where: { id: sessionIdFromToken(token) } })).toBeNull();
   });
 
   it("renews a session inside the renew window and re-issues the cookie (B4/NEW-2)", async () => {

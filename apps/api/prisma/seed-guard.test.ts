@@ -29,6 +29,13 @@ describe("loadSeedConfig", () => {
     ).toThrow(/must be set|SEED_/i);
   });
 
+  it("defaults coachId to a generated UUID, never the predictable 'coach-stub' (D2)", () => {
+    const cfg = loadSeedConfig({ NODE_ENV: "test" });
+    expect(cfg.coachId).not.toBe("coach-stub");
+    expect(cfg.coachId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    expect(loadSeedConfig({ NODE_ENV: "test", DEV_COACH_ID: "pinned" }).coachId).toBe("pinned");
+  });
+
   it("accepts explicit secrets in production and normalizes the email", () => {
     const cfg = loadSeedConfig({
       NODE_ENV: "production",

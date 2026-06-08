@@ -60,3 +60,9 @@ export async function invalidateSessionToken(prisma: PrismaClient, token: string
 export async function invalidateSessionsByUserId(prisma: PrismaClient, userId: string): Promise<void> {
   await prisma.session.deleteMany({ where: { userId } });
 }
+
+/** Delete all expired sessions (D5). Uses the expiresAt index; cheap to run on boot + periodically. */
+export async function purgeExpiredSessions(prisma: PrismaClient): Promise<number> {
+  const { count } = await prisma.session.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+  return count;
+}

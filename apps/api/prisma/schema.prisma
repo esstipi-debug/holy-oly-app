@@ -74,6 +74,7 @@ model Session {
   expiresAt DateTime
 
   @@index([userId])
+  @@index([expiresAt]) // D5: cheap cleanup of expired sessions (DELETE WHERE expiresAt < now)
 }
 
 /// The paying tenant. A Coach is a User (role=coach) + this profile + a rotatable invite code.
