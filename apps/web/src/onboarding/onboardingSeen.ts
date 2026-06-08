@@ -5,7 +5,7 @@
  * and is namespaced separately so the demo reset never touches real-user onboarding.
  */
 export function onboardingKey(userId: string): string {
-  return `ho:onboard:${userId}`;
+  return `ho-onboard:${userId}`;
 }
 
 export function isOnboardingSeen(storage: Storage, key: string): boolean {

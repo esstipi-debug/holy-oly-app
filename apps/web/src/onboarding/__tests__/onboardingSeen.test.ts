@@ -4,7 +4,7 @@ import { onboardingKey, isOnboardingSeen, markOnboardingSeen } from "../onboardi
 
 describe("onboardingSeen", () => {
   it("builds a per-user key under the ho: namespace", () => {
-    expect(onboardingKey("user-123")).toBe("ho:onboard:user-123");
+    expect(onboardingKey("user-123")).toBe("ho-onboard:user-123");
   });
 
   it("round-trips unseen -> seen for a given key", () => {
