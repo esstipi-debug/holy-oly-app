@@ -1,0 +1,14 @@
+# gitleaks config — extends the default ruleset, plus an allowlist for the non-secret
+# demo seed defaults (they are dev/CI-only and the seed refuses to use them in production).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Holy Oly non-prod demo seed defaults (guarded by ALLOW_DEMO_SEED; never used in prod)"
+paths = [
+  '''apps/api/prisma/seed-guard\.ts''',
+]
+regexes = [
+  '''holyoly-demo''',
+  '''HOLY-DEMO''',
+]
