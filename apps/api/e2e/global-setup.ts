@@ -46,6 +46,8 @@ export default async function globalSetup(): Promise<void> {
   delete process.env.NODE_ENV;
 
   try {
+    // Dynamic import AFTER DATABASE_URL is set above: a top-level import of ../src/server would
+    // initialise the Prisma client before the env is in place, pointing it at the wrong DB.
     const { buildServer } = await import("../src/server");
     const app = buildServer();
     await app.listen({ port: APP_PORT, host: "127.0.0.1" });
