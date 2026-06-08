@@ -3,23 +3,9 @@ import { hash } from "@node-rs/argon2";
 import type { MacrocycleLevel, MonitorSeries } from "@holy-oly/core";
 import { MACROCYCLES, MACRO_RECIPES, instantiatePrescription } from "@holy-oly/core";
 import { seriesToRows } from "../src/db/mapping";
-
-// Demo coach login (Fase 3). Surfaced so the front login demo + e2e can authenticate.
-// Overridable via env so production never has to seed these committed defaults.
-const COACH_EMAIL = (process.env.SEED_COACH_EMAIL ?? "coach@holyoly.dev").trim().toLowerCase();
-const COACH_PASSWORD = process.env.SEED_COACH_PASSWORD ?? "holyoly-demo";
-const COACH_INVITE = process.env.SEED_INVITE_CODE ?? "HOLY-DEMO";
-// Demo athlete login — left UNLINKED + empty so the demo can walk the vínculo flow end to end (and
-// so the /me empty-state tests have an honestly-empty athlete to assert against).
-const ATLETA_EMAIL = (process.env.SEED_ATLETA_EMAIL ?? "atleta@holyoly.dev").trim().toLowerCase();
-const ATLETA_PASSWORD = process.env.SEED_ATLETA_PASSWORD ?? "holyoly-demo";
-// Showcase athlete login → attached to Mara (mv), the fully-instrumented athlete, so logging in
-// shows a POPULATED athlete app (plan + estado + constancia + camino). Separate from ATLETA_*.
-const MARA_EMAIL = (process.env.SEED_MARA_EMAIL ?? "mara@holyoly.dev").trim().toLowerCase();
-const MARA_PASSWORD = process.env.SEED_MARA_PASSWORD ?? "holyoly-demo";
+import { loadSeedConfig } from "./seed-guard";
 
 const prisma = new PrismaClient();
-const COACH_ID = process.env.DEV_COACH_ID ?? "coach-stub";
 
 interface SeedAthlete {
   id: string;
@@ -90,6 +76,10 @@ function isoDaysAgo(n: number): string {
 }
 
 async function main(): Promise<void> {
+  // Resolve + validate seed config FIRST: refuses to run the destructive reset in production
+  // unless ALLOW_DEMO_SEED=true, and requires explicit SEED_* secrets there (no demo defaults).
+  const cfg = loadSeedConfig();
+
   // Dev-only reset so the seed is re-runnable. Children before parents (FK-safe).
   await prisma.$transaction([
     prisma.session.deleteMany(),
@@ -109,10 +99,10 @@ async function main(): Promise<void> {
   ]);
 
   const coachUser = await prisma.user.create({
-    data: { email: COACH_EMAIL, passwordHash: await hash(COACH_PASSWORD), role: "coach" },
+    data: { email: cfg.coachEmail, passwordHash: await hash(cfg.coachPassword), role: "coach" },
   });
   const coach = await prisma.coach.create({
-    data: { id: COACH_ID, userId: coachUser.id, name: "Coach Demo", inviteCode: COACH_INVITE },
+    data: { id: cfg.coachId, userId: coachUser.id, name: "Coach Demo", inviteCode: cfg.coachInvite },
   });
 
   for (const a of ATHLETES) {
@@ -151,7 +141,7 @@ async function main(): Promise<void> {
   // so logging in as `mara@holyoly.dev` shows the athlete app fully populated. Roster stays 8 — mv
   // is already one of the seeded athletes; this only attaches a login and adds her own plan/daylogs.
   const maraUser = await prisma.user.create({
-    data: { email: MARA_EMAIL, passwordHash: await hash(MARA_PASSWORD), role: "atleta" },
+    data: { email: cfg.maraEmail, passwordHash: await hash(cfg.maraPassword), role: "atleta" },
   });
   await prisma.athlete.update({ where: { id: "mv" }, data: { userId: maraUser.id } });
 
@@ -183,13 +173,13 @@ async function main(): Promise<void> {
 
   // Demo athlete login (no Vínculo, empty → demo the join flow + the /me empty-state assertions).
   const atletaUser = await prisma.user.create({
-    data: { email: ATLETA_EMAIL, passwordHash: await hash(ATLETA_PASSWORD), role: "atleta" },
+    data: { email: cfg.atletaEmail, passwordHash: await hash(cfg.atletaPassword), role: "atleta" },
   });
   await prisma.athlete.create({
     data: { id: "demo-atleta", nombre: "Demo Atleta", iniciales: "DA", nivel: "beginner", sexo: "M", userId: atletaUser.id },
   });
 
-  console.log(`Seed complete: coach + ${ATHLETES.length} athletes (Mara instrumented + login ${MARA_EMAIL}) + empty demo athlete login ${ATLETA_EMAIL}.`);
+  console.log(`Seed complete: coach + ${ATHLETES.length} athletes (Mara instrumented + login ${cfg.maraEmail}) + empty demo athlete login ${cfg.atletaEmail}.`);
 }
 
 main()

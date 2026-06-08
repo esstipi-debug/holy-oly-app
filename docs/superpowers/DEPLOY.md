@@ -29,16 +29,21 @@ git push origin main
 
 ## 2. Sembrar datos demo (opcional, **una sola vez**, DB vacía)
 El seed crea el coach demo + 8 atletas + Mara instrumentada — útil para explorar la app ya.
-En el servicio `holy-oly` → **Shell**:
+En el servicio `holy-oly` → **Shell** (las credenciales las definís vos, no van en el repo):
 ```
-pnpm --filter @holy-oly/api db:seed
+ALLOW_DEMO_SEED=true \
+  SEED_COACH_EMAIL=tu-coach@dominio.com \
+  SEED_COACH_PASSWORD='<password-fuerte>' \
+  SEED_INVITE_CODE='<codigo-12-chars>' \
+  pnpm --filter @holy-oly/api db:seed
 ```
-- **Cuentas demo:** coach `coach@holyoly.dev` / `holyoly-demo` · inviteCode `HOLY-DEMO`.
-- ☠️ **PELIGRO:** el seed hace un **reset destructivo** (borra TODO antes de sembrar). Corrélo
-  **solo sobre una DB vacía/recién creada**. **Nunca** con usuarios reales cargados.
-- Para un lanzamiento real (sin demo): **no corras el seed** (que los coaches se registren), o
-  setéa `SEED_COACH_PASSWORD` / `SEED_COACH_EMAIL` / `SEED_INVITE_CODE` a valores secretos antes
-  de correrlo (las creds del seed son env-overridables).
+- ☠️ **Reset destructivo:** el seed borra TODO antes de sembrar. Por eso en producción
+  (`NODE_ENV=production`) **falla por defecto** (guard A2) — hay que pasar `ALLOW_DEMO_SEED=true`
+  a propósito, y entonces los `SEED_*` son **obligatorios** (no hay defaults commiteados que
+  puedan filtrarse a prod, guard A3). Corrélo **solo sobre una DB vacía/recién creada**.
+- **Cuentas demo:** las definís con esos `SEED_*`. En dev/local/CI hay defaults de demo
+  (ver `apps/api/prisma/seed-guard.ts`) — **nunca** los uses en un deploy real.
+- Para un lanzamiento real (sin demo): **no corras el seed** — que los coaches se registren.
 
 ## 3. Verificar
 - Login con el coach demo → ves el plantel (heatmap/quadrant/buckets) y el drill-down de Mara.
