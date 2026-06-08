@@ -77,6 +77,22 @@ model Session {
   @@index([expiresAt]) // D5: cheap cleanup of expired sessions (DELETE WHERE expiresAt < now)
 }
 
+/// Append-only security/audit event (A9). No FK relations on purpose: the trail must survive
+/// actor/target deletion, and it stores NO secrets (no password/token/email/cycle-state) — only
+/// ids + a short action label + source ip + timestamp.
+model AuditEvent {
+  id              String    @id @default(uuid())
+  ts              DateTime  @default(now())
+  action          String
+  actorUserId     String?
+  actorRole       UserRole?
+  targetAthleteId String?
+  ip              String?
+
+  @@index([ts])
+  @@index([actorUserId])
+}
+
 /// The paying tenant. A Coach is a User (role=coach) + this profile + a rotatable invite code.
 model Coach {
   id         String    @id @default(uuid())

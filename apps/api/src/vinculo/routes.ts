@@ -3,6 +3,7 @@ import { prisma } from "../db/client";
 import { requireCoach, requireAthlete } from "../auth/guards";
 import { AcceptCodeSchema } from "../auth/schemas";
 import { ACCEPT_RATE_LIMIT, ROTATE_RATE_LIMIT } from "../auth/rateLimits";
+import { recordAudit } from "../audit";
 
 // Unambiguous alphabet (no 0/O/1/I) for human-typed invite codes.
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -21,6 +22,7 @@ export async function vinculoRoutes(app: FastifyInstance): Promise<void> {
     if (!coachId) return;
     const inviteCode = genInviteCode();
     await prisma.coach.update({ where: { id: coachId }, data: { inviteCode } });
+    await recordAudit(prisma, { action: "invite.rotate", actorUserId: req.userId ?? null, actorRole: "coach", ip: req.ip });
     return { inviteCode };
   });
 
@@ -44,6 +46,7 @@ export async function vinculoRoutes(app: FastifyInstance): Promise<void> {
       create: { coachId: coach.id, athleteId, estado: "pendiente" },
       update: { estado: "pendiente" },
     });
+    await recordAudit(prisma, { action: "vinculo.accept", actorUserId: req.userId ?? null, actorRole: "atleta", targetAthleteId: athleteId, ip: req.ip });
     return reply.code(201).send({ id: v.id, estado: v.estado });
   });
 
@@ -78,6 +81,13 @@ export async function vinculoRoutes(app: FastifyInstance): Promise<void> {
       return undefined;
     }
     const updated = await prisma.vinculo.update({ where: { id: v.id }, data: { estado } });
+    await recordAudit(prisma, {
+      action: estado === "activo" ? "vinculo.confirm" : "vinculo.deny",
+      actorUserId: req.userId ?? null,
+      actorRole: "coach",
+      targetAthleteId: v.athleteId,
+      ip: req.ip,
+    });
     return { id: updated.id, estado: updated.estado };
   }
 

@@ -16,6 +16,7 @@ import { vinculoRoutes } from "./vinculo/routes";
 import { meRoutes } from "./me/routes";
 import { requireCoach } from "./auth/guards";
 import { dummyHash } from "./auth/password";
+import { recordAudit } from "./audit";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -194,6 +195,8 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
 
   app.get<{ Params: { id: string } }>("/athletes/:id/cycle", async (req, reply) => {
     if (!(await guardAthlete(req, reply, req.params.id))) return;
+    // A9: the coach accessing an athlete's (redacted) cycle is the most sensitive read → audited.
+    await recordAudit(prisma, { action: "cycle.read", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
     const ctx = await repo.getCycle(prisma, req.params.id);
     if (!ctx) {
       reply.code(404).send({ error: "no cycle context" });
@@ -213,6 +216,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
       return reply.code(400).send({ error: "athlete id mismatch" });
     }
     await repo.savePlan(prisma, req.params.id, parsed.data);
+    await recordAudit(prisma, { action: "plan.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
     return reply.code(200).send({ ok: true });
   });
 
@@ -221,6 +225,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     const parsed = MedalSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid medal" });
     await repo.addMedal(prisma, req.params.id, parsed.data);
+    await recordAudit(prisma, { action: "medal.add", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
     return reply.code(201).send({ ok: true });
   });
 
@@ -229,6 +234,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     const parsed = CompsSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid comps" });
     await repo.setComps(prisma, req.params.id, parsed.data);
+    await recordAudit(prisma, { action: "comps.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
     return reply.code(200).send({ ok: true });
   });
 
@@ -242,6 +248,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     const parsed = SessionLogSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid sessions" });
     await repo.setSessionLog(prisma, req.params.id, parsed.data);
+    await recordAudit(prisma, { action: "sessions.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
     return reply.code(200).send({ ok: true });
   });
 
@@ -262,6 +269,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     const parsed = PrescribedExercisesSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid session" });
     await repo.setSession(prisma, req.params.id, week, idx, parsed.data);
+    await recordAudit(prisma, { action: "prescription.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
     return reply.code(200).send({ ok: true });
   });
 

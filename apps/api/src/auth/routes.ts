@@ -5,6 +5,7 @@ import { createSession, invalidateSessionToken, invalidateSessionsByUserId } fro
 import { SignupSchema, LoginSchema } from "./schemas";
 import { LOGIN_RATE_LIMIT, SIGNUP_RATE_LIMIT } from "./rateLimits";
 import { isAccountLocked, recordLoginFailure, clearLoginFailures } from "./lockout";
+import { recordAudit } from "../audit";
 
 export const SESSION_COOKIE = "session";
 
@@ -53,6 +54,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     });
     const { token, expiresAt } = await createSession(prisma, user.id);
     reply.setCookie(SESSION_COOKIE, token, cookieOpts(expiresAt));
+    await recordAudit(prisma, { action: "signup", actorUserId: user.id, actorRole: role, ip: req.ip });
     return reply.code(201).send({ id: user.id, email: user.email, role: user.role });
   });
 
@@ -71,9 +73,11 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     const ok = await verifyPassword(passwordHash, parsed.data.password);
     if (!user || !ok) {
       recordLoginFailure(email);
+      await recordAudit(prisma, { action: "login.fail", actorUserId: user?.id ?? null, ip: req.ip });
       return reply.code(401).send({ error: "invalid credentials" });
     }
     clearLoginFailures(email);
+    await recordAudit(prisma, { action: "login.success", actorUserId: user.id, actorRole: user.role, ip: req.ip });
     // Optional single-session policy (B3): a new login revokes the user's other sessions.
     if (process.env.SINGLE_SESSION_LOGIN === "true") {
       await invalidateSessionsByUserId(prisma, user.id);
@@ -87,6 +91,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     const token = req.cookies?.[SESSION_COOKIE];
     if (token) await invalidateSessionToken(prisma, token);
     reply.clearCookie(SESSION_COOKIE, cookieOpts());
+    await recordAudit(prisma, { action: "logout", actorUserId: req.userId ?? null, actorRole: req.role ?? null, ip: req.ip });
     return { ok: true };
   });
 
@@ -100,6 +105,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     if (!req.userId) return reply.code(401).send({ error: "not authenticated" });
     await invalidateSessionsByUserId(prisma, req.userId);
     reply.clearCookie(SESSION_COOKIE, cookieOpts());
+    await recordAudit(prisma, { action: "sessions.revoke_all", actorUserId: req.userId, actorRole: req.role ?? null, ip: req.ip });
     return { ok: true };
   });
 }
