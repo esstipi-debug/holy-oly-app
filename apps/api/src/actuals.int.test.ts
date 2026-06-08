@@ -18,6 +18,13 @@ describe("API integration — actuals (SP3)", () => {
 
   const login = (email: string) => app.inject({ method: "POST", url: "/auth/login", payload: { email, password: "holyoly-demo" } });
 
+  it("rejects an athlete actuals body with an unsafe movementId → 400 (D7)", async () => {
+    const athlete = sess(await login("mara@holyoly.dev"));
+    const res = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
+      payload: [{ order: 0, movementId: "<script>alert(1)</script>", done: true }] });
+    expect(res.statusCode).toBe(400);
+  });
+
   it("athlete records actuals; GET /me/sessions echoes them; coach sees prescribed-vs-real", async () => {
     const coach = sess(await login("coach@holyoly.dev"));
     // ensure mv has the Ruso 5D plan (instantiates the prescription)

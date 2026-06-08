@@ -23,6 +23,13 @@ describe("SessionActualsInputSchema", () => {
       { order: 0, movementId: "arranque", done: true },
     ]).success).toBe(true);
   });
+  it("rejects a movementId with unsafe characters (D7)", () => {
+    expect(SessionActualsInputSchema.safeParse([{ order: 0, movementId: "<script>alert(1)</script>", done: true }]).success).toBe(false);
+    expect(SessionActualsInputSchema.safeParse([{ order: 0, movementId: "Arranque Potencia", done: true }]).success).toBe(false);
+  });
+  it("accepts a dotted variant id (D7)", () => {
+    expect(SessionActualsInputSchema.safeParse([{ order: 0, movementId: "arranque.potencia.colgado.rodilla", done: true }]).success).toBe(true);
+  });
 });
 
 describe("ExerciseActualSchema (view-side)", () => {

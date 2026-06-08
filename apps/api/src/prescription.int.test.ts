@@ -83,8 +83,10 @@ describe("API integration — prescription (SP2)", () => {
     // athlete session → 401 (no coachId)
     const aLogin = await app.inject({ method: "POST", url: "/auth/login", payload: { email: "atleta@holyoly.dev", password: "holyoly-demo" } });
     expect((await app.inject({ method: "GET", url: "/athletes/mv/prescription?week=1", headers: sessionHeader(aLogin) })).statusCode).toBe(401);
-    // a second coach with no Vínculo to mv → 403
+    // a second coach with no Vínculo to mv → 403 on BOTH read and write
     const c2 = await app.inject({ method: "POST", url: "/auth/signup", payload: { email: `c2-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "C2" } });
     expect((await app.inject({ method: "GET", url: "/athletes/mv/prescription?week=1", headers: sessionHeader(c2) })).statusCode).toBe(403);
+    // 403 cross-coach on the PUT write endpoint (regression guard — was untested)
+    expect((await app.inject({ method: "PUT", url: "/athletes/mv/prescription/1/0", headers: sessionHeader(c2), payload: [{ movementId: "arranque", sets: 5, reps: 3 }] })).statusCode).toBe(403);
   });
 });
