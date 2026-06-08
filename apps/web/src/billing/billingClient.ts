@@ -1,14 +1,16 @@
 const BASE = import.meta.env.VITE_API_URL ?? "";
 
 export type BillingPeriod = "monthly" | "annual";
+export type CoachPlanId = "coach" | "pro" | "elite" | "box";
 
 export interface BillingPlan {
-  id: "basico" | "equipo";
+  id: CoachPlanId;
   name: string;
   description: string;
   priceClpMonthly: number;
   priceClpAnnual: number;
   maxAthletes: number | null;
+  maxCoaches: number | null;
   features: string[];
 }
 
@@ -42,7 +44,7 @@ export async function billingStatus(): Promise<BillingStatus> {
 }
 
 export async function billingCheckout(
-  planId: BillingPlan["id"],
+  planId: CoachPlanId,
   period: BillingPeriod = "annual",
 ): Promise<{ checkoutUrl: string }> {
   const res = await fetch(`${BASE}/billing/checkout`, {

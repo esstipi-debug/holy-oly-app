@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { formatClp } from "@holy-oly/core";
+import { formatClp, MULTISEDE } from "@holy-oly/core";
 import { billingCheckout, billingPlans, billingStatus, mockActivate, type BillingPeriod, type BillingPlan, type BillingStatus } from "../../billing/billingClient";
 import { resendVerificationEmail } from "../../auth/authClient";
 import { useAuth } from "../../auth/AuthContext";
 
 const monthsFree = (p: BillingPlan): number => Math.round((p.priceClpMonthly * 12 - p.priceClpAnnual) / p.priceClpMonthly);
+const coachesLabel = (n: number | null): string => (n == null ? "Coaches ilimitados" : n === 1 ? "1 coach" : `Hasta ${n} coaches`);
 
 export function SuscripcionScreen() {
   const { user } = useAuth();
   const [params] = useSearchParams();
   const [plans, setPlans] = useState<BillingPlan[]>([]);
-  const [selectedPlanId, setSelectedPlanId] = useState<BillingPlan["id"]>("basico");
+  const [selectedPlanId, setSelectedPlanId] = useState<BillingPlan["id"]>("coach");
   const [period, setPeriod] = useState<BillingPeriod>("annual"); // anual-first (caja)
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +70,7 @@ export function SuscripcionScreen() {
       <Link to="/coach/cuenta" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>← Cuenta</Link>
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: "10px 0 6px" }}>Suscripción</h1>
       <p style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
-        Los atletas son gratis. El coach necesita plan activo para editar programas.
+        Los atletas son gratis. El coach necesita plan activo para editar programas. Precios + IVA.
       </p>
 
       {user && user.emailVerified === false && (
@@ -88,7 +89,7 @@ export function SuscripcionScreen() {
           <div style={{ fontSize: 18, fontWeight: 800, marginTop: 4 }}>{status.active ? "Activa" : status.status}</div>
           {activePlan && (
             <div style={{ fontSize: 13, marginTop: 6 }}>
-              Plan: {activePlan.name} (desde {formatClp(activePlan.priceClpMonthly)}/mes)
+              Plan: {activePlan.name} (desde {formatClp(activePlan.priceClpMonthly)} + IVA/mes)
             </div>
           )}
           {status.currentPeriodEnd && (
@@ -127,7 +128,7 @@ export function SuscripcionScreen() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                     <span style={{ fontWeight: 800, fontSize: 16 }}>{plan.name}</span>
                     <span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700 }}>
-                      {period === "annual" ? `${formatClp(plan.priceClpAnnual)}/año` : `${formatClp(plan.priceClpMonthly)}/mes`}
+                      {period === "annual" ? `${formatClp(plan.priceClpAnnual)} + IVA/año` : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
                     </span>
                   </div>
                   {period === "annual" && (
@@ -136,14 +137,24 @@ export function SuscripcionScreen() {
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{plan.description}</div>
-                  {plan.maxAthletes != null && (
-                    <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 6 }}>
-                      Hasta {plan.maxAthletes} atletas
-                    </div>
-                  )}
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 6 }}>
+                    {plan.maxAthletes != null ? `Hasta ${plan.maxAthletes} atletas` : "Atletas ilimitados"} · {coachesLabel(plan.maxCoaches)}
+                  </div>
                 </button>
               );
             })}
+
+            {/* Multi-sede: precio personalizado (contacto), no self-serve */}
+            <div style={{ padding: 14, borderRadius: 12, border: "1px dashed color-mix(in srgb,var(--wl-muted) 35%,transparent)", background: "var(--wl-surface)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                <span style={{ fontWeight: 800, fontSize: 16 }}>{MULTISEDE.name}</span>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>desde {formatClp(MULTISEDE.fromClpMonthly)} + IVA/mes</span>
+              </div>
+              <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{MULTISEDE.description}</div>
+              <a href="mailto:hola@holyoly.app?subject=Plan%20Multi-sede" style={{ display: "inline-block", marginTop: 8, fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-accent)", fontWeight: 700 }}>
+                Contactanos →
+              </a>
+            </div>
           </div>
         </>
       )}
