@@ -1,0 +1,36 @@
+name: E2E security (nightly)
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # 06:00 UTC ≈ 03:00 Chile
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-security:
+    name: playwright security e2e (chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @holy-oly/api prisma:generate
+      - name: Build SPA (same-origin / API-relative)
+        run: VITE_API_ENABLED=true pnpm --filter @holy-oly/web build
+      - name: Install Playwright chromium + OS deps
+        run: pnpm --filter @holy-oly/api exec playwright install --with-deps chromium
+      - name: Run security E2E
+        run: pnpm --filter @holy-oly/api e2e:browser
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/api/playwright-report/
+          retention-days: 7
