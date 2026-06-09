@@ -38,13 +38,14 @@ describe("API integration (auth + coach-scoped reads)", () => {
     expect(res.statusCode).toBe(401);
   });
 
-  it("login as the demo coach → /roster returns the 8 seeded athletes", async () => {
+  it("login as the demo coach → /roster returns the 5 athletes on Coach Demo", async () => {
     const headers = await loginDemoCoach();
     const res = await app.inject({ method: "GET", url: "/roster", headers });
     expect(res.statusCode).toBe(200);
     const roster = res.json() as Array<{ id: string }>;
-    expect(roster.length).toBe(8);
+    expect(roster.length).toBe(5);
     expect(roster.some((a) => a.id === "mv")).toBe(true);
+    expect(roster.some((a) => a.id === "kv")).toBe(false);
   });
 
   it("GET /athletes/mv/series returns Mara's 12-week series", async () => {

@@ -5,7 +5,7 @@ import { prisma } from "./db/client";
 
 // INTEGRATION — coach-authorized writes (Fase 4 slice 1). Requires a migrated Postgres
 // (run via the verify harness). Uses a FRESH coach + athlete + activo Vínculo so it never
-// disturbs the demo coach's roster (server.int.test fixes that at 8).
+// disturbs the demo coach's roster (server.int.test fixes that at 5).
 
 type InjectRes = { cookies: Array<{ name: string; value: string }>; statusCode: number };
 function cookieOf(res: InjectRes): { cookie: string } {

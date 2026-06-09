@@ -12,6 +12,7 @@ import { prisma } from "./db/client";
 import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
 import { authRoutes, SESSION_COOKIE, cookieOpts } from "./auth/routes";
+import { localDemoLoginRoutes } from "./auth/local-demo-login";
 import { googleAuthRoutes } from "./auth/google-routes";
 import { vinculoRoutes } from "./vinculo/routes";
 import { meRoutes } from "./me/routes";
@@ -140,6 +141,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   });
 
   app.register(authRoutes);
+  app.register(localDemoLoginRoutes);
   app.register(googleAuthRoutes);
   app.register(vinculoRoutes);
   app.register(billingRoutes);

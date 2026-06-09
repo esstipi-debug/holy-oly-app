@@ -1,8 +1,8 @@
 <#
-  Holy Oly - setup del DEMO LOCAL PERMANENTE (offline).
+  Holy Oly - setup del DEMO LOCAL PERMANENTE (API + Postgres embebido).
 
-  Crea C:\HolyOlyDemo con el demo compilado, un servidor estatico de cero
-  dependencias, el icono oficial, un lanzador silencioso y accesos directos.
+  Crea C:\HolyOlyDemo con Postgres persistente, compila api+web (modo API),
+  el icono oficial, lanzadores VBS y accesos directos (coach + atleta Kevin).
   Idempotente: re-ejecutar reconstruye el build y refresca los archivos.
   El icono solo se regenera si falta (o con -Force) porque requiere internet.
 
@@ -27,17 +27,20 @@ $Edge = @("$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
         Where-Object { Test-Path $_ } | Select-Object -First 1
 New-Item -ItemType Directory -Force -Path $Base, $IconDir | Out-Null
 
-# --- 1) Instalar dependencias + compilar el demo (modo standalone) ------------
-# El build por defecto (sin VITE_API_*) usa LocalRepository -> datos sembrados,
-# sin backend ni internet.
+# --- 1) Instalar dependencias + compilar app operacional (modo API) -----------
 Write-Host "==> pnpm install (checkout principal)" -ForegroundColor Cyan
 pnpm -C $Repo install
-Write-Host "==> build web (demo)" -ForegroundColor Cyan
+Write-Host "==> prisma generate" -ForegroundColor Cyan
+pnpm -C $Repo --filter '@holy-oly/api' exec prisma generate
+Write-Host "==> build web (API mode)" -ForegroundColor Cyan
+$env:VITE_API_ENABLED = "true"
 pnpm -C $Repo --filter '@holy-oly/web' build
-
-# --- 2) Publicar el build en la carpeta permanente ----------------------------
-$null = robocopy "$Repo\apps\web\dist" "$Base\app" /MIR /NJH /NJS /NFL /NDL
-Copy-Item "$PSScriptRoot\server.mjs" "$Base\server.mjs" -Force
+Remove-Item Env:VITE_API_ENABLED -ErrorAction SilentlyContinue
+Write-Host "==> build api" -ForegroundColor Cyan
+pnpm -C $Repo --filter '@holy-oly/api' build
+Write-Host "==> fold SPA into api dist" -ForegroundColor Cyan
+Remove-Item -Recurse -Force "$Repo\apps\api\dist\public" -ErrorAction SilentlyContinue
+Copy-Item -Recurse "$Repo\apps\web\dist" "$Repo\apps\api\dist\public"
 
 # --- 3) Icono oficial (solo si falta o -Force) --------------------------------
 if ($Force -or -not (Test-Path "$Base\Holy Oly.ico")) {
@@ -92,48 +95,39 @@ if ($Force -or -not (Test-Path "$Base\Holy Oly.ico")) {
   Copy-Item "$IconDir\master-text.png" "$Base\holy-oly-1024.png" -Force
 }
 
-# --- 4) Lanzador silencioso (VBS) ---------------------------------------------
-$vbs = @'
+# --- 4) Lanzadores silenciosos (VBS → local-app.mjs) --------------------------
+$RepoEsc = $Repo -replace '\\', '\\'
+$vbs = @"
 Option Explicit
-Dim sh, fso, edge, base, q
+Dim sh, env, base, q, repo
 Set sh = CreateObject("WScript.Shell")
-Set fso = CreateObject("Scripting.FileSystemObject")
+Set env = sh.Environment("PROCESS")
 q = Chr(34)
 base = "C:\HolyOlyDemo"
-sh.Run "node " & q & base & "\server.mjs" & q, 0, False
-WScript.Sleep 900
-edge = "__EDGE__"
-If Not fso.FileExists(edge) Then edge = sh.ExpandEnvironmentStrings("%ProgramFiles%") & "\Microsoft\Edge\Application\msedge.exe"
-If Not fso.FileExists(edge) Then edge = sh.ExpandEnvironmentStrings("%ProgramFiles(x86)%") & "\Microsoft\Edge\Application\msedge.exe"
-If fso.FileExists(edge) Then
-  sh.Run q & edge & q & " --app=http://127.0.0.1:8765/ --window-size=430,860 --user-data-dir=" & q & base & "\browser" & q, 1, False
-Else
-  sh.Run "http://127.0.0.1:8765/", 1, False
-End If
-'@
-$vbs = $vbs -replace '__EDGE__', ($Edge ?? '')
+repo = "$Repo"
+env("HOLYOLY_DEMO_DIR") = base
+env("HOLYOLY_DEMO_AS") = "coach"
+env("HOLYOLY_BROWSER_PROFILE") = base & "\browser"
+sh.CurrentDirectory = repo
+sh.Run "node " & q & repo & "\apps\api\scripts\local-app.mjs" & q, 0, False
+"@
 Set-Content -Path "$Base\Holy Oly.vbs" -Value $vbs -Encoding ASCII
 
-# --- 4b) Lanzador del ATLETA (Kevin) — abre directo en /atleta ----------------
-$vbsK = @'
+# Kevin = atleta demo sembrado (mara@holyoly.dev), perfil Edge separado
+$vbsK = @"
 Option Explicit
-Dim sh, fso, edge, base, q
+Dim sh, env, base, q, repo
 Set sh = CreateObject("WScript.Shell")
-Set fso = CreateObject("Scripting.FileSystemObject")
+Set env = sh.Environment("PROCESS")
 q = Chr(34)
 base = "C:\HolyOlyDemo"
-sh.Run "node " & q & base & "\server.mjs" & q, 0, False
-WScript.Sleep 900
-edge = "__EDGE__"
-If Not fso.FileExists(edge) Then edge = sh.ExpandEnvironmentStrings("%ProgramFiles%") & "\Microsoft\Edge\Application\msedge.exe"
-If Not fso.FileExists(edge) Then edge = sh.ExpandEnvironmentStrings("%ProgramFiles(x86)%") & "\Microsoft\Edge\Application\msedge.exe"
-If fso.FileExists(edge) Then
-  sh.Run q & edge & q & " --app=http://127.0.0.1:8765/atleta --window-size=430,860 --user-data-dir=" & q & base & "\browser-kevin" & q, 1, False
-Else
-  sh.Run "http://127.0.0.1:8765/atleta", 1, False
-End If
-'@
-$vbsK = $vbsK -replace '__EDGE__', ($Edge ?? '')
+repo = "$Repo"
+env("HOLYOLY_DEMO_DIR") = base
+env("HOLYOLY_DEMO_AS") = "atleta"
+env("HOLYOLY_BROWSER_PROFILE") = base & "\browser-kevin"
+sh.CurrentDirectory = repo
+sh.Run "node " & q & repo & "\apps\api\scripts\local-app.mjs" & q, 0, False
+"@
 Set-Content -Path "$Base\Holy Oly - Kevin.vbs" -Value $vbsK -Encoding ASCII
 
 # --- 5) Script de actualizacion -----------------------------------------------
@@ -160,4 +154,4 @@ foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFo
 
 Write-Host ""
 Write-Host "LISTO. Abri 'Holy Oly' desde el escritorio o el menu inicio." -ForegroundColor Green
-Write-Host "Demo en http://127.0.0.1:$Port  (offline, datos en el navegador)."
+Write-Host "App en http://127.0.0.1:$Port  (API + Postgres local; coach y Kevin en el escritorio)."

@@ -1,9 +1,7 @@
-# Holy Oly - actualiza el demo local con lo ultimo de main.
+# Holy Oly - actualiza el demo local operacional (api + web modo API).
 # Lo copia setup.ps1 a C:\HolyOlyDemo\actualizar.ps1 y lo invoca el icono "Actualizar Holy Oly".
-# Traer lo ultimo necesita internet (git fetch); compilar y servir es 100% local.
 $ErrorActionPreference = "Stop"
-$repo = "C:\Holy Oly 0017"
-$dest = "C:\HolyOlyDemo\app"
+$repo = (Resolve-Path "$PSScriptRoot\..\..").Path
 Write-Host ""
 Write-Host "  Actualizando Holy Oly..." -ForegroundColor Cyan
 Write-Host ""
@@ -14,12 +12,19 @@ try {
   git pull --ff-only origin main
   Write-Host "  - Instalando dependencias..."
   pnpm install --frozen-lockfile | Out-Null
-  Write-Host "  - Compilando el demo..."
+  Write-Host "  - Generando Prisma client..."
+  pnpm --filter @holy-oly/api exec prisma generate | Out-Null
+  Write-Host "  - Compilando web (modo API)..."
+  $env:VITE_API_ENABLED = "true"
   pnpm --filter @holy-oly/web build | Out-Null
-  Write-Host "  - Copiando..."
-  $null = robocopy "$repo\apps\web\dist" $dest /MIR /NJH /NJS /NFL /NDL
+  Remove-Item Env:VITE_API_ENABLED -ErrorAction SilentlyContinue
+  Write-Host "  - Compilando API..."
+  pnpm --filter @holy-oly/api build | Out-Null
+  Write-Host "  - Empaquetando SPA en dist/public..."
+  Remove-Item -Recurse -Force "$repo\apps\api\dist\public" -ErrorAction SilentlyContinue
+  Copy-Item -Recurse "$repo\apps\web\dist" "$repo\apps\api\dist\public"
   Write-Host ""
-  Write-Host "  LISTO. Reabri Holy Oly para ver los cambios." -ForegroundColor Green
+  Write-Host "  LISTO. Reabri Holy Oly o Holy Oly - Kevin para ver los cambios." -ForegroundColor Green
 } catch {
   Write-Host ""
   Write-Host "  No se pudo actualizar: $_" -ForegroundColor Red

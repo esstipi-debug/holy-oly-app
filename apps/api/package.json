@@ -15,7 +15,8 @@
     "e2e:browser": "playwright test",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed:local": "node scripts/seed-local.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

@@ -64,7 +64,7 @@ async function main(): Promise<void> {
     const coach = sessionCookie(login);
 
     const roster = (await (await get("/roster", coach)).json()) as Array<{ nombre: string }>;
-    assert(roster.length === 8, `seeded roster 8 (got ${roster.length})`);
+    assert(roster.length === 5, `seeded roster 5 (got ${roster.length})`);
 
     const cycle = (await (await get("/athletes/mv/cycle", coach)).json()) as Record<string, unknown>;
     assert(cycle.share === "full" && !("state" in cycle), "cycle redacted (no raw state)");
@@ -90,13 +90,13 @@ async function main(): Promise<void> {
     const confirm = await post(`/vinculos/${pend!.id}/confirm`, {}, coach);
     assert(confirm.status === 200 && ((await confirm.json()) as { estado: string }).estado === "activo", "confirmed → activo");
 
-    // 5) the athlete now appears in the coach's roster (9 = 8 seeded + 1 new)
+    // 5) the athlete now appears in the coach's roster (6 = 5 seeded + 1 new)
     const roster2 = (await (await get("/roster", coach)).json()) as Array<{ nombre: string }>;
-    assert(roster2.length === 9, `roster grew to 9 (got ${roster2.length})`);
+    assert(roster2.length === 6, `roster grew to 6 (got ${roster2.length})`);
     assert(roster2.some((a) => a.nombre === "E2E Atleta"), "new athlete now in roster");
 
     console.log("\n✅ Fase 3 e2e OK: auth + Vínculo flow over real HTTP + Postgres");
-    console.log("   401 unauth · login → roster 8 · cycle redacted · signup→accept(pendiente)→confirm(activo) → roster 9");
+    console.log("   401 unauth · login → roster 5 · cycle redacted · signup→accept(pendiente)→confirm(activo) → roster 6");
   } finally {
     await app.close();
     // Disconnect the Prisma singleton before stopping Postgres, else the open connection logs a

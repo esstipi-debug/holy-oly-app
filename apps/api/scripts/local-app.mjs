@@ -22,14 +22,17 @@ const PG_DATA = join(DEMO_DIR, "pgdata");
 const BROWSER_PROFILE = process.env.HOLYOLY_BROWSER_PROFILE ?? join(DEMO_DIR, "browser");
 const PG_PORT = Number(process.env.HOLYOLY_PG_PORT ?? 5439);
 const APP_PORT = Number(process.env.PORT ?? 8765);
-const APP_URL = `http://127.0.0.1:${APP_PORT}/`;
+const APP_BASE = `http://127.0.0.1:${APP_PORT}`;
+/** coach (default) | atleta — desktop shortcut "Kevin" opens the seeded athlete (Mara). */
+const DEMO_AS = process.env.HOLYOLY_DEMO_AS === "atleta" ? "atleta" : "coach";
+const APP_URL = `${APP_BASE}/auth/local-demo-login?as=${DEMO_AS}`;
 const DB_URL = `postgresql://holyoly:holyoly@127.0.0.1:${PG_PORT}/holyoly?schema=public`;
 
 const log = (m) => console.log(`[holy-oly] ${m}`);
 
 async function healthy() {
   try {
-    const r = await fetch(`${APP_URL}health`);
+    const r = await fetch(`${APP_BASE}/health`);
     if (!r.ok) return false;
     // Must be the real API (the old static server answers /health with index.html → not JSON).
     const j = await r.json().catch(() => null);
@@ -130,11 +133,12 @@ async function main() {
   // Arrancar el server Fastify real, en proceso, sirviendo API + SPA en el mismo origen.
   process.env.DATABASE_URL = DB_URL;
   process.env.SERVE_WEB = "true";
+  process.env.ALLOW_LOCAL_DEMO_LOGIN = "true";
   process.env.WEB_DIST_PATH = distPublic;
   process.env.PORT = String(APP_PORT);
   // Local es http://127.0.0.1 → NO production (si no, la cookie 'secure' no viajaría sobre http).
   delete process.env.NODE_ENV;
-  log(`arrancando la app en ${APP_URL}`);
+  log(`arrancando la app en ${APP_BASE} (demo: ${DEMO_AS})`);
   await import(pathToFileURL(distMain).href);
 
   if (await waitForHealth()) {

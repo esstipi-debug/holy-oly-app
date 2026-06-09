@@ -21,11 +21,17 @@ export interface SeedConfig {
   coachEmail: string;
   coachPassword: string;
   coachInvite: string;
+  coach2Email: string;
+  coach2Password: string;
+  coach2Invite: string;
   atletaEmail: string;
   atletaPassword: string;
   maraEmail: string;
   maraPassword: string;
+  kevinEmail: string;
+  kevinPassword: string;
   coachId: string;
+  coach2Id: string;
 }
 
 /**
@@ -53,8 +59,12 @@ export function loadSeedConfig(env: Env = process.env): SeedConfig {
     atletaPassword: secret("SEED_ATLETA_PASSWORD", "holyoly-demo", env),
     maraEmail: secret("SEED_MARA_EMAIL", "mara@holyoly.dev", env).trim().toLowerCase(),
     maraPassword: secret("SEED_MARA_PASSWORD", "holyoly-demo", env),
-    // The coach id is an internal identifier, not a secret, so it is never prod-required.
-    // D2: default to a random UUID (no predictable "coach-stub" id); overridable via DEV_COACH_ID.
+    kevinEmail: secret("SEED_KEVIN_EMAIL", "kevin@holyoly.dev", env).trim().toLowerCase(),
+    kevinPassword: secret("SEED_KEVIN_PASSWORD", "holyoly-demo", env),
+    coach2Email: secret("SEED_COACH2_EMAIL", "coach2@holyoly.dev", env).trim().toLowerCase(),
+    coach2Password: secret("SEED_COACH2_PASSWORD", "holyoly-demo", env),
+    coach2Invite: secret("SEED_COACH2_INVITE", "HALTER345678", env),
     coachId: env.DEV_COACH_ID?.trim() || crypto.randomUUID(),
+    coach2Id: env.DEV_COACH2_ID?.trim() || crypto.randomUUID(),
   };
 }
