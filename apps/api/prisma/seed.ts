@@ -303,7 +303,7 @@ async function main(): Promise<void> {
     extraCoaches.push({ gymKey: gym.key, coachId: c.id });
   }
 
-  const coachIdByKey = {
+  const coachIdByKey: Record<string, string> = {
     coach1: coach.id,
     coach2: coach2.id,
     ...Object.fromEntries(extraCoaches.map((c) => [c.gymKey, c.coachId])),
@@ -324,7 +324,7 @@ async function main(): Promise<void> {
       },
     });
     const ck = coachForShowcaseAthlete(a.id);
-    await prisma.vinculo.create({ data: { coachId: coachIdByKey[ck], athleteId: a.id, estado: "activo" } });
+    await prisma.vinculo.create({ data: { coachId: coachIdByKey[ck]!, athleteId: a.id, estado: "activo" } });
     await prisma.cycleConsent.create({
       data: {
         athleteId: a.id,

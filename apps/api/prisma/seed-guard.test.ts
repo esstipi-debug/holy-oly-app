@@ -47,6 +47,11 @@ describe("loadSeedConfig", () => {
       SEED_ATLETA_PASSWORD: "p2-strong",
       SEED_MARA_EMAIL: "m@x.com",
       SEED_MARA_PASSWORD: "p3-strong",
+      SEED_KEVIN_EMAIL: "k@x.com",
+      SEED_KEVIN_PASSWORD: "p4-strong",
+      SEED_COACH2_EMAIL: "c2@x.com",
+      SEED_COACH2_PASSWORD: "p5-strong",
+      SEED_COACH2_INVITE: "HALTER345678",
     });
     expect(cfg.coachEmail).toBe("real@coach.com");
     expect(cfg.coachPassword).toBe("a-strong-secret");
