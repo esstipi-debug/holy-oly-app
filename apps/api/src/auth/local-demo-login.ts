@@ -5,8 +5,14 @@ import { cookieOpts, SESSION_COOKIE } from "./routes";
 
 type DemoRole = "coach" | "atleta";
 
-function isLoopback(req: FastifyRequest): boolean {
-  const ip = req.ip;
+/**
+ * True only when the request's TCP peer is localhost. Reads `req.socket.remoteAddress` (the raw
+ * connection peer) rather than `req.ip` ON PURPOSE: `req.ip` honors `X-Forwarded-For` when Fastify's
+ * `trustProxy` is enabled, so a remote client could spoof "loopback" by sending that header. The
+ * socket peer address can never be set by a header, so this gate stays sound regardless of trustProxy.
+ */
+export function isLoopback(req: Pick<FastifyRequest, "socket">): boolean {
+  const ip = req.socket.remoteAddress ?? "";
   return ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
 }
 
