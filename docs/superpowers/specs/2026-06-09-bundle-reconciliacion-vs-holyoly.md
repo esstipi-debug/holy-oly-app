@@ -6,6 +6,11 @@
 > de aterrizaje: qué ya está construido, qué se adopta adaptado, qué choca con decisiones ya
 > tomadas y qué queda en parking. **Ninguna spec del bundle se implementa as-is**: cada slice
 > pasa por el workflow de la casa (brainstorming → spec propia → plan → subagentes → review).
+>
+> **Update 2026-06-10 (decisión del owner):** «borra lo del video; todo lo demás va» — el bundle
+> queda **APROBADO como dirección salvo [1] video (DESCARTADO)**. Se agrega un requerimiento
+> nuevo: **calendario granular con heat map de intensidad** (§5.6), dentro de la tarea mayor de
+> navegación rica (app viva: casi todo elemento lleva y muestra información).
 
 ---
 
@@ -21,7 +26,7 @@
 | **Zustand** (`peekStack`) | sin store global; Context (`AuthContext`, `RepositoryProvider`) | un context propio basta |
 | PostgreSQL + **Prisma** | ✓ coincide (Prisma 6; local = `embedded-postgres`) | ok |
 | **Stripe** (spec video §1.5) | **Mercado Pago Chile ya armado**: `apps/api/src/billing/` (mock + preapproval_plan), 5 tiers anual-first, gating 402 | Stripe descartado; cuotas de video serían add-on sobre `Subscription` |
-| Render + **R2 + Redis/BullMQ + worker Python** | **Pivot LOCAL-ONLY (2026-06-08)**: Render congelado, máquina sin Docker, sin Python/Redis/R2 | pipeline de video **inviable hoy** tal como está speceado |
+| Render + **R2 + Redis/BullMQ + worker Python** | **Pivot LOCAL-ONLY (2026-06-08)**: Render congelado, máquina sin Docker, sin Python/Redis/R2 | video **DESCARTADO** (owner, 2026-06-10) |
 
 ## 2. Mapa de equivalencias (entidades del bundle → Holy Oly)
 
@@ -92,8 +97,32 @@
    2-3 entidades (Movimiento, RM, "por qué esta sesión").
 5. **Lenguaje visual FIFA-card** — dirección visual nueva vs skins Neon actuales. Decisión del
    owner, no técnica.
-6. **Video (spec [1])** — **parking lot**: worker Python + Redis/BullMQ + R2 + hosting chocan
-   con local-only y sin Docker. Re-evaluar si/cuando se re-hostee; monetización vía tiers MP.
+6. **Calendario granular + heat map de intensidad (requerimiento del owner, 2026-06-10)** —
+   evolución de `PlanCalendar` (hoy: lista de semanas plegable → `WeekDetailSheet`; el grano día
+   NO existe): celda = **día**, **color = intensidad** del día (derivada de los `pct` de
+   `PrescribedExercise`), tap en el día → **desglose: el entrenamiento, qué tipo de fase es y su
+   objetivo**; todo lo de adentro es chip y sigue el grafo (app viva). Datos ya existentes:
+   `pct` por sesión/día + fases del catálogo (`phaseForWeek`). Falta: microcopy de objetivo por
+   fase, escala de color, sheet de día. **No depende del motor** → adelantable como primer slice
+   visible; cuando el motor exista, el desglose muestra además su `rationale`.
+7. **Video (spec [1])** — **DESCARTADO** (decisión del owner, 2026-06-10). La spec importada
+   queda sólo como referencia histórica; no entra al roadmap.
+
+### 5.1 Stats, motores y ventanas nuevas (lo que se integra, en concreto)
+
+**Motores (4 + prerequisito):** SP5 vigencia de RM (prerequisito) · motor Prilepin
+(`phasePlan`/`generateWeek`) · olas continuas (`wavePhase`) · reorganización compe-a-3-semanas ·
+modulación diaria por readiness.
+
+**Stats derivadas nuevas (cero input extra del atleta):** conteo de levantamientos ≥90 % ·
+reps por zona de intensidad vs óptimo Prilepin (`withinRange`) · e1RM vigente ·
+`taperFactor`/`topPct` por semana (auditoría) · semáforo del día (bandas sobre `readiness`
+0-100) · intensidad por día (alimenta el heat map) · fase + objetivo por semana/día.
+
+**Ventanas/gráficos nuevos:** barra de zonas Prilepin (volumen vs óptimo) · heat map de
+intensidad del calendario · timeline countdown a la compe (evolución `MacroTimeline`) · curva
+de supercompensación · indicador de madurez de datos · [opcionales, decisión FIFA pendiente]
+radar de atleta + sparklines en cards.
 
 ## 6. Notas sobre el código de referencia del bundle (no copy-paste)
 
@@ -116,7 +145,9 @@ criterios de aceptación, no pegarlo:
    sólo añadir la modulación + explicación?
 4. Dirección visual FIFA-card vs Neon actual.
 5. El master §8 referencia `spec-pantallas-claude-design.md` — **no venía en el bundle**.
-6. Cuándo despicar video (post re-hosting).
+
+**Resueltas (2026-06-10, owner):** alcance general APROBADO («todo lo demás va»); video
+DESCARTADO (ya no hay "cuándo despicarlo" — está fuera).
 
 ## 8. Orden recomendado
 
@@ -126,7 +157,9 @@ criterios de aceptación, no pegarlo:
 2) Readiness → modulación del día con explicación (spec corta propia)
 3) Peaking/olas sobre volumeCurve + Competencia (+ campo plantilla)
 4) App viva incremental (PRs con procedencia → /api/entity → chips/peeks)
-—) Video: parking hasta re-hosting
+∥) Calendario granular + heat map de intensidad — independiente del motor, paralelizable
+   desde ya (primer slice visible)
+✗) Video: DESCARTADO (owner 2026-06-10)
 ```
 
 Los esfuerzos estimados del bundle asumen el otro codebase; aquí el paso 1 es más corto
