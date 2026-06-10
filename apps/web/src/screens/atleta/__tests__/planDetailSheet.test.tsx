@@ -69,6 +69,8 @@ function stubClient(): MeClient {
     getMeSessions: async (week: number) => views(week),
     getMeHeat: async () => heat,
     putMeSession: async () => {},
+    getMeCycle: async () => ({ share: "none" as const, state: "regular" as const }),
+    putMeCycle: async () => {},
   };
 }
 
