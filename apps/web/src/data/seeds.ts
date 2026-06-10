@@ -187,8 +187,12 @@ export const SEED_SERIES: Record<string, MonitorSeries> = {
   // tl: intentionally ABSENT → getSeries("tl") === undefined (no-data exemplar).
 };
 
-export const SEED_CYCLE: Record<string, { share: CycleShare; state: CycleState }> = {
-  mv: { share: "full", state: "regular" },
+const cycleDaysAgo = (n: number): string => new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
+export const SEED_CYCLE: Record<string, { share: CycleShare; state: CycleState; lastPeriodStart?: string; cycleLengthDays?: number }> = {
+  // Día ~20 de un ciclo de 28 → en ventana lútea hoy y con pre-período proyectado cerca (demo visible).
+  mv: { share: "full", state: "regular", lastPeriodStart: cycleDaysAgo(20), cycleLengthDays: 28 },
+  // Kevin = la identidad atleta del demo standalone (LocalMeClient) → su overlay también se ve.
+  kv: { share: "full", state: "regular", lastPeriodStart: cycleDaysAgo(20), cycleLengthDays: 28 },
   // Default elsewhere is share "min"/state "regular" (LocalRepository fills the gap).
 };
 

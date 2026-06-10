@@ -8,15 +8,15 @@
  * setSessionActuals) verbatim in semantics, keeping the two athlete clients swappable.
  */
 import type {
-  Atleta, MePlanView, MonitorSeries, Plan, PrescriptionRow,
+  Atleta, CycleData, MePlanView, MonitorSeries, Plan, PrescriptionRow,
   DayLog, DayLogView, DayLogResult, DayLogInput,
   SessionView, SessionActual, ExerciseActualInput, WeekHeat,
 } from "@holy-oly/core";
 import {
   buildMePlanView, computeStreak, mergeActuals, buildSessionViews, summarizeSets, barKgForSexo,
-  DayLogInputSchema, SessionActualsInputSchema,
+  DayLogInputSchema, SessionActualsInputSchema, PutMeCycleInputSchema,
   MonitorSeriesSchema, PlanSchema, RosterSchema, PrescriptionRowsSchema,
-  DayLogsSchema, SessionActualsSchema,
+  DayLogsSchema, SessionActualsSchema, CycleShareSchema, CycleStateSchema,
   MACROCYCLES, planHeat,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
@@ -131,5 +131,31 @@ export class LocalMeClient implements MeClient {
       };
     });
     this.s.set(KEYS.sessionActuals(this.id), [...kept, ...added]);
+  }
+
+  /** Registro propio del ciclo. Mirrors repo.getMyCycle (sin fila → default honesto "no optó"). */
+  async getMeCycle(): Promise<CycleData> {
+    const share = CycleShareSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleShare(this.id)));
+    const state = CycleStateSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleState(this.id)));
+    if (!share.success) return { share: "none", state: "regular" };
+    const start = this.s.getOptional<unknown>(KEYS.cycleStart(this.id));
+    const len = Number(this.s.getOptional<unknown>(KEYS.cycleLen(this.id)));
+    return {
+      share: share.data,
+      state: state.success ? state.data : "regular",
+      ...(typeof start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(start) ? { lastPeriodStart: start } : {}),
+      ...(Number.isInteger(len) && len >= 21 && len <= 45 ? { cycleLengthDays: len } : {}),
+    };
+  }
+
+  /** Upsert del registro (mirrors repo.putMyCycle; el "cifrado" no aplica en local — es SU storage). */
+  async putMeCycle(input: CycleData): Promise<void> {
+    const parsed = PutMeCycleInputSchema.parse(input); // mirror del 400-on-invalid del API
+    this.s.set(KEYS.cycleShare(this.id), parsed.share);
+    this.s.set(KEYS.cycleState(this.id), parsed.state);
+    if (parsed.lastPeriodStart != null) this.s.set(KEYS.cycleStart(this.id), parsed.lastPeriodStart);
+    else this.s.remove(KEYS.cycleStart(this.id));
+    if (parsed.cycleLengthDays != null) this.s.set(KEYS.cycleLen(this.id), parsed.cycleLengthDays);
+    else this.s.remove(KEYS.cycleLen(this.id));
   }
 }

@@ -3,7 +3,7 @@
  * (`httpMeClient`) when the app talks to a backend, or to `LocalMeClient` (localStorage, demo
  * athlete Kevin) when standalone — the exact mirror of how `RepositoryProvider` picks Http vs Local.
  */
-import type { MePlanView, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, ExerciseActualInput, WeekHeat } from "@holy-oly/core";
+import type { CycleData, MePlanView, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, ExerciseActualInput, WeekHeat } from "@holy-oly/core";
 import { API_ENABLED } from "./apiConfig";
 import * as http from "./httpMeClient";
 import { LocalMeClient } from "./LocalMeClient";
@@ -33,6 +33,12 @@ export function getMeHeat(): Promise<WeekHeat[]> {
 export function putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void> {
   return API_ENABLED ? http.putMeSession(week, idx, actuals) : local().putMeSession(week, idx, actuals);
 }
+export function getMeCycle(): Promise<CycleData> {
+  return API_ENABLED ? http.getMeCycle() : local().getMeCycle();
+}
+export function putMeCycle(input: CycleData): Promise<void> {
+  return API_ENABLED ? http.putMeCycle(input) : local().putMeCycle(input);
+}
 
 /**
  * The athlete-self data contract. The module above is the app-wide singleton ("me" = the logged-in
@@ -47,7 +53,10 @@ export interface MeClient {
   getMeSessions(week: number): Promise<SessionView[]>;
   getMeHeat(): Promise<WeekHeat[]>;
   putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void>;
+  /** Registro propio del ciclo (slice ciclo-visible) — la verdad de la atleta, jamás del coach. */
+  getMeCycle(): Promise<CycleData>;
+  putMeCycle(input: CycleData): Promise<void>;
 }
 
 /** The module singleton as a `MeClient` object — the default client for the athlete screens. */
-export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, getMeHeat, putMeSession };
+export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, getMeHeat, putMeSession, getMeCycle, putMeCycle };

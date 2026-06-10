@@ -8,7 +8,7 @@ import {
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
   PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema,
   MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
-  prCandidates, RM_LIFTS,
+  prCandidates, RM_LIFTS, lutealNow, redactCycle,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -32,6 +32,8 @@ export class LocalRepository implements Repository {
       const cyc = SEED_CYCLE[a.id] ?? { share: "min" as CycleShare, state: "regular" as CycleState };
       this.s.set(KEYS.cycleShare(a.id), cyc.share);
       this.s.set(KEYS.cycleState(a.id), cyc.state);
+      if (cyc.lastPeriodStart != null) this.s.set(KEYS.cycleStart(a.id), cyc.lastPeriodStart);
+      if (cyc.cycleLengthDays != null) this.s.set(KEYS.cycleLen(a.id), cyc.cycleLengthDays);
     }
     // Athlete-demo seed: an assigned plan (+ its instantiated prescription) and a year of check-ins,
     // so the offline athlete app (LocalMeClient) opens fully populated. startDate anchors today to
@@ -156,16 +158,20 @@ export class LocalRepository implements Repository {
     const r = CycleShareSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleShare(id)));
     return r.success ? r.data : "none";
   }
-  /** Redaction by construction: never exposes phase/day/symptom. */
+  /** Redaction by construction (core redactCycle): never exposes phase/day/symptom. */
   async getCycleContext(id: string): Promise<CycleContext | undefined> {
     const share = await this.getCycleShare(id);
-    if (share === "none") return undefined;
     const stateParsed = CycleStateSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleState(id)));
     const state: CycleState = stateParsed.success ? stateParsed.data : "regular";
-    const reliable = state === "regular";
-    const health: CycleContext["health"] = state === "amenorrhea" ? "referral" : "ok";
-    // "min" share never reveals the luteal flag; "full" could (placeholder false until the athlete slice computes it).
-    const inLutealNow = share === "full" ? false : null;
-    return { share, inLutealNow, health, reliable };
+    // Lúteo REAL sólo bajo "full" + estado regular + datos (mirror de repo.getCycle del API).
+    let luteal: boolean | null = null;
+    if (share === "full" && state === "regular") {
+      const start = this.s.getOptional<unknown>(KEYS.cycleStart(id));
+      const len = Number(this.s.getOptional<unknown>(KEYS.cycleLen(id)));
+      if (typeof start === "string" && Number.isFinite(len)) {
+        luteal = lutealNow(start, len, new Date().toISOString().slice(0, 10));
+      }
+    }
+    return redactCycle(share, state, luteal);
   }
 }

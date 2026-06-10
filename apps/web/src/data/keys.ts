@@ -8,6 +8,9 @@ export const KEYS = {
   sessionLog: (id: string) => `ho:sessions:${id}`,
   cycleShare: (id: string) => `ho:cycleShare:${id}`,
   cycleState: (id: string) => `ho:cycleState:${id}`,
+  // Slice ciclo-visible: registro de la atleta (los MISMOS keys que lee el coach-side local).
+  cycleStart: (id: string) => `ho:cycleStart:${id}`,
+  cycleLen: (id: string) => `ho:cycleLen:${id}`,
   prescription: (id: string) => `holyoly:prescription:${id}`,
   // Athlete-self stores (offline `LocalMeClient`, mirroring the API's DayLog / SessionActual tables).
   dayLog: (id: string) => `ho:daylog:${id}`,

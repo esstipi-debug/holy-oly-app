@@ -44,4 +44,12 @@ export class JsonStore {
       return false;
     }
   }
+
+  remove(key: string): void {
+    try {
+      this.backend.removeItem(key);
+    } catch {
+      // Best effort (mirror set): unavailable storage must never throw into a screen.
+    }
+  }
 }

@@ -330,6 +330,13 @@ async function main(): Promise<void> {
         athleteId: a.id,
         share: encryptAtRest(a.id === "mv" ? "full" : "min"),
         state: encryptAtRest("regular"),
+        // Slice ciclo-visible: Mara con registro (día ~20 de 28 → lútea hoy, demo visible).
+        ...(a.id === "mv"
+          ? {
+              lastPeriodStart: encryptAtRest(new Date(Date.now() - 20 * 86_400_000).toISOString().slice(0, 10)),
+              cycleLengthDays: encryptAtRest("28"),
+            }
+          : {}),
       },
     });
   }

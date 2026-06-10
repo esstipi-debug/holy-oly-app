@@ -4,8 +4,8 @@
  * resolves the athlete from the session, never from a path/body, so there is no cross-athlete read.
  */
 import {
-  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema,
-  type MePlanView, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type ExerciseActualInput, type WeekHeat,
+  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, CycleDataSchema,
+  type MePlanView, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type ExerciseActualInput, type WeekHeat, type CycleData,
 } from "@holy-oly/core";
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
@@ -71,6 +71,23 @@ export async function putMeSession(week: number, idx: number, actuals: ExerciseA
     credentials: "include",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(actuals),
+  });
+  if (!res.ok) await fail(res);
+}
+
+/** El registro propio del ciclo — la verdad de la atleta (el coach jamás recibe este shape). */
+export async function getMeCycle(): Promise<CycleData> {
+  const res = await fetch(`${BASE}/me/cycle`, { credentials: "include" });
+  if (!res.ok) return fail(res);
+  return CycleDataSchema.parse(await res.json());
+}
+
+export async function putMeCycle(input: CycleData): Promise<void> {
+  const res = await fetch(`${BASE}/me/cycle`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
   });
   if (!res.ok) await fail(res);
 }
