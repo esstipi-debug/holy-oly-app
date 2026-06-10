@@ -97,6 +97,15 @@ export const CycleContextSchema = z.object({
 
 // ── Auth + Vínculo wire shapes (Fase 3). The front parses every API response against
 // these instead of casting `unknown` — same boundary discipline as the reads above. ──
+/** La verdad de la atleta (lectura /me) = el input del PUT (mismo shape, acotado). */
+export const CycleDataSchema = z.object({
+  share: CycleShareSchema,
+  state: CycleStateSchema,
+  lastPeriodStart: IsoDateSchema.optional(),
+  cycleLengthDays: z.number().int().min(21).max(45).optional(),
+});
+export const PutMeCycleInputSchema = CycleDataSchema;
+
 export const RoleSchema = z.enum(["coach", "atleta"]);
 
 export const AuthUserSchema = z.object({

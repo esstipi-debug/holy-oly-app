@@ -75,6 +75,11 @@ export interface CycleContext {
   reliable: boolean;
 }
 
+/** La verdad de la atleta (sólo viaja por /me — el coach JAMÁS recibe este shape). */
+export interface CycleData { share: CycleShare; state: CycleState; lastPeriodStart?: string; cycleLengthDays?: number; }
+/** Marca proyectada de un día en el calendario de la atleta. */
+export type CycleMark = "periodo" | "preperiodo";
+
 export type VinculoEstado = "pendiente" | "activo" | "rechazado" | "revocado";
 export interface Vinculo {
   id: Id; coachId: Id; atletaId: Id;
