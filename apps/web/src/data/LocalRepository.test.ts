@@ -26,6 +26,16 @@ describe("LocalRepository", () => {
     expect(await repo.getSeries("tl")).toBeUndefined();
   });
 
+  it("getPlanHeat: todas las semanas del macro × 7 días; los días con sesión traen lifts; sin plan → []", async () => {
+    const heat = await repo.getPlanHeat("kv");
+    expect(heat.length).toBeGreaterThan(0);
+    expect(heat.every((w) => w.days.length === 7)).toBe(true);
+    const withSession = heat.flatMap((w) => w.days).filter((d) => d !== null);
+    expect(withSession.length).toBeGreaterThan(0);
+    expect(withSession.every((d) => d!.lifts > 0)).toBe(true);
+    expect(await repo.getPlanHeat("tl")).toEqual([]);
+  });
+
   it("init is idempotent: re-init does not clobber an added medal", async () => {
     await repo.addMedal("mv", medal);
     new LocalRepository(store).init(); // simulate refresh

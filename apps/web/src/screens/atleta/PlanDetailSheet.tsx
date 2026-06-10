@@ -1,5 +1,7 @@
 import type { MePlanView } from "@holy-oly/core";
 import { BottomSheet } from "../../ui/BottomSheet";
+import type { MeClient } from "../../data/meClient";
+import { PlanMapSection } from "./PlanMapSection";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
 
@@ -13,7 +15,11 @@ function volLabel(volRel: number): "alto" | "medio" | "bajo" {
  * structure. Read-only (the coach owns the plan). Intensity = % of competition lifts, volume =
  * relative — NEVER RPE (athlete surfaces never show RPE). Built on the shared BottomSheet.
  */
-export function PlanDetailSheet({ plan, open, onClose }: { plan: PlanView; open: boolean; onClose: () => void }) {
+export function PlanDetailSheet({ plan, open, onClose, client, sexo }: {
+  plan: PlanView; open: boolean; onClose: () => void;
+  /** Con cliente, el sheet suma el mapa de calor del plan (lazy, sólo montado abierto). */
+  client?: MeClient; sexo?: "M" | "F";
+}) {
   const next = [...plan.comps].sort((a, b) => a.week - b.week).find((c) => c.week >= plan.currentWeek) ?? plan.comps[plan.comps.length - 1];
   const faltan = next ? next.week - plan.currentWeek : null;
 
@@ -76,6 +82,8 @@ export function PlanDetailSheet({ plan, open, onClose }: { plan: PlanView; open:
           );
         })}
       </div>
+
+      {client != null && open && <PlanMapSection plan={plan} client={client} sexo={sexo} />}
     </BottomSheet>
   );
 }

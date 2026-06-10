@@ -28,6 +28,7 @@ describe("buildMePlanView", () => {
     expect(view.plan!.totalWeeks).toBe(16);
     expect(view.plan!.currentWeek).toBe(12);
     expect(view.plan!.currentPhase).not.toBe("");
+    expect(view.plan!.startDate).toBe(startDate); // el atleta ve las fechas reales de SU plan
     expect(view.plan!.phases.length).toBeGreaterThan(0);
     expect(view.plan!.comps).toEqual([{ name: "Nacional", week: 16 }]);
   });
@@ -47,5 +48,6 @@ describe("buildMePlanView", () => {
     const plan: Plan = { atletaId: "mv", macroId: "ruso-5d", startWeek: 5, rms: { arranque: 80, envion: 100, sentadilla: 140, frente: 110 }, comps: [] };
     expect(buildMePlanView(ATH, plan, "2026-06-03").plan!.currentWeek).toBe(5);
     expect(buildMePlanView(ATH, plan, "2026-06-03").plan!.totalWeeks).toBe(16);
+    expect(buildMePlanView(ATH, plan, "2026-06-03").plan!.startDate).toBeUndefined();
   });
 });

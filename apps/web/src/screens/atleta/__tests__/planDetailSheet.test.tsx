@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import type { MePlanView } from "@holy-oly/core";
+import { render, screen, fireEvent } from "@testing-library/react";
+import type { MePlanView, SessionView, WeekHeat } from "@holy-oly/core";
+import type { MeClient } from "../../../data/meClient";
 import { PlanDetailSheet } from "../PlanDetailSheet";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
@@ -50,4 +51,38 @@ test("muestra el corredor de intensidad y la 🚩 en la meso con comp", () => {
 test("NO muestra RPE en ninguna parte (regla intocable del atleta)", () => {
   const { container } = render(<PlanDetailSheet plan={PLAN} open onClose={noop} />);
   expect(container.textContent ?? "").not.toMatch(/rpe/i);
+});
+
+function stubClient(): MeClient {
+  const heat: WeekHeat[] = Array.from({ length: 16 }, (_, i) => ({
+    week: i + 1,
+    days: Array.from({ length: 7 }, (_, d) => (d < 5 ? { topPct: 70 + (i % 20), lifts: 24 } : null)),
+  }));
+  const views = (week: number): SessionView[] => [
+    { week, sessionIdx: 0, exercises: [{ movementId: "arranque", movementName: "Arranque", sets: 5, reps: 2, pct: 80, targetKg: 64 }] },
+  ];
+  return {
+    getMePlan: async () => ({ athlete: { nombre: "A", iniciales: "A", sexo: "F" as const }, plan: PLAN }),
+    getMeSeries: async () => undefined,
+    getDayLog: async () => ({ entry: null, streak: 0, days: [], today: "2026-06-10" }),
+    putDayLog: async () => ({ entry: { date: "2026-06-10", fatiga: 3, dolor: 1, estres: 2, humor: 4, motivacion: 4, sueno: 4 }, streak: 1 }),
+    getMeSessions: async (week: number) => views(week),
+    getMeHeat: async () => heat,
+    putMeSession: async () => {},
+  };
+}
+
+test("con cliente: el sheet suma el mapa del plan; tap al día → desglose con kg + discos", async () => {
+  const { container } = render(<PlanDetailSheet plan={PLAN} open onClose={noop} client={stubClient()} sexo="F" />);
+  expect(screen.getByText(/Mapa del plan/)).toBeInTheDocument();
+  fireEvent.click(await screen.findByRole("button", { name: /^Semana 1 Lun$/ }));
+  expect(await screen.findByText("Arranque")).toBeInTheDocument();
+  expect(screen.getByText("64 kg")).toBeInTheDocument();
+  expect(container.querySelectorAll("svg").length).toBeGreaterThan(0); // DiscRow oficial
+  expect(container.textContent ?? "").not.toMatch(/rpe/i); // la regla se sostiene con el mapa
+});
+
+test("sin cliente: no hay mapa (compatibilidad hacia atrás)", () => {
+  render(<PlanDetailSheet plan={PLAN} open onClose={noop} />);
+  expect(screen.queryByText(/Mapa del plan/)).not.toBeInTheDocument();
 });

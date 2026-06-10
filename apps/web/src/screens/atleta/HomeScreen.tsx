@@ -95,7 +95,7 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
 
       {plan.plan && !preview && <SemanaCard week={plan.plan.currentWeek} client={client} />}
       <ConstanciaCard streak={daylog.streak} days={daylog.days} today={daylog.today} />
-      <CaminoCard plan={plan.plan} />
+      <CaminoCard plan={plan.plan} client={client} sexo={plan.athlete.sexo} />
 
       {checkinOpen && (
         <CheckIn variant={variant} initial={daylog.entry} onClose={() => setCheckinOpen(false)} onDone={onCheckinDone} />

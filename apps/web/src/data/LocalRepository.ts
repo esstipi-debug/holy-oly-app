@@ -1,12 +1,12 @@
 import type {
   Repository, Atleta, Plan, Medal, Competencia, MonitorSeries,
-  CycleShare, CycleState, CycleContext, SessionLog, SessionView, PrescribedExercise, PrescriptionRow,
+  CycleShare, CycleState, CycleContext, SessionLog, SessionView, PrescribedExercise, PrescriptionRow, WeekHeat,
 } from "@holy-oly/core";
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
   PrescriptionRowsSchema,
-  MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate,
+  MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -106,6 +106,15 @@ export class LocalRepository implements Repository {
     const kept = all.filter((r) => !(r.week === week && r.sessionIdx === sessionIdx));
     const added: PrescriptionRow[] = exercises.map((ex, order) => ({ ...ex, week, sessionIdx, order }));
     this.s.set(KEYS.prescription(id), [...kept, ...added]);
+  }
+  /** Per-day heat of the whole plan (calendar map). Mirrors the API's repo.getPlanHeat. */
+  async getPlanHeat(id: string): Promise<WeekHeat[]> {
+    const plan = await this.getPlan(id);
+    if (!plan) return [];
+    const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+    const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+    if (totalWeeks === 0) return [];
+    return planHeat(this.prescriptionRows(id), totalWeeks);
   }
 
   async getCycleShare(id: string): Promise<CycleShare> {

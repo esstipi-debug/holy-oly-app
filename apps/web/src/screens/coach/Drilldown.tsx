@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
 import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
@@ -47,6 +47,9 @@ export function Drilldown() {
   // Id-scoped athlete client for the preview — reads the SAME localStorage the coach just wrote,
   // so a freshly edited plan/weight lands when the toggle remounts the athlete view.
   const previewClient = useMemo(() => new LocalMeClient(id), [id]);
+  // Identidad estable para los efectos lazy del calendario-mapa (no re-agendar por cada render).
+  const loadHeat = useCallback(() => repo.getPlanHeat(id), [repo, id]);
+  const loadWeek = useCallback((w: number) => repo.getPrescriptionWeek(id, w), [repo, id]);
 
   useEffect(() => {
     let on = true;
@@ -187,6 +190,10 @@ export function Drilldown() {
           marks={sessionLog}
           perWeek={perWeek}
           onWeekClick={setSelectedWeek}
+          loadHeat={loadHeat}
+          loadWeek={loadWeek}
+          sexo={athlete.sexo}
+          today={today}
         />
       )}
 

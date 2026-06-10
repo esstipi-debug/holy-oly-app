@@ -60,6 +60,12 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     return repo.getPrescriptionWeek(prisma, athleteId, week);
   });
 
+  app.get("/me/heat", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    return repo.getPlanHeat(prisma, athleteId);
+  });
+
   app.put<{ Params: { week: string; idx: string } }>("/me/session/:week/:idx", async (req, reply) => {
     const athleteId = requireAthlete(req, reply);
     if (!athleteId) return;

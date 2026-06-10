@@ -3,9 +3,9 @@ import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
-  CycleShare, CycleState,
+  CycleShare, CycleState, WeekHeat,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { redactCycle } from "./cycle";
 import { decryptAtRest } from "./crypto-at-rest";
@@ -237,6 +237,22 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
   const athlete = await prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } });
   const barKg = barKgForSexo((athlete?.sexo as "M" | "F" | undefined) ?? "M");
   return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals);
+}
+
+/** Per-day heat aggregate of the WHOLE plan (calendar heat map). [] if no plan/macro. Light
+ *  select — no RM/kg derivation; athlete-safe payload (% + lift counts). Serves the coach
+ *  (`/athletes/:id/heat`, guardAthlete) and the athlete self (`/me/heat`). */
+export async function getPlanHeat(prisma: PrismaClient, athleteId: string): Promise<WeekHeat[]> {
+  const plan = await getPlan(prisma, athleteId);
+  if (!plan) return [];
+  const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+  const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+  if (totalWeeks === 0) return [];
+  const rows = await prisma.prescribedExercise.findMany({
+    where: { athleteId },
+    select: { week: true, sessionIdx: true, sets: true, reps: true, pct: true },
+  });
+  return planHeat(rows.map((r) => ({ ...r, pct: r.pct ?? undefined })), totalWeeks);
 }
 
 /** Replace one session's athlete actuals (self-written). Transactional. `today` stamps doneAt only when the exercise was marked done. */

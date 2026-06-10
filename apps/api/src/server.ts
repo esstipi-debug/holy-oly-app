@@ -272,6 +272,11 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     return repo.getPrescriptionWeek(prisma, req.params.id, week);
   });
 
+  app.get<{ Params: { id: string } }>("/athletes/:id/heat", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    return repo.getPlanHeat(prisma, req.params.id);
+  });
+
   app.put<{ Params: { id: string; week: string; idx: string } }>("/athletes/:id/prescription/:week/:idx", async (req, reply) => {
     if (!(await guardAthleteWrite(req, reply, req.params.id))) return;
     const week = Number(req.params.week);

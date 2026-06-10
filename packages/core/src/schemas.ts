@@ -160,6 +160,7 @@ export const MePlanViewSchema = z.object({
     totalWeeks: z.number().int(),
     currentWeek: z.number().int(),
     currentPhase: z.string(),
+    startDate: IsoDateSchema.optional(),
     phases: z.array(z.object({
       name: z.string(), from: z.number().int(), to: z.number().int(), imr: z.number(),
       imrLo: z.number(), imrHi: z.number(), volRel: z.number(), focus: z.string().max(120),
@@ -190,6 +191,18 @@ export const PrescriptionRowSchema = PrescribedExerciseSchema.extend({
   order: z.number().int().min(0).max(20),
 });
 export const PrescriptionRowsSchema = z.array(PrescriptionRowSchema).max(2000);
+
+// ── Calendar heat map wire shape (athlete-safe: % + lift counts, no RM/RPE). ──
+export const DayHeatSchema = z.object({
+  topPct: z.number().min(1).max(120).optional(),
+  // Techo holgado: el máximo teórico schema-legal por día es 15 ej × 20 sets × 50 reps = 15.000.
+  lifts: z.number().int().min(0).max(20000),
+});
+export const WeekHeatSchema = z.object({
+  week: z.number().int().min(1).max(104),
+  days: z.array(DayHeatSchema.nullable()).length(7),
+});
+export const WeekHeatsSchema = z.array(WeekHeatSchema).max(104);
 
 // ── SP3 actuals wire shapes (untrusted athlete input → bounded). ──
 export const SetActualInputSchema = z.object({

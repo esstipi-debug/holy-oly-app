@@ -59,6 +59,15 @@ describe("HttpRepository", () => {
     await expect(new HttpRepository(BASE).getRoster()).rejects.toThrow();
   });
 
+  it("getPlanHeat hits /athletes/:id/heat y valida el shape (days SIEMPRE de 7)", async () => {
+    const heat = [{ week: 1, days: [{ topPct: 80, lifts: 20 }, null, null, null, null, null, null] }];
+    global.fetch = mock(200, heat);
+    expect(await new HttpRepository(BASE).getPlanHeat("mv")).toEqual(heat);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(`${BASE}/athletes/mv/heat`);
+    global.fetch = mock(200, [{ week: 1, days: [null] }]);
+    await expect(new HttpRepository(BASE).getPlanHeat("mv")).rejects.toThrow();
+  });
+
   it("savePlan PUTs the plan to the athlete path (id from plan.atletaId, with credentials)", async () => {
     global.fetch = mock(200, { ok: true });
     const plan: Plan = {

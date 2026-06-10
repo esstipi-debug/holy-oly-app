@@ -22,6 +22,7 @@ function stubClient(): MeClient {
     getDayLog: async () => ({ entry: null, streak: 0, days: [], today: "2026-06-08" }),
     putDayLog: async () => ({ entry: { date: "2026-06-08", fatiga: 3, dolor: 1, estres: 2, humor: 4, motivacion: 4, sueno: 4 }, streak: 1 }),
     getMeSessions: async () => [],
+    getMeHeat: async () => [],
     putMeSession: async () => {},
   };
 }

@@ -1,6 +1,6 @@
 import type {
   Atleta, Plan, Medal, Competencia, MonitorSeries,
-  CycleShare, CycleContext, SessionLog, SessionView, PrescribedExercise,
+  CycleShare, CycleContext, SessionLog, SessionView, PrescribedExercise, WeekHeat,
 } from "./types";
 
 export interface Repository {
@@ -28,6 +28,8 @@ export interface Repository {
   getCycleContext(id: string): Promise<CycleContext | undefined>;
   /** A week's sessions with kg derived from the athlete's plan RMs. [] if no plan or no recipe. */
   getPrescriptionWeek(id: string, week: number): Promise<SessionView[]>;
+  /** Per-day intensity/volume aggregate of the WHOLE plan (calendar heat map). [] if no plan. */
+  getPlanHeat(id: string): Promise<WeekHeat[]>;
   /** Replace one session's exercises (coach edit). Valid after savePlan has instantiated the
    *  athlete's prescription; coach-authorized server-side. */
   setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void>;

@@ -1,8 +1,8 @@
 import {
   RosterSchema, MonitorSeriesSchema, MedalsSchema, CompsSchema, SessionLogSchema, PlanSchema, CycleContextSchema,
-  SessionViewsSchema,
+  SessionViewsSchema, WeekHeatsSchema,
   type Repository, type Atleta, type MonitorSeries, type Medal, type Competencia, type Plan,
-  type CycleShare, type CycleContext, type SessionLog, type SessionView, type PrescribedExercise,
+  type CycleShare, type CycleContext, type SessionLog, type SessionView, type PrescribedExercise, type WeekHeat,
 } from "@holy-oly/core";
 
 interface Parser<T> {
@@ -113,6 +113,9 @@ export class HttpRepository implements Repository {
 
   async getPrescriptionWeek(id: string, week: number): Promise<SessionView[]> {
     return this.get(`${this.athletePath(id, "prescription")}?week=${week}`, SessionViewsSchema);
+  }
+  async getPlanHeat(id: string): Promise<WeekHeat[]> {
+    return this.get(this.athletePath(id, "heat"), WeekHeatsSchema);
   }
   async setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void> {
     return this.mutate(`${this.athletePath(id, "prescription")}/${week}/${sessionIdx}`, "PUT", exercises);

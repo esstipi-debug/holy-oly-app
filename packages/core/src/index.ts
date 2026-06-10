@@ -16,4 +16,5 @@ export * from "./data/recipes";
 export * from "./logic/actuals";
 export * from "./logic/warmup";
 export * from "./logic/sessionStats";
+export * from "./logic/planHeat";
 export * from "./billing/plans";

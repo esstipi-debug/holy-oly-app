@@ -10,13 +10,14 @@
 import type {
   Atleta, MePlanView, MonitorSeries, Plan, PrescriptionRow,
   DayLog, DayLogView, DayLogResult, DayLogInput,
-  SessionView, SessionActual, ExerciseActualInput,
+  SessionView, SessionActual, ExerciseActualInput, WeekHeat,
 } from "@holy-oly/core";
 import {
   buildMePlanView, computeStreak, mergeActuals, buildSessionViews, summarizeSets, barKgForSexo,
   DayLogInputSchema, SessionActualsInputSchema,
   MonitorSeriesSchema, PlanSchema, RosterSchema, PrescriptionRowsSchema,
   DayLogsSchema, SessionActualsSchema,
+  MACROCYCLES, planHeat,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -102,6 +103,16 @@ export class LocalMeClient implements MeClient {
     const actuals = this.actuals().filter((a) => a.week === week);
     const barKg = barKgForSexo(this.athlete()?.sexo ?? "M");
     return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals);
+  }
+
+  /** Per-day heat of the athlete's own plan (calendar map). Mirrors repo.getPlanHeat. */
+  async getMeHeat(): Promise<WeekHeat[]> {
+    const plan = this.plan();
+    if (!plan) return [];
+    const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+    const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+    if (totalWeeks === 0) return [];
+    return planHeat(this.prescriptionRows(), totalWeeks);
   }
 
   /** Replace one session's actuals (self-written). Mirrors repo.setSessionActuals (top-set summary). */

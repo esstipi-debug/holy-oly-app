@@ -3,7 +3,7 @@
  * (`httpMeClient`) when the app talks to a backend, or to `LocalMeClient` (localStorage, demo
  * athlete Kevin) when standalone — the exact mirror of how `RepositoryProvider` picks Http vs Local.
  */
-import type { MePlanView, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, ExerciseActualInput } from "@holy-oly/core";
+import type { MePlanView, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, ExerciseActualInput, WeekHeat } from "@holy-oly/core";
 import { API_ENABLED } from "./apiConfig";
 import * as http from "./httpMeClient";
 import { LocalMeClient } from "./LocalMeClient";
@@ -27,6 +27,9 @@ export function putDayLog(input: DayLogInput): Promise<DayLogResult> {
 export function getMeSessions(week: number): Promise<SessionView[]> {
   return API_ENABLED ? http.getMeSessions(week) : local().getMeSessions(week);
 }
+export function getMeHeat(): Promise<WeekHeat[]> {
+  return API_ENABLED ? http.getMeHeat() : local().getMeHeat();
+}
 export function putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void> {
   return API_ENABLED ? http.putMeSession(week, idx, actuals) : local().putMeSession(week, idx, actuals);
 }
@@ -42,8 +45,9 @@ export interface MeClient {
   getDayLog(date?: string): Promise<DayLogView>;
   putDayLog(input: DayLogInput): Promise<DayLogResult>;
   getMeSessions(week: number): Promise<SessionView[]>;
+  getMeHeat(): Promise<WeekHeat[]>;
   putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void>;
 }
 
 /** The module singleton as a `MeClient` object — the default client for the athlete screens. */
-export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, putMeSession };
+export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, getMeHeat, putMeSession };

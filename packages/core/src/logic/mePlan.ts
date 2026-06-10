@@ -26,6 +26,7 @@ export function buildMePlanView(
       totalWeeks,
       currentWeek,
       currentPhase: phase?.name ?? "",
+      ...(plan.startDate ? { startDate: plan.startDate } : {}),
       // `imr` (= imrPct[1], the phase's high-end IMR) drives the ribbon fill in MacroRibbon;
       // imrLo/imrHi expose the full corridor for the meso detail sheet. Invariant: imrHi === imr
       // (both imrPct[1]) — `imr` is the legacy ribbon field, `imrHi` reads as a pair with imrLo.

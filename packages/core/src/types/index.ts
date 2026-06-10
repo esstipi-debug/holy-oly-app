@@ -137,6 +137,7 @@ export interface MePlanView {
     totalWeeks: number;
     currentWeek: number;
     currentPhase: string;
+    startDate?: string; // ISO — ancla real del plan (fechas del mapa); ausente en planes pre-M5
     phases: { name: string; from: number; to: number; imr: number; imrLo: number; imrHi: number; volRel: number; focus: string }[];
     comps: { name: string; week: number }[];
   } | null;
@@ -211,6 +212,11 @@ export interface PrescriptionRow extends PrescribedExercise { week: number; sess
 export interface PrescribedExerciseView extends PrescribedExercise { movementName: string; targetKg?: number; actual?: ExerciseActual; warmup?: WarmupSet[] }
 /** One instantiated session (a column in the week), kg already derived. */
 export interface SessionView { week: number; sessionIdx: number; exercises: PrescribedExerciseView[] }
+
+/** One day's heat aggregate (calendar heat map). `topPct` absent = no % data that day. */
+export interface DayHeat { topPct?: number; lifts: number }
+/** A plan week's 7 day slots (Monday-first; session i → day i). `null` = rest day. */
+export interface WeekHeat { week: number; days: (DayHeat | null)[] }
 
 // ── SP3 actuals: what the athlete actually lifted, per prescribed exercise. ──
 /** Una serie de trabajo registrada (Opción B: registro por serie). */

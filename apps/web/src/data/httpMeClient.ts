@@ -4,8 +4,8 @@
  * resolves the athlete from the session, never from a path/body, so there is no cross-athlete read.
  */
 import {
-  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema,
-  type MePlanView, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type ExerciseActualInput,
+  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema,
+  type MePlanView, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type ExerciseActualInput, type WeekHeat,
 } from "@holy-oly/core";
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
@@ -55,6 +55,13 @@ export async function getMeSessions(week: number): Promise<SessionView[]> {
   const res = await fetch(`${BASE}/me/sessions?week=${week}`, { credentials: "include" });
   if (!res.ok) return fail(res);
   return SessionViewsSchema.parse(await res.json());
+}
+
+/** Per-day heat of the athlete's own plan (calendar map). Athlete-safe: % + lift counts. */
+export async function getMeHeat(): Promise<WeekHeat[]> {
+  const res = await fetch(`${BASE}/me/heat`, { credentials: "include" });
+  if (!res.ok) return fail(res);
+  return WeekHeatsSchema.parse(await res.json());
 }
 
 /** Record (replace) the athlete's actuals for one session. */

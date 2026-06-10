@@ -98,3 +98,18 @@ exista, se suma al panel).
 - [ ] Authz: coach sin vínculo → 403 en `/athletes/:id/heat`; `/me/heat` exige sesión de atleta.
 - [ ] Sin RPE en ningún payload/superficie nueva; sin verde/ámbar/rojo fuera del semáforo.
 - [ ] tsc + eslint + `pnpm -r test` + `verify` (int) verdes.
+
+## 9. Enmiendas post-review (El Carnicero + react-review, 2026-06-10)
+
+- **Eje del mapa = offset dentro de la semana del macro, no weekday absoluto.** Las semanas del
+  macro están ancladas al weekday del `startDate` (`dateOfWeek`), así que el §2 original (headers
+  L..D fijos + HOY/compe por weekday real) era incoherente para todo start no-lunes (el default
+  de AssignSheet es "hoy"). Resolución: headers ROTAN (`firstDow` = weekday del start; col 0 =
+  día del start) y HOY/compe se colocan con `dayOffsetInWeek(startDate, week, fecha)`. Atleta
+  sin `startDate` → sin anillo HOY ni fechas en títulos (no hay verdad de fecha que afirmar).
+- **Touch target:** hit area = pitch completo de la grilla (22 px; visual 18). 44 px es
+  inalcanzable en esta densidad; mitigación: el panel corrige cualquier mis-tap en un tap.
+- **Conocido (LOW, aceptado):** si una sesión cae posicionalmente en el día de la compe, la
+  celda dorada tiene prioridad y el panel muestra el banner de compe (no los ejercicios).
+- `lifts ≤ 20000` en el wire (techo teórico schema-legal por día ≈ 15.000).
+- Estabilidad de efectos: `loadHeat`/`loadWeek` se pasan con `useCallback` desde Drilldown.
