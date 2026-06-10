@@ -244,3 +244,15 @@ export interface ExerciseActual {
 
 /** Un set de calentamiento (se muestra, NO cuenta). `label:"barra"` = barra vacía del 1er movimiento. */
 export interface WarmupSet { pct: number; kg: number; reps: number; label: "barra" | "rampa"; }
+
+// ── SP5 autorregulación: historial de RMs + detección de PR (coach-territory). ──
+/** Los 4 lifts con RM (= keyof RM; sin "none"). */
+export type RmLift = "arranque" | "envion" | "sentadilla" | "frente";
+/** Por qué se fijó un RM: baseline al asignar, edición manual del coach, o confirmación de PR. */
+export type RmReason = "assign" | "manual" | "pr";
+/** Una fila del historial append-only de RMs (la curva del 1RM). `setAt` ISO YYYY-MM-DD. */
+export interface RmUpdate { lift: RmLift; kg: number; setAt: string; reason: RmReason; }
+/** Set hecho que SUPERA el RM vigente del lift (rmRef del movimiento) — sugerencia al coach. */
+export interface PrCandidate { lift: RmLift; movementId: string; movementName: string; kg: number; week: number; sessionIdx: number; }
+/** Vigencia por lift: cuándo se fijó y hace cuántas semanas ({} = sin dato, nunca inventar). */
+export type RmVigencia = Record<RmLift, { setAt?: string; weeksAgo?: number }>;

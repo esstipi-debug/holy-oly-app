@@ -275,3 +275,36 @@ export const SessionViewSchema = z.object({
   exercises: z.array(PrescribedExerciseViewSchema).max(15),
 });
 export const SessionViewsSchema = z.array(SessionViewSchema).max(14);
+
+// ── SP5 RMs: historial + PRs. El INPUT del coach va acotado (KgSchema, 1..4, sin duplicados);
+//    las lecturas validan shape (el server ya acotó al escribir). ──
+export const RmLiftSchema = z.enum(["arranque", "envion", "sentadilla", "frente"]);
+export const RmReasonSchema = z.enum(["assign", "manual", "pr"]);
+
+export const RmUpdateSchema = z.object({
+  lift: RmLiftSchema,
+  kg: z.number().positive(),
+  setAt: IsoDateSchema,
+  reason: RmReasonSchema,
+});
+export const RmUpdatesSchema = z.array(RmUpdateSchema).max(5000);
+
+export const PrCandidateSchema = z.object({
+  lift: RmLiftSchema,
+  movementId: z.string(),
+  movementName: z.string(),
+  kg: z.number().positive(),
+  week: z.number().int().min(1).max(104),
+  sessionIdx: z.number().int().min(0).max(13),
+});
+export const PrCandidatesSchema = z.array(PrCandidateSchema).max(4);
+
+export const UpdateRmsInputSchema = z.object({
+  // "assign" no es input del coach — sólo lo escribe savePlan al asignar.
+  updates: z
+    .array(z.object({ lift: RmLiftSchema, kg: KgSchema }))
+    .min(1)
+    .max(4)
+    .refine((u) => new Set(u.map((x) => x.lift)).size === u.length, "lift duplicado"),
+  reason: z.enum(["manual", "pr"]),
+});
