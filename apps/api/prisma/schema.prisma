@@ -199,6 +199,7 @@ model Athlete {
   dayLogs      DayLog[]
   prescription PrescribedExercise[]
   actuals      SessionActual[]
+  rmUpdates    RmUpdate[]
 }
 
 /// The multi-tenancy join: a coach sees an athlete only via an `activo` Vinculo.
@@ -368,4 +369,20 @@ model PrescribedExercise {
 
   @@unique([athleteId, week, sessionIdx, order])
   @@index([athleteId, week])
+}
+
+/// Historial append-only de RMs (SP5). Cada cambio de Plan.rms escribe una fila acá (mismo
+/// valor) — la última por lift coincide con Plan.rms. `reason`: assign (baseline al asignar) |
+/// manual (edición del coach) | pr (confirmación de un PR). `setAt` ISO YYYY-MM-DD.
+model RmUpdate {
+  id        String   @id @default(uuid())
+  athleteId String
+  athlete   Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  lift      String
+  kg        Float
+  setAt     String
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([athleteId])
 }
