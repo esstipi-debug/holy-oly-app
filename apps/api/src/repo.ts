@@ -3,9 +3,9 @@ import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
-  CycleShare, CycleState, WeekHeat,
+  CycleShare, CycleState, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { redactCycle } from "./cycle";
 import { decryptAtRest } from "./crypto-at-rest";
@@ -101,13 +101,18 @@ export async function getCycle(prisma: PrismaClient, athleteId: string): Promise
  * fields + rms; competitions live in the Competencia table (owned by setComps, reconciled in M5),
  * so plan.comps is intentionally ignored here.
  */
-export async function savePlan(prisma: PrismaClient, athleteId: string, plan: Plan): Promise<void> {
+export async function savePlan(prisma: PrismaClient, athleteId: string, plan: Plan, today: string): Promise<void> {
   // rms is a plain {lift: number} object → JSON-safe; the double cast satisfies Prisma's Json input
   // type (RM has no string index signature to overlap InputJsonValue directly).
   const data = { macroId: plan.macroId, startWeek: plan.startWeek, startDate: plan.startDate ?? null, rms: plan.rms as unknown as Prisma.InputJsonValue };
   await prisma.$transaction(async (tx) => {
     await tx.plan.upsert({ where: { athleteId }, create: { athleteId, ...data }, update: data });
     await instantiateForPlan(tx, athleteId, plan);
+    // SP5: cada asignación fija los 4 RMs → baseline del historial (vigencia honesta).
+    const setAt = plan.startDate ?? today;
+    await tx.rmUpdate.createMany({
+      data: RM_LIFTS.map((lift) => ({ athleteId, lift, kg: plan.rms[lift], setAt, reason: "assign" })),
+    });
   });
 }
 
@@ -209,6 +214,23 @@ export async function instantiateForPlan(tx: Prisma.TransactionClient, athleteId
   }
 }
 
+/** Fila cruda de SessionActual → tipo de core (compartido por getPrescriptionWeek y SP5). */
+interface SessionActualRow {
+  week: number; sessionIdx: number; order: number; movementId: string; done: boolean;
+  prescribedMovementId: string | null; actualKg: number | null; actualReps: number | null;
+  note: string | null; doneAt: string | null; sets: unknown;
+}
+function toSessionActual(a: SessionActualRow): SessionActual {
+  const parsedSets = a.sets != null ? SetActualsSchema.safeParse(a.sets) : null;
+  return {
+    week: a.week, sessionIdx: a.sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
+    prescribedMovementId: a.prescribedMovementId ?? undefined,
+    actualKg: a.actualKg ?? undefined, actualReps: a.actualReps ?? undefined,
+    note: a.note ?? undefined, doneAt: a.doneAt ?? undefined,
+    sets: parsedSets && parsedSets.success ? parsedSets.data : undefined,
+  };
+}
+
 /** A week's sessions with kg derived from the athlete's plan RMs, merged with any athlete actuals.
  *  [] if no plan. Serves both the coach (`guardAthlete`) and athlete self (`/me/sessions`). */
 export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: string, week: number): Promise<SessionView[]> {
@@ -223,16 +245,7 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
     flags: r.flags.length > 0 ? (r.flags as MovementFlag[]) : undefined, notes: r.notes ?? undefined,
   }));
   const actualRows = await prisma.sessionActual.findMany({ where: { athleteId, week } });
-  const actuals: SessionActual[] = actualRows.map((a) => {
-    const parsedSets = a.sets != null ? SetActualsSchema.safeParse(a.sets) : null;
-    return {
-      week: a.week, sessionIdx: a.sessionIdx, order: a.order, movementId: a.movementId, done: a.done,
-      prescribedMovementId: a.prescribedMovementId ?? undefined,
-      actualKg: a.actualKg ?? undefined, actualReps: a.actualReps ?? undefined,
-      note: a.note ?? undefined, doneAt: a.doneAt ?? undefined,
-      sets: parsedSets && parsedSets.success ? parsedSets.data : undefined,
-    };
-  });
+  const actuals: SessionActual[] = actualRows.map(toSessionActual);
   // Actuals matched to exercises POSITIONALLY (order == view index). A coach edit that reorders a session after actuals are recorded can misalign them — acceptable for SP3 (revisit in SP4).
   const athlete = await prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } });
   const barKg = barKgForSexo((athlete?.sexo as "M" | "F" | undefined) ?? "M");
@@ -290,6 +303,36 @@ export async function setSession(prisma: PrismaClient, athleteId: string, week: 
       })),
     }),
   ]);
+}
+
+// ── SP5: RMs a mitad de ciclo. updateRms NO re-instancia (las ediciones del coach sobreviven);
+//    el kg se deriva en lectura (rms × pct) → la cascada es automática. ──
+
+/** Merge transaccional de 1+ lifts en Plan.rms + append al historial. false si no hay plan. */
+export async function updateRms(prisma: PrismaClient, athleteId: string, updates: { lift: RmLift; kg: number }[], reason: "manual" | "pr", today: string): Promise<boolean> {
+  return prisma.$transaction(async (tx) => {
+    const p = await tx.plan.findUnique({ where: { athleteId } });
+    if (!p) return false;
+    const merged: RM = { ...RMSchema.parse(p.rms) };
+    for (const u of updates) merged[u.lift] = u.kg;
+    await tx.plan.update({ where: { athleteId }, data: { rms: merged as unknown as Prisma.InputJsonValue } });
+    await tx.rmUpdate.createMany({ data: updates.map((u) => ({ athleteId, lift: u.lift, kg: u.kg, setAt: today, reason })) });
+    return true;
+  });
+}
+
+/** Sets hechos que SUPERAN el RM vigente (≤1 por lift). [] sin plan — honesto. */
+export async function getPrCandidates(prisma: PrismaClient, athleteId: string): Promise<PrCandidate[]> {
+  const plan = await getPlan(prisma, athleteId);
+  if (!plan) return [];
+  const rows = await prisma.sessionActual.findMany({ where: { athleteId } });
+  return prCandidates(rows.map(toSessionActual), plan.rms);
+}
+
+/** Historial append-only, más nuevo primero (mismo día → createdAt desestabiliza el empate). */
+export async function getRmHistory(prisma: PrismaClient, athleteId: string): Promise<RmUpdate[]> {
+  const rows = await prisma.rmUpdate.findMany({ where: { athleteId }, orderBy: [{ setAt: "desc" }, { createdAt: "desc" }] });
+  return rows.map((r) => ({ lift: r.lift as RmLift, kg: r.kg, setAt: r.setAt, reason: r.reason as RmReason }));
 }
 
 /** D3: everything the athlete owns, for a self-service data export (the athlete gets RAW cycle). */

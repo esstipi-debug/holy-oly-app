@@ -7,7 +7,7 @@ import fastifyStatic from "@fastify/static";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { UserRole } from "@prisma/client";
-import { PlanSchema, MedalSchema, CompsSchema, SessionLogSchema, PrescribedExercisesSchema } from "@holy-oly/core";
+import { PlanSchema, MedalSchema, CompsSchema, SessionLogSchema, PrescribedExercisesSchema, UpdateRmsInputSchema } from "@holy-oly/core";
 import { prisma } from "./db/client";
 import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
@@ -30,6 +30,9 @@ declare module "fastify" {
     athleteId?: string;
   }
 }
+
+/** Server's calendar date (UTC) — mirrors me/routes.todayISO. */
+const todayISO = (): string => new Date().toISOString().slice(0, 10);
 
 /**
  * Build the Fastify app. A session cookie (httpOnly) identifies the principal; the
@@ -228,7 +231,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     if (parsed.data.atletaId !== req.params.id) {
       return reply.code(400).send({ error: "athlete id mismatch" });
     }
-    await repo.savePlan(prisma, req.params.id, parsed.data);
+    await repo.savePlan(prisma, req.params.id, parsed.data, todayISO());
     await recordAudit(prisma, { action: "plan.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
     return reply.code(200).send({ ok: true });
   });
@@ -275,6 +278,27 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   app.get<{ Params: { id: string } }>("/athletes/:id/heat", async (req, reply) => {
     if (!(await guardAthlete(req, reply, req.params.id))) return;
     return repo.getPlanHeat(prisma, req.params.id);
+  });
+
+  // ── SP5: RMs a mitad de ciclo (coach-only; el atleta JAMÁS ve RMs — HR-1). ──
+  app.put<{ Params: { id: string } }>("/athletes/:id/rms", async (req, reply) => {
+    if (!(await guardAthleteWrite(req, reply, req.params.id))) return;
+    const parsed = UpdateRmsInputSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid rms" });
+    const ok = await repo.updateRms(prisma, req.params.id, parsed.data.updates, parsed.data.reason, todayISO());
+    if (!ok) return reply.code(404).send({ error: "no plan" });
+    await recordAudit(prisma, { action: "rms.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
+    return reply.code(200).send({ ok: true });
+  });
+
+  app.get<{ Params: { id: string } }>("/athletes/:id/pr-candidates", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    return repo.getPrCandidates(prisma, req.params.id);
+  });
+
+  app.get<{ Params: { id: string } }>("/athletes/:id/rm-history", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    return repo.getRmHistory(prisma, req.params.id);
   });
 
   app.put<{ Params: { id: string; week: string; idx: string } }>("/athletes/:id/prescription/:week/:idx", async (req, reply) => {
