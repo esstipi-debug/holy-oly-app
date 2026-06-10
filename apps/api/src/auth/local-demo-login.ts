@@ -30,6 +30,15 @@ function demoEmail(role: DemoRole): string {
   return (process.env.SEED_KEVIN_EMAIL ?? "kevin@holyoly.dev").trim().toLowerCase();
 }
 
+/** Prisma "can't reach the database" family (engine init failure or P1xxx connection codes). */
+function isDbUnreachable(err: unknown): boolean {
+  if (typeof err !== "object" || err === null) return false;
+  const e = err as { name?: string; code?: string; errorCode?: string };
+  if (e.name === "PrismaClientInitializationError") return true;
+  const code = e.errorCode ?? e.code ?? "";
+  return ["P1001", "P1002", "P1008", "P1017"].includes(code);
+}
+
 /** One-click demo login for the local desktop shortcuts (127.0.0.1 only, never in production). */
 export async function localDemoLoginRoutes(app: FastifyInstance): Promise<void> {
   app.get<{ Querystring: { as?: string } }>("/auth/local-demo-login", async (req, reply) => {
@@ -38,12 +47,24 @@ export async function localDemoLoginRoutes(app: FastifyInstance): Promise<void> 
     }
     const role: DemoRole = req.query.as === "atleta" ? "atleta" : "coach";
     const email = demoEmail(role);
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return reply.code(503).send({ error: "demo user missing — run db:seed once" });
+    try {
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        return reply.code(503).send({ error: "demo user missing — run db:seed once" });
+      }
+      const { token, expiresAt } = await createSession(prisma, user.id);
+      reply.setCookie(SESSION_COOKIE, token, cookieOpts(expiresAt));
+      return reply.redirect(role === "coach" ? "/coach" : "/atleta");
+    } catch (err) {
+      // The demo's embedded Postgres can die under the server (force-killed orphans, double
+      // boot). An honest 503 beats the generic 500: it names the fix for the desktop user.
+      if (isDbUnreachable(err)) {
+        req.log.error(err, "local-demo-login: database unreachable");
+        return reply
+          .code(503)
+          .send({ error: "base de datos local no disponible — cerrá la app y volvé a abrirla" });
+      }
+      throw err;
     }
-    const { token, expiresAt } = await createSession(prisma, user.id);
-    reply.setCookie(SESSION_COOKIE, token, cookieOpts(expiresAt));
-    return reply.redirect(role === "coach" ? "/coach" : "/atleta");
   });
 }
