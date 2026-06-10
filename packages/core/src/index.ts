@@ -17,4 +17,5 @@ export * from "./logic/actuals";
 export * from "./logic/warmup";
 export * from "./logic/sessionStats";
 export * from "./logic/planHeat";
+export * from "./logic/rm";
 export * from "./billing/plans";
