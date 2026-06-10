@@ -78,18 +78,6 @@
 .ho-streak b { font-family: var(--wl-display); font-weight: 800; font-size: 22px; color: var(--wl-accent); line-height: 1; }
 .ho-streak span { font-family: var(--ho-mono); font-size: 9.5px; color: var(--wl-muted); line-height: 1.3; }
 
-/* calendar heatmap */
-.ho-calhd { display: grid; grid-template-columns: repeat(7, 32px); gap: 6px; margin-bottom: 6px; justify-content: space-between; }
-.ho-calhd span { text-align: center; font-family: var(--ho-mono); font-size: 8px; color: var(--wl-muted); }
-.ho-cal { display: grid; grid-template-columns: repeat(7, 32px); gap: 6px; justify-content: space-between; }
-.ho-cal__c { height: 32px; border-radius: 5px; }
-.wl--chalk .ho-cal__c { border-radius: 0; }
-.ho-cal__c.on { background: var(--wl-accent); }
-.ho-cal__c.rest { background: color-mix(in srgb, var(--wl-text) 12%, transparent); position: relative; }
-.ho-cal__c.rest::after { content: ''; position: absolute; inset: 40%; border-radius: 50%; background: var(--wl-muted); opacity: .7; }
-.ho-cal__c.miss { border: 1px dashed color-mix(in srgb, var(--wl-text) 22%, transparent); }
-.ho-cal__c.fut { background: color-mix(in srgb, var(--wl-text) 5%, transparent); }
-
 /* camino — countdown */
 .ho-count { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
 .ho-count b { font-family: var(--wl-display); font-weight: 800; font-size: 34px; color: var(--wl-accent); line-height: .9; }

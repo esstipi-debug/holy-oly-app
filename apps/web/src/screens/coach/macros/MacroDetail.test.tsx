@@ -22,6 +22,14 @@ test("renders the program detail (header + periodization) for a valid id", () =>
   expect(screen.getByText("Cubano Intermedio 5D")).toBeInTheDocument();
   expect(screen.getByText(/Fases en detalle/i)).toBeInTheDocument(); // the MacroPeriodization block
   expect(screen.getByText("INTENSIDAD")).toBeInTheDocument(); // LoadMeters
+  // «Adentro del plan»: sin receta → nota honesta (el mapa vive en MacroTemplateMap.test)
+  expect(screen.getByText(/Adentro del plan/i)).toBeInTheDocument();
+  expect(screen.getByText(/todavía no tiene la receta/)).toBeInTheDocument();
+});
+
+test("macro con receta (ruso-5d): el detalle incluye el mapa de intensidad", () => {
+  renderAt("/coach/macros/ruso-5d");
+  expect(screen.getByRole("button", { name: /^Semana 1 Lun$/ })).toBeInTheDocument();
 });
 
 test("redirects to the catalog for an unknown id", () => {

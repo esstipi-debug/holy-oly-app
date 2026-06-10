@@ -1,20 +1,26 @@
+import type { CSSProperties } from "react";
 import { calendarWeeks } from "@holy-oly/core";
 
+const DAY_HEADS = ["L", "M", "X", "J", "V", "S", "D"];
+
+/** Grilla compacta estilo mapa (celdas 16px, HOY con anillo) — el mismo lenguaje visual del
+ *  calendario-mapa del plan, en vez de los bloques 32px que gritaban sin decir nada. */
 function CalendarHeatmap({ days, today }: { days: string[]; today: string }) {
   const set = new Set(days);
   const grid = calendarWeeks(today, 8);
-  const labels = ["L", "M", "M", "J", "V", "S", "D"];
+  const cell = (date: string): CSSProperties => {
+    const base: CSSProperties = { width: 16, height: 16, borderRadius: 4, boxSizing: "border-box" };
+    const ring = date === today ? "inset 0 0 0 1.5px rgba(255,255,255,.92)" : undefined;
+    if (date > today) return { ...base, background: "color-mix(in srgb, var(--wl-text) 3%, transparent)" };
+    if (set.has(date)) return { ...base, background: "color-mix(in srgb, var(--wl-accent) 86%, transparent)", boxShadow: ring };
+    return { ...base, background: "color-mix(in srgb, var(--wl-text) 7%, transparent)", boxShadow: ring };
+  };
   return (
-    <div>
-      <div className="ho-calhd">{labels.map((d, i) => <span key={i}>{d}</span>)}</div>
-      <div className="ho-cal">
-        {grid.flatMap((week) =>
-          week.map((date) => {
-            const cls = date > today ? "fut" : set.has(date) ? "on" : "miss";
-            return <div key={date} className={`ho-cal__c ${cls}`} title={date} />;
-          }),
-        )}
-      </div>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 16px)", gap: 4, justifyContent: "center" }}>
+      {DAY_HEADS.map((d, i) => (
+        <span key={`h${i}`} style={{ textAlign: "center", fontFamily: "var(--ho-mono, var(--mono))", fontSize: 8.5, color: "var(--wl-muted)" }}>{d}</span>
+      ))}
+      {grid.flatMap((week) => week.map((date) => <div key={date} title={date} style={cell(date)} />))}
     </div>
   );
 }
@@ -36,7 +42,7 @@ export function ConstanciaCard({ streak, days, today }: { streak: number; days: 
   return (
     <div className="ho-card">
       <div className="ho-card__head"><span className="ho-card__t">Constancia de registro</span></div>
-      <div className="ho-card__sub">filas = semanas · 7 columnas = días</div>
+      <div className="ho-card__sub">últimas 8 semanas · hoy con anillo</div>
       <div className="ho-streak">
         <b>{streak}</b>
         <span>días de racha<br />el descanso no la rompe</span>

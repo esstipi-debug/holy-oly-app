@@ -4,6 +4,7 @@ import { MACROCYCLES, weekOfDate, type Atleta, type Plan } from "@holy-oly/core"
 import { useRepository } from "../../../data/RepositoryProvider";
 import { MacroPeriodization } from "../../../ui/charts/MacroPeriodization";
 import { LoadMeters } from "./LoadMeters";
+import { MacroTemplateMap } from "./MacroTemplateMap";
 import { AssignSheet, type AssignComp } from "./AssignSheet";
 import { levelLabel } from "./macroFilter";
 
@@ -97,6 +98,9 @@ export function MacroDetail() {
       <LoadMeters macro={macro} />
 
       <MacroPeriodization macro={macro} />
+
+      <div style={sec}>Adentro del plan · intensidad por día</div>
+      <MacroTemplateMap macro={macro} />
 
       <div style={sec}>Ideal para</div>
       <p style={{ fontSize: 12, lineHeight: 1.5, color: "var(--wl-text)", margin: 0 }}>{macro.bestFor}</p>
