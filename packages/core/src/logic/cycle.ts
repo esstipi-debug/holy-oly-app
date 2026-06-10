@@ -21,6 +21,9 @@ const ms = (iso: string): number => new Date(`${iso}T00:00:00Z`).getTime();
 export function cycleDayOf(lastPeriodStart: string, lengthDays: number, date: string): number | null {
   if (!Number.isInteger(lengthDays) || lengthDays < CYCLE_LEN_MIN || lengthDays > CYCLE_LEN_MAX) return null;
   const diff = Math.floor((ms(date) - ms(lastPeriodStart)) / DAY);
+  // Fecha degenerada → NaN sobrevive los dos guards de abajo (NaN<0 y NaN>=x son false) y
+  // fabricaría un booleano lúteo falso para el coach. Sin-dato honesto: null, jamás inventar.
+  if (!Number.isFinite(diff)) return null;
   if (diff < 0 || diff >= lengthDays * CYCLE_HORIZON_CYCLES) return null;
   return diff % lengthDays;
 }

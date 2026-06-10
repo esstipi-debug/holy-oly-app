@@ -52,7 +52,11 @@ export const MedalSchema = z.object({
 });
 export const MedalsSchema = z.array(MedalSchema);
 
-const IsoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "fecha ISO YYYY-MM-DD");
+const IsoDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "fecha ISO YYYY-MM-DD")
+  // El regex acepta "2026-99-99"; el parser ISO la rechaza (NaN) → fecha de calendario real o nada.
+  .refine((s) => !Number.isNaN(new Date(`${s}T00:00:00Z`).getTime()), "fecha de calendario inválida");
 export const CompetenciaSchema = z.object({
   name: z.string().max(120),
   week: z.number().int().min(1).max(104),

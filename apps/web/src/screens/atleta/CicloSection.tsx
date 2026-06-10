@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CycleData, CycleShare, CycleState } from "@holy-oly/core";
-import { CYCLE_LEN_MAX, CYCLE_LEN_MIN } from "@holy-oly/core";
+import { CYCLE_LEN_MAX, CYCLE_LEN_MIN, CYCLE_HORIZON_CYCLES } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
 
 const SHARE_OPTS: Array<[CycleShare, string, string]> = [
@@ -18,6 +18,12 @@ const validLen = (s: string): boolean => {
   if (s === "") return true; // opcional
   const n = Number(s);
   return Number.isInteger(n) && n >= CYCLE_LEN_MIN && n <= CYCLE_LEN_MAX;
+};
+
+/** ¿La fecha guardada quedó a más del horizonte de proyección (3 ciclos)? NaN → false (sin nota). */
+const pastHorizon = (startIso: string, lenDays: number): boolean => {
+  const days = (Date.now() - new Date(`${startIso}T00:00:00Z`).getTime()) / 86_400_000;
+  return Number.isFinite(days) && days >= CYCLE_HORIZON_CYCLES * lenDays;
 };
 
 /** Sección «Ciclo» de Cuenta (slice ciclo-visible). Opt-in POR ELECCIÓN — existe para toda
@@ -135,10 +141,23 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
               </label>
               <label style={{ display: "grid", gap: 4, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10, color: "var(--wl-muted)" }}>
                 Duración típica (días, {CYCLE_LEN_MIN}–{CYCLE_LEN_MAX})
-                <input inputMode="numeric" value={len} aria-invalid={!validLen(len)}
+                <input type="text" inputMode="numeric" value={len}
+                  aria-invalid={!validLen(len) || undefined}
+                  aria-describedby={!validLen(len) ? "ciclo-len-error" : undefined}
                   onChange={(e) => { setLen(e.target.value); setSaved(false); }} style={inputStyle} />
+                {!validLen(len) && (
+                  <span id="ciclo-len-error" role="alert" style={{ fontSize: 10, color: "#ff3b46", fontFamily: "var(--ho-mono, var(--mono))" }}>
+                    Debe ser un entero entre {CYCLE_LEN_MIN} y {CYCLE_LEN_MAX}.
+                  </span>
+                )}
               </label>
             </div>
+            {state === "regular" && start !== "" && len !== "" && validLen(len) && pastHorizon(start, Number(len)) && (
+              <div style={noteStyle}>
+                Tu fecha de inicio tiene más de {CYCLE_HORIZON_CYCLES} ciclos — actualizala para que la
+                proyección vuelva a tu calendario.
+              </div>
+            )}
 
             {saveError && (
               <div role="alert" style={{ ...noteStyle, color: "#ff3b46" }}>No se pudo guardar. Reintentá.</div>

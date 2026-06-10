@@ -168,7 +168,8 @@ export class LocalRepository implements Repository {
     if (share === "full" && state === "regular") {
       const start = this.s.getOptional<unknown>(KEYS.cycleStart(id));
       const len = Number(this.s.getOptional<unknown>(KEYS.cycleLen(id)));
-      if (typeof start === "string" && Number.isFinite(len)) {
+      // Mismo formato que valida LocalMeClient: storage corrupto jamás fabrica el booleano del coach.
+      if (typeof start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(start) && Number.isFinite(len)) {
         luteal = lutealNow(start, len, new Date().toISOString().slice(0, 10));
       }
     }

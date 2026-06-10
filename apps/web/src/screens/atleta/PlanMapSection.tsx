@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CycleData, CycleMark, MePlanView, SessionView, WeekHeat } from "@holy-oly/core";
-import { barKgForSexo, cycleMarkFor, dateOfWeek } from "@holy-oly/core";
+import { barKgForSexo, cycleMarkFor, dateOfWeek, CYCLE_PERIOD_DAYS, CYCLE_PRE_DAYS, CYCLE_HORIZON_CYCLES } from "@holy-oly/core";
 import type { MeClient } from "../../data/meClient";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../ui/charts/PlanHeatMap";
 import { PlanDayDetail, type DayDetailExercise } from "../../ui/charts/PlanDayDetail";
@@ -168,6 +168,13 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
     <div style={{ marginTop: 16 }}>
       <div className="ho-plan__periodlabel">Mapa del plan · intensidad por día</div>
       <div style={{ marginTop: 6 }}><HeatLegend showCycle={cycleMarks != null} /></div>
+      {cycleMarks != null && cycleLen != null && (
+        // HR-2: el cómo-se-forma de la proyección, visible junto a la señal (no sólo el qué).
+        <div style={{ marginTop: 4, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 9.5, color: "var(--wl-muted)", lineHeight: 1.5 }}>
+          Proyección asumiendo ciclos de {cycleLen} días desde tu última fecha — período = primeros {CYCLE_PERIOD_DAYS} días,
+          pre-período = últimos {CYCLE_PRE_DAYS}; se apaga a los {CYCLE_HORIZON_CYCLES} ciclos sin actualizar.
+        </div>
+      )}
       <div style={{ marginTop: 8 }}>
         {heatError ? (
           <div role="alert" style={{ fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, color: "var(--wl-muted)" }}>
@@ -182,7 +189,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
         )}
       </div>
       {collision != null && (
-        <div style={{ marginTop: 8, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
+        <div role="status" style={{ marginTop: 8, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
           Tu semana más pesada (S{collision.week}) cae en tu ventana {collision.kind === "periodo" ? "de período" : "pre-período"} (proyección).
         </div>
       )}

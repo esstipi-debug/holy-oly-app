@@ -98,6 +98,8 @@ test("ciclo: chip redactado con lúteo REAL (Mara, share full) y CERO fuga de fa
 });
 
 test("ciclo: share mínimo → chip sin lúteo (Tomás, default min del seed)", async () => {
+  // tl NO está en SEED_CYCLE → LocalRepository.init() le aplica el default share:"min" (si algún
+  // día tl pasa a "none" como ejemplar sin-ciclo, este test debe mudarse a otro atleta).
   renderAt("tl");
   await waitFor(() => expect(screen.getByText(/Ciclo · compartido \(mínimo\)/)).toBeInTheDocument());
   expect(screen.queryByText(/contexto lúteo/)).toBeNull();

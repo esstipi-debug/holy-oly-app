@@ -100,7 +100,7 @@ Fuente autoritativa: `modulo-ciclo-menstrual.md`. **Tres decisiones innegociable
 3. **Fuera de la gamificación.** **NEVER** se premia, ni es racha/logro, ni se compara entre atletas. (Registrar puede sumar a "constancia de registro" sólo como *acto de registrar*, jamás por su contenido.)
 
 ### Redacción server-side (verificada en código)
-- El coach **SÓLO** recibe la proyección redactada `{ share, inLutealNow, health, reliable }`. **NEVER** el `state` crudo, ni fase/día/síntoma. `apps/api/src/cycle.ts:9`.
+- El coach **SÓLO** recibe la proyección redactada `{ share, inLutealNow, health, reliable }`. **NEVER** el `state` crudo, ni fase/día/síntoma. `redactCycle` vive en core (`packages/core/src/logic/cycle.ts`) y lo consumen API (`apps/api/src/repo.ts` `getCycle`) y LocalRepository — una sola fuente, sin drift. `inLutealNow` se computa SOLO bajo `share:"full"` + estado regular + datos; si no, `null` honesto.
 - `share==="none" → undefined` (el coach no ve nada). `amenorrhea → health:"referral"`. `reliable = state==="regular"`. *Se ve como:* una ruta/serializer de coach que devuelva el row crudo del ciclo, o que filtre client-side en vez de server-side → **CRITICAL**.
 - **MUST**: la redacción ocurre **server-side**; el coach API nunca devuelve el row crudo.
 
@@ -165,7 +165,7 @@ Estos invariantes "técnicos" **son reglas de dominio** (privacidad, modelo de c
 - **Catálogo = PLANTILLA read-only**, sin fecha (24 programas / 10 escuelas). **Plan del atleta = INSTANCIA** con `startDate` + comps — es lo que se reestructura. *Se ve como:* escribirle fecha/estado al catálogo, o reestructurar la plantilla en vez de la instancia.
 
 ### Redacción de ciclo server-side
-- Ver §3. **MUST** ocurrir en la API, nunca confiar en filtrado client-side. `cycle.ts:9`.
+- Ver §3. **MUST** ocurrir en la API, nunca confiar en filtrado client-side. `packages/core/src/logic/cycle.ts` (`redactCycle`) + `apps/api/src/repo.ts` (`getCycle`).
 
 ### Gotchas de build (no son de revisión de PR, pero el revisor los conoce)
 - `tsup` **debe** bundlear `@holy-oly/core` (`noExternal`) — `node dist/main.js` no carga `.ts`. Correr **el bundle real**, no sólo tests (tsx sí entiende `.ts` y enmascara el bug).
@@ -184,7 +184,7 @@ Estos invariantes "técnicos" **son reglas de dominio** (privacidad, modelo de c
 | Taper/reestructuración (§2) | `packages/core/src/logic/restructure.ts` |
 | Discos/IWF/kg (§2) | `packages/core/src/logic/discs.ts` |
 | Verdad anclada a fecha (§2b) | `packages/core/src/logic/schedule.ts` |
-| Redacción de ciclo server-side (§3) | `apps/api/src/cycle.ts` |
+| Redacción de ciclo server-side (§3) | `packages/core/src/logic/cycle.ts` (`redactCycle`) vía `apps/api/src/repo.ts` |
 | Authz / Vínculo (§5) | `apps/api/src/server.ts`, `apps/api/src/auth/guards.ts` |
 | Repository (§5) | `packages/core/src/repository.ts`, `apps/web/src/data/` |
 | Memory del proyecto | `charts-spec`, `ciclo-menstrual-module`, `plate-disc-system`, `design-system`, `vinculacion-coach-atleta`, `catalog-source-of-truth`, `coach-screen-slices` |

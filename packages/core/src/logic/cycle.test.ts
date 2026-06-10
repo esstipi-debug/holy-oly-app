@@ -22,6 +22,11 @@ describe("cycleDayOf", () => {
     expect(cycleDayOf(START, 20, "2026-06-01")).toBeNull();
     expect(cycleDayOf(START, 46, "2026-06-01")).toBeNull();
   });
+  it("fecha degenerada → null (NaN jamás fabrica un booleano para el coach)", () => {
+    expect(cycleDayOf("2026-99-99", LEN, "2026-06-10")).toBeNull();
+    expect(cycleDayOf(START, LEN, "no-fecha")).toBeNull();
+    expect(lutealNow("2026-99-99", LEN, "2026-06-10")).toBeNull();
+  });
 });
 
 describe("cycleMarkFor", () => {
