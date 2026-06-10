@@ -213,7 +213,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     if (!(await guardAthlete(req, reply, req.params.id))) return;
     // A9: the coach accessing an athlete's (redacted) cycle is the most sensitive read → audited.
     await recordAudit(prisma, { action: "cycle.read", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
-    const ctx = await repo.getCycle(prisma, req.params.id);
+    const ctx = await repo.getCycle(prisma, req.params.id, todayISO());
     if (!ctx) {
       reply.code(404).send({ error: "no cycle context" });
       return;

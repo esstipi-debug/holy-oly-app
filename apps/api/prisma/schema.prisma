@@ -328,6 +328,9 @@ model CycleConsent {
   // CycleShare/CycleState string unions (validated app-side). TEXT to hold ciphertext or plaintext.
   share     String
   state     String
+  /// Slice ciclo-visible: registro de la atleta — cifrados at-rest igual que share/state.
+  lastPeriodStart String?
+  cycleLengthDays String?
 }
 
 /// What the athlete actually lifted, per prescribed exercise (SP3). Self-written (requireAthlete).

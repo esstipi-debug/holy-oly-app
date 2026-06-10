@@ -3,12 +3,11 @@ import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
-  CycleShare, CycleState, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
+  CycleShare, CycleState, CycleData, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
-import { redactCycle } from "./cycle";
-import { decryptAtRest } from "./crypto-at-rest";
+import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
 /** Authorization primitive: the coach sees an athlete only via an `activo` Vinculo. */
 export async function hasActiveLink(prisma: PrismaClient, coachId: string, athleteId: string): Promise<boolean> {
@@ -86,11 +85,43 @@ export async function getPlan(prisma: PrismaClient, athleteId: string): Promise<
 }
 
 /** Coach-facing cycle: the redacted projection only — raw consent never leaves the server. */
-export async function getCycle(prisma: PrismaClient, athleteId: string): Promise<CycleContext | undefined> {
+export async function getCycle(prisma: PrismaClient, athleteId: string, today: string): Promise<CycleContext | undefined> {
   const c = await prisma.cycleConsent.findUnique({ where: { athleteId } });
   if (!c) return undefined;
   // Decrypt at rest (D1) before redacting; legacy plaintext passes through unchanged.
-  return redactCycle(decryptAtRest(c.share) as CycleShare, decryptAtRest(c.state) as CycleState);
+  const share = decryptAtRest(c.share) as CycleShare;
+  const state = decryptAtRest(c.state) as CycleState;
+  // Lúteo REAL sólo bajo "full" + estado regular + datos; si no, null honesto (jamás inventar).
+  let luteal: boolean | null = null;
+  if (share === "full" && state === "regular" && c.lastPeriodStart != null && c.cycleLengthDays != null) {
+    const len = Number(decryptAtRest(c.cycleLengthDays));
+    luteal = Number.isFinite(len) ? lutealNow(decryptAtRest(c.lastPeriodStart), len, today) : null;
+  }
+  return redactCycle(share, state, luteal);
+}
+
+/** La verdad de la atleta (sólo /me). Sin fila → default honesto "no optó". */
+export async function getMyCycle(prisma: PrismaClient, athleteId: string): Promise<CycleData> {
+  const c = await prisma.cycleConsent.findUnique({ where: { athleteId } });
+  if (!c) return { share: "none", state: "regular" };
+  const len = c.cycleLengthDays == null ? NaN : Number(decryptAtRest(c.cycleLengthDays));
+  return {
+    share: decryptAtRest(c.share) as CycleShare,
+    state: decryptAtRest(c.state) as CycleState,
+    ...(c.lastPeriodStart == null ? {} : { lastPeriodStart: decryptAtRest(c.lastPeriodStart) }),
+    ...(Number.isFinite(len) ? { cycleLengthDays: len } : {}),
+  };
+}
+
+/** Upsert del registro de la atleta — los 4 campos cifrados at-rest (D1). */
+export async function putMyCycle(prisma: PrismaClient, athleteId: string, input: CycleData): Promise<void> {
+  const data = {
+    share: encryptAtRest(input.share),
+    state: encryptAtRest(input.state),
+    lastPeriodStart: input.lastPeriodStart == null ? null : encryptAtRest(input.lastPeriodStart),
+    cycleLengthDays: input.cycleLengthDays == null ? null : encryptAtRest(String(input.cycleLengthDays)),
+  };
+  await prisma.cycleConsent.upsert({ where: { athleteId }, create: { athleteId, ...data }, update: data });
 }
 
 // ── Writes (Fase 4). Inverse of the reads above; mirror LocalRepository's semantics so the
@@ -357,7 +388,13 @@ export async function exportAthleteData(prisma: PrismaClient, athleteId: string)
     ]);
   // The athlete owns their cycle → return it decrypted (raw values), not redacted.
   const cycleRaw = cycle
-    ? { ...cycle, share: decryptAtRest(cycle.share), state: decryptAtRest(cycle.state) }
+    ? {
+        ...cycle,
+        share: decryptAtRest(cycle.share),
+        state: decryptAtRest(cycle.state),
+        lastPeriodStart: cycle.lastPeriodStart == null ? null : decryptAtRest(cycle.lastPeriodStart),
+        cycleLengthDays: cycle.cycleLengthDays == null ? null : decryptAtRest(cycle.cycleLengthDays),
+      }
     : null;
   return { athlete, plan, cycle: cycleRaw, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates };
 }

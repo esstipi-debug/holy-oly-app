@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { DayLogInputSchema, SessionActualsInputSchema } from "@holy-oly/core";
+import { DayLogInputSchema, PutMeCycleInputSchema, SessionActualsInputSchema } from "@holy-oly/core";
 import { prisma } from "../db/client";
 import { requireAthlete } from "../auth/guards";
 import { SESSION_COOKIE, cookieOpts } from "../auth/routes";
@@ -64,6 +64,24 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     const athleteId = requireAthlete(req, reply);
     if (!athleteId) return;
     return repo.getPlanHeat(prisma, athleteId);
+  });
+
+  // ── Ciclo (slice ciclo-visible): la verdad de la atleta — JAMÁS viaja al coach por acá. ──
+  app.get("/me/cycle", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    return repo.getMyCycle(prisma, athleteId);
+  });
+
+  app.put("/me/cycle", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    const parsed = PutMeCycleInputSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid cycle" });
+    await repo.putMyCycle(prisma, athleteId, parsed.data);
+    // Audit SIN payload — el módulo audit prohíbe datos de salud en el log (sólo ids+acción+ip).
+    await recordAudit(prisma, { action: "cycle.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: athleteId, ip: req.ip });
+    return reply.code(200).send({ ok: true });
   });
 
   app.put<{ Params: { week: string; idx: string } }>("/me/session/:week/:idx", async (req, reply) => {
