@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Competencia, Macrocycle, SessionLog, SessionView, WeekHeat } from "@holy-oly/core";
 import { phaseForWeek, barKgForSexo } from "@holy-oly/core";
 import { planWeeks } from "./planRows";
@@ -69,12 +69,17 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
     return m;
   }, [comps, startDate]);
 
-  const phaseIndexFor = (w: number): number => {
+  // Identidades estables → el memo de PlanHeatMap sólo re-renderiza la grilla con cambios reales.
+  const phaseIndexFor = useCallback((w: number): number => {
     const p = phaseForWeek(macro, w);
     return p ? macro.phaseProfile.indexOf(p) : 0;
-  };
+  }, [macro]);
+  const selectDay = useCallback((w: number, d: number) => { setSel({ week: w, day: d }); setDayError(false); }, []);
 
-  const rows = open && view === "lista" ? planWeeks(macro, weeks, startDate, hoyWeek, comps, marks, perWeek) : [];
+  const rows = useMemo(
+    () => (open && view === "lista" ? planWeeks(macro, weeks, startDate, hoyWeek, comps, marks, perWeek) : []),
+    [open, view, macro, weeks, startDate, hoyWeek, comps, marks, perWeek],
+  );
 
   // ── desglose del día seleccionado ──
   const selCell = sel && heat ? (heat[sel.week - 1]?.days[sel.day] ?? null) : null;
@@ -171,8 +176,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
                   <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>Cargando mapa…</div>
                 ) : (
                   <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow}
-                    onSelectDay={(w, d) => { setSel({ week: w, day: d }); setDayError(false); }}
-                    phaseIndexFor={phaseIndexFor} comps={compMap} />
+                    onSelectDay={selectDay} phaseIndexFor={phaseIndexFor} comps={compMap} />
                 )}
               </div>
               {heat !== null && panel}

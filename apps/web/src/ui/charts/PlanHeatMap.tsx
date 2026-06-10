@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { WeekHeat } from "@holy-oly/core";
 import { maxLifts } from "@holy-oly/core";
 import { phaseColor } from "./phasePalette";
@@ -18,8 +19,10 @@ export interface HeatMapComp { name: string; day?: number }
  * = el pitch completo de la grilla (22px); el cuadrado visible mide 18 (compacto por diseño —
  * un target de 44px es inalcanzable en esta densidad; el panel de abajo corrige cualquier
  * mis-tap en un tap).
+ * memo: la grilla (~112 celdas) sólo re-renderiza cuando cambian sus props — los callers
+ * estabilizan onSelectDay/phaseIndexFor con useCallback para que el estado ajeno no la toque.
  */
-export function PlanHeatMap({ heat, hoy, selected, onSelectDay, phaseIndexFor, comps, firstDow = 0 }: {
+export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSelectDay, phaseIndexFor, comps, firstDow = 0 }: {
   heat: WeekHeat[];
   hoy: HeatMapPos | null;
   selected: HeatMapPos | null;
@@ -83,10 +86,10 @@ export function PlanHeatMap({ heat, hoy, selected, onSelectDay, phaseIndexFor, c
       })}
     </div>
   );
-}
+});
 
 /** Leyenda compacta del encoding mixto, derivada de HEAT_STOPS (una línea, envuelve si hace falta). */
-export function HeatLegend() {
+export const HeatLegend = memo(function HeatLegend() {
   const swStyle = (bg: string): React.CSSProperties => ({ width: 13, height: 9, borderRadius: 2, background: bg, display: "inline-block" });
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>
@@ -101,4 +104,4 @@ export function HeatLegend() {
       <span>compe</span>
     </div>
   );
-}
+});

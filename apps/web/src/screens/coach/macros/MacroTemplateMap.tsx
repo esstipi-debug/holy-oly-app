@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { Macrocycle } from "@holy-oly/core";
 import { MACRO_RECIPES, instantiatePrescription, planHeat, getMovement, phaseForWeek } from "@holy-oly/core";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../../ui/charts/PlanHeatMap";
@@ -17,6 +17,13 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
   const rows = useMemo(() => instantiatePrescription(MACRO_RECIPES, macro, totalWeeks), [macro, totalWeeks]);
   const heat = useMemo(() => (rows.length > 0 ? planHeat(rows, totalWeeks) : null), [rows, totalWeeks]);
   const [sel, setSel] = useState<HeatMapPos | null>(null);
+  // Identidades estables → el memo de PlanHeatMap sólo re-renderiza la grilla con cambios reales.
+  // (Antes del early-return: las reglas de hooks exigen el mismo orden en cada render.)
+  const phaseIdx = useCallback((w: number): number => {
+    const p = phaseForWeek(macro, w);
+    return p ? macro.phaseProfile.indexOf(p) : 0;
+  }, [macro]);
+  const selectDay = useCallback((w: number, d: number) => setSel({ week: w, day: d }), []);
 
   if (heat === null) {
     return (
@@ -27,10 +34,6 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
     );
   }
 
-  const phaseIdx = (w: number): number => {
-    const p = phaseForWeek(macro, w);
-    return p ? macro.phaseProfile.indexOf(p) : 0;
-  };
   const selPhase = sel ? phaseForWeek(macro, sel.week) : null;
   const selCell = sel ? (heat[sel.week - 1]?.days[sel.day] ?? null) : null;
   const exercises: DayDetailExercise[] = sel
@@ -49,7 +52,7 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
       <HeatLegend />
       <div style={{ marginTop: 8 }}>
         <PlanHeatMap heat={heat} hoy={null} selected={sel} comps={EMPTY_COMPS}
-          onSelectDay={(w, d) => setSel({ week: w, day: d })} phaseIndexFor={phaseIdx} />
+          onSelectDay={selectDay} phaseIndexFor={phaseIdx} />
       </div>
       {sel && selPhase && (selCell === null ? (
         <PlanDayDetail title={`Semana ${sel.week} · día ${sel.day + 1}`} phaseName={selPhase.name}

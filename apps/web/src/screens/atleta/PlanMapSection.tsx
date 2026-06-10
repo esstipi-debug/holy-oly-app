@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { MePlanView, SessionView, WeekHeat } from "@holy-oly/core";
 import { barKgForSexo } from "@holy-oly/core";
 import type { MeClient } from "../../data/meClient";
@@ -61,7 +61,9 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
     return m;
   }, [plan.comps]);
 
-  const phaseIdx = (w: number): number => plan.phases.findIndex((p) => w >= p.from && w <= p.to);
+  // Identidades estables → el memo de PlanHeatMap sólo re-renderiza la grilla con cambios reales.
+  const phaseIdx = useCallback((w: number): number => plan.phases.findIndex((p) => w >= p.from && w <= p.to), [plan.phases]);
+  const selectDay = useCallback((w: number, d: number) => { setSel({ week: w, day: d }); setDayError(false); }, []);
 
   const selPhase = sel ? plan.phases[phaseIdx(sel.week)] : undefined;
   const selCell = sel && heat ? (heat[sel.week - 1]?.days[sel.day] ?? null) : null;
@@ -122,8 +124,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
           <div role="status" aria-busy="true" style={{ fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, color: "var(--wl-muted)" }}>Cargando mapa…</div>
         ) : (
           <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow}
-            onSelectDay={(w, d) => { setSel({ week: w, day: d }); setDayError(false); }}
-            phaseIndexFor={phaseIdx} comps={comps} />
+            onSelectDay={selectDay} phaseIndexFor={phaseIdx} comps={comps} />
         )}
       </div>
       {heat !== null && panel}
