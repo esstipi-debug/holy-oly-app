@@ -1,12 +1,14 @@
 import type {
   Repository, Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleState, CycleContext, SessionLog, SessionView, PrescribedExercise, PrescriptionRow, WeekHeat,
+  PrCandidate, RmLift, RmUpdate,
 } from "@holy-oly/core";
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
-  PrescriptionRowsSchema,
+  PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema,
   MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
+  prCandidates, RM_LIFTS,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -72,6 +74,10 @@ export class LocalRepository implements Repository {
     const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
     const rows: PrescriptionRow[] = macro ? instantiatePrescription(MACRO_RECIPES, macro, totalWeeks) : [];
     this.s.set(KEYS.prescription(plan.atletaId), rows);
+    // SP5: cada asignación fija los 4 RMs → baseline del historial (mirror del API).
+    const today = new Date().toISOString().slice(0, 10);
+    const setAt = plan.startDate ?? today;
+    this.appendRmUpdates(plan.atletaId, RM_LIFTS.map((lift) => ({ lift, kg: plan.rms[lift], setAt, reason: "assign" as const })));
   }
   async getMedals(id: string): Promise<Medal[]> {
     const r = MedalsSchema.safeParse(this.s.getOptional<unknown>(KEYS.medals(id)));
@@ -115,6 +121,34 @@ export class LocalRepository implements Repository {
     const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
     if (totalWeeks === 0) return [];
     return planHeat(this.prescriptionRows(id), totalWeeks);
+  }
+
+  // ── SP5: RMs a mitad de ciclo (mirror del API). updateRms NO re-instancia. ──
+  private rmRows(id: string): RmUpdate[] {
+    const r = RmUpdatesSchema.safeParse(this.s.getOptional<unknown>(KEYS.rmUpdates(id)));
+    return r.success ? r.data : [];
+  }
+  private appendRmUpdates(id: string, rows: RmUpdate[]): void {
+    this.s.set(KEYS.rmUpdates(id), [...this.rmRows(id), ...rows]);
+  }
+  async updateRms(id: string, updates: { lift: RmLift; kg: number }[], reason: "manual" | "pr"): Promise<void> {
+    const plan = await this.getPlan(id);
+    if (!plan) throw new Error("sin plan");
+    const rms = { ...plan.rms };
+    for (const u of updates) rms[u.lift] = u.kg;
+    // Set directo del plan — NO savePlan (re-instanciaría y pisaría las ediciones del coach).
+    this.s.set(KEYS.plan(id), { ...plan, rms });
+    const today = new Date().toISOString().slice(0, 10);
+    this.appendRmUpdates(id, updates.map((u) => ({ lift: u.lift, kg: u.kg, setAt: today, reason })));
+  }
+  async getPrCandidates(id: string): Promise<PrCandidate[]> {
+    const plan = await this.getPlan(id);
+    if (!plan) return [];
+    const r = SessionActualsSchema.safeParse(this.s.getOptional<unknown>(KEYS.sessionActuals(id)));
+    return prCandidates(r.success ? r.data : [], plan.rms);
+  }
+  async getRmHistory(id: string): Promise<RmUpdate[]> {
+    return [...this.rmRows(id)].reverse(); // append-order → más nuevo primero
   }
 
   async getCycleShare(id: string): Promise<CycleShare> {

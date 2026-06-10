@@ -1,8 +1,9 @@
 import {
   RosterSchema, MonitorSeriesSchema, MedalsSchema, CompsSchema, SessionLogSchema, PlanSchema, CycleContextSchema,
-  SessionViewsSchema, WeekHeatsSchema,
+  SessionViewsSchema, WeekHeatsSchema, PrCandidatesSchema, RmUpdatesSchema,
   type Repository, type Atleta, type MonitorSeries, type Medal, type Competencia, type Plan,
   type CycleShare, type CycleContext, type SessionLog, type SessionView, type PrescribedExercise, type WeekHeat,
+  type PrCandidate, type RmLift, type RmUpdate,
 } from "@holy-oly/core";
 
 interface Parser<T> {
@@ -119,5 +120,16 @@ export class HttpRepository implements Repository {
   }
   async setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void> {
     return this.mutate(`${this.athletePath(id, "prescription")}/${week}/${sessionIdx}`, "PUT", exercises);
+  }
+
+  // ── SP5: RMs a mitad de ciclo (coach-only en el server). ──
+  async updateRms(id: string, updates: { lift: RmLift; kg: number }[], reason: "manual" | "pr"): Promise<void> {
+    return this.mutate(this.athletePath(id, "rms"), "PUT", { updates, reason });
+  }
+  async getPrCandidates(id: string): Promise<PrCandidate[]> {
+    return this.get(this.athletePath(id, "pr-candidates"), PrCandidatesSchema);
+  }
+  async getRmHistory(id: string): Promise<RmUpdate[]> {
+    return this.get(this.athletePath(id, "rm-history"), RmUpdatesSchema);
   }
 }

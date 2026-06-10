@@ -12,4 +12,6 @@ export const KEYS = {
   // Athlete-self stores (offline `LocalMeClient`, mirroring the API's DayLog / SessionActual tables).
   dayLog: (id: string) => `ho:daylog:${id}`,
   sessionActuals: (id: string) => `ho:actuals:${id}`,
+  // Historial append-only de RMs (SP5), espejo de la tabla RmUpdate del API.
+  rmUpdates: (id: string) => `ho:rmupdates:${id}`,
 } as const;

@@ -1,6 +1,7 @@
 import type {
   Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleContext, SessionLog, SessionView, PrescribedExercise, WeekHeat,
+  PrCandidate, RmLift, RmUpdate,
 } from "./types";
 
 export interface Repository {
@@ -33,4 +34,11 @@ export interface Repository {
   /** Replace one session's exercises (coach edit). Valid after savePlan has instantiated the
    *  athlete's prescription; coach-authorized server-side. */
   setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void>;
+  /** Sube/edita 1+ RMs del plan a mitad de ciclo SIN re-instanciar (el kg derivado recae solo).
+   *  `reason`: "manual" (edición del coach) | "pr" (confirmación de un PR detectado). */
+  updateRms(id: string, updates: { lift: RmLift; kg: number }[], reason: "manual" | "pr"): Promise<void>;
+  /** Sets hechos que SUPERAN el RM vigente (sugerencias de PR; ≤1 por lift). [] sin plan. */
+  getPrCandidates(id: string): Promise<PrCandidate[]>;
+  /** Historial append-only de RMs, más nuevo primero. [] sin historial (planes pre-SP5). */
+  getRmHistory(id: string): Promise<RmUpdate[]>;
 }
