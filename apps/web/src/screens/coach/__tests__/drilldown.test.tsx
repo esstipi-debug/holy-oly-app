@@ -88,6 +88,21 @@ test("no-data athlete (Tomás) shows an empty state, not charts", async () => {
   expect(screen.getByText(/sin datos de monitoreo/i)).toBeInTheDocument();
 });
 
+test("ciclo: chip redactado con lúteo REAL (Mara, share full) y CERO fuga de fase/ventanas en el coach", async () => {
+  const { container } = renderAt("mv");
+  await waitFor(() => expect(screen.getByText(/Ciclo · compartido — contexto lúteo hoy:/)).toBeInTheDocument());
+  // seed: día ~20 de un ciclo de 28 → lútea hoy = sí (computado, no placeholder)
+  expect(screen.getByText(/contexto lúteo hoy: sí/)).toBeInTheDocument();
+  // No-leak: el DOM del coach jamás contiene ventanas/fechas/proyección del ciclo (eso es de la atleta).
+  expect(container.textContent ?? "").not.toMatch(/per[íi]odo|proyecci|lastPeriod/i);
+});
+
+test("ciclo: share mínimo → chip sin lúteo (Tomás, default min del seed)", async () => {
+  renderAt("tl");
+  await waitFor(() => expect(screen.getByText(/Ciclo · compartido \(mínimo\)/)).toBeInTheDocument());
+  expect(screen.queryByText(/contexto lúteo/)).toBeNull();
+});
+
 test("shows an error state when the athlete fails to load", async () => {
   class FailingRepo extends LocalRepository {
     async getAthlete(): Promise<Atleta | undefined> { throw new Error("boom"); }

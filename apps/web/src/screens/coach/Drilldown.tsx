@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
-import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type Medal, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
+import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type CycleContext, type Macrocycle, type Medal, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
 import { AcwrChart } from "../../ui/charts/AcwrChart";
 import { LoadChart } from "../../ui/charts/LoadChart";
@@ -59,13 +59,16 @@ export function Drilldown() {
     void repo.getPlan(id).then((p) => { if (p) setPlan(p); }, () => {});
   }, [repo, id]);
 
+  // Ciclo redactado del atleta (slice ciclo-visible): {share, lúteo-hoy, salud, fiable} — jamás fase/fecha.
+  const [cycleCtx, setCycleCtx] = useState<CycleContext | undefined>(undefined);
+
   useEffect(() => {
     let on = true;
     setLoaded(false); setError(false); setAsAthlete(false); // reset on athlete change (incl. the athlete-view toggle)
-    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id)])
-      .then(([a, s, m, c, sl, pl]) => {
+    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id), repo.getCycleContext(id)])
+      .then(([a, s, m, c, sl, pl, cy]) => {
         if (!on) return;
-        setAthlete(a); setSeries(s); setMedals(m); setComps(c); setSessionLog(sl); setPlan(pl); setLoaded(true);
+        setAthlete(a); setSeries(s); setMedals(m); setComps(c); setSessionLog(sl); setPlan(pl); setCycleCtx(cy); setLoaded(true);
       })
       .catch(() => { if (on) { setError(true); setLoaded(true); } });
     return () => { on = false; };
@@ -185,6 +188,17 @@ export function Drilldown() {
       ) : (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", margin: "16px 0" }}>
           Este atleta aún sin datos de monitoreo. Cuando registre HRV/FC/carga, aparecerán acá.
+        </div>
+      )}
+
+      {cycleCtx && (
+        // Contrato redactado, paleta NEUTRA (jamás la del semáforo — el ciclo no es señal del estado).
+        <div style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>
+          Ciclo · {cycleCtx.share === "full"
+            ? `compartido — contexto lúteo hoy: ${cycleCtx.inLutealNow == null ? "—" : cycleCtx.inLutealNow ? "sí" : "no"}`
+            : "compartido (mínimo)"}
+          {cycleCtx.health === "referral" ? " · derivación sugerida" : ""}
+          {!cycleCtx.reliable && cycleCtx.health !== "referral" ? " · registro irregular" : ""}
         </div>
       )}
 
