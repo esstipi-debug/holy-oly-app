@@ -6,9 +6,15 @@ const RMS: RM = { arranque: 80, envion: 100, sentadilla: 140, frente: 110 };
 const base = { week: 1, sessionIdx: 0, order: 0, done: true } as const;
 
 describe("prCandidates", () => {
-  it("set hecho con kg > RM del rmRef → candidato (con nombre del movimiento)", () => {
+  it("set hecho con kg > RM del rmRef → candidato (con nombre del movimiento y fecha real)", () => {
+    const out = prCandidates([{ ...base, movementId: "arranque", actualKg: 85, doneAt: "2026-06-08" }], RMS);
+    expect(out).toEqual([{ lift: "arranque", movementId: "arranque", movementName: "Arranque", kg: 85, week: 1, sessionIdx: 0, doneAt: "2026-06-08" }]);
+  });
+
+  it("sin doneAt (actual viejo) el candidato sale sin fecha — week queda como fallback", () => {
     const out = prCandidates([{ ...base, movementId: "arranque", actualKg: 85 }], RMS);
-    expect(out).toEqual([{ lift: "arranque", movementId: "arranque", movementName: "Arranque", kg: 85, week: 1, sessionIdx: 0 }]);
+    expect(out[0]!.doneAt).toBeUndefined();
+    expect(out[0]!.week).toBe(1);
   });
 
   it("estricto: igualar el RM NO es PR (auto-resuelve al confirmar)", () => {

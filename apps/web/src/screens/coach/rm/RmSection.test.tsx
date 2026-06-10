@@ -9,7 +9,9 @@ const PLAN: Plan = {
   atletaId: "x1", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01",
   rms: { arranque: 80, envion: 100, sentadilla: 140, frente: 110 }, comps: [],
 };
-const TODAY = "2026-06-10"; // 10 semanas después del startDate
+// El baseline de savePlan se estampa con la fecha REAL del sistema (la fecha del acto) →
+// el "today" del componente usa la misma fuente para que la vigencia sea determinista.
+const TODAY = new Date().toISOString().slice(0, 10);
 
 async function setup(actuals: SessionActual[] = [], onRmsChange = () => {}) {
   const store = new MemStorage();
@@ -24,7 +26,7 @@ async function setup(actuals: SessionActual[] = [], onRmsChange = () => {}) {
   return repo;
 }
 
-test("muestra los 4 RMs con su vigencia (fijado hace N sem)", async () => {
+test("muestra los 4 RMs con su vigencia (baseline = el día de la asignación, no el startDate)", async () => {
   await setup();
   await waitFor(() => expect(screen.getByText("Arranque")).toBeInTheDocument());
   expect(screen.getByText("Envión")).toBeInTheDocument();
@@ -32,7 +34,8 @@ test("muestra los 4 RMs con su vigencia (fijado hace N sem)", async () => {
   expect(screen.getByText("Frente")).toBeInTheDocument();
   expect(screen.getByText("80 kg")).toBeInTheDocument();
   expect(screen.getByText("140 kg")).toBeInTheDocument();
-  expect(screen.getAllByText("fijado hace 10 sem")).toHaveLength(4);
+  // Recién asignado → "esta semana" (si el baseline usara el startDate de abril sería falso-stale).
+  expect(screen.getAllByText("fijado esta semana")).toHaveLength(4);
 });
 
 test("PR por confirmar: card con movimiento + kg + semana; confirmar sube el RM con reason 'pr' y se auto-resuelve", async () => {
@@ -52,13 +55,14 @@ test("PR por confirmar: card con movimiento + kg + semana; confirmar sube el RM 
   await waitFor(async () => expect((await repo.getPlan("x1"))!.rms.arranque).toBe(88));
   expect((await repo.getRmHistory("x1"))[0]).toMatchObject({ lift: "arranque", kg: 88, reason: "pr" });
   expect(changed).toBe(1);
-  await waitFor(() => expect(screen.queryByText(/PRs por confirmar/i)).not.toBeInTheDocument()); // 86 > 88 es falso → resuelto
+  // 86 < 88 → el set ya no SUPERA el RM nuevo (regla estricta de core) → el candidato se auto-resuelve.
+  await waitFor(() => expect(screen.queryByText(/PRs por confirmar/i)).not.toBeInTheDocument());
 });
 
 test("editar manda SOLO los lifts cambiados con reason 'manual'", async () => {
   const repo = await setup();
   await waitFor(() => expect(screen.getByText("Arranque")).toBeInTheDocument());
-  fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+  fireEvent.click(screen.getByRole("button", { name: "Editar RMs" }));
   const envion = await screen.findByLabelText("Envión");
   fireEvent.change(envion, { target: { value: "105" } });
   fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
@@ -81,7 +85,7 @@ test("guardar sin cambios queda deshabilitado; error del repo → mensaje y el s
       <RmSection athleteId="x1" plan={PLAN} today={TODAY} onRmsChange={() => {}} />
     </RepositoryProvider>,
   );
-  fireEvent.click(await screen.findByRole("button", { name: "Editar" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Editar RMs" }));
   const save = await screen.findByRole("button", { name: "Guardar" });
   expect(save).toBeDisabled(); // sin cambios
   fireEvent.change(screen.getByLabelText("Arranque"), { target: { value: "90" } });

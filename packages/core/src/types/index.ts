@@ -252,7 +252,8 @@ export type RmLift = "arranque" | "envion" | "sentadilla" | "frente";
 export type RmReason = "assign" | "manual" | "pr";
 /** Una fila del historial append-only de RMs (la curva del 1RM). `setAt` ISO YYYY-MM-DD. */
 export interface RmUpdate { lift: RmLift; kg: number; setAt: string; reason: RmReason; }
-/** Set hecho que SUPERA el RM vigente del lift (rmRef del movimiento) — sugerencia al coach. */
-export interface PrCandidate { lift: RmLift; movementId: string; movementName: string; kg: number; week: number; sessionIdx: number; }
+/** Set hecho que SUPERA el RM vigente del lift (rmRef del movimiento) — sugerencia al coach.
+ *  `doneAt` = fecha real del levantamiento (verdad anclada a fecha); `week` queda como fallback. */
+export interface PrCandidate { lift: RmLift; movementId: string; movementName: string; kg: number; week: number; sessionIdx: number; doneAt?: string; }
 /** Vigencia por lift: cuándo se fijó y hace cuántas semanas ({} = sin dato, nunca inventar). */
 export type RmVigencia = Record<RmLift, { setAt?: string; weeksAgo?: number }>;

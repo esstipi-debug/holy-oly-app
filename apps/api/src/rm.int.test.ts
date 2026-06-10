@@ -15,7 +15,8 @@ const START = "2026-03-04";
 const PLAN = { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: START, rms: RMS, comps: [] };
 
 interface HistRow { lift: string; kg: number; setAt: string; reason: string }
-interface Candidate { lift: string; movementId: string; movementName: string; kg: number; week: number; sessionIdx: number }
+interface Candidate { lift: string; movementId: string; movementName: string; kg: number; week: number; sessionIdx: number; doneAt?: string }
+const TODAY = new Date().toISOString().slice(0, 10);
 
 describe("API integration — RMs (SP5: updateRms / historial / PRs)", () => {
   let app: FastifyInstance;
@@ -28,16 +29,18 @@ describe("API integration — RMs (SP5: updateRms / historial / PRs)", () => {
     return sess(res);
   };
 
-  it("savePlan siembra 4 baselines (reason assign, setAt = startDate)", async () => {
+  it("savePlan siembra 4 baselines (reason assign, setAt = HOY — la fecha del acto, no el startDate)", async () => {
     const coach = await login("coach@holyoly.dev");
     expect((await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach, payload: PLAN })).statusCode).toBe(200);
 
     const res = await app.inject({ method: "GET", url: "/athletes/mv/rm-history", headers: coach });
     expect(res.statusCode).toBe(200);
     const hist = res.json() as HistRow[];
-    const baselines = hist.filter((h) => h.reason === "assign" && h.setAt === START && h.kg >= 81 && h.kg <= 141);
+    // setAt = today: con anclaje por compe el startDate cae en el pasado → retro-fechar sería falso-stale.
+    const baselines = hist.filter((h) => h.reason === "assign" && h.setAt === TODAY && h.kg >= 81 && h.kg <= 141);
     expect(new Set(baselines.map((b) => b.lift))).toEqual(new Set(["arranque", "envion", "sentadilla", "frente"]));
     expect(baselines.find((b) => b.lift === "arranque")!.kg).toBe(81);
+    expect(hist.some((h) => h.setAt === START)).toBe(false);
   });
 
   it("PUT rms: cascada de kg + prescripción intacta (la edición del coach sobrevive) + historial al frente", async () => {
@@ -85,6 +88,7 @@ describe("API integration — RMs (SP5: updateRms / historial / PRs)", () => {
     expect(arr.kg).toBe(86);
     expect(arr.week).toBe(2);
     expect(arr.movementName).toMatch(/potencia/i);
+    expect(arr.doneAt).toBe(TODAY); // procedencia anclada a fecha real (la estampa el write de /me/session)
 
     // Confirmar: el coach entra el valor final (88) con reason "pr" → el candidato desaparece (86 > 88 es falso).
     expect((await app.inject({ method: "PUT", url: "/athletes/mv/rms", headers: coach,

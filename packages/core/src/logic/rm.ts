@@ -25,7 +25,7 @@ export function prCandidates(actuals: SessionActual[], rms: RM): PrCandidate[] {
     if (a.actualKg <= rms[lift]) continue;
     const cur = best.get(lift);
     if (!cur || a.actualKg > cur.kg || (a.actualKg === cur.kg && a.week > cur.week)) {
-      best.set(lift, { lift, movementId: mv.id, movementName: mv.name, kg: a.actualKg, week: a.week, sessionIdx: a.sessionIdx });
+      best.set(lift, { lift, movementId: mv.id, movementName: mv.name, kg: a.actualKg, week: a.week, sessionIdx: a.sessionIdx, doneAt: a.doneAt });
     }
   }
   return RM_LIFTS.flatMap((l) => { const c = best.get(l); return c ? [c] : []; });

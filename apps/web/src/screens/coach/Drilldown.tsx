@@ -53,9 +53,10 @@ export function Drilldown() {
   const loadWeek = useCallback((w: number) => repo.getPrescriptionWeek(id, w), [repo, id]);
   // SP5: tras subir un RM, remontar las secciones que cachean kg derivado (mapa + sesiones).
   const [rmsStamp, setRmsStamp] = useState(0);
-  const onRmsChange = useCallback(async () => {
-    setPlan(await repo.getPlan(id));
-    setRmsStamp((s) => s + 1);
+  const onRmsChange = useCallback(() => {
+    setRmsStamp((s) => s + 1); // primero: las secciones remontadas refetchean su kg pase lo que pase
+    // Best-effort: si este refetch falla queda el plan anterior (la próxima carga lo corrige).
+    void repo.getPlan(id).then((p) => { if (p) setPlan(p); }, () => {});
   }, [repo, id]);
 
   useEffect(() => {
@@ -220,7 +221,7 @@ export function Drilldown() {
 
       <SessionsSection key={`ses-${rmsStamp}`} athleteId={athlete.id} hoyWeek={hoyWeek} totalWeeks={maxWeek} />
 
-      {plan && <RmSection athleteId={id} plan={plan} today={today} onRmsChange={() => void onRmsChange()} />}
+      {plan && <RmSection athleteId={id} plan={plan} today={today} onRmsChange={onRmsChange} />}
 
       <div style={{ marginTop: 16, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Palmarés · competencias</div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0" }}>

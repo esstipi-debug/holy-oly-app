@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PrCandidate, RM, RmLift } from "@holy-oly/core";
 import { RM_LIFTS } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
+import { isoDateLabel } from "../../../ui/charts/planDates";
 
 export const RM_LABELS: Record<RmLift, string> = {
   arranque: "Arranque", envion: "Envión", sentadilla: "Sentadilla", frente: "Frente",
@@ -36,9 +37,15 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
 
-  // Re-armar el borrador al abrir (manual: los 4 RMs vigentes; pr: el kg del candidato).
+  // Re-armar el borrador SOLO al abrir (false→true). Si `rms` cambia con el sheet abierto
+  // (p.ej. un refetch del plan en el padre), NO pisar lo que el coach está tipeando.
+  const wasOpen = useRef(false);
+  // Ref (no estado) contra el doble-submit: dos clicks en el mismo tick ven `saving=false` ambos.
+  const submittingRef = useRef(false);
   useEffect(() => {
-    if (!open) return;
+    if (!open) { wasOpen.current = false; return; }
+    if (wasOpen.current) return;
+    wasOpen.current = true;
     const base = toDraft(rms);
     if (mode.kind === "pr") base[mode.candidate.lift] = String(mode.candidate.kg);
     setDraft(base);
@@ -55,6 +62,8 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
   const canSave = !saving && lifts.every((l) => validKg(draft[l])) && (updates.length > 0 || prSameKg);
 
   async function submit(): Promise<void> {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     const reason = mode.kind === "pr" ? ("pr" as const) : ("manual" as const);
     const toSend = updates.length > 0 ? updates : lifts.map((l) => ({ lift: l, kg: Number(draft[l]) }));
     setSaving(true);
@@ -65,6 +74,7 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
     } catch {
       setSaveError(true);
     } finally {
+      submittingRef.current = false;
       setSaving(false);
     }
   }
@@ -76,7 +86,7 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
       </div>
       {mode.kind === "pr" && (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 6 }}>
-          {mode.candidate.movementName} · levantó {mode.candidate.kg} kg · sem {mode.candidate.week}
+          {mode.candidate.movementName} · levantó {mode.candidate.kg} kg · {mode.candidate.doneAt ? isoDateLabel(mode.candidate.doneAt) : `sem ${mode.candidate.week}`}
           <br />El RM final lo ponés vos (si lo hizo por reps, el 1RM es más).
         </div>
       )}

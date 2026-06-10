@@ -32,11 +32,12 @@ describe("athlete data export + account deletion (D3/D4)", () => {
     const res = await app.inject({ method: "GET", url: "/me/export", headers: mara });
     expect(res.statusCode).toBe(200);
     expect(String(res.headers["content-disposition"] ?? "")).toContain("attachment");
-    const data = res.json() as { dayLogs: unknown[]; cycle: unknown; plan: unknown };
+    const data = res.json() as { dayLogs: unknown[]; cycle: unknown; plan: unknown; rmUpdates: unknown[] };
     expect(Array.isArray(data.dayLogs)).toBe(true);
     expect(data.dayLogs.length).toBeGreaterThan(0);
     expect(data.cycle).toBeTruthy(); // the athlete gets their OWN raw cycle (they own it)
     expect(data.plan).toBeTruthy();
+    expect(Array.isArray(data.rmUpdates)).toBe(true); // SP5: la curva del 1RM también es suya (D3)
   });
 
   it("DELETE /me/account removes the user + cascades all athlete data (D4)", async () => {

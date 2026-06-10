@@ -16,6 +16,12 @@ export function dayDateLabel(startDate: string, week: number, day: number): stri
   return `${DOW[(d.getUTCDay() + 6) % 7]} ${d.getUTCDate()} ${MES[d.getUTCMonth()]!}`;
 }
 
+/** "8 jun" — etiqueta corta de una fecha ISO suelta (procedencia de PRs, etc.). */
+export function isoDateLabel(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  return `${d.getUTCDate()} ${MES[d.getUTCMonth()]!}`;
+}
+
 const DOW_SHORT = ["L", "M", "X", "J", "V", "S", "D"];
 
 /** Offset 0..6 de una fecha dentro de la semana `week` del macro; null si cae fuera de ella.

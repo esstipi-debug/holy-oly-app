@@ -75,8 +75,9 @@ export class LocalRepository implements Repository {
     const rows: PrescriptionRow[] = macro ? instantiatePrescription(MACRO_RECIPES, macro, totalWeeks) : [];
     this.s.set(KEYS.prescription(plan.atletaId), rows);
     // SP5: cada asignación fija los 4 RMs → baseline del historial (mirror del API).
-    const today = new Date().toISOString().slice(0, 10);
-    const setAt = plan.startDate ?? today;
+    // setAt = HOY (la fecha del acto de fijarlos, no el startDate — que con anclaje por compe
+    // cae en el pasado y retro-fechar mostraría falso-stale sobre RMs recién tipeados).
+    const setAt = new Date().toISOString().slice(0, 10);
     this.appendRmUpdates(plan.atletaId, RM_LIFTS.map((lift) => ({ lift, kg: plan.rms[lift], setAt, reason: "assign" as const })));
   }
   async getMedals(id: string): Promise<Medal[]> {

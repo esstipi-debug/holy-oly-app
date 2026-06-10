@@ -16,12 +16,14 @@ function setup(actuals: SessionActual[] = []) {
 }
 
 describe("LocalRepository — SP5 RMs", () => {
-  it("savePlan siembra 4 baselines (reason assign, setAt = startDate)", async () => {
+  it("savePlan siembra 4 baselines (reason assign, setAt = HOY — la fecha del acto, no el startDate)", async () => {
     const { repo } = setup();
     await repo.savePlan(PLAN);
     const hist = await repo.getRmHistory("x1");
+    const today = new Date().toISOString().slice(0, 10);
     expect(hist).toHaveLength(4);
-    expect(hist.every((h) => h.reason === "assign" && h.setAt === "2026-04-01")).toBe(true);
+    // setAt = today: con anclaje por compe el startDate cae en el pasado → retro-fechar sería falso-stale.
+    expect(hist.every((h) => h.reason === "assign" && h.setAt === today)).toBe(true);
     expect(hist.find((h) => h.lift === "sentadilla")!.kg).toBe(140);
   });
 

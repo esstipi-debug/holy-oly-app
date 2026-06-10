@@ -108,10 +108,13 @@ export async function savePlan(prisma: PrismaClient, athleteId: string, plan: Pl
   await prisma.$transaction(async (tx) => {
     await tx.plan.upsert({ where: { athleteId }, create: { athleteId, ...data }, update: data });
     await instantiateForPlan(tx, athleteId, plan);
-    // SP5: cada asignación fija los 4 RMs → baseline del historial (vigencia honesta).
-    const setAt = plan.startDate ?? today;
+    // SP5: cada asignación fija los 4 RMs → baseline del historial. `setAt = today` (la fecha del
+    // ACTO de fijarlos): con el anclaje por compe el startDate cae en el pasado de forma rutinaria
+    // y retro-fechar el baseline mostraría "fijado hace N sem" sobre RMs recién tipeados (falso-stale)
+    // además de romper el invariante "última RmUpdate por lift == Plan.rms" al re-asignar.
+    // startDate queda SOLO como fallback de rmVigencia para planes pre-SP5 (sin historial).
     await tx.rmUpdate.createMany({
-      data: RM_LIFTS.map((lift) => ({ athleteId, lift, kg: plan.rms[lift], setAt, reason: "assign" })),
+      data: RM_LIFTS.map((lift) => ({ athleteId, lift, kg: plan.rms[lift], setAt: today, reason: "assign" })),
     });
   });
 }
@@ -337,7 +340,7 @@ export async function getRmHistory(prisma: PrismaClient, athleteId: string): Pro
 
 /** D3: everything the athlete owns, for a self-service data export (the athlete gets RAW cycle). */
 export async function exportAthleteData(prisma: PrismaClient, athleteId: string): Promise<unknown> {
-  const [athlete, plan, cycle, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks] =
+  const [athlete, plan, cycle, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates] =
     await Promise.all([
       prisma.athlete.findUnique({ where: { id: athleteId } }),
       prisma.plan.findUnique({ where: { athleteId } }),
@@ -349,12 +352,14 @@ export async function exportAthleteData(prisma: PrismaClient, athleteId: string)
       prisma.prescribedExercise.findMany({ where: { athleteId } }),
       prisma.monitorWeek.findMany({ where: { athleteId }, include: { items: true } }),
       prisma.sessionMark.findMany({ where: { athleteId } }),
+      // SP5: la curva del 1RM es dato del atleta → viaja en su export (D3).
+      prisma.rmUpdate.findMany({ where: { athleteId }, orderBy: [{ setAt: "asc" }, { createdAt: "asc" }] }),
     ]);
   // The athlete owns their cycle → return it decrypted (raw values), not redacted.
   const cycleRaw = cycle
     ? { ...cycle, share: decryptAtRest(cycle.share), state: decryptAtRest(cycle.state) }
     : null;
-  return { athlete, plan, cycle: cycleRaw, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks };
+  return { athlete, plan, cycle: cycleRaw, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates };
 }
 
 /**

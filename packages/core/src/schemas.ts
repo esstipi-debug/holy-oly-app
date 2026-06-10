@@ -296,6 +296,7 @@ export const PrCandidateSchema = z.object({
   kg: z.number().positive(),
   week: z.number().int().min(1).max(104),
   sessionIdx: z.number().int().min(0).max(13),
+  doneAt: IsoDateSchema.optional(),
 });
 export const PrCandidatesSchema = z.array(PrCandidateSchema).max(4);
 

@@ -76,7 +76,9 @@ Valores **verificados contra `packages/core/src/logic/`**. Si el código cambió
 - *Se ve como:* inventar discos de 2.5/5, o tratar la suma de discos como la verdad en vez del kg.
 
 ### Semáforo — qué lo dispara y qué NO
-- El estado (ok/warn/alert) sale de **ACWR + recuperación + bienestar + IMR + vigencia 1RM**. El **ciclo menstrual NO es una sexta señal** (§3). *Se ve como:* meter el ciclo (o cualquier señal nueva) al cálculo del semáforo.
+- El estado (ok/warn/alert) sale de **worse-of(carga ACWR, recuperación)** — `seriesState`, `monitor.ts:86`. Bienestar e IMR se leen en sus propios charts (contexto), no entran al cálculo hoy.
+- La **vigencia del 1RM** (SP5) es **señal coach-only del drill-down** ("fijado hace N sem", hint a ≥12 sem): **NO entra al semáforo hoy**; cablearla sería un diseño aparte (tocaría la disciplina de `none`), no un "de pasada".
+- El **ciclo menstrual NUNCA es señal del semáforo** (§3). *Se ve como:* meter el ciclo (o cualquier señal nueva) al cálculo del semáforo sin diseño explícito.
 
 ---
 
