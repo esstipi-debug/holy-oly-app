@@ -1,10 +1,10 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { MACROCYCLES, type Atleta, type Plan } from "@holy-oly/core";
+import { MACROCYCLES, weekOfDate, type Atleta, type Plan } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { MacroPeriodization } from "../../../ui/charts/MacroPeriodization";
 import { LoadMeters } from "./LoadMeters";
-import { AssignSheet } from "./AssignSheet";
+import { AssignSheet, type AssignComp } from "./AssignSheet";
 import { levelLabel } from "./macroFilter";
 
 const page: CSSProperties = {
@@ -54,8 +54,20 @@ export function MacroDetail() {
   if (!macro) return <Navigate to="/coach/macros" replace />;
   const m = macro;
 
-  async function onAssign(plan: Plan): Promise<void> {
+  async function onAssign(plan: Plan, comp?: AssignComp): Promise<void> {
     await repo.savePlan(plan); // throws propagate to the sheet's submit handler
+    // Las semanas de las comps se DERIVAN del startDate: al (re)anclar el plan hay que
+    // recalcularlas (si no quedan desincronizadas), y la asignación por competencia crea la
+    // suya — timeline, calendario-mapa y taper la ven al instante.
+    const totalWeeks = m.phaseProfile[m.phaseProfile.length - 1]?.weeks[1] ?? 0;
+    const existing = await repo.getComps(plan.atletaId);
+    const recomputed = plan.startDate != null && totalWeeks > 0
+      ? existing.map((c) => (c.date != null ? { ...c, week: weekOfDate(plan.startDate!, c.date, totalWeeks) } : c))
+      : existing;
+    const next = comp
+      ? [...recomputed.filter((c) => !(c.date === comp.date && c.name === comp.name)), comp]
+      : recomputed;
+    await repo.setComps(plan.atletaId, next);
     setAssignOpen(false);
     setToast(`✓ ${m.name} asignado a ${athletes.find((a) => a.id === plan.atletaId)?.nombre ?? "el atleta"}`);
     window.setTimeout(() => setToast(null), 2800);

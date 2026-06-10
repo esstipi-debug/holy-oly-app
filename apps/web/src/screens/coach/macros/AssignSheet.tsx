@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import type { Atleta, Macrocycle, Plan } from "@holy-oly/core";
+import { anchorPlanToComp } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 
 const label: CSSProperties = {
@@ -11,6 +12,7 @@ const input: CSSProperties = {
   border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-surface)",
   color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontSize: 15,
 };
+const strong: CSSProperties = { color: "var(--wl-text)", fontWeight: 700 };
 
 const RM_FIELDS = [
   { key: "arranque", label: "Arranque" },
@@ -26,41 +28,67 @@ const validKg = (s: string): boolean => { const n = Number(s); return Number.isF
 
 const todayISO = (): string => new Date().toISOString().slice(0, 10);
 
-/** Coach assigns this macrocycle to one of their athletes: pick athlete + start date + RMs → savePlan. */
+/** La competencia que la asignación por-compe crea junto al plan. */
+export interface AssignComp { name: string; date: string; week: number }
+
+/**
+ * Coach asigna este macro a un atleta. Ancla por COMPETENCIA (default — el coach cuenta hacia
+ * atrás: el pico del macro cae en la semana de la compe; si no alcanza completo, se entra en la
+ * semana X salteando acumulación) o por fecha de inicio (hacia adelante, el modo clásico).
+ */
 export function AssignSheet({
-  open, onClose, macro, athletes, onAssign,
+  open, onClose, macro, athletes, onAssign, today = todayISO(),
 }: {
   open: boolean;
   onClose: () => void;
   macro: Macrocycle;
   athletes: Atleta[];
-  onAssign: (plan: Plan) => Promise<void>;
+  onAssign: (plan: Plan, comp?: AssignComp) => Promise<void>;
+  /** Inyectable para tests deterministas; default = hoy real. */
+  today?: string;
 }) {
+  const [mode, setMode] = useState<"competencia" | "inicio">("competencia");
   const [atletaId, setAtletaId] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState(todayISO);
+  const [startDate, setStartDate] = useState(today);
+  const [compName, setCompName] = useState("");
+  const [compDate, setCompDate] = useState("");
   const [rms, setRms] = useState<RmDraft>(EMPTY_RMS);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const totalWeeks = macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
+  // La compe se cuadra con el PICO del macro; sin pico declarado, con la última semana.
+  const anchorWeek = macro.peaks && macro.peakWeek != null ? macro.peakWeek : totalWeeks;
+  const anchor = mode === "competencia" && compDate !== "" && totalWeeks > 0
+    ? anchorPlanToComp(compDate, anchorWeek, totalWeeks, today)
+    : null;
+
   const rmsValid = RM_FIELDS.every((f) => validKg(rms[f.key]));
-  const canSubmit = atletaId != null && rmsValid && !busy;
+  const compReady = compName.trim().length > 0 && anchor !== null && anchor.status !== "pasada";
+  const canSubmit = atletaId != null && rmsValid && !busy && (mode === "inicio" || compReady);
 
   async function submit(): Promise<void> {
-    if (!atletaId) return;
+    if (!atletaId || (mode === "competencia" && anchor === null)) return;
     setError(null);
     setBusy(true);
     try {
-      await onAssign({
-        atletaId, macroId: macro.id, startWeek: 1, startDate,
-        rms: { arranque: Number(rms.arranque), envion: Number(rms.envion), sentadilla: Number(rms.sentadilla), frente: Number(rms.frente) },
-        comps: [],
-      });
+      const planStart = mode === "competencia" ? anchor!.startDate : startDate;
+      await onAssign(
+        {
+          atletaId, macroId: macro.id, startWeek: 1, startDate: planStart,
+          rms: { arranque: Number(rms.arranque), envion: Number(rms.envion), sentadilla: Number(rms.sentadilla), frente: Number(rms.frente) },
+          comps: [],
+        },
+        mode === "competencia" ? { name: compName.trim(), date: compDate, week: anchorWeek } : undefined,
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo asignar");
     } finally {
       setBusy(false);
     }
   }
+
+  const picoLabel = anchorWeek !== totalWeeks ? ` (pico del macro)` : "";
 
   return (
     <BottomSheet open={open} onClose={onClose}>
@@ -89,8 +117,54 @@ export function AssignSheet({
         )}
       </div>
 
-      <label style={label} htmlFor="assign-date">Fecha de inicio</label>
-      <input id="assign-date" type="date" aria-label="Fecha de inicio" style={input} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+      <label style={label}>Anclar por</label>
+      <div role="group" aria-label="Anclar por" style={{ display: "flex", gap: 0, marginTop: 6, width: "fit-content", background: "var(--wl-surface)", borderRadius: 10, padding: 3, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+        {([["competencia", "Competencia"], ["inicio", "Fecha de inicio"]] as const).map(([key, lbl]) => {
+          const on = mode === key;
+          return (
+            <button key={key} type="button" aria-pressed={on} onClick={() => setMode(key)}
+              style={{ minHeight: 34, padding: "0 14px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, background: on ? "var(--wl-accent)" : "transparent", color: on ? "var(--wl-bg)" : "var(--wl-muted)" }}>
+              {lbl}
+            </button>
+          );
+        })}
+      </div>
+
+      {mode === "competencia" ? (
+        <>
+          <label style={label} htmlFor="assign-comp-name">Competencia</label>
+          <input id="assign-comp-name" aria-label="Nombre de la competencia" placeholder="Nacional, Sudamericano…"
+            style={input} value={compName} onChange={(e) => setCompName(e.target.value)} />
+          <label style={label} htmlFor="assign-comp-date">Fecha de la competencia</label>
+          <input id="assign-comp-date" type="date" aria-label="Fecha de la competencia" style={input}
+            value={compDate} onChange={(e) => setCompDate(e.target.value)} />
+
+          {anchor && (
+            <div role="status" style={{
+              marginTop: 10, padding: "9px 11px", borderRadius: 10, background: "var(--wl-surface)",
+              border: "1px solid color-mix(in srgb,var(--wl-text) 10%,transparent)",
+              fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.6,
+              color: anchor.status === "pasada" ? "#ff3b46" : "var(--wl-muted)",
+            }}>
+              {anchor.status === "pasada" && <>Esa fecha ya pasó — elegí una futura.</>}
+              {anchor.status === "completo" && (
+                <>Arranca el lunes <b style={strong}>{anchor.startDate}</b> · macro completo · la compe cae en la <b style={strong}>semana {anchorWeek}</b>{picoLabel}.</>
+              )}
+              {anchor.status === "recortado" && (
+                <>No alcanza el macro completo: hoy = <b style={strong}>semana {anchor.entryWeek}</b> de {totalWeeks} → entrás con <b style={strong}>{anchorWeek - anchor.entryWeek + 1} semana{anchorWeek - anchor.entryWeek + 1 === 1 ? "" : "s"}</b> hasta la compe (semana {anchorWeek}{picoLabel}) y te salteás la acumulación 1–{anchor.entryWeek - 1}.</>
+              )}
+              {anchor.status === "futuro" && (
+                <>El plan arranca el lunes <b style={strong}>{anchor.startDate}</b> (en {anchor.daysToStart} días) · la compe cae en la <b style={strong}>semana {anchorWeek}</b>{picoLabel}.</>
+              )}
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <label style={label} htmlFor="assign-date">Fecha de inicio</label>
+          <input id="assign-date" type="date" aria-label="Fecha de inicio" style={input} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+        </>
+      )}
 
       <label style={label}>RMs (kg)</label>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 6 }}>

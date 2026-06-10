@@ -26,6 +26,40 @@ export function defaultStartDate(today: string, currentWeek: number): string {
   return toISO(ms(today) - (currentWeek - 1) * 7 * DAY);
 }
 
+/** Lunes (ISO) de la semana calendario de una fecha. */
+export function mondayOf(date: string): string {
+  const dow = (new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7;
+  return toISO(ms(date) - dow * DAY);
+}
+
+export interface CompAnchor {
+  /** Lunes calculado: la compe cae exactamente en la semana `anchorWeek` del macro. */
+  startDate: string;
+  /** Semana del macro en la que se entra HOY (1 si el plan aún no empieza). */
+  entryWeek: number;
+  /** Días que faltan para que el plan arranque (>0 sólo en "futuro"). */
+  daysToStart: number;
+  status: "completo" | "recortado" | "futuro" | "pasada";
+}
+
+/**
+ * Ancla un macro a la fecha de competencia — el coach cuenta HACIA ATRÁS: el pico debe caer en
+ * la semana de la compe. `anchorWeek` = semana del macro donde debe caer la compe (su `peakWeek`,
+ * o la última si no declara pico). startDate = lunes tal que `weekOfDate(start, compDate) ===
+ * anchorWeek`. Si hoy ya está dentro del rango, se entra a mitad del macro (`entryWeek`) y las
+ * semanas 1..entryWeek−1 quedan en el pasado (acumulación salteada — honesto, sin comprimir).
+ */
+export function anchorPlanToComp(compDate: string, anchorWeek: number, totalWeeks: number, today: string): CompAnchor {
+  const week = Math.max(1, Math.min(anchorWeek, totalWeeks));
+  const startDate = toISO(ms(mondayOf(compDate)) - (week - 1) * 7 * DAY);
+  if (ms(compDate) < ms(today)) return { startDate, entryWeek: 1, daysToStart: 0, status: "pasada" };
+  if (ms(today) < ms(startDate)) {
+    return { startDate, entryWeek: 1, daysToStart: Math.round((ms(startDate) - ms(today)) / DAY), status: "futuro" };
+  }
+  const entryWeek = weekOfDate(startDate, today, totalWeeks);
+  return { startDate, entryWeek, daysToStart: 0, status: entryWeek > 1 ? "recortado" : "completo" };
+}
+
 /** Planned sessions per week, read from a macro's `frequency` (e.g. "5d/sem" → 5). 0 if none. */
 export function sessionsPerWeek(frequency: string): number {
   const m = frequency.match(/\d+/);

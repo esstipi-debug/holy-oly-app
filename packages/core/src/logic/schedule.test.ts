@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { weekOfDate, dateOfWeek, defaultStartDate, sessionsPerWeek, computeStreak, calendarWeeks } from "./schedule";
+import { weekOfDate, dateOfWeek, defaultStartDate, sessionsPerWeek, computeStreak, calendarWeeks, mondayOf, anchorPlanToComp } from "./schedule";
 
 describe("weekOfDate", () => {
   const start = "2026-01-05"; // a Monday
@@ -68,6 +68,52 @@ describe("computeStreak", () => {
     expect(computeStreak(["2026-06-03", "2026-06-02", "2026-06-03"], "2026-06-03")).toBe(2);
   });
   it("empty history → 0", () => expect(computeStreak([], "2026-06-03")).toBe(0));
+});
+
+describe("mondayOf", () => {
+  it("devuelve el lunes de la semana calendario", () => {
+    expect(mondayOf("2026-09-19")).toBe("2026-09-14"); // sábado → su lunes
+    expect(mondayOf("2026-09-14")).toBe("2026-09-14"); // ya es lunes
+    expect(mondayOf("2026-09-20")).toBe("2026-09-14"); // domingo → su lunes
+  });
+});
+
+describe("anchorPlanToComp", () => {
+  // Oráculo: compe sáb 2026-09-19, ancla en la semana 16 de 16 → start = lun 14 sep − 15 sem = 1 jun.
+  it("coloca la compe exactamente en la semana ancla (contando hacia atrás)", () => {
+    const a = anchorPlanToComp("2026-09-19", 16, 16, "2026-06-10");
+    expect(a.startDate).toBe("2026-06-01");
+    expect(weekOfDate(a.startDate, "2026-09-19", 16)).toBe(16); // la compe cae en su semana
+  });
+
+  it("hoy dentro del rango → recortado: entrás en la semana X (acumulación salteada)", () => {
+    const a = anchorPlanToComp("2026-09-19", 16, 16, "2026-06-10");
+    expect(a.status).toBe("recortado");
+    expect(a.entryWeek).toBe(2); // 10 jun cae en la semana 2 de un plan que arrancó el 1 jun
+  });
+
+  it("hoy == inicio calculado → completo", () => {
+    const a = anchorPlanToComp("2026-09-19", 16, 16, "2026-06-01");
+    expect(a.status).toBe("completo");
+    expect(a.entryWeek).toBe(1);
+  });
+
+  it("ancla en el pico (no la última semana): compe en peakWeek y quedan semanas después", () => {
+    const a = anchorPlanToComp("2026-09-19", 14, 16, "2026-06-10");
+    expect(a.startDate).toBe("2026-06-15"); // lun 14 sep − 13 semanas
+    expect(weekOfDate(a.startDate, "2026-09-19", 16)).toBe(14);
+    expect(a.status).toBe("futuro"); // el 10 jun todavía no empezó
+    expect(a.daysToStart).toBe(5);
+  });
+
+  it("compe en el pasado → pasada (la UI bloquea)", () => {
+    expect(anchorPlanToComp("2026-06-01", 16, 16, "2026-06-10").status).toBe("pasada");
+  });
+
+  it("clampa anchorWeek a [1, totalWeeks]", () => {
+    const a = anchorPlanToComp("2026-09-19", 99, 16, "2026-06-10");
+    expect(weekOfDate(a.startDate, "2026-09-19", 16)).toBe(16);
+  });
 });
 
 describe("calendarWeeks", () => {
