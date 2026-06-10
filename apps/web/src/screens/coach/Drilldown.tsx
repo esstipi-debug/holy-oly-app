@@ -21,6 +21,7 @@ import { weekSignals } from "../../ui/charts/weekSignals";
 import { WeekDetailSheet } from "../../ui/charts/WeekDetailSheet";
 import { PlanCalendar } from "./calendar/PlanCalendar";
 import { SessionsSection } from "./sessions/SessionsSection";
+import { RmSection } from "./rm/RmSection";
 import { AtletaPreview } from "./AtletaPreview";
 import { HomeScreen } from "../atleta/HomeScreen";
 import { LocalMeClient } from "../../data/LocalMeClient";
@@ -50,6 +51,12 @@ export function Drilldown() {
   // Identidad estable para los efectos lazy del calendario-mapa (no re-agendar por cada render).
   const loadHeat = useCallback(() => repo.getPlanHeat(id), [repo, id]);
   const loadWeek = useCallback((w: number) => repo.getPrescriptionWeek(id, w), [repo, id]);
+  // SP5: tras subir un RM, remontar las secciones que cachean kg derivado (mapa + sesiones).
+  const [rmsStamp, setRmsStamp] = useState(0);
+  const onRmsChange = useCallback(async () => {
+    setPlan(await repo.getPlan(id));
+    setRmsStamp((s) => s + 1);
+  }, [repo, id]);
 
   useEffect(() => {
     let on = true;
@@ -182,6 +189,7 @@ export function Drilldown() {
 
       {macro && (
         <PlanCalendar
+          key={`cal-${rmsStamp}`}
           macro={macro}
           weeks={maxWeek}
           startDate={startDate}
@@ -210,7 +218,9 @@ export function Drilldown() {
         </div>
       )}
 
-      <SessionsSection athleteId={athlete.id} hoyWeek={hoyWeek} totalWeeks={maxWeek} />
+      <SessionsSection key={`ses-${rmsStamp}`} athleteId={athlete.id} hoyWeek={hoyWeek} totalWeeks={maxWeek} />
+
+      {plan && <RmSection athleteId={id} plan={plan} today={today} onRmsChange={() => void onRmsChange()} />}
 
       <div style={{ marginTop: 16, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Palmarés · competencias</div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0" }}>
