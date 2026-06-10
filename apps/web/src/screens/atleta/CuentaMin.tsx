@@ -3,6 +3,7 @@ import type { VinculoEstado } from "@holy-oly/core";
 import { useAuth } from "../../auth/AuthContext";
 import * as vc from "../../data/vinculoClient";
 import { useAtletaCtx } from "./AthleteShell";
+import { CicloSection } from "./CicloSection";
 
 const HO_SKINS: Array<{ id: string; nm: string; sw: [string, string, string] }> = [
   { id: "neon", nm: "Neon PR", sw: ["#07070f", "#c8ff2d", "#1fe7ff"] },
@@ -89,6 +90,8 @@ export function CuentaMin() {
           ))}
         </div>
       </div>
+
+      <CicloSection />
 
       <div className="ho-acct__group">
         <button type="button" onClick={() => void logout()} className="wl-btn wl-btn--ghost" style={{ width: "100%", color: "#ff5e5e" }}>Cerrar sesión</button>
