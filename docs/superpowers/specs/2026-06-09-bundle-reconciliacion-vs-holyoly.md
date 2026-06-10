@@ -105,6 +105,11 @@
    `pct` por sesión/día + fases del catálogo (`phaseForWeek`). Falta: microcopy de objetivo por
    fase, escala de color, sheet de día. **No depende del motor** → adelantable como primer slice
    visible; cuando el motor exista, el desglose muestra además su `rationale`.
+   **Decisiones de diseño (owner, 2026-06-10, sobre el mock):** color de celda **mixto** (tono =
+   % tope del día; opacidad/saturación = volumen del día) · entra en **coach y atleta a la vez**
+   (mismo componente) · **toggle Lista ↔ Mapa** (la lista plegable `PlanCalendar` se mantiene).
+   Mitigación de legibilidad del mixto: leyenda de dos ejes + el panel del día siempre muestra
+   los números exactos.
 7. **Video (spec [1])** — **DESCARTADO** (decisión del owner, 2026-06-10). La spec importada
    queda sólo como referencia histórica; no entra al roadmap.
 
