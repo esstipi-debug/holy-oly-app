@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { MePlanView, SessionView, WeekHeat } from "@holy-oly/core";
-import { barKgForSexo } from "@holy-oly/core";
+import type { CycleData, CycleMark, MePlanView, SessionView, WeekHeat } from "@holy-oly/core";
+import { barKgForSexo, cycleMarkFor, dateOfWeek } from "@holy-oly/core";
 import type { MeClient } from "../../data/meClient";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../ui/charts/PlanHeatMap";
 import { PlanDayDetail, type DayDetailExercise } from "../../ui/charts/PlanDayDetail";
@@ -8,6 +8,10 @@ import { dayDateLabel, dayOffsetInWeek, weekdayMonFirst } from "../../ui/charts/
 import { phaseColor } from "../../ui/charts/phasePalette";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
+
+const DAY = 86_400_000;
+const ms = (iso: string): number => new Date(`${iso}T00:00:00Z`).getTime();
+const isoAt = (base: string, plusDays: number): string => new Date(ms(base) + plusDays * DAY).toISOString().slice(0, 10);
 
 /**
  * Mapa del plan del atleta — la misma pieza visual del coach (PlanHeatMap + PlanDayDetail),
@@ -23,6 +27,14 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
   const [sel, setSel] = useState<HeatMapPos | null>(null);
   const [weekViews, setWeekViews] = useState<ReadonlyMap<number, SessionView[]>>(new Map());
   const [dayError, setDayError] = useState(false);
+  // SU registro del ciclo (slice ciclo-visible): el overlay es de ELLA, independiente del share.
+  // Falla en silencio (sin overlay) — el registro tiene su propio error en Cuenta.
+  const [cycle, setCycle] = useState<CycleData | null>(null);
+  useEffect(() => {
+    let on = true;
+    client.getMeCycle().then((c) => { if (on) setCycle(c); }, () => {});
+    return () => { on = false; };
+  }, [client]);
 
   const firstDow = plan.startDate ? weekdayMonFirst(plan.startDate) : 0;
   const hoyPos = useMemo<HeatMapPos | null>(() => {
@@ -65,6 +77,38 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
   const phaseIdx = useCallback((w: number): number => plan.phases.findIndex((p) => w >= p.from && w <= p.to), [plan.phases]);
   const selectDay = useCallback((w: number, d: number) => { setSel({ week: w, day: d }); setDayError(false); }, []);
 
+  // Proyección elegible SOLO con ciclo regular + datos + fechas del plan (sin startDate no hay verdad).
+  const cycleStart = cycle?.state === "regular" ? cycle.lastPeriodStart : undefined;
+  const cycleLen = cycle?.state === "regular" ? cycle.cycleLengthDays : undefined;
+  const cycleMarks = useMemo<ReadonlyMap<string, CycleMark> | undefined>(() => {
+    if (cycleStart == null || cycleLen == null || plan.startDate == null || heat == null) return undefined;
+    const m = new Map<string, CycleMark>();
+    for (const w of heat) {
+      const weekStart = dateOfWeek(plan.startDate, w.week);
+      for (let d = 0; d < 7; d++) {
+        const mark = cycleMarkFor(cycleStart, cycleLen, isoAt(weekStart, d));
+        if (mark) m.set(`${w.week}-${d}`, mark);
+      }
+    }
+    return m.size > 0 ? m : undefined;
+  }, [cycleStart, cycleLen, plan.startDate, heat]);
+
+  // Colisión: la semana de mayor volumen del plan ∩ una ventana proyectada → una línea honesta.
+  const collision = useMemo<{ week: number; kind: CycleMark } | null>(() => {
+    if (cycleMarks == null || heat == null) return null;
+    let bw = 0, bv = -1;
+    for (const w of heat) {
+      const v = w.days.reduce((a, d) => a + (d?.lifts ?? 0), 0);
+      if (v > bv) { bv = v; bw = w.week; }
+    }
+    if (bv <= 0) return null;
+    for (let d = 0; d < 7; d++) {
+      const k = cycleMarks.get(`${bw}-${d}`);
+      if (k) return { week: bw, kind: k };
+    }
+    return null;
+  }, [cycleMarks, heat]);
+
   const selPhase = sel ? plan.phases[phaseIdx(sel.week)] : undefined;
   const selCell = sel && heat ? (heat[sel.week - 1]?.days[sel.day] ?? null) : null;
   const selViews = sel ? weekViews.get(sel.week) : undefined;
@@ -79,6 +123,15 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
   const title = sel === null ? "" : plan.startDate
     ? `${dayDateLabel(plan.startDate, sel.week, sel.day)} · S${sel.week}`
     : `Semana ${sel.week} · día ${sel.day + 1}`;
+  // Contexto del día seleccionado cuando cae en ventana proyectada (sólo superficie de la atleta).
+  const selMark = sel != null && cycleStart != null && cycleLen != null && plan.startDate != null
+    ? cycleMarkFor(cycleStart, cycleLen, isoAt(dateOfWeek(plan.startDate, sel.week), sel.day))
+    : null;
+  const contextLine = selMark === "periodo"
+    ? "Período (proyección según tu registro) — contexto, no regla."
+    : selMark === "preperiodo"
+      ? "Pre-período (proyección según tu registro) — contexto, no regla."
+      : undefined;
   // Denominador honesto: las sesiones reales de la semana cargada; el heat sólo estima mientras carga.
   const heatCount = sel && heat ? (heat[sel.week - 1]?.days.filter((d) => d !== null).length ?? 0) : 0;
   const den = selViews && selViews.length > 0 ? selViews.length : heatCount;
@@ -94,7 +147,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
   const panel = sel === null || selPhase === undefined ? null : selCell === null
     ? (
       <PlanDayDetail title={title} phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))}
-        focus={selPhase.focus} isRest exercises={[]} barKg={barKg} />
+        focus={selPhase.focus} isRest exercises={[]} barKg={barKg} {...(contextLine != null ? { contextLine } : {})} />
     )
     : dayError ? (
       <div role="alert" style={{ marginTop: 10, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, color: "var(--wl-muted)" }}>
@@ -108,13 +161,13 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
       <PlanDayDetail title={title}
         sub={`Sesión ${sel.day + 1}${den > 0 ? ` de ${den}` : ""}${selCell.topPct != null ? ` · tope ${selCell.topPct}%` : ""}`}
         phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))} focus={selPhase.focus}
-        exercises={exercises} barKg={barKg} />
+        exercises={exercises} barKg={barKg} {...(contextLine != null ? { contextLine } : {})} />
     );
 
   return (
     <div style={{ marginTop: 16 }}>
       <div className="ho-plan__periodlabel">Mapa del plan · intensidad por día</div>
-      <div style={{ marginTop: 6 }}><HeatLegend /></div>
+      <div style={{ marginTop: 6 }}><HeatLegend showCycle={cycleMarks != null} /></div>
       <div style={{ marginTop: 8 }}>
         {heatError ? (
           <div role="alert" style={{ fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, color: "var(--wl-muted)" }}>
@@ -124,9 +177,15 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
           <div role="status" aria-busy="true" style={{ fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, color: "var(--wl-muted)" }}>Cargando mapa…</div>
         ) : (
           <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow}
-            onSelectDay={selectDay} phaseIndexFor={phaseIdx} comps={comps} />
+            onSelectDay={selectDay} phaseIndexFor={phaseIdx} comps={comps}
+            {...(cycleMarks != null ? { cycleMarks } : {})} />
         )}
       </div>
+      {collision != null && (
+        <div style={{ marginTop: 8, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
+          Tu semana más pesada (S{collision.week}) cae en tu ventana {collision.kind === "periodo" ? "de período" : "pre-período"} (proyección).
+        </div>
+      )}
       {heat !== null && panel}
     </div>
   );

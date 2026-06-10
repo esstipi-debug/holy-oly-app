@@ -17,7 +17,7 @@ const ESTADO_LABEL: Record<DayEstado, { text: string; color: string }> = {
  * Presentacional puro y compartido coach/atleta. Regla intocable: cada fila lleva kg + discos
  * vía `DiscRow` oficial; sin kg → «—» y SIN discos (jamás un 0 inventado). Sin RPE.
  */
-export function PlanDayDetail({ title, sub, phaseName, phaseTint, focus, estado, compName, isRest, exercises, barKg }: {
+export function PlanDayDetail({ title, sub, phaseName, phaseTint, focus, estado, compName, isRest, exercises, barKg, contextLine }: {
   title: string;
   sub?: string;
   phaseName: string;
@@ -31,6 +31,8 @@ export function PlanDayDetail({ title, sub, phaseName, phaseTint, focus, estado,
   isRest?: boolean;
   exercises: DayDetailExercise[];
   barKg: number;
+  /** Línea de contexto muted (p.ej. ventana del ciclo, SOLO en la vista de la atleta). */
+  contextLine?: string;
 }) {
   const est = estado ? ESTADO_LABEL[estado] : undefined;
   return (
@@ -87,6 +89,12 @@ export function PlanDayDetail({ title, sub, phaseName, phaseTint, focus, estado,
             ))}
           </div>
         </>
+      )}
+
+      {contextLine != null && (
+        <div style={{ marginTop: 8, fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", lineHeight: 1.45 }}>
+          {contextLine}
+        </div>
       )}
     </div>
   );

@@ -1,11 +1,13 @@
 import { memo } from "react";
-import type { WeekHeat } from "@holy-oly/core";
+import type { CycleMark, WeekHeat } from "@holy-oly/core";
 import { maxLifts } from "@holy-oly/core";
 import { phaseColor } from "./phasePalette";
 import { heatCellColor, HEAT_STOPS } from "./heatPalette";
 import { dayColumnHeads, dayColumnNames } from "./planDates";
 
 const GOLD = "var(--gold, #e9b365)";
+// Marca del ciclo: paleta NEUTRA derivada del texto (regla del rulebook — jamás la de estado).
+const CYCLE_NEUTRAL = "color-mix(in srgb, var(--wl-text) 65%, transparent)";
 
 export interface HeatMapPos { week: number; day: number }
 export interface HeatMapComp { name: string; day?: number }
@@ -22,7 +24,7 @@ export interface HeatMapComp { name: string; day?: number }
  * memo: la grilla (~112 celdas) sólo re-renderiza cuando cambian sus props — los callers
  * estabilizan onSelectDay/phaseIndexFor con useCallback para que el estado ajeno no la toque.
  */
-export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSelectDay, phaseIndexFor, comps, firstDow = 0 }: {
+export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSelectDay, phaseIndexFor, comps, firstDow = 0, cycleMarks }: {
   heat: WeekHeat[];
   hoy: HeatMapPos | null;
   selected: HeatMapPos | null;
@@ -32,6 +34,8 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
   comps: ReadonlyMap<number, HeatMapComp>;
   /** Weekday Lunes-first (0..6) del startDate del plan; 0 cuando no hay fecha ancla. */
   firstDow?: number;
+  /** Ventanas proyectadas del ciclo, key "week-day" — SOLO la vista de la atleta la pasa. */
+  cycleMarks?: ReadonlyMap<string, CycleMark>;
 }) {
   const max = maxLifts(heat);
   const heads = dayColumnHeads(firstDow);
@@ -59,16 +63,18 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
             const isComp = comp?.day === day;
             const isHoy = hoy != null && hoy.week === w.week && hoy.day === day;
             const isSel = selected != null && selected.week === w.week && selected.day === day;
+            const cmark = cycleMarks?.get(`${w.week}-${day}`);
             const rings = [
               isSel ? "0 0 0 2px var(--wl-accent)" : "",
               isHoy ? "inset 0 0 0 1.5px rgba(255,255,255,.92)" : "",
             ].filter(Boolean).join(", ");
             const label = `Semana ${w.week} ${names[day]}`
-              + (d ? "" : " · descanso") + (isHoy ? " · HOY" : "") + (isComp ? ` · competencia ${comp!.name}` : "");
+              + (d ? "" : " · descanso") + (isHoy ? " · HOY" : "") + (isComp ? ` · competencia ${comp!.name}` : "")
+              + (cmark === "periodo" ? " · período (proy.)" : cmark === "preperiodo" ? " · pre-período (proy.)" : "");
             return (
               <button key={`c${w.week}-${day}`} type="button" aria-label={label}
                 onClick={() => onSelectDay(w.week, day)}
-                style={{ width: 22, height: 22, padding: 2, margin: 0, border: 0, background: "transparent", cursor: "pointer", boxSizing: "border-box" }}>
+                style={{ position: "relative", width: 22, height: 22, padding: 2, margin: 0, border: 0, background: "transparent", cursor: "pointer", boxSizing: "border-box" }}>
                 <span style={{
                   display: "block", width: 18, height: 18, borderRadius: 5, boxSizing: "border-box",
                   border: isComp ? `1.5px solid ${GOLD}` : "none",
@@ -79,6 +85,14 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
                       : "color-mix(in srgb, var(--wl-text) 5%, transparent)",
                   boxShadow: rings || undefined,
                 }} />
+                {cmark != null && (
+                  <span aria-hidden style={{
+                    position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 0,
+                    width: 5, height: 5, borderRadius: "50%", boxSizing: "border-box",
+                    background: cmark === "periodo" ? CYCLE_NEUTRAL : "var(--wl-bg)",
+                    border: `1.5px solid ${CYCLE_NEUTRAL}`,
+                  }} />
+                )}
               </button>
             );
           }),
@@ -89,7 +103,7 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
 });
 
 /** Leyenda compacta del encoding mixto, derivada de HEAT_STOPS (una línea, envuelve si hace falta). */
-export const HeatLegend = memo(function HeatLegend() {
+export const HeatLegend = memo(function HeatLegend({ showCycle = false }: { showCycle?: boolean }) {
   const swStyle = (bg: string): React.CSSProperties => ({ width: 13, height: 9, borderRadius: 2, background: bg, display: "inline-block" });
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>
@@ -102,6 +116,15 @@ export const HeatLegend = memo(function HeatLegend() {
       <span style={{ width: 6 }} />
       <span style={{ width: 11, height: 11, borderRadius: 3, border: `1.5px solid ${GOLD}`, display: "inline-block", boxSizing: "border-box" }} />
       <span>compe</span>
+      {showCycle && (
+        <>
+          <span style={{ width: 6 }} />
+          <span style={{ width: 5, height: 5, borderRadius: "50%", background: CYCLE_NEUTRAL, display: "inline-block" }} />
+          <span>período (proy.)</span>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", border: `1.5px solid ${CYCLE_NEUTRAL}`, boxSizing: "border-box", display: "inline-block" }} />
+          <span>pre-período</span>
+        </>
+      )}
     </div>
   );
 });
