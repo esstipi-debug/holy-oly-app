@@ -118,6 +118,16 @@ describe("generateWeek — clásicos vs sentadilla (criterio 8)", () => {
     expect(generateWeek(base({ weeksToComp: null }))!.phase).toBe("accumulation");
     expect(generateWeek(base({ weeksToComp: null, waveWeek: 5 }))!.phase).toBe("peak");
   });
+  it("envión es clásico (2 reps/set en 70-80); frente es sentadilla frontal → tabla (3)", () => {
+    const en = generateWeek(base({ weeksToComp: 8, lift: "envion", recentACWR: null, readiness: null }))!;
+    const fr = generateWeek(base({ weeksToComp: 8, lift: "frente", recentACWR: null, readiness: null }))!;
+    expect(en.sets.find((s) => s.zone === "70-80")!.reps).toBe(2);
+    expect(fr.sets.find((s) => s.zone === "70-80")!.reps).toBe(3);
+  });
+  it("red en fase sin zona 90+ (acumulación) → advisory false (no hay single que mover)", () => {
+    const w = generateWeek(base({ weeksToComp: 8, readiness: "red" }))!;
+    expect(w.heavySinglesAdvisory).toBe(false);
+  });
 });
 
 describe("generateWeek — sin-dato honesto, jamás inventar (D7 / lección NaN del Carnicero)", () => {

@@ -34,7 +34,7 @@ const WAVE: readonly EnginePhase[] = [
 /** Fase de la ola sin compe (1-based, cicla). `peak` en semana 5 = mini-pico (test opcional). */
 export function wavePhase(waveWeek: number): EnginePhase | null {
   if (!Number.isInteger(waveWeek) || waveWeek < 1) return null;
-  return WAVE[(waveWeek - 1) % WAVE.length]!;
+  return WAVE[(waveWeek - 1) % WAVE.length] ?? null;
 }
 
 /** Semanas restantes → fase de CADA semana hasta la compe. Inválido → [] (sin plan honesto). */
@@ -43,6 +43,8 @@ export function phasePlan(weeksToComp: number): EnginePhase[] {
   if (weeksToComp === 0) return ["comp_week"];
   if (weeksToComp === 1) return ["taper"];
   if (weeksToComp === 2) return ["peak", "comp_week"];
+  // n=3 comprime pico → semana de compe SIN semana taper aparte (caso canónico del owner;
+  // la disipación de fatiga vive en comp_week, taperFactor 0.25). No es un hueco.
   if (weeksToComp === 3) return ["intensification", "peak", "comp_week"];
   return [
     ...Array<EnginePhase>(weeksToComp - 4).fill("accumulation"),
@@ -66,7 +68,8 @@ const ZONE_BASE: Record<IntensityZone, number> = { "70-80": 75, "80-90": 85, "90
  *  del día de la compe, no una carga de entrenamiento (D4). */
 const ZONE_CEIL: Record<IntensityZone, number> = { "70-80": 80, "80-90": 90, "90+": 95 };
 
-/** Clásicos: la técnica degrada antes que en sentadilla → menos reps/set. */
+/** Clásicos: la técnica degrada antes que en sentadilla → menos reps/set.
+ *  `sentadilla` y `frente` (sentadilla FRONTAL, el 4° RM de la planilla) usan la tabla. */
 const REPS_PER_SET_CLASSIC: Record<IntensityZone, number> = { "70-80": 2, "80-90": 2, "90+": 1 };
 const CLASSIC_LIFTS: readonly RmLift[] = ["arranque", "envion"];
 
@@ -93,6 +96,9 @@ export function generateWeek(input: EngineInput): EngineWeek | null {
   const repsClassic = CLASSIC_LIFTS.includes(input.lift);
   const mixed = ZONES.filter((z) => profile.zoneMix[z] > 0);
   const topZone = mixed[mixed.length - 1];
+  // Invariante de PHASE_PROFILE: toda fase mezcla ≥1 zona. Si un perfil futuro lo rompe,
+  // null honesto — jamás una "prescripción" vacía con sets: [].
+  if (topZone === undefined) return null;
 
   const sets: EngineSet[] = [];
   const audits: EngineZoneAudit[] = [];
