@@ -26,7 +26,8 @@ test("muestra la sección de vínculo, el toggle de variante y los skins", () =>
   expect(screen.getByText("tus datos son tuyos")).toBeInTheDocument();
   expect(screen.getByLabelText("Código de invitación")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Skin Plates" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Cerrar sesión" })).toBeInTheDocument();
+  // W3 ítem 5: el logout es 100% API → en modo demo (apiEnabled=false) NO se renderiza.
+  expect(screen.queryByRole("button", { name: "Cerrar sesión" })).not.toBeInTheDocument();
 });
 
 test("elegir una skin la aplica al shell y la persiste", () => {

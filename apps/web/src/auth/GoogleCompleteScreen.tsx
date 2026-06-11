@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Role } from "./authClient";
 import { completeGoogleSignup } from "./authClient";
 import { HolyOlyIcon } from "../ui/HolyOlyIcon";
@@ -12,6 +12,7 @@ const input: CSSProperties = {
 const label: CSSProperties = { fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)", marginTop: 12, display: "block" };
 
 export function GoogleCompleteScreen() {
+  const navigate = useNavigate();
   const [role, setRole] = useState<Role>("coach");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +24,9 @@ export function GoogleCompleteScreen() {
     setBusy(true);
     try {
       await completeGoogleSignup(role, name || undefined);
-      window.location.replace("/");
+      // navigate (no window.location.replace): bajo el hash-routing del demo file:// la URL
+      // absoluta "/" apuntaría al filesystem.
+      navigate("/", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo completar");
     } finally {

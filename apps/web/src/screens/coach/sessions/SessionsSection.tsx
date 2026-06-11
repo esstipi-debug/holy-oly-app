@@ -24,8 +24,13 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
   const [week, setWeek] = useState(Math.min(Math.max(hoyWeek, 1), totalWeeks));
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
   const [editing, setEditing] = useState<SessionView | null>(null);
+  // Error ≠ vacío (D5): un fallo de carga no puede mostrarse como "Sin sesiones".
+  const [error, setError] = useState(false);
 
-  const refresh = useCallback(() => { repo.getPrescriptionWeek(athleteId, week).then(setSessions).catch(() => setSessions([])); }, [repo, athleteId, week]);
+  const refresh = useCallback(() => {
+    setError(false);
+    repo.getPrescriptionWeek(athleteId, week).then(setSessions).catch(() => setError(true));
+  }, [repo, athleteId, week]);
   useEffect(() => { setSessions(null); refresh(); }, [refresh]);
 
   const onSave = useCallback(async (exercises: PrescribedExercise[]) => {
@@ -45,7 +50,15 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
           <button type="button" aria-label="semana siguiente" onClick={() => setWeek((w) => Math.min(totalWeeks, w + 1))} style={{ border: 0, background: "transparent", color: "var(--wl-text)", cursor: "pointer", fontSize: 16 }}>›</button>
         </div>
       </div>
-      {sessions === null ? (
+      {error ? (
+        <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
+          No se pudieron cargar las sesiones.{" "}
+          <button type="button" onClick={() => { setSessions(null); refresh(); }}
+            style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
+            Reintentar
+          </button>
+        </div>
+      ) : sessions === null ? (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Cargando…</div>
       ) : sessions.length === 0 ? (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Sin sesiones para esta semana (asigná un macro con receta o armalas a mano).</div>

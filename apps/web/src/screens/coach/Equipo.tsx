@@ -31,6 +31,8 @@ export function Equipo() {
   const [rows, setRows] = useState<RosterRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  // Reintentar re-dispara el load() vía stamp (mantiene la cancelación del effect).
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     let on = true;
@@ -39,7 +41,7 @@ export function Equipo() {
       .then((r) => { if (on) { setRows(r); setLoading(false); } })
       .catch(() => { if (on) { setError(true); setLoading(false); } });
     return () => { on = false; };
-  }, [repo]);
+  }, [repo, reload]);
 
   const onPick = (id: string) => navigate(`/coach/a/${id}`);
   const withData = rows.filter((r) => r.cell !== "none" && r.readiness != null);
@@ -49,12 +51,14 @@ export function Equipo() {
   const rest = rows.filter((r) => r.id !== hero?.id);
 
   return (
-    <div style={{ padding: "14px 18px 26px", color: "var(--wl-text)", minHeight: "100vh", maxWidth: 420, margin: "0 auto", background: "radial-gradient(130% 50% at 50% -5%, #1A1813 0%, #0A0B0E 55%)" }}>
+    <div style={{ padding: "14px 18px 26px", color: "var(--wl-text)", minHeight: "100vh", maxWidth: 390, margin: "0 auto", background: "radial-gradient(130% 50% at 50% -5%, #1A1813 0%, #0A0B0E 55%)" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
         <h1 style={{ margin: 0, fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 24, letterSpacing: -.4 }}>Plantel</h1>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
           <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>{rows.length} ATLETAS</span>
-          <Link to="/coach/invitaciones" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-accent)", textDecoration: "none" }}>Invitaciones ›</Link>
+          {API_ENABLED && (
+            <Link to="/coach/invitaciones" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-accent)", textDecoration: "none" }}>Invitaciones ›</Link>
+          )}
           {!API_ENABLED && (
             <>
               <LeadCaptureButton variant="discreet" />
@@ -68,7 +72,13 @@ export function Equipo() {
       </div>
 
       {error ? (
-        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "16px 0" }}>No se pudo cargar el plantel. Reintentá.</div>
+        <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)", padding: "16px 0" }}>
+          No se pudo cargar el plantel.{" "}
+          <button type="button" onClick={() => setReload((r) => r + 1)}
+            style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
+            Reintentar
+          </button>
+        </div>
       ) : loading ? (
         <div aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "16px 0" }}>Cargando plantel…</div>
       ) : (

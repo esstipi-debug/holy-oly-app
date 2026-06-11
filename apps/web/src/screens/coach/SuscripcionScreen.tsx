@@ -17,6 +17,17 @@ export function SuscripcionScreen() {
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [resend, setResend] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  async function onResend(): Promise<void> {
+    setResend("sending");
+    try {
+      await resendVerificationEmail();
+      setResend("sent");
+    } catch {
+      setResend("error");
+    }
+  }
 
   async function refresh(): Promise<void> {
     setStatus(await billingStatus());
@@ -66,9 +77,9 @@ export function SuscripcionScreen() {
   );
 
   return (
-    <div style={{ padding: "14px 13px 84px", maxWidth: 390, margin: "0 auto", minHeight: "100vh", background: "var(--wl-bg)", color: "var(--wl-text)" }}>
+    <div style={{ padding: "14px 13px 26px", maxWidth: 390, margin: "0 auto", minHeight: "100vh", background: "var(--wl-bg)", color: "var(--wl-text)" }}>
       <Link to="/coach/cuenta" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>← Cuenta</Link>
-      <h1 style={{ fontSize: 22, fontWeight: 800, margin: "10px 0 6px" }}>Suscripción</h1>
+      <h1 style={{ fontFamily: "var(--wl-display)", fontSize: 22, fontWeight: 800, margin: "10px 0 6px" }}>Suscripción</h1>
       <p style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
         Los atletas son gratis. El coach necesita plan activo para editar programas. Precios + IVA.
       </p>
@@ -77,9 +88,19 @@ export function SuscripcionScreen() {
         <div style={{ marginTop: 12, padding: 12, borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-accent) 30%,transparent)" }}>
           <div style={{ fontWeight: 700 }}>Verificá tu email</div>
           <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>Sin verificación no podés confirmar atletas en el roster.</div>
-          <button type="button" onClick={() => void resendVerificationEmail()} style={{ marginTop: 8, padding: "8px 12px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontWeight: 700, cursor: "pointer" }}>
-            Reenviar email
+          <button
+            type="button"
+            disabled={resend === "sending" || resend === "sent"}
+            onClick={() => void onResend()}
+            style={{ marginTop: 8, padding: "8px 12px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontWeight: 700, cursor: resend === "sending" || resend === "sent" ? "default" : "pointer", opacity: resend === "sending" ? 0.45 : 1 }}
+          >
+            {resend === "sending" ? "Enviando…" : resend === "sent" ? "Enviado ✓ — revisá spam" : "Reenviar email"}
           </button>
+          {resend === "error" && (
+            <div role="alert" style={{ marginTop: 8, color: "var(--wl-danger)", fontSize: 12 }}>
+              No se pudo reenviar el email. Probá de nuevo.
+            </div>
+          )}
         </div>
       )}
 
@@ -126,7 +147,7 @@ export function SuscripcionScreen() {
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                    <span style={{ fontWeight: 800, fontSize: 16 }}>{plan.name}</span>
+                    <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{plan.name}</span>
                     <span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700 }}>
                       {period === "annual" ? `${formatClp(plan.priceClpAnnual)} + IVA/año` : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
                     </span>
@@ -147,7 +168,7 @@ export function SuscripcionScreen() {
             {/* Multi-sede: precio personalizado (contacto), no self-serve */}
             <div style={{ padding: 14, borderRadius: 12, border: "1px dashed color-mix(in srgb,var(--wl-muted) 35%,transparent)", background: "var(--wl-surface)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                <span style={{ fontWeight: 800, fontSize: 16 }}>{MULTISEDE.name}</span>
+                <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{MULTISEDE.name}</span>
                 <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>desde {formatClp(MULTISEDE.fromClpMonthly)} + IVA/mes</span>
               </div>
               <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{MULTISEDE.description}</div>
@@ -161,14 +182,29 @@ export function SuscripcionScreen() {
 
       {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontSize: 12 }}>{error}</div>}
 
-      <button
-        type="button"
-        disabled={busy || (!status?.active && plans.length === 0)}
-        onClick={() => void onCheckout()}
-        style={{ width: "100%", marginTop: 16, padding: 14, borderRadius: 12, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontWeight: 800, cursor: busy ? "default" : "pointer" }}
-      >
-        {status?.active ? "Gestionar plan" : isDemo ? `Activar ${plans.find((p) => p.id === selectedPlanId)?.name ?? "plan"} (demo)` : "Ir a pagar con Mercado Pago"}
-      </button>
+      {status?.active ? (
+        // D6: suscripción activa → nada de CTA falso que re-dispare checkout. Cambios = contacto.
+        <div style={{ marginTop: 16, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", lineHeight: 1.6 }}>
+          Para cambios de plan escribinos:{" "}
+          <a href="mailto:hola@holyoly.app?subject=Cambio%20de%20plan" style={{ color: "var(--wl-accent)", fontWeight: 700 }}>
+            hola@holyoly.app
+          </a>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={busy || plans.length === 0}
+          onClick={() => void onCheckout()}
+          style={{
+            width: "100%", marginTop: 16, padding: 14, borderRadius: 12, border: 0,
+            background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800,
+            cursor: busy || plans.length === 0 ? "default" : "pointer",
+            opacity: busy || plans.length === 0 ? 0.45 : 1,
+          }}
+        >
+          {busy ? "Abriendo el pago…" : isDemo ? `Activar ${plans.find((p) => p.id === selectedPlanId)?.name ?? "plan"} (demo)` : "Ir a pagar con Mercado Pago"}
+        </button>
+      )}
     </div>
   );
 }

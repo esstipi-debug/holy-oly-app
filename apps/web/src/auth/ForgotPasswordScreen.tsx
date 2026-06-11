@@ -12,13 +12,17 @@ export function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
+    setError(null);
     setBusy(true);
     try {
       await forgotPassword(email);
       setSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo enviar");
     } finally {
       setBusy(false);
     }
@@ -35,6 +39,7 @@ export function ForgotPasswordScreen() {
           <>
             <label style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 12, display: "block" }}>Email</label>
             <input style={input} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
             <button type="submit" disabled={busy} style={{ width: "100%", marginTop: 16, padding: 12, borderRadius: 12, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontWeight: 800, cursor: busy ? "default" : "pointer" }}>
               {busy ? "..." : "Enviar enlace"}
             </button>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./Button";
 import { Badge } from "./Badge";
 import { Card } from "./Card";
@@ -35,6 +35,13 @@ export function Gallery() {
   const [stepperVal, setStepperVal] = useState(3);
   const [weekVal, setWeekVal] = useState(8);
   const [selectedChip, setSelectedChip] = useState<"A" | "B">("A");
+
+  // La galería (dev) pisa la clase de <html> al probar skins: guardar la previa y
+  // restaurarla al desmontar — que salir de /gallery no deje a la app con otro tema.
+  useEffect(() => {
+    const prev = document.documentElement.className;
+    return () => { document.documentElement.className = prev; };
+  }, []);
 
   function applySkin(s: Skin) {
     setSkin(s);

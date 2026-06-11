@@ -62,8 +62,14 @@ function VincularSection() {
 }
 
 export function CuentaMin() {
-  const { logout } = useAuth();
+  const { apiEnabled, logout } = useAuth();
   const { skin, setSkin, variant, setVariant } = useAtletaCtx();
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+
+  function onLogout(): void {
+    setLogoutError(null);
+    logout().catch(() => setLogoutError("No se pudo cerrar la sesión. Probá de nuevo."));
+  }
   return (
     <>
       <div className="ho-greet"><div className="ho-greet__h">Cuenta</div><div className="ho-greet__s">tus datos son tuyos</div></div>
@@ -93,9 +99,14 @@ export function CuentaMin() {
 
       <CicloSection />
 
-      <div className="ho-acct__group">
-        <button type="button" onClick={() => void logout()} className="wl-btn wl-btn--ghost" style={{ width: "100%", color: "var(--wl-danger)" }}>Cerrar sesión</button>
-      </div>
+      {apiEnabled && (
+        <div className="ho-acct__group">
+          <button type="button" onClick={onLogout} className="wl-btn wl-btn--ghost" style={{ width: "100%", color: "var(--wl-danger)" }}>Cerrar sesión</button>
+          {logoutError && (
+            <div role="alert" style={{ marginTop: 8, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>{logoutError}</div>
+          )}
+        </div>
+      )}
 
       <div style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", margin: "22px 0 4px", letterSpacing: ".04em" }}>
         HOLY OLY · smart training · zero burnout

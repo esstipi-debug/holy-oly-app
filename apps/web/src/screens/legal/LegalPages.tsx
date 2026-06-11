@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const page: CSSProperties = {
   padding: "18px 16px 48px",
@@ -13,9 +13,19 @@ const page: CSSProperties = {
 };
 
 function LegalShell({ title, children }: { title: string; children: ReactNode }) {
+  const navigate = useNavigate();
+  // Volver = de dónde viniste (legal se linkea desde login, Cuenta coach y Cuenta atleta);
+  // sin historial (deep-link) → a la raíz, que despacha por rol.
+  const onBack = (): void => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/");
+  };
   return (
     <div style={page}>
-      <Link to="/login" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>← Volver</Link>
+      <button type="button" onClick={onBack}
+        style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
+        ← Volver
+      </button>
       <h1 style={{ fontSize: 22, fontWeight: 800, margin: "12px 0 8px" }}>{title}</h1>
       <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginBottom: 18 }}>
         Borrador · requiere revisión legal antes de lanzamiento comercial

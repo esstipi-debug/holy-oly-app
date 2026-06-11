@@ -20,10 +20,14 @@ export function EntrenoScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [subOpen, setSubOpen] = useState(false);
+  // Error de carga ≠ día vacío (D5): un fallo de API no puede disfrazarse de "no hay sesión".
+  const [loadError, setLoadError] = useState(false);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     if (!Number.isInteger(week) || !Number.isInteger(idx)) { navigate("/atleta", { replace: true }); return; }
     let on = true;
+    setRows(null); setLoadError(false);
     Promise.all([me.getMePlan().catch(() => null), me.getMeSessions(week)])
       .then(([plan, views]: [MePlanView | null, SessionView[]]) => {
         if (!on) return;
@@ -44,9 +48,9 @@ export function EntrenoScreen() {
           };
         }));
       })
-      .catch(() => { if (on) setRows([]); });
+      .catch(() => { if (on) { setRows([]); setLoadError(true); } });
     return () => { on = false; };
-  }, [week, idx, navigate]);
+  }, [week, idx, navigate, reload]);
 
   const patchSet = (setIdx: number, p: Partial<SetRow>): void =>
     setRows((rs) => rs ? rs.map((r, j) => j === cur ? { ...r, series: r.series.map((s, k) => k === setIdx ? { ...s, ...p } : s) } : r) : rs);
@@ -79,7 +83,15 @@ export function EntrenoScreen() {
       <button type="button" aria-label="volver" onClick={() => (started ? setStarted(false) : navigate("/atleta"))} style={{ border: 0, background: "transparent", color: "var(--wl-text)", fontSize: 22, cursor: "pointer", padding: 0, marginBottom: 6 }}>‹</button>
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>Entreno · sem {week} · día {idx + 1}</div>
 
-      {rows.length === 0 ? (
+      {loadError ? (
+        <div role="alert" style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
+          No se pudo cargar la sesión.{" "}
+          <button type="button" onClick={() => setReload((r) => r + 1)}
+            style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
+            Reintentar
+          </button>
+        </div>
+      ) : rows.length === 0 ? (
         <div style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>No hay sesión para este día.</div>
       ) : !started ? (
         <div style={{ marginTop: 12 }}>

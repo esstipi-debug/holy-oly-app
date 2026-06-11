@@ -42,6 +42,8 @@ export function Drilldown() {
   const [compOpen, setCompOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  // Reintentar re-dispara el load vía stamp (mantiene la cancelación del effect).
+  const [reload, setReload] = useState(0);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   // P1 demo-only "ver como atleta": swap the coach body for the athlete's own view of THIS athlete.
   const [asAthlete, setAsAthlete] = useState(false);
@@ -72,10 +74,20 @@ export function Drilldown() {
       })
       .catch(() => { if (on) { setError(true); setLoaded(true); } });
     return () => { on = false; };
-  }, [repo, id]);
+  }, [repo, id, reload]);
 
   if (!loaded) return <div aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)" }}>Cargando…</div>;
-  if (error) return <div style={{ padding: 24, color: "var(--wl-text)" }}>No se pudo cargar el atleta. Reintentá.</div>;
+  if (error) {
+    return (
+      <div role="alert" style={{ padding: 24, color: "var(--wl-text)" }}>
+        No se pudo cargar el atleta.{" "}
+        <button type="button" onClick={() => setReload((r) => r + 1)}
+          style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 12, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
+          Reintentar
+        </button>
+      </div>
+    );
+  }
   if (!athlete) return <div style={{ padding: 24, color: "var(--wl-text)" }}>Atleta no encontrado.</div>;
 
   const macro: Macrocycle | undefined = athlete.macroId ? MACROCYCLES.find((m) => m.id === athlete.macroId) : undefined;

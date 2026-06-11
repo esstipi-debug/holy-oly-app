@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useLocation, useOutletContext } from "react-router-dom";
+import { Link, useLocation, useOutletContext } from "react-router-dom";
 import { seriesState, type CellState, type DayLogInput, type DayLogView, type MePlanView, type MonitorSeries } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
 import type { CheckinVariant } from "./prefs";
@@ -77,6 +77,12 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
             ? `${plan.plan.macroName} · semana ${plan.plan.currentWeek} de ${plan.plan.totalWeeks} · ${plan.plan.currentPhase}`
             : "tu coach todavía no te asignó un plan"}
         </div>
+        {/* Empty-state con salida: sin plan → el siguiente paso es vincularse (no en preview del coach). */}
+        {!plan.plan && !preview && (
+          <Link to="/atleta/cuenta" style={{ display: "inline-block", marginTop: 6, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-accent)", textDecoration: "none" }}>
+            Vinculate con tu coach en Cuenta ›
+          </Link>
+        )}
       </div>
 
       <Titular state={titularState} />

@@ -37,7 +37,7 @@ export interface AssignComp { name: string; date: string; week: number }
  * semana X salteando acumulación) o por fecha de inicio (hacia adelante, el modo clásico).
  */
 export function AssignSheet({
-  open, onClose, macro, athletes, onAssign, today = todayISO(),
+  open, onClose, macro, athletes, onAssign, today = todayISO(), rosterError = false, onRetryRoster,
 }: {
   open: boolean;
   onClose: () => void;
@@ -46,6 +46,9 @@ export function AssignSheet({
   onAssign: (plan: Plan, comp?: AssignComp) => Promise<void>;
   /** Inyectable para tests deterministas; default = hoy real. */
   today?: string;
+  /** D5: el dueño no pudo cargar el roster → mostrar error + retry, jamás "sin atletas". */
+  rosterError?: boolean;
+  onRetryRoster?: () => void;
 }) {
   const [mode, setMode] = useState<"competencia" | "inicio">("competencia");
   const [atletaId, setAtletaId] = useState<string | null>(null);
@@ -96,7 +99,17 @@ export function AssignSheet({
 
       <label style={label}>Atleta</label>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 6 }}>
-        {athletes.length === 0 ? (
+        {rosterError ? (
+          <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
+            No se pudo cargar tu plantel.{" "}
+            {onRetryRoster && (
+              <button type="button" onClick={onRetryRoster}
+                style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
+                Reintentar
+              </button>
+            )}
+          </div>
+        ) : athletes.length === 0 ? (
           <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>No tenés atletas vinculados.</div>
         ) : (
           athletes.map((a) => {

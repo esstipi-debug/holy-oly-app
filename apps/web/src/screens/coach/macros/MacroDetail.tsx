@@ -45,11 +45,17 @@ export function MacroDetail() {
   const [assignOpen, setAssignOpen] = useState(false);
   const [athletes, setAthletes] = useState<Atleta[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  // Error ≠ vacío (D5): si el roster falla, el sheet NO puede decir "No tenés atletas vinculados".
+  const [rosterError, setRosterError] = useState(false);
+  const [rosterReload, setRosterReload] = useState(0);
   useEffect(() => {
     let on = true;
-    repo.getRoster().then((r) => { if (on) setAthletes(r); }).catch(() => {});
+    setRosterError(false);
+    repo.getRoster()
+      .then((r) => { if (on) setAthletes(r); })
+      .catch(() => { if (on) setRosterError(true); });
     return () => { on = false; };
-  }, [repo]);
+  }, [repo, rosterReload]);
 
   const macro = MACROCYCLES.find((m) => m.id === id);
   if (!macro) return <Navigate to="/coach/macros" replace />;
@@ -111,7 +117,8 @@ export function MacroDetail() {
         + Asignar a un atleta
       </button>
 
-      <AssignSheet open={assignOpen} onClose={() => setAssignOpen(false)} macro={macro} athletes={athletes} onAssign={onAssign} />
+      <AssignSheet open={assignOpen} onClose={() => setAssignOpen(false)} macro={macro} athletes={athletes} onAssign={onAssign}
+        rosterError={rosterError} onRetryRoster={() => setRosterReload((r) => r + 1)} />
       {toast && (
         <div role="status" style={{
           position: "fixed", left: 14, right: 14, bottom: 78, zIndex: 40, maxWidth: 362, margin: "0 auto",

@@ -19,7 +19,7 @@ export function VerifyEmailScreen() {
       <div style={{ maxWidth: 360, textAlign: "center" }}>
         {!token && <p>Enlace inválido.</p>}
         {token && state === "idle" && <p>Verificando email…</p>}
-        {state === "ok" && <p>Email verificado. Ya podés activar atletas en tu roster.</p>}
+        {state === "ok" && <p>Email verificado. Ya podés seguir usando Holy Oly.</p>}
         {state === "err" && <p>El enlace expiró o ya fue usado.</p>}
         <Link to="/login" style={{ display: "inline-block", marginTop: 12, fontFamily: "var(--mono)", fontSize: 12 }}>Ir al login</Link>
       </div>

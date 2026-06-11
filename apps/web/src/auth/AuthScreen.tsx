@@ -1,5 +1,5 @@
 import { useState, useEffect, type CSSProperties, type FormEvent } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import type { Role } from "./authClient";
 import { googleAuthEnabled, googleAuthStart } from "./authClient";
@@ -13,8 +13,9 @@ const input: CSSProperties = {
 const label: CSSProperties = { fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)", marginTop: 12, display: "block" };
 
 export function AuthScreen() {
-  const { login, signup } = useAuth();
+  const { login, signup, user, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [googleEnabled, setGoogleEnabled] = useState(false);
   useEffect(() => { void googleAuthEnabled().then(setGoogleEnabled); }, []);
@@ -27,6 +28,8 @@ export function AuthScreen() {
   const [busy, setBusy] = useState(false);
   const [website, setWebsite] = useState("");
   const googleError = searchParams.get("error") === "google";
+  // Tras un reset exitoso ResetPasswordScreen navega acá con state.resetOk.
+  const resetOk = Boolean((location.state as { resetOk?: boolean } | null)?.resetOk);
 
   function onGoogle(): void {
     setError(null);
@@ -51,6 +54,9 @@ export function AuthScreen() {
       setBusy(false);
     }
   }
+
+  // Sesión ya activa → el form de login no aplica; RoleLanding despacha por rol.
+  if (user && !loading) return <Navigate to="/" replace />;
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--wl-bg)", display: "grid", placeItems: "center", padding: 16 }}>
@@ -101,6 +107,12 @@ export function AuthScreen() {
           <Link to="/login/forgot" style={{ display: "block", marginTop: 10, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
             ¿Olvidaste tu contraseña?
           </Link>
+        )}
+
+        {mode === "login" && resetOk && (
+          <div role="status" style={{ marginTop: 12, color: "var(--ok)", fontFamily: "var(--mono)", fontSize: 11 }}>
+            Contraseña actualizada — ingresá de nuevo.
+          </div>
         )}
 
         {googleError && (
