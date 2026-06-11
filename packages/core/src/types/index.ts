@@ -271,11 +271,14 @@ export type IntensityZone = "70-80" | "80-90" | "90+";
 export type ReadinessBand = "green" | "amber" | "red";
 
 export interface EngineInput {
-  /** Largo del countdown a la compe FIJADO AL ANCLAR (la compe es la última semana);
-   *  null = sin competencia → ola continua. Jamás re-derivarlo semana a semana (D13). */
-  weeksToComp: number | null;
-  /** Semana del countdown a generar (0-based; default 0). La secuencia vivida es
-   *  phasePlan(weeksToComp)[weekIdx] por construcción. Ignorado en modo ola. */
+  /** Largo del countdown a la compe FIJADO AL ANCLAR — la compe es la ÚLTIMA semana (n=1 = la
+   *  compe es ESTA semana); null = sin competencia → ola continua. Jamás re-derivarlo semana a
+   *  semana (D13). Renombrado de `weeksToComp`: el nombre no debe invitar a computar
+   *  "distancia" — ese off-by-one correría el peak (N2 de El Carnicero). */
+  countdownWeeks: number | null;
+  /** Semana del countdown a generar (0-based). REQUERIDO en modo countdown: ausente/degenerado
+   *  → null honesto — la posición es estado del cableado, igual que waveWeek (D13c). La
+   *  secuencia vivida es phasePlan(n)[weekIdx] por construcción. No se usa en modo ola. */
   weekIdx?: number;
   /** Lift del RM de la casa (D2) — no el enum del bundle. */
   lift: RmLift;

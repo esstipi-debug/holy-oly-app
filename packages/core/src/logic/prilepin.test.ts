@@ -3,7 +3,7 @@ import { PHASE_PROFILE, PRILEPIN, athleteWeekView, generateWeek, phasePlan, wave
 import type { EngineInput, EnginePhase } from "../types";
 
 const base = (over: Partial<EngineInput> = {}): EngineInput => ({
-  weeksToComp: 3, lift: "arranque", rmKg: 100, recentACWR: 1.1, readiness: "green", ...over,
+  countdownWeeks: 3, weekIdx: 0, lift: "arranque", rmKg: 100, recentACWR: 1.1, readiness: "green", ...over,
 });
 const totalReps = (w: { sets: { sets: number; reps: number }[] }): number =>
   w.sets.reduce((t, s) => t + s.sets * s.reps, 0);
@@ -43,7 +43,7 @@ describe("generateWeek — countdown fijado al anclar (D13, HIGH de El Carnicero
   it("la secuencia VIVIDA (weekIdx 0..n−1) ES el array: el taper no reaparece en n=3", () => {
     const lived3 = [0, 1, 2].map((i) => generateWeek(base({ weekIdx: i }))!.phase);
     expect(lived3).toEqual(["intensification", "peak", "comp_week"]);
-    const lived5 = [0, 1, 2, 3, 4].map((i) => generateWeek(base({ weeksToComp: 5, weekIdx: i }))!.phase);
+    const lived5 = [0, 1, 2, 3, 4].map((i) => generateWeek(base({ countdownWeeks: 5, weekIdx: i }))!.phase);
     expect(lived5).toEqual(phasePlan(5));
   });
   it("weekIdx fuera del countdown o degenerado → null honesto", () => {
@@ -52,11 +52,17 @@ describe("generateWeek — countdown fijado al anclar (D13, HIGH de El Carnicero
     expect(generateWeek(base({ weekIdx: 1.5 }))).toBeNull();
     expect(generateWeek(base({ weekIdx: NaN }))).toBeNull();
   });
+  it("countdown SIN weekIdx → null honesto (la posición es estado, igual que la ola — D13c)", () => {
+    expect(generateWeek({ countdownWeeks: 3, lift: "arranque", rmKg: 100, recentACWR: 1.1 })).toBeNull();
+  });
+  it("en modo ola weekIdx no se usa (la posición es waveWeek)", () => {
+    expect(generateWeek(base({ countdownWeeks: null, waveWeek: 5, weekIdx: 99 }))!.phase).toBe("peak");
+  });
 });
 
 describe("generateWeek — ajuste híbrido por ACWR (banda de la casa [0.8, 1.3], D3)", () => {
   const acc = (acwr: number | null) =>
-    generateWeek(base({ weeksToComp: 8, lift: "sentadilla", recentACWR: acwr, readiness: null }))!;
+    generateWeek(base({ countdownWeeks: 8, lift: "sentadilla", recentACWR: acwr, readiness: null }))!;
   it("neutro (en banda) = sin dato: mismo volumen, inputs honestos", () => {
     const neutral = acc(1.0);
     const sinDato = acc(null);
@@ -95,7 +101,7 @@ describe("generateWeek — readiness modula el día (criterio 5)", () => {
 
 describe("generateWeek — % y kg (D4 + D6)", () => {
   it("comp_week (n=1): el set más pesado va a 95, jamás 100 (aperturas)", () => {
-    const w = generateWeek(base({ weeksToComp: 1 }))!;
+    const w = generateWeek(base({ countdownWeeks: 1 }))!;
     expect(w.phase).toBe("comp_week");
     expect(Math.max(...w.sets.map((s) => s.pct))).toBe(95);
     expect(w.sets).toEqual([
@@ -104,7 +110,7 @@ describe("generateWeek — % y kg (D4 + D6)", () => {
     ]);
   });
   it("taper (n=4, weekIdx 2): top 90+ también capado a 95", () => {
-    const w = generateWeek(base({ weeksToComp: 4, weekIdx: 2 }))!;
+    const w = generateWeek(base({ countdownWeeks: 4, weekIdx: 2 }))!;
     expect(w.phase).toBe("taper");
     expect(Math.max(...w.sets.map((s) => s.pct))).toBe(95);
   });
@@ -112,13 +118,13 @@ describe("generateWeek — % y kg (D4 + D6)", () => {
     const cases = [];
     for (let idx = 0; idx < 6; idx++)
       for (const lift of ["arranque", "sentadilla"] as const)
-        cases.push(base({ weeksToComp: 6, weekIdx: idx, lift, recentACWR: null, readiness: null }));
-    for (let wv = 1; wv <= 6; wv++) cases.push(base({ weeksToComp: null, waveWeek: wv }));
+        cases.push(base({ countdownWeeks: 6, weekIdx: idx, lift, recentACWR: null, readiness: null }));
+    for (let wv = 1; wv <= 6; wv++) cases.push(base({ countdownWeeks: null, waveWeek: wv }));
     for (const c of cases)
       for (const s of generateWeek(c)!.sets) expect(s.pct).toBeLessThanOrEqual(95);
   });
   it("deload por ola: topPct 80 capa a la zona top 80-90", () => {
-    const w = generateWeek(base({ weeksToComp: null, waveWeek: 6, lift: "sentadilla" }))!;
+    const w = generateWeek(base({ countdownWeeks: null, waveWeek: 6, lift: "sentadilla" }))!;
     expect(w.phase).toBe("deload");
     expect(w.sets).toEqual([
       { sets: 2, reps: 3, pct: 75, weightKg: 75, zone: "70-80" },
@@ -126,7 +132,7 @@ describe("generateWeek — % y kg (D4 + D6)", () => {
     ]);
   });
   it("kg a 1 kg de la casa, NO múltiplos de 2.5 (rm 91 @ 85% → 77)", () => {
-    const w = generateWeek(base({ weeksToComp: 8, rmKg: 91, recentACWR: null, readiness: null }))!;
+    const w = generateWeek(base({ countdownWeeks: 8, rmKg: 91, recentACWR: null, readiness: null }))!;
     const z85 = w.sets.find((s) => s.pct === 85)!;
     expect(z85.weightKg).toBe(77);
   });
@@ -134,23 +140,23 @@ describe("generateWeek — % y kg (D4 + D6)", () => {
 
 describe("generateWeek — clásicos vs sentadilla (criterio 8)", () => {
   it("arranque usa 2 reps/set en 70-80; sentadilla usa 3", () => {
-    const cl = generateWeek(base({ weeksToComp: 8, recentACWR: null, readiness: null }))!;
-    const sq = generateWeek(base({ weeksToComp: 8, lift: "sentadilla", recentACWR: null, readiness: null }))!;
+    const cl = generateWeek(base({ countdownWeeks: 8, recentACWR: null, readiness: null }))!;
+    const sq = generateWeek(base({ countdownWeeks: 8, lift: "sentadilla", recentACWR: null, readiness: null }))!;
     expect(cl.sets.find((s) => s.zone === "70-80")!.reps).toBe(2);
     expect(sq.sets.find((s) => s.zone === "70-80")!.reps).toBe(3);
   });
   it("ola sin waveWeek → null honesto (la posición en la ola es estado, no un default); semana 5 → mini-pico", () => {
-    expect(generateWeek(base({ weeksToComp: null }))).toBeNull();
-    expect(generateWeek(base({ weeksToComp: null, waveWeek: 5 }))!.phase).toBe("peak");
+    expect(generateWeek(base({ countdownWeeks: null }))).toBeNull();
+    expect(generateWeek(base({ countdownWeeks: null, waveWeek: 5 }))!.phase).toBe("peak");
   });
   it("envión es clásico (2 reps/set en 70-80); frente es sentadilla frontal → tabla (3)", () => {
-    const en = generateWeek(base({ weeksToComp: 8, lift: "envion", recentACWR: null, readiness: null }))!;
-    const fr = generateWeek(base({ weeksToComp: 8, lift: "frente", recentACWR: null, readiness: null }))!;
+    const en = generateWeek(base({ countdownWeeks: 8, lift: "envion", recentACWR: null, readiness: null }))!;
+    const fr = generateWeek(base({ countdownWeeks: 8, lift: "frente", recentACWR: null, readiness: null }))!;
     expect(en.sets.find((s) => s.zone === "70-80")!.reps).toBe(2);
     expect(fr.sets.find((s) => s.zone === "70-80")!.reps).toBe(3);
   });
   it("red en fase sin zona 90+ (acumulación) → advisory false (no hay single que mover)", () => {
-    const w = generateWeek(base({ weeksToComp: 8, readiness: "red" }))!;
+    const w = generateWeek(base({ countdownWeeks: 8, readiness: "red" }))!;
     expect(w.heavySinglesAdvisory).toBe(false);
   });
 });
@@ -162,14 +168,14 @@ describe("generateWeek — sin-dato honesto, jamás inventar (D7 / lección NaN 
     expect(generateWeek(base({ rmKg: NaN }))).toBeNull();
   });
   it("compe pasada / semanas degeneradas → null", () => {
-    expect(generateWeek(base({ weeksToComp: 0 }))).toBeNull();
-    expect(generateWeek(base({ weeksToComp: -1 }))).toBeNull();
-    expect(generateWeek(base({ weeksToComp: NaN }))).toBeNull();
-    expect(generateWeek(base({ weeksToComp: 2.5 }))).toBeNull();
+    expect(generateWeek(base({ countdownWeeks: 0 }))).toBeNull();
+    expect(generateWeek(base({ countdownWeeks: -1 }))).toBeNull();
+    expect(generateWeek(base({ countdownWeeks: NaN }))).toBeNull();
+    expect(generateWeek(base({ countdownWeeks: 2.5 }))).toBeNull();
   });
   it("ola degenerada → null", () => {
-    expect(generateWeek(base({ weeksToComp: null, waveWeek: 0 }))).toBeNull();
-    expect(generateWeek(base({ weeksToComp: null, waveWeek: NaN }))).toBeNull();
+    expect(generateWeek(base({ countdownWeeks: null, waveWeek: 0 }))).toBeNull();
+    expect(generateWeek(base({ countdownWeeks: null, waveWeek: NaN }))).toBeNull();
   });
   it("ACWR no-finito se trata como sin dato (factor 1, eco null)", () => {
     const w = generateWeek(base({ recentACWR: NaN }))!;

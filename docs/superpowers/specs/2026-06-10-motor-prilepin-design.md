@@ -38,12 +38,15 @@ export type IntensityZone = "70-80" | "80-90" | "90+";
 export type ReadinessBand = "green" | "amber" | "red";
 
 export interface EngineInput {
-  weeksToComp: number | null;     // largo del countdown FIJADO AL ANCLAR (la compe = última semana); null = ola
-  weekIdx?: number;               // semana del countdown a generar (0-based, default 0) — D13
+  countdownWeeks: number | null;  // largo del countdown FIJADO AL ANCLAR (la compe = ÚLTIMA semana; n=1 = es esta
+                                  // semana); null = ola. Renombrado de weeksToComp: el nombre no debe invitar a
+                                  // computar "distancia" — ese off-by-one corre el peak (N2 El Carnicero)
+  weekIdx?: number;               // semana del countdown (0-based) — REQUERIDO en modo countdown; ausente →
+                                  // null honesto (la posición es estado del cableado, D13c). No se usa en ola
   lift: RmLift;                   // arranque | envion | sentadilla | frente (house, no enum paralelo)
   rmKg: number;                   // RM vigente del lift (SP5; el coach lo fija — acá jamás se estima)
   recentACWR: number | null;      // de monitor.ts; null = sin dato (sin ajuste, jamás inventar)
-  waveWeek?: number;              // 1-based, posición en la ola si weeksToComp === null — SIN default (D13b)
+  waveWeek?: number;              // 1-based, posición en la ola si countdownWeeks === null — SIN default (D13b)
   readiness?: ReadinessBand | null; // banda sobre readiness.ts 0-100; null/ausente = sin dato
 }
 
@@ -77,7 +80,7 @@ export interface EngineWeek {
 export interface EngineWeekAthleteView { phase: EnginePhase; label: string; rationale: string; sets: EngineSet[]; }
 
 export function generateWeek(input: EngineInput): EngineWeek | null;
-export function phasePlan(weeksToComp: number): EnginePhase[];
+export function phasePlan(countdownWeeks: number): EnginePhase[];
 export function wavePhase(waveWeek: number): EnginePhase | null;
 export function athleteWeekView(week: EngineWeek): EngineWeekAthleteView;
 // + en readiness.ts (aditivo): export function readinessBand(score: number | undefined): ReadinessBand | null;
@@ -146,8 +149,9 @@ fabricaba la semana de MÁS volumen desde un dato faltante (hallazgo de El Carni
 
 ## 6. `generateWeek` — los 4 pasos
 
-1. **Fase**: `weeksToComp !== null` → `phasePlan(weeksToComp)[weekIdx ?? 0]` (fuera de rango o
-   weekIdx degenerado → null); si no → `waveWeek` ausente → null, presente → `wavePhase(waveWeek)`.
+1. **Fase**: modo countdown → `weekIdx` REQUERIDO; ausente/degenerado/fuera de rango → null;
+   si no `phasePlan(countdownWeeks)[weekIdx]`. Modo ola → `waveWeek` ausente → null, presente →
+   `wavePhase(waveWeek)` (weekIdx no se usa).
 2. **Ajuste ACWR** (banda de la casa, no la del bundle — D3): `> 1.3 → ×0.9` · `< 0.8 → ×1.1` ·
    en banda o `null`/no-finito → ×1.0.
 3. **Ajuste readiness**: `amber → ×0.9` · `red → ×0.75` + `heavySinglesAdvisory` si hay zona 90+ ·
@@ -211,6 +215,11 @@ fabricaba la semana de MÁS volumen desde un dato faltante (hallazgo de El Carni
   comp_week es siempre la última semana, y la semana vivida es `phasePlan(n)[weekIdx]`.
   **D13b:** `waveWeek` sin default — ausente → null honesto (el default 1 fabricaba la semana
   de más volumen desde dato faltante).
+  **D13c (verificación de El Carnicero):** `weekIdx` también REQUERIDO en modo countdown —
+  con default 0, omitirlo y re-derivar `weeksToComp` semanalmente compilaba limpio y
+  reproducía el bug original. Misma vara que D13b: la posición es estado, no default.
+  **Rename:** `weeksToComp → countdownWeeks` — la semántica cambió de distancia a largo y el
+  nombre viejo invitaba al off-by-one que corre el peak (gratis ahora: cero consumidores).
 - **D14 · Unidad = SESIÓN, no semana (El Carnicero).** La tabla Prilepin es una heurística POR
   SESIÓN; `EngineWeek` es la dosis del lift para su sesión PRINCIPAL de la semana, y
   `withinRange` se lee contra esa unidad. El reparto multi-sesión (p.ej. ruso-5d entrena un
@@ -249,10 +258,14 @@ fabricaba la semana de MÁS volumen desde un dato faltante (hallazgo de El Carni
 El consumidor natural es el slice **readiness→modulación** (el ajuste del paso 3 por día con
 explicación visible) y luego **peaking** (que concilia `phasePlan` con `volumeCurve` y la
 `Competencia`). Obligaciones del cableado que esta spec deja fijadas:
-- El countdown (`weeksToComp` + `weekIdx`) se computa **UNA vez al anclar/re-anclar** la compe
-  desde `Competencia.date` vía `schedule.ts` (verdad anclada a fecha, §2b) — jamás re-derivar
-  semana a semana (D13).
+- El countdown (`countdownWeeks` + `weekIdx`) se computa **UNA vez al anclar/re-anclar** la
+  compe desde `Competencia.date` vía `schedule.ts` (verdad anclada a fecha, §2b) — jamás
+  re-derivar semana a semana (D13). Ambos son estado persistido; el motor no acepta ausencia.
 - `waveWeek` se **persiste** como estado del plan en modo ola — el motor no acepta ausencia.
+- **Decisión pendiente de cableado (El Carnicero, fuera de rulebook):** `athleteWeekView.sets`
+  trae `pct` + `weightKg` juntos → el RM es derivable por división. El precedente shipped
+  (warmup server-side; SP5 "atleta cero RM en DOM") empuja a mostrar sólo kg+discos al atleta.
+  Decidir explícito en el cableado — que no se cuele por defecto.
 - El atleta consume `athleteWeekView`; los `audits`/`taper`/`inputs` van SOLO al peek del coach
   (D12). El fraseo del "por qué null" (sin RM vigente ≠ compe pasada) lo resuelve el cableado
   pre-validando inputs.

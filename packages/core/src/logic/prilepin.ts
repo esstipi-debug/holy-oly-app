@@ -1,6 +1,6 @@
 /**
  * Motor Prilepin — generador semanal sets × reps × % → kg (core dormant, v1).
- * Spec: docs/superpowers/specs/2026-06-10-motor-prilepin-design.md (decisiones D1–D12).
+ * Spec: docs/superpowers/specs/2026-06-10-motor-prilepin-design.md (decisiones D1–D14).
  * Config + funciones PURAS: el caller ancla fechas (weeksToComp desde Competencia.date, §2b
  * del rulebook) y pasa el RM vigente (SP5). Sin RPE en ningún shape; sin ciclo como input.
  */
@@ -44,15 +44,15 @@ export function wavePhase(waveWeek: number): EnginePhase | null {
  *  el taper; n≥4 no), así que la secuencia vivida solo es consistente si el countdown se fija
  *  al anclar la compe y re-anclar lo recomputa entero (hallazgo HIGH de El Carnicero, D13).
  *  n<1 (compe pasada / sin semanas) o inválido → [] (sin plan honesto). */
-export function phasePlan(weeksToComp: number): EnginePhase[] {
-  if (!Number.isInteger(weeksToComp) || weeksToComp < 1) return [];
-  if (weeksToComp === 1) return ["comp_week"];
-  if (weeksToComp === 2) return ["peak", "comp_week"];
+export function phasePlan(countdownWeeks: number): EnginePhase[] {
+  if (!Number.isInteger(countdownWeeks) || countdownWeeks < 1) return [];
+  if (countdownWeeks === 1) return ["comp_week"];
+  if (countdownWeeks === 2) return ["peak", "comp_week"];
   // n=3 comprime: SIN semana taper aparte (caso canónico del owner; la disipación de fatiga
   // vive en comp_week, taperFactor 0.25). No es un hueco.
-  if (weeksToComp === 3) return ["intensification", "peak", "comp_week"];
+  if (countdownWeeks === 3) return ["intensification", "peak", "comp_week"];
   return [
-    ...Array<EnginePhase>(weeksToComp - 4).fill("accumulation"),
+    ...Array<EnginePhase>(countdownWeeks - 4).fill("accumulation"),
     "intensification", "peak", "taper", "comp_week",
   ];
 }
@@ -86,13 +86,19 @@ const ACWR_LOW = 0.8;
 export function generateWeek(input: EngineInput): EngineWeek | null {
   if (!Number.isFinite(input.rmKg) || input.rmKg <= 0) return null;
 
-  const weekIdx = input.weekIdx ?? 0;
-  if (!Number.isInteger(weekIdx) || weekIdx < 0) return null;
-  const phase: EnginePhase | null = input.weeksToComp !== null
-    ? phasePlan(input.weeksToComp)[weekIdx] ?? null
-    // Ola: la posición es ESTADO del cableado — ausente → null honesto, jamás defaultear a la
-    // semana de más volumen (hallazgo de El Carnicero sobre el default 1).
-    : input.waveWeek === undefined ? null : wavePhase(input.waveWeek);
+  let phase: EnginePhase | null;
+  if (input.countdownWeeks !== null) {
+    // La posición en el countdown es ESTADO del cableado (D13c): ausente/degenerada → null —
+    // "asumir semana 0" reproduciría el bug del re-derivado semanal que cazó El Carnicero.
+    const weekIdx = input.weekIdx;
+    phase = weekIdx === undefined || !Number.isInteger(weekIdx) || weekIdx < 0
+      ? null
+      : phasePlan(input.countdownWeeks)[weekIdx] ?? null;
+  } else {
+    // Ola: la posición también es ESTADO — ausente → null honesto, jamás defaultear a la
+    // semana de más volumen (hallazgo de El Carnicero sobre el default 1 del bundle).
+    phase = input.waveWeek === undefined ? null : wavePhase(input.waveWeek);
+  }
   if (phase === null) return null;
   const profile = PHASE_PROFILE[phase];
 
