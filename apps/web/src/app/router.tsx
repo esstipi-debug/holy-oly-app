@@ -11,6 +11,8 @@ import { ResetPasswordScreen } from "../auth/ResetPasswordScreen";
 import { VerifyEmailScreen } from "../auth/VerifyEmailScreen";
 import { GoogleCompleteScreen } from "../auth/GoogleCompleteScreen";
 import { PrivacidadPage, TerminosPage } from "../screens/legal/LegalPages";
+import { NotFound } from "../screens/NotFound";
+import { AppError } from "../screens/AppError";
 import { SuscripcionScreen } from "../screens/coach/SuscripcionScreen";
 import { Equipo } from "../screens/coach/Equipo";
 import { Drilldown } from "../screens/coach/Drilldown";
@@ -18,7 +20,7 @@ import { InvitacionesScreen } from "../screens/coach/InvitacionesScreen";
 import { CoachShell } from "../screens/coach/macros/CoachShell";
 import { MacroCatalog } from "../screens/coach/macros/MacroCatalog";
 import { MacroDetail } from "../screens/coach/macros/MacroDetail";
-import { CuentaStub } from "../screens/coach/macros/CuentaStub";
+import { CuentaCoach } from "../screens/coach/macros/CuentaCoach";
 import { AthleteShell } from "../screens/atleta/AthleteShell";
 import { HomeScreen } from "../screens/atleta/HomeScreen";
 import { ProgresoScreen } from "../screens/atleta/ProgresoScreen";
@@ -29,6 +31,8 @@ import { VictoriaScreen } from "../screens/atleta/entreno/VictoriaScreen";
 const routes: RouteObject[] = [
   {
     path: "/",
+    // W5/D7: errores de render/loader caen en una pantalla del DS en español, no en la de RRD en inglés.
+    errorElement: <AppError />,
     element: (
       <AuthProvider>
         <RepositoryProvider>
@@ -54,7 +58,7 @@ const routes: RouteObject[] = [
           { path: "macros/:id", element: <MacroDetail /> },
           { path: "a/:id", element: <Drilldown /> },
           { path: "invitaciones", element: <InvitacionesScreen /> },
-          { path: "cuenta", element: <CuentaStub /> },
+          { path: "cuenta", element: <CuentaCoach /> },
           { path: "suscripcion", element: <SuscripcionScreen /> },
         ],
       },
@@ -73,6 +77,8 @@ const routes: RouteObject[] = [
       ...(import.meta.env.DEV
         ? [{ path: "gallery", lazy: async () => ({ Component: (await import("../ui/Gallery")).Gallery }) }]
         : []),
+      // W5/D7: catch-all 404 — SIEMPRE el último child de la raíz.
+      { path: "*", element: <NotFound /> },
     ],
   },
 ];

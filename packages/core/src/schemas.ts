@@ -134,6 +134,12 @@ export const InviteSchema = z.object({ inviteCode: z.string().nullable() });
 export const InviteCodeSchema = z.object({ inviteCode: z.string() });
 export const AcceptResultSchema = z.object({ id: z.string(), estado: VinculoEstadoSchema });
 
+/** Estado del vínculo visto por la atleta (GET /me/vinculo, Cuenta · W5): sólo estado + nombre
+ *  del coach — NUNCA inviteCode ni ids de otros atletas. `vinculo: null` = sin vínculo vigente. */
+export const MeVinculoSchema = z.object({
+  vinculo: z.object({ estado: VinculoEstadoSchema, coachNombre: z.string() }).nullable(),
+});
+
 // ── Athlete self-report wire shapes (Proyecto A · /me/*). Items 1-5 + optional weight. The 6
 //    items are untrusted writer input → bound each value; date is server-assigned, not in the body. ──
 const WellnessValueSchema = z.number().int().min(1).max(5);

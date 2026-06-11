@@ -75,6 +75,21 @@ export async function putMeSession(week: number, idx: number, actuals: ExerciseA
   if (!res.ok) await fail(res);
 }
 
+/** D3: la atleta baja TODO lo suyo (GET /me/export). Devuelve el JSON crudo del export —
+ *  la pantalla lo descarga como archivo; acá no se re-valida (es el dump del server). */
+export async function exportMe(): Promise<unknown> {
+  const res = await fetch(`${BASE}/me/export`, { credentials: "include" });
+  if (!res.ok) return fail(res);
+  return res.json();
+}
+
+/** D4: borrado de la propia cuenta (DELETE /me/account). El server cascadea los datos y
+ *  mata la sesión (clearCookie) — la pantalla redirige a /login al éxito. */
+export async function deleteMyAccount(): Promise<void> {
+  const res = await fetch(`${BASE}/me/account`, { method: "DELETE", credentials: "include" });
+  if (!res.ok) await fail(res);
+}
+
 /** El registro propio del ciclo — la verdad de la atleta (el coach jamás recibe este shape). */
 export async function getMeCycle(): Promise<CycleData> {
   const res = await fetch(`${BASE}/me/cycle`, { credentials: "include" });

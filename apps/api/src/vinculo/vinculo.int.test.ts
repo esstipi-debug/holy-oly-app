@@ -90,4 +90,55 @@ describe("Vínculo invite flow (integration)", () => {
     const rot = await app.inject({ method: "POST", url: "/invite/rotate" });
     expect(rot.statusCode).toBe(401);
   });
+
+  // ── GET /me/vinculo (W5: estado real del vínculo en Cuenta atleta) ──
+  it("GET /me/vinculo: null sin vínculo → pendiente tras accept → activo (con coachNombre) tras confirm", async () => {
+    const u = Date.now();
+    const coach = await app.inject({
+      method: "POST", url: "/auth/signup",
+      payload: { email: `c-mv-${u}@x.dev`, password: "coach-pass-mv", role: "coach", name: "Coach Vínculo" },
+    });
+    const coachH = cookieOf(coach);
+    const rot = await app.inject({ method: "POST", url: "/invite/rotate", headers: coachH });
+    const code = (rot.json() as { inviteCode: string }).inviteCode;
+
+    const ath = await app.inject({
+      method: "POST", url: "/auth/signup",
+      payload: { email: `a-mv-${u}@x.dev`, password: "athlete-pwd-mv", role: "atleta", name: "Atleta Vínculo" },
+    });
+    const athH = cookieOf(ath);
+
+    // sin vínculo → null
+    const none = await app.inject({ method: "GET", url: "/me/vinculo", headers: athH });
+    expect(none.statusCode).toBe(200);
+    expect(none.json()).toEqual({ vinculo: null });
+
+    // tras accept → pendiente (con el nombre del coach, jamás el inviteCode)
+    await app.inject({ method: "POST", url: "/vinculos/accept", headers: athH, payload: { code } });
+    const pend = await app.inject({ method: "GET", url: "/me/vinculo", headers: athH });
+    expect(pend.statusCode).toBe(200);
+    expect(pend.json()).toEqual({ vinculo: { estado: "pendiente", coachNombre: "Coach Vínculo" } });
+    expect(JSON.stringify(pend.json())).not.toContain(code); // nunca exponer inviteCode
+
+    // tras confirm del coach → activo
+    const list = await app.inject({ method: "GET", url: "/vinculos", headers: coachH });
+    const row = (list.json() as Array<{ id: string; estado: string }>).find((v) => v.estado === "pendiente");
+    await app.inject({ method: "POST", url: `/vinculos/${row!.id}/confirm`, headers: coachH });
+    const act = await app.inject({ method: "GET", url: "/me/vinculo", headers: athH });
+    expect(act.statusCode).toBe(200);
+    expect(act.json()).toEqual({ vinculo: { estado: "activo", coachNombre: "Coach Vínculo" } });
+  });
+
+  it("GET /me/vinculo requiere sesión de atleta (anónimo y coach → 401)", async () => {
+    const anon = await app.inject({ method: "GET", url: "/me/vinculo" });
+    expect(anon.statusCode).toBe(401);
+
+    const u = Date.now();
+    const coach = await app.inject({
+      method: "POST", url: "/auth/signup",
+      payload: { email: `c-mv2-${u}@x.dev`, password: "coach-pass-mv2", role: "coach" },
+    });
+    const asCoach = await app.inject({ method: "GET", url: "/me/vinculo", headers: cookieOf(coach) });
+    expect(asCoach.statusCode).toBe(401);
+  });
 });

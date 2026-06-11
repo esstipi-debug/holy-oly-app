@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatClp, MULTISEDE } from "@holy-oly/core";
 import { billingCheckout, billingPlans, billingStatus, mockActivate, type BillingPeriod, type BillingPlan, type BillingStatus } from "../../billing/billingClient";
-import { resendVerificationEmail } from "../../auth/authClient";
 import { useAuth } from "../../auth/AuthContext";
+import { VerifyEmailBanner } from "../../ui/VerifyEmailBanner";
 
 const monthsFree = (p: BillingPlan): number => Math.round((p.priceClpMonthly * 12 - p.priceClpAnnual) / p.priceClpMonthly);
 const coachesLabel = (n: number | null): string => (n == null ? "Coaches ilimitados" : n === 1 ? "1 coach" : `Hasta ${n} coaches`);
@@ -17,17 +17,6 @@ export function SuscripcionScreen() {
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [resend, setResend] = useState<"idle" | "sending" | "sent" | "error">("idle");
-
-  async function onResend(): Promise<void> {
-    setResend("sending");
-    try {
-      await resendVerificationEmail();
-      setResend("sent");
-    } catch {
-      setResend("error");
-    }
-  }
 
   async function refresh(): Promise<void> {
     setStatus(await billingStatus());
@@ -84,25 +73,7 @@ export function SuscripcionScreen() {
         Los atletas son gratis. El coach necesita plan activo para editar programas. Precios + IVA.
       </p>
 
-      {user && user.emailVerified === false && (
-        <div style={{ marginTop: 12, padding: 12, borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-accent) 30%,transparent)" }}>
-          <div style={{ fontWeight: 700 }}>Verificá tu email</div>
-          <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>Sin verificación no podés confirmar atletas en el roster.</div>
-          <button
-            type="button"
-            disabled={resend === "sending" || resend === "sent"}
-            onClick={() => void onResend()}
-            style={{ marginTop: 8, padding: "8px 12px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontWeight: 700, cursor: resend === "sending" || resend === "sent" ? "default" : "pointer", opacity: resend === "sending" ? 0.45 : 1 }}
-          >
-            {resend === "sending" ? "Enviando…" : resend === "sent" ? "Enviado ✓ — revisá spam" : "Reenviar email"}
-          </button>
-          {resend === "error" && (
-            <div role="alert" style={{ marginTop: 8, color: "var(--wl-danger)", fontSize: 12 }}>
-              No se pudo reenviar el email. Probá de nuevo.
-            </div>
-          )}
-        </div>
-      )}
+      {user && user.emailVerified === false && <VerifyEmailBanner />}
 
       {status && (
         <div style={{ marginTop: 16, padding: 14, borderRadius: 12, background: "var(--wl-surface)" }}>

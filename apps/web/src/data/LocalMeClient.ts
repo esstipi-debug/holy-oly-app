@@ -133,6 +133,15 @@ export class LocalMeClient implements MeClient {
     this.s.set(KEYS.sessionActuals(this.id), [...kept, ...added]);
   }
 
+  // ── cuenta (D3/D4) — espejo honesto: en la demo NO hay cuenta. La UI gatea "Tus datos" por
+  //    apiEnabled, así que esto es defensa en profundidad, no un camino real. ──
+  async exportMe(): Promise<unknown> {
+    throw new Error("El export está disponible sólo con cuenta real (la demo no tiene cuenta).");
+  }
+  async deleteMyAccount(): Promise<void> {
+    throw new Error("El borrado está disponible sólo con cuenta real (la demo no tiene cuenta).");
+  }
+
   /** Registro propio del ciclo. Mirrors repo.getMyCycle (sin fila → default honesto "no optó"). */
   async getMeCycle(): Promise<CycleData> {
     const share = CycleShareSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleShare(this.id)));

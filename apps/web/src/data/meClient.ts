@@ -40,6 +40,16 @@ export function putMeCycle(input: CycleData): Promise<void> {
   return API_ENABLED ? http.putMeCycle(input) : local().putMeCycle(input);
 }
 
+// ── Cuenta (D3/D4, W5) — scope CUENTA, no vista: a propósito FUERA de la interface `MeClient`
+//    (el drill-down del coach instancia un MeClient id-scoped para "ver como atleta" y jamás
+//    debe poder exportar/borrar). La UI gatea por apiEnabled; el Local tira error honesto.
+export function exportMe(): Promise<unknown> {
+  return API_ENABLED ? http.exportMe() : local().exportMe();
+}
+export function deleteMyAccount(): Promise<void> {
+  return API_ENABLED ? http.deleteMyAccount() : local().deleteMyAccount();
+}
+
 /**
  * The athlete-self data contract. The module above is the app-wide singleton ("me" = the logged-in
  * athlete, or demo Kevin), but the coach drill-down's "ver como atleta" toggle needs an id-scoped

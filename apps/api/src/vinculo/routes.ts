@@ -51,6 +51,20 @@ export async function vinculoRoutes(app: FastifyInstance): Promise<void> {
     return reply.code(201).send({ id: v.id, estado: v.estado });
   });
 
+  /** Estado del vínculo de la atleta logueada (Cuenta · W5). Devuelve SOLO estado + nombre del
+   *  coach — jamás inviteCode ni datos de otros atletas. Sin vínculo vigente → { vinculo: null }. */
+  app.get("/me/vinculo", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    const v = await prisma.vinculo.findFirst({
+      where: { athleteId, estado: { in: ["pendiente", "activo"] } },
+      orderBy: { createdAt: "desc" },
+      include: { coach: { select: { name: true } } },
+    });
+    if (!v) return { vinculo: null };
+    return { vinculo: { estado: v.estado, coachNombre: v.coach.name } };
+  });
+
   app.get("/vinculos", async (req, reply) => {
     const coachId = requireCoach(req, reply);
     if (!coachId) return;

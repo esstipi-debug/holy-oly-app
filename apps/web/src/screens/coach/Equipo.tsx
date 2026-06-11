@@ -13,6 +13,7 @@ import { useAuthMaybe } from "../../auth/AuthContext";
 import { OnboardingCard } from "../../onboarding/OnboardingCard";
 import { onboardingKey } from "../../onboarding/onboardingSeen";
 import { COACH_STEPS, ONBOARDING_TITLE_COACH } from "../../onboarding/steps";
+import { VerifyEmailBanner } from "../../ui/VerifyEmailBanner";
 
 function onResetDemo(): void {
   if (window.confirm("¿Reiniciar el demo al estado inicial? Se borran los cambios de esta sesión (pesos, registros, recorrido).")) {
@@ -70,6 +71,9 @@ export function Equipo() {
           )}
         </div>
       </div>
+
+      {/* W5: email sin verificar → el coach se entera acá, no recién al intentar confirmar un atleta. */}
+      {API_ENABLED && user?.emailVerified === false && <VerifyEmailBanner />}
 
       {error ? (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)", padding: "16px 0" }}>
