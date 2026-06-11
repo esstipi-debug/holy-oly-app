@@ -1,6 +1,21 @@
 import { describe, it, expect } from "vitest";
-import { readiness, readinessTrend } from "./readiness";
+import { readiness, readinessBand, readinessTrend } from "./readiness";
 import type { MonitorSeries } from "../types";
+
+describe("readinessBand (bandas sobre readiness 0-100, cortes espejo de recoveryState)", () => {
+  it("cortes 70/80", () => {
+    expect(readinessBand(100)).toBe("green");
+    expect(readinessBand(80)).toBe("green");
+    expect(readinessBand(79)).toBe("amber");
+    expect(readinessBand(70)).toBe("amber");
+    expect(readinessBand(69)).toBe("red");
+    expect(readinessBand(0)).toBe("red");
+  });
+  it("sin dato → null, jamás una banda inventada", () => {
+    expect(readinessBand(undefined)).toBeNull();
+    expect(readinessBand(NaN)).toBeNull();
+  });
+});
 
 describe("readiness (heurística recuperación + carga)", () => {
   it("recuperación buena + carga en banda → ~recuperación", () => {

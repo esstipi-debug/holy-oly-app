@@ -1,5 +1,13 @@
-import type { MonitorSeries } from "../types";
+import type { MonitorSeries, ReadinessBand } from "../types";
 import { acwr } from "./monitor";
+
+/** Banda del semáforo diario sobre readiness 0-100 (cortes 70/80, espejo de recoveryState —
+ *  misma escala). Sin dato → null, jamás una banda inventada. El semáforo worse-of existente
+ *  (seriesState) NO se toca: esto es la banda que consume el motor Prilepin. */
+export function readinessBand(score: number | undefined): ReadinessBand | null {
+  if (score == null || !Number.isFinite(score)) return null;
+  return score < 70 ? "red" : score < 80 ? "amber" : "green";
+}
 
 /**
  * Readiness 0-100 (heurística — criterio del coach, ajustable): base = recuperación,
