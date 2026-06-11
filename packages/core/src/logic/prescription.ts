@@ -37,8 +37,9 @@ export function sessionTemplateFor(recipe: MacroRecipe | undefined, macro: Macro
   return recipe.phases.find((p) => p.phaseKey === phase.key)?.sessions ?? [];
 }
 
-/** Instantiate the whole prescription: every week → its phase's session templates → flat rows. */
-export function instantiatePrescription(recipes: MacroRecipe[], macro: Macrocycle, totalWeeks: number): PrescriptionRow[] {
+/** Instantiate the whole prescription: every week → its phase's session templates → flat rows.
+ *  `readonly`: sólo lee — ALL_RECIPES (congelado) entra directo, sin spreads defensivos. */
+export function instantiatePrescription(recipes: readonly MacroRecipe[], macro: Macrocycle, totalWeeks: number): PrescriptionRow[] {
   const recipe = recipes.find((r) => r.macroId === macro.id);
   if (!recipe) return [];
   const rows: PrescriptionRow[] = [];
@@ -67,7 +68,12 @@ export function buildSessionViews(rows: PrescriptionRow[], rms: RM, barKg = 20):
       sessionIdx,
       exercises: ordered.map((r, i) => ({
         movementId: r.movementId, sets: r.sets, reps: r.reps, pct: r.pct, kgOverride: r.kgOverride,
-        flags: r.flags, notes: r.notes,
+        flags: r.flags,
+        // HR-2 para complejos: la rampa se ejecuta con el PRIMER eslabón, no el complejo entero
+        // — sin la nota, "5 reps de rampa" se lee como 5 vueltas del complejo (El Carnicero).
+        notes: r.notes ?? (isComplexId(r.movementId)
+          ? `Calentamiento: rampa con ${getMovement(getComplex(r.movementId)?.links[0]?.movementId ?? "")?.name ?? "el primer movimiento"}`
+          : undefined),
         movementName: programmableName(r.movementId),
         targetKg: resolveTargetKg(r, rms),
         warmup: warmupForExercise({ movementId: r.movementId, pct: r.pct, order: i }, rms, barKg),

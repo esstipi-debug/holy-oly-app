@@ -307,11 +307,15 @@ export type SlotKind = "olimpico" | "tiron" | "rodilla" | "empuje" | "bisagra" |
 
 /** Arquetipo de sesión de una escuela: secuencia DESEADA de slots (el generador reordena por
  *  demanda neural). `optionalFrom` = índice desde el cual los slots son recortables si la
- *  sesión excede el presupuesto SNC (los firmados JAMÁS se recortan). */
+ *  sesión excede el presupuesto SNC (los firmados JAMÁS se recortan). `focus` restringe los
+ *  slots olímpico/complejo a una familia de competencia (arranque-pattern vs envión-pattern):
+ *  es la garantía ESTRUCTURAL de que ambos lifts se entrenan cada semana — por diseño, no por
+ *  suerte del hash (HIGH-1 de El Carnicero, 2026-06-11). Ausente = mixto. */
 export interface SessionArchetype {
   key: string;                 // "A", "B", … — entra al hash de rotación
   slots: SlotKind[];
   optionalFrom?: number;
+  focus?: "arranque" | "envion";
 }
 
 /** Un candidato del repertorio: id de variante de la librería o de complejo ("cx.*"), con peso

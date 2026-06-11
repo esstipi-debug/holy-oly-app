@@ -236,7 +236,7 @@ export async function upsertDayLog(prisma: PrismaClient, athleteId: string, toda
 export async function instantiateForPlan(tx: Prisma.TransactionClient, athleteId: string, plan: Plan): Promise<void> {
   const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
   const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
-  const rows: PrescriptionRow[] = macro ? instantiatePrescription([...ALL_RECIPES], macro, totalWeeks) : [];
+  const rows: PrescriptionRow[] = macro ? instantiatePrescription(ALL_RECIPES, macro, totalWeeks) : [];
   await tx.prescribedExercise.deleteMany({ where: { athleteId } });
   if (rows.length > 0) {
     await tx.prescribedExercise.createMany({

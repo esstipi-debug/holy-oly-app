@@ -92,6 +92,47 @@ Valores **verificados contra `packages/core/src/logic/`**. Si el código cambió
 
 ---
 
+## §2c · Contenido programático — escuelas, scores y complejos (2026-06-11)
+
+Valores **verificados contra `data/schools.ts`, `data/complexes.ts`, `logic/recipeGen.ts`, `logic/complexes.ts`**.
+
+### Scores de carga (4 dimensiones — JAMÁS derivan kg)
+- Cada movimiento lleva **4 dimensiones SEPARADAS**: `tecnica` (= `complexity` 1..12, demanda coordinativa), y `loads` 1..10: **`snc`** (demanda neural), **`axial`** (compresión de columna / costo estructural), **`metabolica`** (volumen×músculo). `movements.ts` (`computeLoads` espejo de `computeComplexity`).
+- *Por qué:* un tirón pesado cobra axial aunque su técnica sea baja; un complejo cobra neural aunque su metabólica sea media. **Mezclar dos dimensiones en una (p.ej. usar técnica como proxy de SNC) = HIGH.**
+- Los scores informan **secuencia y presupuesto** del generador. **El kg sale SIEMPRE de %×RM** (`resolveTargetKg`) — un score que toque kg es HIGH.
+
+### Complejos (cx.*)
+- Un complejo = **eslabones ordenados en UNA serie con UNA barra** (`ComplexDef.links`, notación `1+1+2` en el nombre). `complexes.ts`.
+- **El % se programa contra el eslabón MÁS DÉBIL** (menor RM vigente de los `rmRef` de los eslabones — `complexWeakRmRef`). *Se ve como (CRITICAL):* calcular el kg contra el eslabón fuerte → el débil falla.
+- Techos (D7): reps por eslabón ≤ `repsMax.enComplejo` de su base; **total ≤ 6 reps/serie**; **% máximo inverso al largo** — 2 eslabones ≤90 · 3 ≤85 · 4+ ≤80 (`complexPctCeiling`). Violar cualquiera = HIGH.
+- Sustitución de atleta sobre un complejo: **no existe en v1** (se marca no-hecho o el coach edita) — `simplerVariants("cx.*") = []` es honesto, no un bug.
+
+### Generador de recetas (lo "no standard y no random" hecho sistema)
+- Las 23 recetas no-curadas salen de `generateRecipe(SchoolDNA, macro)` — **determinístico** (hash djb2 de macro/fase/arquetipo/slot; **cero `Math.random`** = CRITICAL si aparece). `recipeGen.ts`.
+- **Curaduría manda:** receta curada en `recipes.ts` (Ruso 5D) gana SIEMPRE sobre la generada (`ALL_RECIPES`). La curada conserva sus 96/97% (decisión del coach); el generador capa clásicos a **95** (precedente D4 del motor).
+- Dosis en corredor: **clásicos dentro del `imrPct` de la fase (cap 95)**; **tirones 90–110%** de su lift; **sentadillas ≤ hi+5 (cap 100)** contra su propio RM; volumen de clásicos auditado contra la **tabla Prilepin** por zona (70-80→[12,24] · 80-90→[10,20] · 90+→[1,10]; descarga exenta).
+- Estructura: **≤3 técnicos por sesión** (clásicos + complejos; el 4º = HIGH); sesión ordenada por **demanda neural descendente** (arranques después del culturismo = HIGH salvo justificación de escuela); **presupuesto SNC por sesión** (`sncBudget[rol]`); **especificidad del pico**: en peaking el slot olímpico sólo admite lo que se compite (arranque / envión completo / 2° tiempo) y la pierna sólo sentadillas de fuerza.
+- Sin-dato honesto: macro sin ADN/arquetipos → **receta ausente** (empty-state), jamás una receta genérica inventada.
+
+### §Escuelas — la firma de cada familia (fuentes en `schools.ts`)
+| Familia | Firma (inconfundible) | Prohibiciones |
+|---|---|---|
+| Búlgaro | sólo SN/CJ/FS/BS, singles ≥90% diarios, cero variedad (Abadjiev) | tirones, bisagras, presses, accesorios, complejos |
+| Ruso | waviness, GPP ancha, tirones 90–110, complejos en base (Medvedev/Roman) | — |
+| Chino | técnica×fuerza, squat-dominante, sots/balance, **bloque metabólico cierra la sesión** | — |
+| Cubano | complejos de velocidad, potencias/colgados, % moderados, calidad>cantidad | — |
+| Colombiano | prioridad C&J, volumen extremo de piernas, **peaking con piernas a cero** (Urrutia) | — |
+| Coreano | tirones pesados omnipresentes (también bloques), posiciones, OHS | — |
+| Polaco | singles/series cortas a % alto temprano, pulls desde bloques | — |
+| Ucraniano | densidad EMOM, 2-3 piezas por sesión, dobles/triples | accesorios lentos (bisagras, remos) |
+| Híbrido | bloques A/T/R (Issurin), complejos por eficiencia de tiempo | — |
+| USA | lineal 50:50 fuerza:oly, powers dominantes, complejos en desarrollo | — |
+
+- *Se ve como (HIGH):* un búlgaro con accesorios, un chino sin bloque metabólico, un ucraniano con peso muerto rumano — la escuela deja de ser reconocible.
+- Afirmación metodológica sin respaldo acá ni en `sources` del ADN → **"fuera de rulebook — criterio del coach"**, no inventar.
+
+---
+
 ## §3 · Privacidad y ética — el ciclo menstrual (la zona más sensible)
 
 Fuente autoritativa: `modulo-ciclo-menstrual.md`. **Tres decisiones innegociables que gobiernan todo el módulo.** Violar cualquiera = **CRITICAL/HIGH**.

@@ -141,7 +141,7 @@ async function seedPlanBundle(athleteId: string): Promise<void> {
   for (const c of input.comps) {
     await prisma.competencia.create({ data: { athleteId, name: c.name, week: c.week } });
   }
-  const presc = instantiatePrescription([...ALL_RECIPES], macro, totalWeeks);
+  const presc = instantiatePrescription(ALL_RECIPES, macro, totalWeeks);
   await prisma.prescribedExercise.createMany({
     data: presc.map((r) => ({
       athleteId,

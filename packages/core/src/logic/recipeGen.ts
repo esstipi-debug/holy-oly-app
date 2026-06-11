@@ -29,8 +29,8 @@ export function archetypesFor(dna: SchoolDNA, role: PhaseRole): SessionArchetype
 
 // ── Clasificador de rol de fase ────────────────────────────────────────────────
 // Del DATO (imrPct/volRel del catálogo, fundado en metodología real), no de mapeos a mano:
-// así un macro nuevo cae en un rol sin tocar el generador. Umbrales fijados en el spec
-// (entrenamientos-distintivos §3.4) y anclados por test exhaustivo sobre el catálogo.
+// así un macro nuevo cae en un rol sin tocar el generador. Umbrales anclados por test
+// (recipeGen.test.ts) y registrados en el spec §3.4 (enmendado post-Carnicero 2026-06-11).
 export function phaseRole(phase: MacrocyclePhase): PhaseRole {
   const [lo, hi] = phase.imrPct;
   const mid = (lo + hi) / 2;
@@ -45,13 +45,18 @@ export function phaseRole(phase: MacrocyclePhase): PhaseRole {
 }
 
 // ── Hash determinístico (D10) ──────────────────────────────────────────────────
-/** djb2 sobre las partes unidas — uint32. La rotación de variantes/arquetipos deriva de acá:
- *  mismo (macro, fase, arquetipo, slot) → mismo índice, SIEMPRE. Cero Math.random. */
+/** FNV-1a sobre las partes unidas — uint32. La rotación de variantes deriva de acá: mismo
+ *  (macro, fase, arquetipo, sesión, slot) → mismo índice, SIEMPRE. Cero Math.random.
+ *  FNV-1a y NO djb2: el ×33 de djb2 (33 = 3×11) colapsa `hash % peso` al último carácter
+ *  cuando el peso comparte factor con 33 — la rotación moría y escuelas enteras perdían un
+ *  lift de competencia (HIGH de El Carnicero, 2026-06-11). El primo FNV 16777619 es coprimo
+ *  con cualquier peso chico. */
 export function hashIdx(parts: string[]): number {
-  let h = 5381;
+  let h = 0x811c9dc5; // offset basis FNV-1a 32-bit
   const s = parts.join("·");
   for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; // h*33 + c, wrap uint32
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
   }
   return h >>> 0;
 }
@@ -86,8 +91,30 @@ const EMPUJE_REPS: Record<PhaseRole, number> = { base: 5, fuerza: 4, intensidad:
 const BISAGRA_REPS: Record<PhaseRole, number> = { base: 8, fuerza: 6, intensidad: 5, peaking: 5, descarga: 8 };
 const METABOLICO_REPS: Record<PhaseRole, number> = { base: 10, fuerza: 10, intensidad: 8, peaking: 8, descarga: 10 };
 
+/** % por BASE que pisa la tabla del slot — para los movimientos cuyo % real NO es el del patrón
+ *  genérico contra su RM de referencia (HIGH-3 de El Carnicero: el press militar al 55-70% del
+ *  RM de envión ES su 1RM real; el sots vive bajo; el jerk-dip vive SUPRA-máximo — su propio
+ *  `notes` en movements.ts lo dice y el generador lo obedece acá). Defendible fisiológicamente;
+ *  los valores exactos son curaduría del coach. */
+const PCT_BY_BASE: Record<string, Record<PhaseRole, number>> = {
+  "press-hombros": { base: 35, fuerza: 38, intensidad: 40, peaking: 40, descarga: 28 },
+  "sots-press": { base: 28, fuerza: 30, intensidad: 32, peaking: 30, descarga: 22 },
+  "jerk-dip": { base: 92, fuerza: 98, intensidad: 102, peaking: 105, descarga: 90 },
+  "remo-menton": { base: 30, fuerza: 32, intensidad: 32, peaking: 30, descarga: 25 },
+  "remo": { base: 45, fuerza: 48, intensidad: 45, peaking: 45, descarga: 40 },
+  "buenos-dias": { base: 30, fuerza: 34, intensidad: 36, peaking: 32, descarga: 25 },
+};
+
 /** Los 4 clásicos (cuentan como "técnico" junto con los complejos — techo duro 3, D8). */
 const CLASSIC_BASES = new Set(["arranque", "cargada", "envion", "cargada-envion"]);
+
+/** Tabla Prilepin de la casa POR SESIÓN Y ZONA (la unidad correcta — MEDIUM de El Carnicero):
+ *  las reps totales de CLÁSICOS de una sesión en una zona viven en [min, max]. */
+const PRILEPIN_SESSION: Record<"70-80" | "80-90" | "90+", [number, number]> = {
+  "70-80": [12, 24], "80-90": [10, 20], "90+": [1, 10],
+};
+const zoneOf = (pct: number): "70-80" | "80-90" | "90+" | null =>
+  pct >= 90 ? "90+" : pct >= 80 ? "80-90" : pct >= 70 ? "70-80" : null;
 
 // ── Internals del relleno ──────────────────────────────────────────────────────
 
@@ -109,13 +136,36 @@ function isTecnicoId(id: string): boolean {
   return mv != null && CLASSIC_BASES.has(mv.baseId);
 }
 
-/** Pick ponderado determinístico con probe lineal: arranca en el índice que indica el hash y
- *  avanza hasta un candidato aceptable (base no repetida, técnicos bajo techo). Sin candidato
- *  aceptable → null (el slot se omite, honesto — jamás inventar). */
+/** Familia de competencia de un candidato (para el `focus` del arquetipo): arranque-pattern vs
+ *  envión-pattern, por el RM que referencia. Complejo → la familia de su primer eslabón clásico. */
+function familyOf(id: string): "arranque" | "envion" | null {
+  if (isComplexId(id)) {
+    const cx = getComplex(id);
+    if (!cx) return null;
+    for (const l of cx.links) {
+      const f = familyOf(l.movementId);
+      if (f) return f;
+    }
+    return null;
+  }
+  const mv = getMovement(id);
+  if (!mv) return null;
+  if (mv.rmRef === "arranque") return "arranque";
+  if (mv.rmRef === "envion") return "envion";
+  return null;
+}
+
+/** Eslabones de un complejo → baseIds (para no repetir el patrón aislado en la misma sesión). */
+function complexBaseIds(id: string): string[] {
+  const cx = getComplex(id);
+  return cx ? cx.links.map((l) => getMovement(l.movementId)?.baseId ?? "").filter(Boolean) : [];
+}
+
 /** Especificidad del pico (regla del SISTEMA, transversal a las escuelas — la receta curada
  *  del Ruso lo muestra igual): en peaking el slot olímpico sólo admite lo que se compite
- *  (arranque, envión completo, segundo tiempo en tijera) y el slot de pierna sólo las
- *  sentadillas de fuerza (la OHS/balance son herramientas de técnica, no de semana de pico). */
+ *  (arranque, envión completo, segundo tiempo en tijera), el slot de pierna sólo las
+ *  sentadillas de fuerza (OHS/balance son herramientas de técnica, no de semana de pico) y
+ *  los complejos no entran (defensa en profundidad — ningún ADN los pide hoy). */
 const PEAKING_OLIMPICO = new Set(["arranque", "cargada-envion", "envion.tijera"]);
 const PEAKING_RODILLA = new Set(["sentadilla", "sentadilla-frente"]);
 
@@ -125,9 +175,13 @@ function allowedAtPeaking(slot: SlotKind, id: string, baseId: string): boolean {
   return true;
 }
 
+/** Pick ponderado determinístico con probe lineal: arranca en el índice que indica el hash y
+ *  avanza hasta un candidato aceptable (base no repetida, técnicos bajo techo, focus del
+ *  arquetipo, especificidad del pico). Sin candidato aceptable → null (el slot se omite,
+ *  honesto — jamás inventar). */
 function pickCandidate(
   items: RepertoireItem[], hash: number, usedBases: Set<string>, tecnicos: number, tecnicosMax: number,
-  forbidden: Set<string>, role: PhaseRole, slot: SlotKind,
+  forbidden: Set<string>, role: PhaseRole, slot: SlotKind, focus?: "arranque" | "envion",
 ): string | null {
   if (items.length === 0) return null;
   const totalWeight = items.reduce((acc, it) => acc + it.weight, 0);
@@ -138,13 +192,18 @@ function pickCandidate(
     r -= items[i]!.weight;
     if (r < 0) { start = i; break; }
   }
+  const focusApplies = focus != null && (slot === "olimpico" || slot === "complejo");
   for (let step = 0; step < items.length; step++) {
     const item = items[(start + step) % items.length]!;
     const id = item.id;
+    if (focusApplies && familyOf(id) !== focus) continue;
     if (isComplexId(id)) {
       const cx = getComplex(id);
       if (!cx) continue;
-      if (cx.links.some((l) => forbidden.has(getMovement(l.movementId)?.baseId ?? ""))) continue;
+      if (role === "peaking") continue; // especificidad del pico: el gesto, no el complejo
+      const linkBases = complexBaseIds(id);
+      if (linkBases.some((b) => forbidden.has(b))) continue;
+      if (linkBases.some((b) => usedBases.has(b))) continue; // el patrón del eslabón no se repite aislado
       if (tecnicos + 1 > tecnicosMax) continue;
       return id;
     }
@@ -168,43 +227,85 @@ function doseSlot(
   const corridorPct = Math.round(lo + (hi - lo) * bias);
   const baseSets = phase.volRel >= 85 ? 5 : phase.volRel >= 60 ? 4 : 3;
   const sets = Math.max(2, Math.min(6, baseSets + dna.dosage.setsBias));
-  const repsCapAislado = (mvId: string): number => {
-    const mv = getMovement(mvId);
-    const base = mv ? getBase(mv.baseId) : undefined;
-    return base?.repsMax.aislado ?? 1;
-  };
+  const mv = isComplexId(id) ? undefined : getMovement(id);
+  const repsCapAislado = mv ? (getBase(mv.baseId)?.repsMax.aislado ?? 1) : 1;
 
   if (isComplexId(id)) {
-    const cx = getComplex(id)!;
+    const cx = getComplex(id);
+    if (!cx) return { pct: corridorPct, sets, reps: 1 }; // inalcanzable (pickCandidate validó) — guard honesto
     const pct = Math.min(corridorPct, complexPctCeiling(cx));
     return { pct, sets, reps: complexTotalReps(cx) };
   }
+  // % por base pisa la tabla del slot (press militar/sots/jerk-dip/remos/GM — ver PCT_BY_BASE)
+  const basePctOverride = mv ? PCT_BY_BASE[mv.baseId]?.[role] : undefined;
   if (slot === "olimpico") {
     const pct = Math.max(Math.min(corridorPct, CLASSIC_PCT_CAP), Math.min(lo, CLASSIC_PCT_CAP));
     // bordes de zona = los de la tabla Prilepin de la casa (90/80) — reps y auditoría alineadas
     const zoneReps = pct >= 90 ? 1 : pct >= 80 ? 2 : 3;
     const reps = dna.dosage.singlesPhases.includes(role) && isTecnicoId(id)
       ? 1
-      : Math.min(zoneReps, repsCapAislado(id));
-    // Prilepin-aware: las reps totales de la sesión no caen bajo el mínimo de la zona
-    // (70-80→12 · 80-90→10 · 90+→1) — la tabla del motor vigila al generador.
-    const zoneMin = pct >= 90 ? 1 : pct >= 80 ? 10 : 12;
-    const prilepinSets = sets * reps < zoneMin ? Math.ceil(zoneMin / reps) : sets;
-    return { pct, sets: Math.max(2, Math.min(6, prilepinSets)), reps };
+      : Math.min(zoneReps, repsCapAislado);
+    return { pct, sets, reps };
   }
-  if (slot === "tiron") return { pct: PULL_PCT[role], sets, reps: Math.min(TIRON_REPS[role], repsCapAislado(id)) };
+  if (slot === "tiron") {
+    const pct = basePctOverride ?? PULL_PCT[role];
+    return { pct, sets, reps: Math.min(TIRON_REPS[role], repsCapAislado) };
+  }
   if (slot === "rodilla") {
-    const pct = Math.min(corridorPct + 5, hi + 5, 100);
-    return { pct, sets, reps: Math.min(RODILLA_REPS[role], repsCapAislado(id)) };
+    // El techo del rulebook (hi+5, cap 100) es TECHO, no objetivo; en descarga ni siquiera se
+    // empuja sobre el corredor. Reps zone-aware: un doble al 96%+ no existe (HIGH-2 Carnicero).
+    const bump = role === "descarga" ? 0 : 5;
+    const pct = Math.min(corridorPct + bump, hi + bump, 100);
+    const roleReps = RODILLA_REPS[role];
+    const reps = pct >= 95 ? 1 : pct >= 90 ? Math.min(2, roleReps) : roleReps;
+    return { pct, sets, reps: Math.min(reps, repsCapAislado) };
   }
-  if (slot === "empuje") return { pct: EMPUJE_PCT[role], sets, reps: Math.min(EMPUJE_REPS[role], repsCapAislado(id)) };
-  if (slot === "bisagra") return { pct: BISAGRA_PCT[role], sets, reps: Math.min(BISAGRA_REPS[role], repsCapAislado(id)) };
+  if (slot === "empuje") {
+    const pct = basePctOverride ?? EMPUJE_PCT[role];
+    return { pct, sets, reps: Math.min(EMPUJE_REPS[role], repsCapAislado) };
+  }
+  if (slot === "bisagra") {
+    const pct = basePctOverride ?? BISAGRA_PCT[role];
+    return { pct, sets, reps: Math.min(BISAGRA_REPS[role], repsCapAislado) };
+  }
   // metabolico
-  return { pct: METABOLICO_PCT[role], sets: Math.min(sets, 4), reps: Math.min(METABOLICO_REPS[role], repsCapAislado(id)) };
+  const pct = basePctOverride ?? METABOLICO_PCT[role];
+  return { pct, sets: Math.min(sets, 4), reps: Math.min(METABOLICO_REPS[role], repsCapAislado) };
 }
 
-/** Una sesión: rellena el arquetipo, recorta por presupuesto (sólo slots ≥ optionalFrom) y
- *  ordena por demanda neural descendente con los metabólicos al final. */
+/** Ajuste Prilepin POR SESIÓN Y ZONA sobre los clásicos (la unidad correcta): si el total de
+ *  reps de una zona quedó bajo el mínimo se sube el PRIMER clásico (el lift principal recibe
+ *  el volumen); si excede el máximo se recorta el ÚLTIMO (sets jamás < 2 ni > 6). */
+function applyPrilepinSessionClamp(ordered: Filled[]): void {
+  const classics = ordered.filter(
+    (f) => !isComplexId(f.ex.movementId) && CLASSIC_BASES.has(getMovement(f.ex.movementId)?.baseId ?? ""),
+  );
+  const byZone = new Map<"70-80" | "80-90" | "90+", Filled[]>();
+  for (const f of classics) {
+    const z = f.ex.pct != null ? zoneOf(f.ex.pct) : null;
+    if (z == null) continue;
+    if (!byZone.has(z)) byZone.set(z, []);
+    byZone.get(z)!.push(f);
+  }
+  for (const [zone, group] of byZone) {
+    const [min, max] = PRILEPIN_SESSION[zone];
+    const total = (): number => group.reduce((acc, f) => acc + f.ex.sets * f.ex.reps, 0);
+    let guard = 64;
+    while (total() < min && guard-- > 0) {
+      const first = group.find((f) => f.ex.sets < 6);
+      if (!first) break;
+      first.ex.sets += 1;
+    }
+    while (total() > max && guard-- > 0) {
+      const last = [...group].reverse().find((f) => f.ex.sets > 2);
+      if (!last) break;
+      last.ex.sets -= 1;
+    }
+  }
+}
+
+/** Una sesión: rellena el arquetipo, recorta por presupuesto (sólo slots ≥ optionalFrom),
+ *  ordena por demanda neural descendente con los metabólicos al final y ajusta Prilepin. */
 function buildSession(
   dna: SchoolDNA, macro: Macrocycle, phase: MacrocyclePhase, role: PhaseRole,
   archetype: SessionArchetype, sessionIdx: number,
@@ -216,13 +317,19 @@ function buildSession(
   archetype.slots.forEach((slot, slotIdx) => {
     const items = dna.repertoire[slot] ?? [];
     const hash = hashIdx([macro.id, phase.key, archetype.key, String(sessionIdx), String(slotIdx)]);
-    const id = pickCandidate(items, hash, usedBases, tecnicos, dna.tecnicosMax, forbidden, role, slot);
+    const id = pickCandidate(items, hash, usedBases, tecnicos, dna.tecnicosMax, forbidden, role, slot, archetype.focus);
     if (id == null) return; // slot sin candidato aceptable → se omite, jamás se inventa
-    if (!isComplexId(id)) usedBases.add(getMovement(id)!.baseId);
+    if (isComplexId(id)) {
+      for (const b of complexBaseIds(id)) usedBases.add(b); // el eslabón no se repite aislado (M de Carnicero)
+    } else {
+      usedBases.add(getMovement(id)!.baseId);
+    }
     if (isTecnicoId(id)) tecnicos++;
     const dose = doseSlot(slot, id, phase, role, dna);
     const { snc, complexity } = effLoads(id);
-    const note = dna.sessionNotes?.[slot];
+    // Notas de escuela (p.ej. EMOM ucraniano): JAMÁS sobre trabajo pesado — un single al 90%+
+    // cada 60s es instrucción insegura (MEDIUM de El Carnicero). Sólo bajo 85%.
+    const note = dose.pct < 85 ? dna.sessionNotes?.[slot] : undefined;
     filled.push({
       ex: { movementId: id, sets: dose.sets, reps: dose.reps, pct: dose.pct, ...(note ? { notes: note } : {}) },
       slot, slotIdx, snc, complexity,
@@ -244,7 +351,9 @@ function buildSession(
   const main = filled.filter((f) => f.slot !== "metabolico");
   const metabolicos = filled.filter((f) => f.slot === "metabolico");
   main.sort((a, b) => (b.snc - a.snc) || (b.complexity - a.complexity));
-  return { exercises: [...main, ...metabolicos].map((f) => f.ex) };
+  const ordered = [...main, ...metabolicos];
+  applyPrilepinSessionClamp(ordered);
+  return { exercises: ordered.map((f) => f.ex) };
 }
 
 /** Genera la receta de un macro desde el ADN de su escuela — pura, determinística (D10).

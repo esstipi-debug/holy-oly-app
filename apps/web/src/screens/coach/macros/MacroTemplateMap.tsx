@@ -14,7 +14,7 @@ const EMPTY_COMPS: ReadonlyMap<number, { name: string; day?: number }> = new Map
  */
 export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
   const totalWeeks = macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
-  const rows = useMemo(() => instantiatePrescription([...ALL_RECIPES], macro, totalWeeks), [macro, totalWeeks]);
+  const rows = useMemo(() => instantiatePrescription(ALL_RECIPES, macro, totalWeeks), [macro, totalWeeks]);
   const heat = useMemo(() => (rows.length > 0 ? planHeat(rows, totalWeeks) : null), [rows, totalWeeks]);
   const [sel, setSel] = useState<HeatMapPos | null>(null);
   // Identidades estables → el memo de PlanHeatMap sólo re-renderiza la grilla con cambios reales.

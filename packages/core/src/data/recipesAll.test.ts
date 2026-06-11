@@ -124,17 +124,22 @@ describe("distintividad pareada (D11 — dos escuelas no se confunden)", () => {
     const union = new Set([...a, ...b]).size;
     return union === 0 ? 0 : inter / union;
   };
-  it("en el rol peaking (el más comparable), todo par de escuelas solapa ≤0.7", () => {
-    const reps: [string, string][] = [
-      ["bulgaro-6d", "polaco-5d"], ["bulgaro-6d", "coreano-5d"], ["polaco-5d", "cubano-competidor"],
-      ["coreano-5d", "chino-5d"], ["colombiano-5d", "usa-intermedio"], ["hibrido-5d", "ucraniano-4d"],
-      ["chino-5d", "cubano-competidor"], ["usa-school", "coreano-6d"],
+  it("todo par de escuelas solapa ≤0.7 en su rol identitario", () => {
+    // La identidad vive en base/fuerza; en peaking la especificidad del pico CONVERGE a las
+    // escuelas a propósito (todos compiten los mismos dos lifts) — sólo el búlgaro se compara
+    // ahí porque es el único rol que tiene.
+    const reps: [string, string, PhaseRole][] = [
+      ["bulgaro-6d", "polaco-5d", "peaking"], ["bulgaro-6d", "coreano-5d", "peaking"],
+      ["polaco-5d", "cubano-competidor", "base"], ["coreano-5d", "chino-5d", "base"],
+      ["colombiano-5d", "usa-intermedio", "base"], ["hibrido-5d", "ucraniano-4d", "fuerza"],
+      ["chino-5d", "cubano-competidor", "base"], ["usa-school", "coreano-6d", "fuerza"],
     ];
-    for (const [a, b] of reps) {
-      const ta = tuples(a, "peaking");
-      const tb = tuples(b, "peaking");
-      if (ta.size === 0 || tb.size === 0) continue;
-      expect(jaccard(ta, tb), `${a} vs ${b}`).toBeLessThanOrEqual(0.7);
+    for (const [a, b, role] of reps) {
+      const ta = tuples(a, role);
+      const tb = tuples(b, role);
+      expect(ta.size, `${a} sin fase de rol ${role}`).toBeGreaterThan(0);
+      expect(tb.size, `${b} sin fase de rol ${role}`).toBeGreaterThan(0);
+      expect(jaccard(ta, tb), `${a} vs ${b} (${role})`).toBeLessThanOrEqual(0.7);
     }
   });
 });
@@ -165,25 +170,101 @@ describe("regresión Ruso (D4 — el modelo debe poder aproximar la receta curad
 });
 
 describe("auditoría Prilepin (la tabla del motor vigila al generador)", () => {
-  // Tabla Prilepin (prilepin.ts): 70-80 [12,24] · 80-90 [10,20] · 90+ [1,10] — por SESIÓN.
-  // Para clásicos generados: reps totales (sets×reps) del lift en su sesión, por zona.
+  // Tabla Prilepin de la casa — la unidad es POR SESIÓN Y ZONA (§2 motor, enmienda Carnicero):
+  // las reps totales de TODOS los clásicos de una sesión en una zona viven en [min, max].
   const RANGES: Record<string, [number, number]> = { "70-80": [12, 24], "80-90": [10, 20], "90+": [1, 10] };
-  it("clásicos dentro del rango de su zona (descarga exenta; <70% fuera de tabla)", () => {
+  it("clásicos: reps totales por sesión y zona dentro del rango (descarga exenta; <70% fuera de tabla)", () => {
     for (const m of MACROCYCLES.filter((x) => x.id !== "ruso-5d")) {
       const r = recipe(m.id);
       for (const ph of r.phases) {
         const fase = m.phaseProfile.find((f) => f.key === ph.phaseKey)!;
         if (phaseRole(fase) === "descarga") continue;
-        for (const s of ph.sessions) for (const ex of s.exercises) {
-          if (isComplexId(ex.movementId) || !CLASSIC_BASES.has(getMovement(ex.movementId)!.baseId)) continue;
-          if (ex.pct == null || ex.pct < 70) continue;
-          const zone = ex.pct >= 90 ? "90+" : ex.pct >= 80 ? "80-90" : "70-80";
-          const total = ex.sets * ex.reps;
-          const [min, max] = RANGES[zone]!;
-          expect(total, `${m.id}/${ph.phaseKey}: ${ex.movementId} ${ex.sets}×${ex.reps}@${ex.pct}`).toBeGreaterThanOrEqual(min);
-          expect(total).toBeLessThanOrEqual(max);
+        for (const s of ph.sessions) {
+          const perZone = new Map<string, number>();
+          for (const ex of s.exercises) {
+            if (isComplexId(ex.movementId) || !CLASSIC_BASES.has(getMovement(ex.movementId)!.baseId)) continue;
+            if (ex.pct == null || ex.pct < 70) continue;
+            const zone = ex.pct >= 90 ? "90+" : ex.pct >= 80 ? "80-90" : "70-80";
+            perZone.set(zone, (perZone.get(zone) ?? 0) + ex.sets * ex.reps);
+          }
+          for (const [zone, total] of perZone) {
+            const [min, max] = RANGES[zone]!;
+            expect(total, `${m.id}/${ph.phaseKey}: zona ${zone}`).toBeGreaterThanOrEqual(min);
+            expect(total, `${m.id}/${ph.phaseKey}: zona ${zone}`).toBeLessThanOrEqual(max);
+          }
         }
       }
+    }
+  });
+});
+
+describe("ambos lifts de competencia, cada semana (HIGH-1 Carnicero — garantía estructural)", () => {
+  it("toda fase no-descarga entrena arranque-pattern Y envión-pattern (como base o eslabón)", () => {
+    for (const m of MACROCYCLES.filter((x) => x.id !== "ruso-5d")) {
+      const r = recipe(m.id);
+      for (const ph of r.phases) {
+        const fase = m.phaseProfile.find((f) => f.key === ph.phaseKey)!;
+        if (phaseRole(fase) === "descarga") continue;
+        const bases = ph.sessions.flatMap((s) => s.exercises).flatMap(baseIdOf);
+        const hasArranque = bases.includes("arranque");
+        const hasEnvion = bases.some((b) => ["cargada", "envion", "cargada-envion"].includes(b));
+        expect(hasArranque, `${m.id}/${ph.phaseKey}: sin arranque-pattern`).toBe(true);
+        expect(hasEnvion, `${m.id}/${ph.phaseKey}: sin envión-pattern`).toBe(true);
+      }
+    }
+  });
+  it("variedad intra-fase: el slot olímpico usa ≥2 variantes cuando hay ≥2 picks", () => {
+    for (const m of MACROCYCLES.filter((x) => x.id !== "ruso-5d")) {
+      const r = recipe(m.id);
+      for (const ph of r.phases) {
+        const oliPicks = ph.sessions.flatMap((s) => s.exercises).filter((ex) => {
+          if (isComplexId(ex.movementId)) return false;
+          const baseId = getMovement(ex.movementId)!.baseId;
+          return CLASSIC_BASES.has(baseId) || baseId === "snatch-balance";
+        });
+        if (oliPicks.length < 2) continue;
+        const distinct = new Set(oliPicks.map((ex) => ex.movementId));
+        expect(distinct.size, `${m.id}/${ph.phaseKey}: semana monótona (${[...distinct][0]})`).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+});
+
+describe("sanidad de dosis (HIGH-2/HIGH-3 Carnicero — kg que un humano levanta)", () => {
+  it("sentadillas: pct ≥95 ⇒ 1 rep; ≥90 ⇒ ≤2 reps (jamás dobles al 96%+)", () => {
+    for (const m of MACROCYCLES.filter((x) => x.id !== "ruso-5d")) {
+      const r = recipe(m.id);
+      for (const ph of r.phases) for (const s of ph.sessions) for (const ex of s.exercises) {
+        if (isComplexId(ex.movementId)) continue;
+        const baseId = getMovement(ex.movementId)!.baseId;
+        if (!["sentadilla", "sentadilla-frente", "sentadilla-overhead"].includes(baseId)) continue;
+        if (ex.pct == null) continue;
+        if (ex.pct >= 95) expect(ex.reps, `${m.id}/${ph.phaseKey}: ${ex.movementId} @${ex.pct}`).toBe(1);
+        else if (ex.pct >= 90) expect(ex.reps, `${m.id}/${ph.phaseKey}: ${ex.movementId} @${ex.pct}`).toBeLessThanOrEqual(2);
+      }
+    }
+  });
+  it("accesorios con % propio de su base, no del slot (press militar ≤45, sots ≤35, jerk-dip 90–105, remos ≤50, GM ≤40)", () => {
+    const CAPS: Record<string, [number, number]> = {
+      "press-hombros": [25, 45], "sots-press": [20, 35], "jerk-dip": [90, 105],
+      "remo-menton": [20, 35], "remo": [35, 50], "buenos-dias": [20, 40],
+    };
+    for (const m of MACROCYCLES.filter((x) => x.id !== "ruso-5d")) {
+      const r = recipe(m.id);
+      for (const ph of r.phases) for (const s of ph.sessions) for (const ex of s.exercises) {
+        if (isComplexId(ex.movementId) || ex.pct == null) continue;
+        const cap = CAPS[getMovement(ex.movementId)!.baseId];
+        if (!cap) continue;
+        expect(ex.pct, `${m.id}/${ph.phaseKey}: ${ex.movementId}`).toBeGreaterThanOrEqual(cap[0]);
+        expect(ex.pct, `${m.id}/${ph.phaseKey}: ${ex.movementId}`).toBeLessThanOrEqual(cap[1]);
+      }
+    }
+  });
+  it("notas de escuela jamás sobre trabajo pesado (EMOM sólo bajo 85%)", () => {
+    for (const m of MACROCYCLES.filter((x) => x.family === "Ucraniano")) {
+      const r = recipe(m.id);
+      for (const ph of r.phases) for (const s of ph.sessions) for (const ex of s.exercises)
+        if (ex.notes?.includes("EMOM")) expect(ex.pct!, `${m.id}/${ph.phaseKey}`).toBeLessThan(85);
     }
   });
 });

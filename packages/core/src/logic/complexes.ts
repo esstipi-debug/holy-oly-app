@@ -51,7 +51,7 @@ export function complexWeakRmKg(c: ComplexDef, rms: RM): number | undefined {
 }
 
 /** Loads combinados: el costo neural/axial lo fija el peor eslabón; lo metabólico se acumula
- *  (cada rep mueve la barra), capado a 10. */
+ *  POR REP (cada rep de cada eslabón mueve la barra), capado a 10. */
 export function complexLoads(c: ComplexDef): MovementLoads {
   let snc = 1, axial = 1, metabolica = 0;
   for (const l of c.links) {
@@ -59,7 +59,7 @@ export function complexLoads(c: ComplexDef): MovementLoads {
     if (!mv) continue;
     snc = Math.max(snc, mv.loads.snc);
     axial = Math.max(axial, mv.loads.axial);
-    metabolica += mv.loads.metabolica;
+    metabolica += mv.loads.metabolica * l.reps;
   }
   return { snc, axial, metabolica: Math.min(10, Math.max(1, metabolica)) };
 }
