@@ -1,4 +1,24 @@
-import type { Macrocycle, MacrocyclePhase, PhaseRole } from "../types";
+import type { Macrocycle, MacrocyclePhase, PhaseRole, SchoolDNA, SessionArchetype } from "../types";
+
+// ── Fallback de roles ──────────────────────────────────────────────────────────
+// Si una escuela no define arquetipos para un rol, se cae al vecino metodológico más cercano
+// (la dosis igual la pone la FASE del macro — el fallback solo presta la estructura de sesión).
+const ROLE_FALLBACK: Record<PhaseRole, PhaseRole[]> = {
+  base: ["base", "fuerza"],
+  fuerza: ["fuerza", "base"],
+  intensidad: ["intensidad", "fuerza", "peaking"],
+  peaking: ["peaking", "intensidad", "fuerza"],
+  descarga: ["descarga", "base", "fuerza", "peaking"],
+};
+
+/** Arquetipos de la escuela para un rol, con fallback declarado (jamás inventa estructura). */
+export function archetypesFor(dna: SchoolDNA, role: PhaseRole): SessionArchetype[] {
+  for (const r of ROLE_FALLBACK[role]) {
+    const a = dna.archetypes[r];
+    if (a && a.length > 0) return a;
+  }
+  return [];
+}
 
 // ── Clasificador de rol de fase ────────────────────────────────────────────────
 // Del DATO (imrPct/volRel del catálogo, fundado en metodología real), no de mapeos a mano:
