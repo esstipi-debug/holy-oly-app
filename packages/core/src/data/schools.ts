@@ -333,8 +333,9 @@ export const SCHOOL_DNA: SchoolDNA[] = [
     },
     sessionsPerDay: 1,
     tecnicosMax: 2,
-    sncBudget: { base: 24, fuerza: 24, intensidad: 22, peaking: 20, descarga: 18 },
-    dosage: { mainBias: "high", setsBias: -1, singlesPhases: ["fuerza", "intensidad", "peaking"] },
+    // base/fuerza 26: el arquetipo doble-técnico (C&J 10 + arranque 9 + pierna 7) debe caber.
+    sncBudget: { base: 26, fuerza: 26, intensidad: 24, peaking: 20, descarga: 18 },
+    dosage: { mainBias: "high", setsBias: -1, singlesPhases: ["intensidad", "peaking"] },
     sources: ["Escuela polaca — ciclos cortos de choque (singles a % alto, pulls desde bloques)"],
   },
 
@@ -374,7 +375,8 @@ export const SCHOOL_DNA: SchoolDNA[] = [
     },
     sessionsPerDay: 1,
     tecnicosMax: 2,
-    sncBudget: { base: 24, fuerza: 24, intensidad: 24, peaking: 22, descarga: 18 },
+    // base/fuerza 26: el arquetipo doble-técnico (C&J 10 + arranque 9 + frontal 7) debe caber.
+    sncBudget: { base: 26, fuerza: 26, intensidad: 24, peaking: 22, descarga: 18 },
     dosage: { mainBias: "mid", setsBias: 0, singlesPhases: ["peaking"] },
     sessionNotes: { olimpico: "Estilo EMOM: una serie al minuto, técnica impecable." },
     sources: ["Adaptación de casa sobre densidad ucraniana (catálogo 2026: EMOM-heavy, alta densidad)"],
