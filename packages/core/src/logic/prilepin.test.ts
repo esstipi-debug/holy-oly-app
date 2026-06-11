@@ -120,6 +120,35 @@ describe("generateWeek — clásicos vs sentadilla (criterio 8)", () => {
   });
 });
 
+describe("generateWeek — sin-dato honesto, jamás inventar (D7 / lección NaN del Carnicero)", () => {
+  it("RM degenerado → null", () => {
+    expect(generateWeek(base({ rmKg: 0 }))).toBeNull();
+    expect(generateWeek(base({ rmKg: -50 }))).toBeNull();
+    expect(generateWeek(base({ rmKg: NaN }))).toBeNull();
+  });
+  it("compe en el pasado / semanas degeneradas → null", () => {
+    expect(generateWeek(base({ weeksToComp: -1 }))).toBeNull();
+    expect(generateWeek(base({ weeksToComp: NaN }))).toBeNull();
+    expect(generateWeek(base({ weeksToComp: 2.5 }))).toBeNull();
+  });
+  it("ola degenerada → null", () => {
+    expect(generateWeek(base({ weeksToComp: null, waveWeek: 0 }))).toBeNull();
+    expect(generateWeek(base({ weeksToComp: null, waveWeek: NaN }))).toBeNull();
+  });
+  it("ACWR no-finito se trata como sin dato (factor 1, eco null)", () => {
+    const w = generateWeek(base({ recentACWR: NaN }))!;
+    expect(w.taper.acwrFactor).toBe(1);
+    expect(w.inputs.acwr).toBeNull();
+  });
+});
+
+describe("regla intocable: cero RPE en el shape (D1)", () => {
+  it("el JSON serializado no contiene ninguna key rpe", () => {
+    const w = generateWeek(base())!;
+    expect(JSON.stringify(w).toLowerCase()).not.toContain("rpe");
+  });
+});
+
 describe("wavePhase (ola continua, mini-pico en semana 5)", () => {
   it("semanas 1..6", () => {
     expect([1, 2, 3, 4, 5, 6].map(wavePhase)).toEqual([
