@@ -50,6 +50,26 @@ test("≥1 hecho → «Sesión completada», carga total y discos visibles", asy
   expect(screen.getByText("380")).toBeInTheDocument();
   expect(screen.getByText("Tu serie más pesada hoy")).toBeInTheDocument();
   expect(screen.getByText("2/2")).toBeInTheDocument();
+  // única sesión de la semana → semana == día → la línea micro se omite (no repite el número)
+  expect(screen.queryByText(/llevás/)).not.toBeInTheDocument();
+});
+
+test("otra sesión hecha en la semana → línea micro «Con esta, llevás X kg en la semana.»", async () => {
+  const views: SessionView[] = [
+    ...sessions(), // día 0: 380 kg
+    {
+      week: 8, sessionIdx: 1,
+      exercises: [
+        { movementId: "sentadilla", movementName: "Sentadilla", sets: 5, reps: 5, pct: 75, targetKg: 124,
+          actual: actual({ movementId: "sentadilla", movementName: "Sentadilla", sets: [{ kg: 100, reps: 1, done: true }] }) },
+      ],
+    },
+  ];
+  vi.spyOn(me, "getMeSessions").mockResolvedValue(views);
+  renderVictoria();
+  expect(await screen.findByText("Sesión completada")).toBeInTheDocument();
+  // semana = 380 (día 0) + 100 (día 1) = 480 > 380 del día → la línea aparece
+  expect(screen.getByText("Con esta, llevás 480 kg en la semana.")).toBeInTheDocument();
 });
 
 test("0 hechos → «Sesión registrada», sin carga total ni serie más pesada", async () => {

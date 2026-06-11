@@ -4,8 +4,9 @@ import type {
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
   CycleShare, CycleState, CycleData, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
+  MeRecorrido, RecorridoSemana,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -265,6 +266,19 @@ function toSessionActual(a: SessionActualRow): SessionActual {
   };
 }
 
+/** Fila cruda de PrescribedExercise → tipo de core (compartido por getPrescriptionWeek y recorrido). */
+interface PrescribedExerciseRow {
+  week: number; sessionIdx: number; order: number; movementId: string; sets: number; reps: number;
+  pct: number | null; kgOverride: number | null; flags: string[]; notes: string | null;
+}
+function toPrescriptionRow(r: PrescribedExerciseRow): PrescriptionRow {
+  return {
+    week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId, sets: r.sets, reps: r.reps,
+    pct: r.pct ?? undefined, kgOverride: r.kgOverride ?? undefined,
+    flags: r.flags.length > 0 ? (r.flags as MovementFlag[]) : undefined, notes: r.notes ?? undefined,
+  };
+}
+
 /** A week's sessions with kg derived from the athlete's plan RMs, merged with any athlete actuals.
  *  [] if no plan. Serves both the coach (`guardAthlete`) and athlete self (`/me/sessions`). */
 export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: string, week: number): Promise<SessionView[]> {
@@ -273,17 +287,54 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
   const dbRows = await prisma.prescribedExercise.findMany({
     where: { athleteId, week }, orderBy: [{ sessionIdx: "asc" }, { order: "asc" }],
   });
-  const rows: PrescriptionRow[] = dbRows.map((r) => ({
-    week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId, sets: r.sets, reps: r.reps,
-    pct: r.pct ?? undefined, kgOverride: r.kgOverride ?? undefined,
-    flags: r.flags.length > 0 ? (r.flags as MovementFlag[]) : undefined, notes: r.notes ?? undefined,
-  }));
+  const rows: PrescriptionRow[] = dbRows.map(toPrescriptionRow);
   const actualRows = await prisma.sessionActual.findMany({ where: { athleteId, week } });
   const actuals: SessionActual[] = actualRows.map(toSessionActual);
   // Actuals matched to exercises POSITIONALLY (order == view index). A coach edit that reorders a session after actuals are recorded can misalign them — acceptable for SP3 (revisit in SP4).
   const athlete = await prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } });
   const barKg = barKgForSexo((athlete?.sexo as "M" | "F" | undefined) ?? "M");
   return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals);
+}
+
+/** Recorrido del macro (GET /me/recorrido): lo HECHO acumulado por semana, construyendo las
+ *  vistas con el MISMO builder que /me/sessions (warmup server-side — regla 06-11) y resumiendo
+ *  con `weekDoneSummary`. `{ semanas: [] }` sin plan/macro (honesto). Eficiencia: prescripción y
+ *  actuals viajan en UNA query cada uno y se agrupan por semana en memoria — la iteración 1..N
+ *  es puro CPU, jamás N queries. */
+export async function getMeRecorrido(prisma: PrismaClient, athleteId: string): Promise<MeRecorrido> {
+  const plan = await getPlan(prisma, athleteId);
+  if (!plan) return { semanas: [] };
+  const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+  const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+  if (totalWeeks === 0) return { semanas: [] };
+  const [dbRows, actualRows, athlete] = await Promise.all([
+    prisma.prescribedExercise.findMany({ where: { athleteId }, orderBy: [{ sessionIdx: "asc" }, { order: "asc" }] }),
+    prisma.sessionActual.findMany({ where: { athleteId } }),
+    prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } }),
+  ]);
+  const barKg = barKgForSexo((athlete?.sexo as "M" | "F" | undefined) ?? "M");
+  const rowsByWeek = groupByWeek(dbRows.map(toPrescriptionRow));
+  const actualsByWeek = groupByWeek(actualRows.map(toSessionActual));
+  const semanas: RecorridoSemana[] = [];
+  for (let week = 1; week <= totalWeeks; week++) {
+    const views = mergeActuals(
+      buildSessionViews(rowsByWeek.get(week) ?? [], plan.rms, barKg),
+      actualsByWeek.get(week) ?? [],
+    );
+    const { trabajoKg, calentamientoKg, sesionesHechas, sesionesTotales } = weekDoneSummary(views);
+    semanas.push({ week, trabajoKg, calentamientoKg, sesionesHechas, sesionesTotales });
+  }
+  return { semanas };
+}
+
+function groupByWeek<T extends { week: number }>(items: T[]): Map<number, T[]> {
+  const m = new Map<number, T[]>();
+  for (const it of items) {
+    const arr = m.get(it.week);
+    if (arr) arr.push(it);
+    else m.set(it.week, [it]);
+  }
+  return m;
 }
 
 /** Per-day heat aggregate of the WHOLE plan (calendar heat map). [] if no plan/macro. Light

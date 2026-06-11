@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { MonitorSeries } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
+import { RecorridoCard } from "./RecorridoCard";
 import { LoadChart } from "../../ui/charts/LoadChart";
 import { RecoveryChart } from "../../ui/charts/RecoveryChart";
 import { WellnessChart } from "../../ui/charts/WellnessChart";
@@ -50,6 +51,8 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
             <div className="ho-nodata__b">Cuando registres HRV, FC y carga, tus tendencias aparecen acá — con el contexto de cómo leer cada gráfico.</div>
           </div>
         </div>
+        {/* El recorrido es independiente del monitoreo: con entrenos registrados, aparece igual. */}
+        <RecorridoCard client={client} />
       </>
     );
   }
@@ -102,6 +105,7 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
             }}
           />
         )}
+        <RecorridoCard client={client} />
       </div>
     </>
   );

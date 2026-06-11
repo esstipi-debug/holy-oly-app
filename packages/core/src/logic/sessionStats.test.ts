@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { PrescribedExerciseView, SetActual } from "../types";
-import { setTonnage, sessionTonnage, heaviestSet, completion, warmupTonnage } from "./sessionStats";
+import type { PrescribedExerciseView, SessionView, SetActual } from "../types";
+import { setTonnage, sessionTonnage, heaviestSet, completion, warmupTonnage, weekDoneSummary } from "./sessionStats";
 
 const ex = (over: Partial<PrescribedExerciseView>): PrescribedExerciseView => ({
   movementId: "arranque", movementName: "Arranque", sets: 3, reps: 2, ...over,
@@ -95,6 +95,47 @@ describe("warmupTonnage (decisión owner 2026-06-11: la rampa cuenta como volume
     ];
     expect(sessionTonnage(exercises)).toBe(160);
     expect(sessionTonnage(exercises) + warmupTonnage(exercises)).toBe(515);
+  });
+});
+
+describe("weekDoneSummary (recorrido: lo HECHO de la semana, D2)", () => {
+  const W = [
+    { pct: 0, kg: 20, reps: 5, label: "barra" as const },
+    { pct: 50, kg: 51, reps: 5, label: "rampa" as const },
+  ]; // 20×5 + 51×5 = 355
+  it("2 sesiones: 1 hecha con warmup + 1 sin actuals → trabajo+rampa separados, 1/2 sesiones", () => {
+    const views: SessionView[] = [
+      {
+        week: 8, sessionIdx: 0,
+        exercises: [
+          ex({ warmup: W, actual: { done: true, movementId: "arranque", movementName: "Arranque", substituted: false, desfasado: false,
+            sets: [set(60, 2, true), set(60, 2, true)] } }),
+        ],
+      },
+      { week: 8, sessionIdx: 1, exercises: [ex({ movementId: "sentadilla", movementName: "Sentadilla" })] },
+    ];
+    expect(weekDoneSummary(views)).toEqual({
+      trabajoKg: 240,          // 60×2 + 60×2
+      calentamientoKg: 355,    // rampa prescrita del ejercicio hecho
+      totalKg: 595,
+      sesionesHechas: 1,       // sesión hecha = ≥1 ejercicio con ≥1 serie hecha
+      sesionesTotales: 2,
+    });
+  });
+  it("sesión con series marcadas NO hechas no cuenta como hecha (ni suma kg)", () => {
+    const views: SessionView[] = [
+      {
+        week: 8, sessionIdx: 0,
+        exercises: [
+          ex({ warmup: W, actual: { done: false, movementId: "arranque", movementName: "Arranque", substituted: false, desfasado: false,
+            sets: [set(60, 2, false)] } }),
+        ],
+      },
+    ];
+    expect(weekDoneSummary(views)).toEqual({ trabajoKg: 0, calentamientoKg: 0, totalKg: 0, sesionesHechas: 0, sesionesTotales: 1 });
+  });
+  it("semana vacía → ceros", () => {
+    expect(weekDoneSummary([])).toEqual({ trabajoKg: 0, calentamientoKg: 0, totalKg: 0, sesionesHechas: 0, sesionesTotales: 0 });
   });
 });
 

@@ -104,6 +104,29 @@ describe("LocalMeClient", () => {
     expect(await me(store).getMeSessions(10)).toEqual([]);
   });
 
+  it("getMeRecorrido acumula LO HECHO real por semana (espejo del demo, jamás datos inventados)", async () => {
+    seed(store);
+    await me(store).putMeSession(10, 0, [
+      { order: 0, movementId: "arranque", done: true, sets: [{ kg: 70, reps: 3, done: true }, { kg: 74, reps: 2, done: true }] },
+    ]);
+    const r = await me(store).getMeRecorrido();
+    expect(r.semanas).toHaveLength(16); // ruso-5d: todas las semanas del macro
+    const w10 = r.semanas[9]!;
+    expect(w10.week).toBe(10);
+    expect(w10.trabajoKg).toBe(70 * 3 + 74 * 2); // 358
+    expect(w10.calentamientoKg).toBeGreaterThan(0); // rampa prescrita del ejercicio hecho (regla 06-11)
+    expect(w10.sesionesHechas).toBe(1);
+    expect(w10.sesionesTotales).toBe(1); // el seed RX sólo tiene 1 sesión en la semana 10
+    // semana sin registro NI prescripción → ceros honestos
+    expect(r.semanas[0]).toEqual({ week: 1, trabajoKg: 0, calentamientoKg: 0, sesionesHechas: 0, sesionesTotales: 0 });
+  });
+
+  it("getMeRecorrido → { semanas: [] } sin plan (honesto)", async () => {
+    const s = new JsonStore(store);
+    s.set(KEYS.roster, ROSTER); // athlete but no plan
+    expect(await me(store).getMeRecorrido()).toEqual({ semanas: [] });
+  });
+
   it("degrades to empty when own-written localStorage is corrupt (validated reads)", async () => {
     seed(store);
     const s = new JsonStore(store);

@@ -223,6 +223,19 @@ export const WeekHeatSchema = z.object({
 });
 export const WeekHeatsSchema = z.array(WeekHeatSchema).max(104);
 
+// ── Recorrido wire shape (GET /me/recorrido). Lectura: el server ya acotó al escribir los
+//    actuals → sólo shape + no-negativos (un kg negativo jamás es verdad). Sin RM/RPE/ACWR. ──
+export const RecorridoSemanaSchema = z.object({
+  week: z.number().int().min(1).max(104),
+  trabajoKg: z.number().nonnegative(),
+  calentamientoKg: z.number().nonnegative(),
+  sesionesHechas: z.number().int().nonnegative(),
+  sesionesTotales: z.number().int().nonnegative(),
+});
+export const MeRecorridoSchema = z.object({
+  semanas: z.array(RecorridoSemanaSchema).max(104),
+});
+
 // ── SP3 actuals wire shapes (untrusted athlete input → bounded). ──
 export const SetActualInputSchema = z.object({
   kg: KgSchema.optional(),

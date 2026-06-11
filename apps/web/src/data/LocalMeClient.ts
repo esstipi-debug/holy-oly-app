@@ -8,7 +8,7 @@
  * setSessionActuals) verbatim in semantics, keeping the two athlete clients swappable.
  */
 import type {
-  Atleta, CycleData, MePlanView, MonitorSeries, Plan, PrescriptionRow,
+  Atleta, CycleData, MePlanView, MeRecorrido, MonitorSeries, Plan, PrescriptionRow, RecorridoSemana,
   DayLog, DayLogView, DayLogResult, DayLogInput,
   SessionView, SessionActual, ExerciseActualInput, WeekHeat,
 } from "@holy-oly/core";
@@ -17,7 +17,7 @@ import {
   DayLogInputSchema, SessionActualsInputSchema, PutMeCycleInputSchema,
   MonitorSeriesSchema, PlanSchema, RosterSchema, PrescriptionRowsSchema,
   DayLogsSchema, SessionActualsSchema, CycleShareSchema, CycleStateSchema,
-  MACROCYCLES, planHeat,
+  MACROCYCLES, planHeat, weekDoneSummary,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -113,6 +113,30 @@ export class LocalMeClient implements MeClient {
     const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
     if (totalWeeks === 0) return [];
     return planHeat(this.prescriptionRows(), totalWeeks);
+  }
+
+  /** Recorrido del macro: lo HECHO acumulado por semana, con el MISMO builder de vistas que
+   *  getMeSessions + `weekDoneSummary` de core. Mirrors repo.getMeRecorrido — datos REALES del
+   *  seed/registro local, jamás inventados: semanas sin actuals quedan en 0. */
+  async getMeRecorrido(): Promise<MeRecorrido> {
+    const plan = this.plan();
+    if (!plan) return { semanas: [] };
+    const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+    const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+    if (totalWeeks === 0) return { semanas: [] };
+    const allRows = this.prescriptionRows();
+    const allActuals = this.actuals();
+    const barKg = barKgForSexo(this.athlete()?.sexo ?? "M");
+    const semanas: RecorridoSemana[] = [];
+    for (let week = 1; week <= totalWeeks; week++) {
+      const views = mergeActuals(
+        buildSessionViews(allRows.filter((r) => r.week === week), plan.rms, barKg),
+        allActuals.filter((a) => a.week === week),
+      );
+      const { trabajoKg, calentamientoKg, sesionesHechas, sesionesTotales } = weekDoneSummary(views);
+      semanas.push({ week, trabajoKg, calentamientoKg, sesionesHechas, sesionesTotales });
+    }
+    return { semanas };
   }
 
   /** Replace one session's actuals (self-written). Mirrors repo.setSessionActuals (top-set summary). */

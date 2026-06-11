@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { SessionView } from "@holy-oly/core";
+import { weekDoneSummary } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../../data/meClient";
 
 const doneOf = (s: SessionView) => s.exercises.filter((e) => e.actual?.done).length;
@@ -19,6 +20,9 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
   const allDone = sessions.every((s) => doneOf(s) === s.exercises.length);
   // sessions is non-empty (guard above); `sessions[0]!` is always defined here.
   const next = sessions.find((s) => doneOf(s) < s.exercises.length) ?? sessions[0]!;
+  // Micro de la semana (recorrido D1): se computa client-side con las views que YA viajan —
+  // cero fetch extra. Sólo si hay kg movidos (0 → nada, sin culpa).
+  const resumen = weekDoneSummary(sessions);
 
   return (
     <section className="ho-card">
@@ -54,6 +58,11 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
           );
         })}
       </div>
+      {resumen.totalKg > 0 && (
+        <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 10, fontVariantNumeric: "tabular-nums" }}>
+          Esta semana: {resumen.totalKg.toLocaleString("es-CL")} kg · {resumen.sesionesHechas}/{resumen.sesionesTotales} sesiones
+        </div>
+      )}
     </section>
   );
 }

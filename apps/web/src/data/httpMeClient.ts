@@ -4,8 +4,8 @@
  * resolves the athlete from the session, never from a path/body, so there is no cross-athlete read.
  */
 import {
-  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, CycleDataSchema,
-  type MePlanView, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type ExerciseActualInput, type WeekHeat, type CycleData,
+  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, CycleDataSchema, MeRecorridoSchema,
+  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type ExerciseActualInput, type WeekHeat, type CycleData,
 } from "@holy-oly/core";
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
@@ -62,6 +62,13 @@ export async function getMeHeat(): Promise<WeekHeat[]> {
   const res = await fetch(`${BASE}/me/heat`, { credentials: "include" });
   if (!res.ok) return fail(res);
   return WeekHeatsSchema.parse(await res.json());
+}
+
+/** Recorrido del macro: lo HECHO acumulado por semana (kg propios, jamás RM/RPE/ACWR). */
+export async function getMeRecorrido(): Promise<MeRecorrido> {
+  const res = await fetch(`${BASE}/me/recorrido`, { credentials: "include" });
+  if (!res.ok) return fail(res);
+  return MeRecorridoSchema.parse(await res.json());
 }
 
 /** Record (replace) the athlete's actuals for one session. */

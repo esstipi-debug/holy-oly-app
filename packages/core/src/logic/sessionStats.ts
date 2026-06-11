@@ -1,4 +1,4 @@
-import type { PrescribedExerciseView, SetActual } from "../types";
+import type { PrescribedExerciseView, SessionView, SetActual } from "../types";
 
 /** Tonelaje de una serie: kg×reps sólo si está hecha y tiene ambos datos. 0 en otro caso. */
 export function setTonnage(set: SetActual): number {
@@ -56,4 +56,27 @@ export function completion(
   exercises: PrescribedExerciseView[],
 ): { done: number; total: number } {
   return { done: exercises.filter(exerciseDone).length, total: exercises.length };
+}
+
+/** Acumulado de LO HECHO en una semana (recorrido D2). Trabajo y calentamiento separados
+ *  (regla 06-11: la rampa es volumen VISIBLE pero jamás del monitor); sesión hecha = ≥1
+ *  ejercicio con ≥1 serie hecha (mismo criterio que `completion`). */
+export interface WeekDoneSummary {
+  trabajoKg: number;
+  calentamientoKg: number;
+  totalKg: number;
+  sesionesHechas: number;
+  sesionesTotales: number;
+}
+
+export function weekDoneSummary(views: SessionView[]): WeekDoneSummary {
+  const acc = views.reduce(
+    (a, v) => ({
+      trabajoKg: a.trabajoKg + sessionTonnage(v.exercises),
+      calentamientoKg: a.calentamientoKg + warmupTonnage(v.exercises),
+      sesionesHechas: a.sesionesHechas + (completion(v.exercises).done > 0 ? 1 : 0),
+    }),
+    { trabajoKg: 0, calentamientoKg: 0, sesionesHechas: 0 },
+  );
+  return { ...acc, totalKg: acc.trabajoKg + acc.calentamientoKg, sesionesTotales: views.length };
 }

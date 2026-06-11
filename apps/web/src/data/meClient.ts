@@ -3,7 +3,7 @@
  * (`httpMeClient`) when the app talks to a backend, or to `LocalMeClient` (localStorage, demo
  * athlete Kevin) when standalone — the exact mirror of how `RepositoryProvider` picks Http vs Local.
  */
-import type { CycleData, MePlanView, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, ExerciseActualInput, WeekHeat } from "@holy-oly/core";
+import type { CycleData, MePlanView, MeRecorrido, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, ExerciseActualInput, WeekHeat } from "@holy-oly/core";
 import { API_ENABLED } from "./apiConfig";
 import * as http from "./httpMeClient";
 import { LocalMeClient } from "./LocalMeClient";
@@ -29,6 +29,9 @@ export function getMeSessions(week: number): Promise<SessionView[]> {
 }
 export function getMeHeat(): Promise<WeekHeat[]> {
   return API_ENABLED ? http.getMeHeat() : local().getMeHeat();
+}
+export function getMeRecorrido(): Promise<MeRecorrido> {
+  return API_ENABLED ? http.getMeRecorrido() : local().getMeRecorrido();
 }
 export function putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void> {
   return API_ENABLED ? http.putMeSession(week, idx, actuals) : local().putMeSession(week, idx, actuals);
@@ -62,6 +65,8 @@ export interface MeClient {
   putDayLog(input: DayLogInput): Promise<DayLogResult>;
   getMeSessions(week: number): Promise<SessionView[]>;
   getMeHeat(): Promise<WeekHeat[]>;
+  /** Recorrido del macro: lo HECHO acumulado por semana (kg propios — jamás RM/RPE/ACWR). */
+  getMeRecorrido(): Promise<MeRecorrido>;
   putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void>;
   /** Registro propio del ciclo (slice ciclo-visible) — la verdad de la atleta, jamás del coach. */
   getMeCycle(): Promise<CycleData>;
@@ -69,4 +74,4 @@ export interface MeClient {
 }
 
 /** The module singleton as a `MeClient` object — the default client for the athlete screens. */
-export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, getMeHeat, putMeSession, getMeCycle, putMeCycle };
+export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, getMeHeat, getMeRecorrido, putMeSession, getMeCycle, putMeCycle };

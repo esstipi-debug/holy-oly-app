@@ -66,6 +66,14 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     return repo.getPlanHeat(prisma, athleteId);
   });
 
+  // Recorrido (slice recorrido-ciclos): lo HECHO acumulado por semana — carga PROPIA en kg,
+  // jamás RM/RPE/ACWR (HR-1). { semanas: [] } sin plan.
+  app.get("/me/recorrido", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    return repo.getMeRecorrido(prisma, athleteId);
+  });
+
   // ── Ciclo (slice ciclo-visible): la verdad de la atleta — JAMÁS viaja al coach por acá. ──
   app.get("/me/cycle", async (req, reply) => {
     const athleteId = requireAthlete(req, reply);

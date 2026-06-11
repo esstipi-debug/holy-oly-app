@@ -23,6 +23,7 @@ function stubClient(): MeClient {
     putDayLog: async () => ({ entry: { date: "2026-06-08", fatiga: 3, dolor: 1, estres: 2, humor: 4, motivacion: 4, sueno: 4 }, streak: 1 }),
     getMeSessions: async () => [],
     getMeHeat: async () => [],
+    getMeRecorrido: async () => ({ semanas: [] }),
     putMeSession: async () => {},
     getMeCycle: async () => ({ share: "none" as const, state: "regular" as const }),
     putMeCycle: async () => {},

@@ -52,4 +52,18 @@ describe("httpMeClient", () => {
     global.fetch = vi.fn(async () => res(401, { error: "unauthorized" })) as unknown as typeof fetch;
     await expect(me.getMePlan()).rejects.toThrow(/unauthorized/);
   });
+
+  it("getMeRecorrido parses the wire shape (semanas per week)", async () => {
+    global.fetch = vi.fn(async () => res(200, {
+      semanas: [{ week: 1, trabajoKg: 240, calentamientoKg: 100, sesionesHechas: 1, sesionesTotales: 5 }],
+    })) as unknown as typeof fetch;
+    const r = await me.getMeRecorrido();
+    expect(r.semanas).toHaveLength(1);
+    expect(r.semanas[0]!.trabajoKg).toBe(240);
+  });
+
+  it("getMeRecorrido throws on error (e.g. expired session)", async () => {
+    global.fetch = vi.fn(async () => res(401, { error: "unauthorized" })) as unknown as typeof fetch;
+    await expect(me.getMeRecorrido()).rejects.toThrow(/unauthorized/);
+  });
 });

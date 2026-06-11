@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { MePlanView, SessionView } from "@holy-oly/core";
-import { barKgForSexo, sessionTonnage, warmupTonnage, heaviestSet, completion } from "@holy-oly/core";
+import { barKgForSexo, sessionTonnage, warmupTonnage, heaviestSet, completion, weekDoneSummary } from "@holy-oly/core";
 import * as me from "../../../data/meClient";
 import { DiscRow } from "../../../ui/Disc";
 import { CaminoCard } from "../hoy/CaminoCard";
@@ -22,6 +22,7 @@ export function VictoriaScreen() {
   const [plan, setPlan] = useState<MePlanView | null>(null);
   const [session, setSession] = useState<SessionView | undefined>(undefined);
   const [sessionsCount, setSessionsCount] = useState(0);
+  const [weekKg, setWeekKg] = useState(0);
   const [state, setState] = useState<LoadState>("loading");
 
   useEffect(() => {
@@ -32,7 +33,8 @@ export function VictoriaScreen() {
         if (!on) return;
         const s = views.find((v) => v.sessionIdx === idx);
         if (!s) { setState("error"); return; }
-        setPlan(p); setSession(s); setSessionsCount(views.length); setState("ready");
+        // Micro de la semana (recorrido D1): acumulado de TODAS las vistas que ya viajan acá.
+        setPlan(p); setSession(s); setSessionsCount(views.length); setWeekKg(weekDoneSummary(views).totalKg); setState("ready");
       })
       .catch(() => { if (on) setState("error"); });
     return () => { on = false; };
@@ -88,6 +90,13 @@ export function VictoriaScreen() {
               ? <>Trabajo {CL(tonnage)} kg · calentamiento ~{CL(warmKg)} kg (rampa prescrita) — también construye: volumen de base y técnica</>
               : <>Tonelaje de las series de trabajo</>}
           </div>
+          {/* Cierre micro de la semana (recorrido D1) — sólo si la semana ya supera al día:
+              si esta es la única sesión, repetir el mismo número no informa nada. */}
+          {weekKg > totalKg && (
+            <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-text)", marginTop: 8, fontVariantNumeric: "tabular-nums" }}>
+              Con esta, llevás {CL(weekKg)} kg en la semana.
+            </div>
+          )}
         </div>
       )}
 

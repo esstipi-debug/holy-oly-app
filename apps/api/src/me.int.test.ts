@@ -108,4 +108,53 @@ describe("API integration — athlete self (/me/*)", () => {
     const res = await app.inject({ method: "GET", url: "/me/daylog?date=not-a-date", headers });
     expect(res.statusCode).toBe(400);
   });
+
+  // ── Recorrido (slice recorrido-ciclos): GET /me/recorrido ──────────────────
+  it("GET /me/recorrido → 401 sin sesión y 401 con sesión de coach (superficie del atleta)", async () => {
+    expect((await app.inject({ method: "GET", url: "/me/recorrido" })).statusCode).toBe(401);
+    const coach = await app.inject({ method: "POST", url: "/auth/login", payload: { email: "coach@holyoly.dev", password: "holyoly-demo" } });
+    expect((await app.inject({ method: "GET", url: "/me/recorrido", headers: sessionHeader(coach) })).statusCode).toBe(401);
+  });
+
+  it("GET /me/recorrido → { semanas: [] } para un atleta sin plan (honesto)", async () => {
+    const headers = await loginDemoAthlete();
+    const res = await app.inject({ method: "GET", url: "/me/recorrido", headers });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ semanas: [] });
+  });
+
+  it("atleta con actuals en 2 semanas → recorrido correcto por semana (trabajo + calentamiento de lo hecho)", async () => {
+    const RMS = { arranque: 80, envion: 100, sentadilla: 140, frente: 110 };
+    const coachLogin = await app.inject({ method: "POST", url: "/auth/login", payload: { email: "coach@holyoly.dev", password: "holyoly-demo" } });
+    const coach = sessionHeader(coachLogin);
+    // Plan fresco para mv (re-instancia la receta) + actuals limpios → test determinista
+    // aunque otros archivos int hayan registrado sesiones de mv antes.
+    expect((await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach,
+      payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } })).statusCode).toBe(200);
+    await prisma.sessionActual.deleteMany({ where: { athleteId: "mv" } });
+
+    const maraLogin = await app.inject({ method: "POST", url: "/auth/login", payload: { email: "mara@holyoly.dev", password: "holyoly-demo" } });
+    const athlete = sessionHeader(maraLogin);
+    // Semana 1: 2 series hechas de 60×2 → trabajo 240 kg (+ rampa prescrita del ejercicio hecho).
+    expect((await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
+      payload: [{ order: 0, movementId: "arranque", done: true, sets: [{ kg: 60, reps: 2, done: true }, { kg: 60, reps: 2, done: true }] }] })).statusCode).toBe(200);
+    // Semana 2: 1 serie hecha de 80×2 → trabajo 160 kg.
+    expect((await app.inject({ method: "PUT", url: "/me/session/2/0", headers: athlete,
+      payload: [{ order: 0, movementId: "arranque", done: true, sets: [{ kg: 80, reps: 2, done: true }] }] })).statusCode).toBe(200);
+
+    const res = await app.inject({ method: "GET", url: "/me/recorrido", headers: athlete });
+    expect(res.statusCode).toBe(200);
+    const { semanas } = res.json() as { semanas: Array<{ week: number; trabajoKg: number; calentamientoKg: number; sesionesHechas: number; sesionesTotales: number }> };
+    expect(semanas.length).toBe(16); // ruso-5d: TODAS las semanas del macro, con o sin registro
+    const [w1, w2, w3] = [semanas[0]!, semanas[1]!, semanas[2]!];
+    expect(w1).toMatchObject({ week: 1, trabajoKg: 240, sesionesHechas: 1 });
+    expect(w1.calentamientoKg).toBeGreaterThan(0); // la rampa del ejercicio hecho cuenta (regla 06-11)
+    expect(w1.sesionesTotales).toBeGreaterThan(1);
+    expect(w2).toMatchObject({ week: 2, trabajoKg: 160, sesionesHechas: 1 });
+    expect(w3).toMatchObject({ week: 3, trabajoKg: 0, calentamientoKg: 0, sesionesHechas: 0 });
+    // HR-1: el payload del atleta no filtra RM/RPE/ACWR.
+    expect(res.body).not.toMatch(/rpe/i);
+    expect(res.body).not.toMatch(/"rms"/);
+    expect(res.body).not.toMatch(/acwr/i);
+  });
 });

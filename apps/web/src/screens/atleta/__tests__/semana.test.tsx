@@ -46,3 +46,24 @@ test("CTA primario apunta al siguiente día pendiente y navega", async () => {
   fireEvent.click(cta);
   await waitFor(() => expect(screen.getByText("ENTRENO")).toBeInTheDocument());
 });
+
+// ── Línea micro de la semana (recorrido D1) ──────────────────────────────────
+test("con kg movidos → línea micro «Esta semana: N kg · X/Y sesiones» en es-CL", async () => {
+  const KG_SESSIONS = [
+    { week: 8, sessionIdx: 0, exercises: [{ movementId: "arranque", sets: 5, reps: 2, pct: 80, movementName: "Arranque", targetKg: 64,
+      warmup: [{ pct: 0, kg: 20, reps: 5, label: "barra" }],
+      actual: { done: true, movementId: "arranque", movementName: "Arranque", substituted: false, desfasado: false,
+        sets: [{ kg: 100, reps: 5, done: true }, { kg: 100, reps: 5, done: true }] } }] },
+    { week: 8, sessionIdx: 1, exercises: [{ movementId: "cargada", sets: 5, reps: 2, pct: 80, movementName: "Cargada", targetKg: 80 }] },
+  ];
+  vi.mocked(me.getMeSessions).mockResolvedValueOnce(KG_SESSIONS as never);
+  renderCard();
+  // trabajo 1.000 + calentamiento 100 (rampa del ejercicio hecho) = 1.100; 1 de 2 sesiones
+  expect(await screen.findByText("Esta semana: 1.100 kg · 1/2 sesiones")).toBeInTheDocument();
+});
+
+test("sin kg movidos → no muestra la línea micro (0 → nada, sin culpa)", async () => {
+  renderCard(); // MOCK_SESSIONS: hecho sin kg registrado → totalKg 0
+  await screen.findByText(/Día 1/);
+  expect(screen.queryByText(/Esta semana:/)).not.toBeInTheDocument();
+});

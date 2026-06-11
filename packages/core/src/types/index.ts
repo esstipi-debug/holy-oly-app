@@ -223,6 +223,11 @@ export interface DayHeat { topPct?: number; lifts: number }
 /** A plan week's 7 day slots (Monday-first; session i → day i). `null` = rest day. */
 export interface WeekHeat { week: number; days: (DayHeat | null)[] }
 
+// ── Recorrido (lo HECHO a lo largo del macro, wire de /me/recorrido). Sólo carga PROPIA en kg
+//    (permitida al atleta, HR-1); el total se deriva (trabajo + calentamiento) en el cliente. ──
+export interface RecorridoSemana { week: number; trabajoKg: number; calentamientoKg: number; sesionesHechas: number; sesionesTotales: number }
+export interface MeRecorrido { semanas: RecorridoSemana[] }
+
 // ── SP3 actuals: what the athlete actually lifted, per prescribed exercise. ──
 /** Una serie de trabajo registrada (Opción B: registro por serie). */
 export interface SetActual { kg?: number; reps?: number; done: boolean; }
