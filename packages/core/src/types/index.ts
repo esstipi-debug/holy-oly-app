@@ -262,3 +262,44 @@ export interface RmUpdate { lift: RmLift; kg: number; setAt: string; reason: RmR
 export interface PrCandidate { lift: RmLift; movementId: string; movementName: string; kg: number; week: number; sessionIdx: number; doneAt?: string; }
 /** Vigencia por lift: cuándo se fijó y hace cuántas semanas ({} = sin dato, nunca inventar). */
 export type RmVigencia = Record<RmLift, { setAt?: string; weeksAgo?: number }>;
+
+// ── Motor Prilepin (core dormant — spec 2026-06-10-motor-prilepin-design.md) ──────────────────
+
+export type EnginePhase = "accumulation" | "intensification" | "peak" | "taper" | "comp_week" | "deload";
+export type IntensityZone = "70-80" | "80-90" | "90+";
+/** Banda del semáforo diario sobre readiness 0-100 (cortes 70/80, espejo de recoveryState). */
+export type ReadinessBand = "green" | "amber" | "red";
+
+export interface EngineInput {
+  /** null = sin competencia → ola continua. */
+  weeksToComp: number | null;
+  /** Lift del RM de la casa (D2) — no el enum del bundle. */
+  lift: RmLift;
+  /** RM vigente del lift en kg (SP5). Acá jamás se estima. */
+  rmKg: number;
+  /** ACWR reciente de monitor.ts; null = sin dato → sin ajuste, jamás inventar (D7). */
+  recentACWR: number | null;
+  /** Posición 1-based en la ola si weeksToComp === null (default 1). */
+  waveWeek?: number;
+  /** Banda del día (readinessBand); null/ausente = sin dato. */
+  readiness?: ReadinessBand | null;
+}
+
+export interface EngineSet { sets: number; reps: number; pct: number; weightKg: number; zone: IntensityZone; }
+
+export interface EngineZoneAudit { zone: IntensityZone; optimalReps: number; prescribedReps: number; withinRange: boolean; }
+
+export interface EngineWeek {
+  phase: EnginePhase;
+  label: string;
+  /** Microcopy de supercompensación — explica, no castiga. */
+  rationale: string;
+  /** Cara del atleta (kg manda; los discos los pinta la UI). */
+  sets: EngineSet[];
+  /** Material de coach/peek (HR-1: NO va a superficie de atleta — D12). */
+  audits: EngineZoneAudit[];
+  taper: { base: number; acwrFactor: number; readinessFactor: number; final: number };
+  inputs: { acwr: number | null; readiness: ReadinessBand | null };
+  /** readiness red + zona 90+ presente → el cableado sugiere mover los singles, no borrarlos. */
+  heavySinglesAdvisory: boolean;
+}
