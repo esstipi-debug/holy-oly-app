@@ -134,6 +134,42 @@ test("desmontar con el sheet abierto restaura el overflow previo del body", () =
   document.body.style.overflow = "";
 });
 
+// Sheets ANIDADOS (SessionEditor abre MovementPicker encima): el scroll-lock usa un contador a
+// nivel módulo — cerrar el primero NO restaura el overflow mientras el otro siga abierto.
+test("dos sheets abiertos: cerrar el primero deja el body bloqueado; cerrar el segundo restaura", () => {
+  function TwoSheets() {
+    const [a, setA] = useState(false);
+    const [b, setB] = useState(false);
+    return (
+      <div>
+        <button type="button" onClick={() => setA(true)}>Abrir A</button>
+        <button type="button" onClick={() => setB(true)}>Abrir B</button>
+        <BottomSheet open={a} onClose={() => setA(false)} ariaLabel="Hoja A">
+          <button type="button" onClick={() => setA(false)}>Cerrar A</button>
+        </BottomSheet>
+        <BottomSheet open={b} onClose={() => setB(false)} ariaLabel="Hoja B">
+          <button type="button" onClick={() => setB(false)}>Cerrar B</button>
+        </BottomSheet>
+      </div>
+    );
+  }
+  document.body.style.overflow = "scroll"; // valor previo no-vacío: la restauración final no debe pisarlo
+  render(<TwoSheets />);
+
+  fireEvent.click(screen.getByRole("button", { name: "Abrir A" }));
+  fireEvent.click(screen.getByRole("button", { name: "Abrir B" }));
+  expect(document.body.style.overflow).toBe("hidden");
+
+  // cerrar el primero → el segundo sigue abierto → el body sigue bloqueado
+  fireEvent.click(screen.getByRole("button", { name: "Cerrar A" }));
+  expect(document.body.style.overflow).toBe("hidden");
+
+  // cerrar el segundo (el último) → recién ahí se restaura el overflow previo
+  fireEvent.click(screen.getByRole("button", { name: "Cerrar B" }));
+  expect(document.body.style.overflow).toBe("scroll");
+  document.body.style.overflow = "";
+});
+
 test("sin hijos enfocables enfoca el contenedor y Tab no lo abandona", () => {
   render(<StaticHarness />);
   open();

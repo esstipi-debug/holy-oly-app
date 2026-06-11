@@ -19,6 +19,12 @@ const label: CSSProperties = {
   color: "var(--wl-muted)", marginTop: 12, display: "block",
 };
 
+/** YYYY-MM LOCAL — toISOString() es UTC y en Chile salta de mes en la noche del último día. */
+function currentYearMonth(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
 /** Coach adds a competition medal (metal + lifts). Mirrors the mock's medal sheet. */
 export function MedalSheet({
   open, onClose, onSubmit,
@@ -29,7 +35,7 @@ export function MedalSheet({
 }) {
   const [metal, setMetal] = useState<Medal["medal"]>("oro");
   const [comp, setComp] = useState("");
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 7)); // YYYY-MM de hoy
+  const [date, setDate] = useState(() => currentYearMonth()); // YYYY-MM de hoy (local)
   const [cat, setCat] = useState("81");
   const [sn, setSn] = useState("");
   const [cj, setCj] = useState("");
@@ -42,7 +48,7 @@ export function MedalSheet({
     setBusy(true);
     try {
       const place = METALS.find((m) => m.k === metal)!.place;
-      await onSubmit({ comp: comp || "Competencia", date: date || new Date().toISOString().slice(0, 7), cat: cat || "—", medal: metal, sn: Number(sn) || 0, cj: Number(cj) || 0, place });
+      await onSubmit({ comp: comp || "Competencia", date: date || currentYearMonth(), cat: cat || "—", medal: metal, sn: Number(sn) || 0, cj: Number(cj) || 0, place });
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo guardar la medalla");
@@ -52,7 +58,7 @@ export function MedalSheet({
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose}>
+    <BottomSheet open={open} onClose={onClose} ariaLabel="Añadir medalla">
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Añadir medalla</div>
 
       <label style={label}>Medalla</label>

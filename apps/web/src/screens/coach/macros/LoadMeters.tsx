@@ -7,7 +7,9 @@ const label: CSSProperties = {
 };
 const value: CSSProperties = { fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", flexShrink: 0 };
 
-const VOLUME_CYAN = "#2dd4e6"; // paleta de carga — candidata a token
+// paleta de atributos de plantilla — deliberadamente DISTINTA del semáforo (rulebook §4: color=estado):
+// tonos vecinos pero NO los tokens --ok/--warn/--alert, para que un meter de plantilla jamás se lea como estado.
+const METER = { intensidad: "#e05656", volumen: "#2dd4e6", recuperacion: "#4caf78" } as const;
 
 function Meter({ name, val, color }: { name: string; val: number; color: string }) {
   return (
@@ -31,9 +33,9 @@ function Meter({ name, val, color }: { name: string; val: number; color: string 
 export function LoadMeters({ macro }: { macro: Macrocycle }) {
   return (
     <div>
-      <Meter name="INTENSIDAD" val={macro.intensity} color="var(--wl-danger)" />
-      <Meter name="VOLUMEN" val={macro.volume} color={VOLUME_CYAN} />
-      <Meter name="RECOVERY" val={deriveRecovery(macro)} color="var(--ok)" />
+      <Meter name="INTENSIDAD" val={macro.intensity} color={METER.intensidad} />
+      <Meter name="VOLUMEN" val={macro.volume} color={METER.volumen} />
+      <Meter name="RECOVERY" val={deriveRecovery(macro)} color={METER.recuperacion} />
     </div>
   );
 }

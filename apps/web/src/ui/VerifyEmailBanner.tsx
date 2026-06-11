@@ -29,7 +29,8 @@ export function VerifyEmailBanner({ sub = "Sin verificación no podés confirmar
         onClick={() => void onResend()}
         style={{ marginTop: 8, padding: "8px 12px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontWeight: 700, cursor: resend === "sending" || resend === "sent" ? "default" : "pointer", opacity: resend === "sending" ? 0.45 : 1 }}
       >
-        {resend === "sending" ? "Enviando…" : resend === "sent" ? "Enviado ✓ — revisá spam" : "Reenviar email"}
+        {/* role="status": el éxito del reenvío se ANUNCIA (lector de pantalla), no sólo cambia el texto del botón. */}
+        {resend === "sending" ? "Enviando…" : resend === "sent" ? <span role="status">Enviado ✓ — revisá spam</span> : "Reenviar email"}
       </button>
       {resend === "error" && (
         <div role="alert" style={{ marginTop: 8, color: "var(--wl-danger)", fontSize: 12 }}>

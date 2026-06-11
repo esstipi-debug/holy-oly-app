@@ -26,10 +26,13 @@ function VincularSection() {
   const [fetchFailed, setFetchFailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     if (!apiEnabled) return;
     let on = true;
+    setLoaded(false);
+    setFetchFailed(false);
     vc.getMyVinculo()
       .then((v) => {
         if (!on) return;
@@ -37,11 +40,11 @@ function VincularSection() {
         setLoaded(true);
       })
       .catch(() => {
-        // Error del fetch → caemos al form con una línea muted; no bloquea la pantalla.
+        // D5: error ≠ "sin vínculo" — rama propia con Reintentar; el form sólo con null confirmado.
         if (on) { setFetchFailed(true); setLoaded(true); }
       });
     return () => { on = false; };
-  }, [apiEnabled]);
+  }, [apiEnabled, reload]);
 
   async function onSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
@@ -77,6 +80,16 @@ function VincularSection() {
       <div className="ho-acct__label">Mi coach</div>
       {!loaded ? (
         <div className="ho-card"><div className="ho-acct__rowsub">Cargando…</div></div>
+      ) : fetchFailed ? (
+        <div className="ho-card">
+          <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
+            No se pudo cargar tu vínculo.{" "}
+            <button type="button" onClick={() => setReload((r) => r + 1)}
+              style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
+              Reintentar
+            </button>
+          </div>
+        </div>
       ) : estado === "activo" ? (
         <div className="ho-card">
           <b style={{ fontFamily: "var(--wl-display)" }}>
@@ -92,9 +105,6 @@ function VincularSection() {
         </div>
       ) : (
         <form onSubmit={onSubmit} className="ho-card">
-          {fetchFailed && (
-            <div className="ho-acct__rowsub" style={{ marginBottom: 8 }}>No pudimos cargar el estado de tu vínculo — igual podés enviar un código.</div>
-          )}
           <div className="ho-acct__rowsub" style={{ marginBottom: 10 }}>Ingresá el código que te pasó tu coach. Cuando lo confirme, queda hecho el vínculo.</div>
           <input
             value={code}

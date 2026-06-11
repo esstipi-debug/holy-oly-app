@@ -8,3 +8,6 @@ export const STATUS: Record<CellState, string> = {
   alert: "#ff3b46",
   none: "var(--wl-muted)",
 };
+
+/** Espejo de --gold (PRs/medallas) — mismo contrato que STATUS: cambiar junto con theme.css. */
+export const GOLD = "#E8B23A";

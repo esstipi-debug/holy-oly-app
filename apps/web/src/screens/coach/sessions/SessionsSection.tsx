@@ -26,12 +26,21 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
   const [editing, setEditing] = useState<SessionView | null>(null);
   // Error ≠ vacío (D5): un fallo de carga no puede mostrarse como "Sin sesiones".
   const [error, setError] = useState(false);
+  const [reload, setReload] = useState(0);
 
-  const refresh = useCallback(() => {
+  const refresh = useCallback(() => setReload((r) => r + 1), []);
+
+  // El fetch vive en el effect con guard `on`: cambiar de semana rápido cancela la respuesta
+  // en vuelo (ni setSessions ni setError de una semana vieja pisan a la vigente).
+  useEffect(() => {
+    let on = true;
+    setSessions(null);
     setError(false);
-    repo.getPrescriptionWeek(athleteId, week).then(setSessions).catch(() => setError(true));
-  }, [repo, athleteId, week]);
-  useEffect(() => { setSessions(null); refresh(); }, [refresh]);
+    repo.getPrescriptionWeek(athleteId, week)
+      .then((s) => { if (on) setSessions(s); })
+      .catch(() => { if (on) setError(true); });
+    return () => { on = false; };
+  }, [repo, athleteId, week, reload]);
 
   const onSave = useCallback(async (exercises: PrescribedExercise[]) => {
     if (!editing) return;
@@ -53,7 +62,7 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
       {error ? (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
           No se pudieron cargar las sesiones.{" "}
-          <button type="button" onClick={() => { setSessions(null); refresh(); }}
+          <button type="button" onClick={refresh}
             style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
             Reintentar
           </button>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Outlet, Routes, Route } from "react-router-dom";
 
 // W8 (la NOTA pendiente de cuenta.test.tsx): ramas API del vínculo (GET /me/vinculo).
@@ -83,7 +83,27 @@ describe("VincularSection (modo API, 3 ramas de GET /me/vinculo)", () => {
     expect(await screen.findByLabelText("Código de invitación")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enviar solicitud" })).toBeInTheDocument();
     expect(screen.queryByText(/Tu coach:/)).not.toBeInTheDocument();
-    // sin la línea de fetch fallido — null es "sin vínculo", no error
-    expect(screen.queryByText(/No pudimos cargar el estado/)).not.toBeInTheDocument();
+    // sin alert de error — null es "sin vínculo" confirmado, no un fallo
+    expect(screen.queryByText(/No se pudo cargar tu vínculo/)).not.toBeInTheDocument();
+  });
+
+  // D5: error del fetch ≠ "sin vínculo" — rama propia con role="alert" + Reintentar;
+  // el form de código SOLO aparece con null confirmado.
+  it("error del fetch → alert con Reintentar, sin form; el retry recupera el estado", async () => {
+    vi.mocked(vc.getMyVinculo)
+      .mockRejectedValueOnce(new Error("network"))
+      .mockResolvedValueOnce(null);
+    renderCuentaApi();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("No se pudo cargar tu vínculo");
+    expect(screen.queryByLabelText("Código de invitación")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Enviar solicitud" })).not.toBeInTheDocument();
+
+    // Reintentar re-dispara el fetch; ahora resuelve null confirmado → aparece el form
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+    expect(await screen.findByLabelText("Código de invitación")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(vi.mocked(vc.getMyVinculo)).toHaveBeenCalledTimes(2);
   });
 });

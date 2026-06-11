@@ -1,6 +1,13 @@
 import { useEffect, type ReactNode } from "react";
 import { useFocusTrap } from "./useFocusTrap";
 
+// Scroll-lock con sheets ANIDADOS (SessionEditor abre MovementPicker encima): contador a nivel
+// módulo — sólo el PRIMER sheet abierto guarda/pisa el overflow del body y sólo el ÚLTIMO en
+// cerrarse lo restaura. Sin esto, el cleanup del sheet interior restauraba el scroll con el
+// exterior todavía abierto.
+let lockCount = 0;
+let prevOverflow = "";
+
 export function BottomSheet({
   open,
   onClose,
@@ -26,9 +33,13 @@ export function BottomSheet({
   // sin esto el contenido de atrás sigue scrolleable debajo del backdrop.
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    if (++lockCount === 1) {
+      prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      if (--lockCount === 0) document.body.style.overflow = prevOverflow;
+    };
   }, [open]);
   if (!open) return null;
 

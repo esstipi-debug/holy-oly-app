@@ -7,8 +7,15 @@ export function AppError() {
   const error = useRouteError();
 
   useEffect(() => {
+    // diagnóstico deliberado del error boundary (sin stack al usuario)
     console.error("[router] error no manejado:", error);
   }, [error]);
+
+  useEffect(() => {
+    const prev = document.title;
+    document.title = "Error — Holy Oly";
+    return () => { document.title = prev; };
+  }, []);
 
   return (
     <div style={{

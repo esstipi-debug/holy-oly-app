@@ -129,6 +129,44 @@ describe("Vínculo invite flow (integration)", () => {
     expect(act.json()).toEqual({ vinculo: { estado: "activo", coachNombre: "Coach Vínculo" } });
   });
 
+  // Vinculo es M:N: un "pendiente" más nuevo (coach B) no puede ocultar el "activo" vigente (coach A).
+  it("GET /me/vinculo prioriza el vínculo activo sobre un pendiente más nuevo de otro coach", async () => {
+    const u = Date.now();
+    const coachA = await app.inject({
+      method: "POST", url: "/auth/signup",
+      payload: { email: `ca-${u}@x.dev`, password: "coach-pass-pa", role: "coach", name: "Coach A" },
+    });
+    const coachAH = cookieOf(coachA);
+    const rotA = await app.inject({ method: "POST", url: "/invite/rotate", headers: coachAH });
+    const codeA = (rotA.json() as { inviteCode: string }).inviteCode;
+
+    const coachB = await app.inject({
+      method: "POST", url: "/auth/signup",
+      payload: { email: `cb-${u}@x.dev`, password: "coach-pass-pb", role: "coach", name: "Coach B" },
+    });
+    const rotB = await app.inject({ method: "POST", url: "/invite/rotate", headers: cookieOf(coachB) });
+    const codeB = (rotB.json() as { inviteCode: string }).inviteCode;
+
+    const ath = await app.inject({
+      method: "POST", url: "/auth/signup",
+      payload: { email: `a-pr-${u}@x.dev`, password: "athlete-pwd-pr", role: "atleta", name: "Atleta Prio" },
+    });
+    const athH = cookieOf(ath);
+
+    // accept A → coach A confirma → vínculo ACTIVO con A
+    await app.inject({ method: "POST", url: "/vinculos/accept", headers: athH, payload: { code: codeA } });
+    const listA = await app.inject({ method: "GET", url: "/vinculos", headers: coachAH });
+    const rowA = (listA.json() as Array<{ id: string; estado: string }>).find((v) => v.estado === "pendiente");
+    await app.inject({ method: "POST", url: `/vinculos/${rowA!.id}/confirm`, headers: coachAH });
+
+    // después acepta el código de B → queda un "pendiente" con B, MÁS NUEVO que el activo de A
+    await app.inject({ method: "POST", url: "/vinculos/accept", headers: athH, payload: { code: codeB } });
+
+    const res = await app.inject({ method: "GET", url: "/me/vinculo", headers: athH });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ vinculo: { estado: "activo", coachNombre: "Coach A" } });
+  });
+
   it("GET /me/vinculo requiere sesión de atleta (anónimo y coach → 401)", async () => {
     const anon = await app.inject({ method: "GET", url: "/me/vinculo" });
     expect(anon.statusCode).toBe(401);

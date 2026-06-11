@@ -71,9 +71,9 @@ export function AuthScreen() {
         {mode === "signup" && (
           <>
             <label style={label}>Soy</label>
-            <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+            <div role="group" aria-label="Tipo de cuenta" style={{ display: "flex", gap: 8, marginTop: 6 }}>
               {(["coach", "atleta"] as const).map((r) => (
-                <button type="button" key={r} onClick={() => setRole(r)}
+                <button type="button" key={r} onClick={() => setRole(r)} aria-pressed={role === r}
                   style={{ flex: 1, padding: "8px", borderRadius: 10, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700,
                     border: `1px solid ${role === r ? "var(--wl-accent)" : "color-mix(in srgb,var(--wl-text) 16%,transparent)"}`,
                     background: role === r ? "color-mix(in srgb,var(--wl-accent) 16%,transparent)" : "transparent", color: "var(--wl-text)" }}>
@@ -81,15 +81,15 @@ export function AuthScreen() {
                 </button>
               ))}
             </div>
-            <label style={label}>Nombre</label>
-            <input style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" />
+            <label style={label} htmlFor="auth-name">Nombre</label>
+            <input id="auth-name" style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" />
           </>
         )}
 
-        <label style={label}>Email</label>
-        <input style={input} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vos@ejemplo.com" />
-        <label style={label}>Contraseña</label>
-        <input style={input} type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+        <label style={label} htmlFor="auth-email">Email</label>
+        <input id="auth-email" style={input} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vos@ejemplo.com" />
+        <label style={label} htmlFor="auth-password">Contraseña</label>
+        <input id="auth-password" style={input} type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
 
         {mode === "signup" && (
           <input

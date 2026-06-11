@@ -51,7 +51,7 @@ export function CompSheet({
   const show = (c: Competencia): string => (c.date ? c.date : `sem ${c.week}`);
 
   return (
-    <BottomSheet open={open} onClose={onClose}>
+    <BottomSheet open={open} onClose={onClose} ariaLabel="Competencias">
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Competencias del atleta</div>
 
       <label style={label}>Asignadas</label>

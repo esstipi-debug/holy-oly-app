@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatClp, MULTISEDE } from "@holy-oly/core";
 import { billingCheckout, billingPlans, billingStatus, mockActivate, type BillingPeriod, type BillingPlan, type BillingStatus } from "../../billing/billingClient";
@@ -20,28 +20,39 @@ export function SuscripcionScreen() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function refresh(): Promise<void> {
+  const refresh = useCallback(async (): Promise<void> => {
     setStatus(await billingStatus());
-  }
+  }, []);
 
   useEffect(() => {
     void Promise.all([billingPlans(), refresh()])
       .then(([p]) => setPlans(p))
       .catch((e: unknown) => setError(e instanceof Error ? e.message : "Error"));
-  }, []);
+  }, [refresh]);
 
   useEffect(() => {
-    if (params.get("mockCheckout") === "1") {
-      void mockActivate().then(refresh).catch((e: unknown) => setError(e instanceof Error ? e.message : "Error"));
-    }
-  }, [params]);
+    if (params.get("mockCheckout") !== "1") return;
+    let on = true;
+    mockActivate()
+      .then(() => { if (on) return refresh(); })
+      .catch((e: unknown) => { if (on) setError(e instanceof Error ? e.message : "Error"); });
+    return () => { on = false; };
+  }, [params, refresh]);
 
   async function onCheckout(): Promise<void> {
     setBusy(true);
     setError(null);
     try {
       const { checkoutUrl } = await billingCheckout(selectedPlanId, period);
-      if (checkoutUrl.startsWith("http")) window.location.href = checkoutUrl;
+      // Sólo http(s) reales navegan — bloquea javascript:/data: si el backend devolviera una URL hostil.
+      let isWebUrl = false;
+      try {
+        const u = new URL(checkoutUrl);
+        isWebUrl = u.protocol === "https:" || u.protocol === "http:";
+      } catch {
+        isWebUrl = false; // relativa o malformada → flujo mock (refresh)
+      }
+      if (isWebUrl) window.location.href = checkoutUrl;
       else await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");

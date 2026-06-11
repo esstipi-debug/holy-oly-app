@@ -144,7 +144,9 @@ Para **cada** chart, El Carnicero exige las tres respuestas:
 Falta cualquiera de las tres → **defecto HR-2** (HIGH si es superficie clave).
 
 ### Inventario de charts (objetivo de la auditoría inaugural)
-`AcwrChart`, `CompChart`, `Heatmap`, `ImrFaseChart`, `LoadChart`, `MacroPeriodization`, `MacroTimeline`, `RecoveryChart`, `RiskQuadrant`, `WeightChart`, `WellnessChart` + `chartkit.tsx` (primitivos).
+`AcwrChart`, `CompChart`, `ImrFaseChart`, `LoadChart`, `MacroPeriodization`, `MacroTimeline`, `RecoveryChart`, `WeightChart`, `WellnessChart` + `chartkit.tsx` (primitivos).
+
+Paleta de estado canónica: tokens `:root` de `styles/theme.css` (--ok/--warn/--alert/--gold) espejados con `ui/status.ts` — guard de regresión en `ui/__tests__/status-tokens.test.ts`.
 
 ---
 

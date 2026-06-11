@@ -1,8 +1,15 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 /** 404 del sistema (W5/D7): catch-all del router. Hereda el skin neon que index.html fija en
  *  <html class="wl wl--neon"> — no necesita wrapper .wl propio. */
 export function NotFound() {
+  useEffect(() => {
+    const prev = document.title;
+    document.title = "Página no encontrada — Holy Oly";
+    return () => { document.title = prev; };
+  }, []);
+
   return (
     <div style={{
       minHeight: "100vh", background: "var(--wl-bg)", color: "var(--wl-text)",

@@ -27,7 +27,7 @@ export function WeekDetailSheet({ open, onClose, week, dateISO, isTaper, signals
   perWeek: number; marks: SessionLog; onToggle: (week: number, idx: number) => void;
 }) {
   return (
-    <BottomSheet open={open} onClose={onClose}>
+    <BottomSheet open={open} onClose={onClose} ariaLabel="Detalle de la semana">
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16, color: "var(--wl-text)" }}>
         Semana {week} {isTaper && <span style={{ color: STATUS.alert }}>· 🚩 taper</span>}
       </div>

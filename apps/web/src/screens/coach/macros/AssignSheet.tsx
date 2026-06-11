@@ -94,7 +94,7 @@ export function AssignSheet({
   const picoLabel = anchorWeek !== totalWeeks ? ` (pico del macro)` : "";
 
   return (
-    <BottomSheet open={open} onClose={onClose}>
+    <BottomSheet open={open} onClose={onClose} ariaLabel="Asignar plan">
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Asignar {macro.name}</div>
 
       <label style={label}>Atleta</label>

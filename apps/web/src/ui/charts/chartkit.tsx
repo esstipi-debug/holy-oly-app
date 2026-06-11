@@ -99,7 +99,7 @@ export function ChartCard({ title, sub, chip, chipState, explain, children }: {
       </div>
       {sub && <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", margin: "3px 0 9px" }}>{sub}</div>}
       {children}
-      <BottomSheet open={open} onClose={() => setOpen(false)}>
+      <BottomSheet open={open} onClose={() => setOpen(false)} ariaLabel={title || "Detalle"}>
         <ChartExplainSheet title={title} explain={explain} />
       </BottomSheet>
     </Card>

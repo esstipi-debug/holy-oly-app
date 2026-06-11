@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { SessionView, ExerciseActualInput, MePlanView } from "@holy-oly/core";
 import { getMovement, barKgForSexo } from "@holy-oly/core";
 import * as me from "../../data/meClient";
+import { BackButton } from "../../ui/BackButton";
 import { SubstituteSheet } from "../../ui/SubstituteSheet";
 import { ResumenDia } from "./entreno/ResumenDia";
 import { SessionPlayer, type PlayerRow } from "./entreno/SessionPlayer";
@@ -28,10 +29,12 @@ export function EntrenoScreen() {
     if (!Number.isInteger(week) || !Number.isInteger(idx)) { navigate("/atleta", { replace: true }); return; }
     let on = true;
     setRows(null); setLoadError(false);
-    Promise.all([me.getMePlan().catch(() => null), me.getMeSessions(week)])
-      .then(([plan, views]: [MePlanView | null, SessionView[]]) => {
+    // D5: si el plan falla, el rechazo cae al catch general (loadError) — nada de degradar en
+    // silencio a barra de 20 kg. El plan null RESUELTO (sin plan asignado) sigue siendo legítimo.
+    Promise.all([me.getMePlan(), me.getMeSessions(week)])
+      .then(([plan, views]: [MePlanView, SessionView[]]) => {
         if (!on) return;
-        setBarKg(barKgForSexo(plan?.athlete.sexo ?? "M"));
+        setBarKg(barKgForSexo(plan.athlete.sexo));
         const s = views.find((v) => v.sessionIdx === idx);
         setRows((s?.exercises ?? []).map((e) => {
           const fromActual = e.actual?.sets;
@@ -80,7 +83,7 @@ export function EntrenoScreen() {
   // NOTE: rendered inside AthleteShell's `<main className="ho-scroll">` — no agregar otro wrapper ho-scroll.
   return (
     <div>
-      <button type="button" aria-label="volver" onClick={() => (started ? setStarted(false) : navigate("/atleta"))} style={{ border: 0, background: "transparent", color: "var(--wl-text)", fontSize: 22, cursor: "pointer", padding: 0, marginBottom: 6 }}>‹</button>
+      <BackButton ariaLabel="Volver" onClick={() => (started ? setStarted(false) : navigate("/atleta"))} style={{ marginBottom: 6 }} />
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>Entreno · sem {week} · día {idx + 1}</div>
 
       {loadError ? (
