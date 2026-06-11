@@ -166,6 +166,15 @@ export interface MovementModifiers {
   flags: MovementFlag[];
 }
 
+/** Scores de carga (1..10) — dimensiones DISTINTAS de la complejidad técnica (D5 del spec
+ *  entrenamientos-distintivos): `snc` demanda neural · `axial` compresión de columna/costo
+ *  estructural · `metabolica` volumen×músculo. Informan secuencia/presupuesto del generador;
+ *  JAMÁS derivan kg (kg = %×RM, siempre). */
+export interface MovementLoads { snc: number; axial: number; metabolica: number }
+
+/** Techos de reps por serie (D7): dentro de un complejo vs como ejercicio aislado. */
+export interface RepsMax { enComplejo: number; aislado: number }
+
 /** Hand-curated base lift. Declares which axes it admits; variants are generated from these. */
 export interface MovementBase {
   id: string;            // slug: "arranque", "tiron-arranque", "sentadilla-frente"…
@@ -173,6 +182,10 @@ export interface MovementBase {
   aliasEn?: string;      // "Snatch" — bilingual search
   rmRef: RmRef;
   baseComplexity: number;
+  /** Carga base por dimensión (los modificadores la ajustan vía computeLoads). */
+  baseLoads: MovementLoads;
+  /** Techos de reps por serie (D7) — el generador jamás prescribe encima. */
+  repsMax: RepsMax;
   /** `posicion` is NOT declared per base — the generator applies all 3 when origen ∈ {bloques, colgado}. */
   axes: {
     captura?: Captura[];
@@ -193,6 +206,7 @@ export interface Movement {
   name: string;          // "Arranque de potencia colgado (rodilla)"
   rmRef: RmRef;          // = base.rmRef
   complexity: number;    // derived (1..12)
+  loads: MovementLoads;  // derived (computeLoads — 1..10 cada dimensión)
   modifiers: MovementModifiers;
 }
 

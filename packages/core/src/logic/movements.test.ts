@@ -1,9 +1,49 @@
 import { describe, it, expect } from "vitest";
 import { MOVEMENT_BASES } from "../data/movements";
 import {
-  MOVEMENTS, computeComplexity, movementDisplayName, getMovement,
+  MOVEMENTS, computeComplexity, computeLoads, movementDisplayName, getMovement,
   getBase, variantsOf, canonicalVariant, simplerVariants, substitutesOf, movementsForRm, searchMovements,
 } from "./movements";
+
+describe("computeLoads (scores de carga — 4 dimensiones, D5)", () => {
+  const base = { snc: 9, axial: 6, metabolica: 4 }; // arranque
+  it("sin modificadores devuelve los base loads", () => {
+    expect(computeLoads(base, { flags: [] })).toEqual({ snc: 9, axial: 6, metabolica: 4 });
+  });
+  it("potencia baja snc; bloques/colgado bajan snc y axial", () => {
+    expect(computeLoads(base, { captura: "potencia", flags: [] }).snc).toBe(8);
+    const hang = computeLoads(base, { origen: "colgado", posicion: "rodilla", flags: [] });
+    expect(hang.snc).toBe(8);
+    expect(hang.axial).toBe(5);
+  });
+  it("tipoEnvion fuerza baja snc; empuje/potencia no", () => {
+    const j = { snc: 8, axial: 6, metabolica: 3 }; // segundo tiempo
+    expect(computeLoads(j, { tipoEnvion: "fuerza", flags: [] }).snc).toBe(7);
+    expect(computeLoads(j, { tipoEnvion: "empuje", flags: [] }).snc).toBe(8);
+  });
+  it("pausa/tempo suben metabolica; deficit sube axial; sin-recibida baja snc — dimensiones independientes", () => {
+    const r = computeLoads(base, { flags: ["pausa", "deficit"] });
+    expect(r).toEqual({ snc: 9, axial: 7, metabolica: 5 });
+    expect(computeLoads(base, { flags: ["tempo"] }).metabolica).toBe(5);
+    expect(computeLoads(base, { flags: ["sin-recibida"] }).snc).toBe(8);
+  });
+  it("clampa cada dimensión a 1..10", () => {
+    expect(computeLoads({ snc: 1, axial: 1, metabolica: 10 }, { captura: "potencia", origen: "colgado", flags: ["pausa"] }))
+      .toEqual({ snc: 1, axial: 1, metabolica: 10 });
+  });
+  it("las variantes generadas llevan loads derivados (hang power snatch: snc 9-1-1=7)", () => {
+    const m = getMovement("arranque.potencia.colgado.rodilla");
+    expect(m!.loads).toEqual({ snc: 7, axial: 5, metabolica: 4 });
+    expect(getMovement("arranque")!.loads).toEqual({ snc: 9, axial: 6, metabolica: 4 });
+  });
+  it("toda base declara baseLoads 1..10 y repsMax ≥ 1 (enComplejo ≤ aislado)", () => {
+    for (const b of MOVEMENT_BASES) {
+      for (const v of Object.values(b.baseLoads)) { expect(v).toBeGreaterThanOrEqual(1); expect(v).toBeLessThanOrEqual(10); }
+      expect(b.repsMax.enComplejo).toBeGreaterThanOrEqual(1);
+      expect(b.repsMax.aislado).toBeGreaterThanOrEqual(b.repsMax.enComplejo);
+    }
+  });
+});
 
 describe("MOVEMENT_BASES (catalog integrity)", () => {
   it("has unique base ids", () => {
@@ -45,8 +85,17 @@ describe("movementDisplayName", () => {
 });
 
 describe("MOVEMENTS (generation)", () => {
-  it("generates the full variant set (68)", () => {
-    expect(MOVEMENTS.length).toBe(68);
+  it("generates the full variant set (75 = 68 + 7 bases nuevas sin ejes)", () => {
+    expect(MOVEMENTS.length).toBe(75);
+  });
+  it("las 7 bases nuevas existen con su rmRef (slice entrenamientos-distintivos)", () => {
+    expect(getMovement("snatch-balance")!.rmRef).toBe("arranque");
+    expect(getMovement("jerk-dip")!.rmRef).toBe("envion");
+    expect(getMovement("sots-press")!.rmRef).toBe("arranque");
+    expect(getMovement("remo-menton")!.rmRef).toBe("envion");
+    expect(getMovement("press-banca")!.rmRef).toBe("none");
+    expect(getMovement("hiperextension")!.rmRef).toBe("none");
+    expect(getMovement("salto-cajon")!.rmRef).toBe("none");
   });
   it("the canonical full snatch from floor is id 'arranque'", () => {
     const a = getMovement("arranque");

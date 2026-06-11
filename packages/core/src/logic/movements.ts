@@ -1,5 +1,5 @@
 import type {
-  Captura, Movement, MovementBase, MovementFlag, MovementModifiers, Origen, Posicion, RmRef, TipoEnvion,
+  Captura, Movement, MovementBase, MovementFlag, MovementLoads, MovementModifiers, Origen, Posicion, RmRef, TipoEnvion,
 } from "../types";
 import { MOVEMENT_BASES } from "../data/movements";
 
@@ -21,6 +21,24 @@ export function computeComplexity(baseComplexity: number, m: MovementModifiers):
     else if (f === "sin-recibida") c -= 1;
   }
   return Math.max(1, Math.min(12, c));
+}
+
+/** Loads (snc/axial/metabolica 1..10) de una variante = base loads ± modificadores. Dimensiones
+ *  INDEPENDIENTES de la complejidad técnica (D5): potencia/colgado/bloques abaratan el costo
+ *  neural (recepción menos profunda, tirón sin pickup); pausa/tempo encarecen lo metabólico;
+ *  déficit encarece lo axial. JAMÁS derivan kg. */
+export function computeLoads(base: MovementLoads, m: MovementModifiers): MovementLoads {
+  let { snc, axial, metabolica } = base;
+  if (m.captura === "potencia") snc -= 1;
+  if (m.origen === "bloques" || m.origen === "colgado") { snc -= 1; axial -= 1; }
+  if (m.tipoEnvion === "fuerza") snc -= 1;
+  for (const f of m.flags) {
+    if (f === "pausa" || f === "tempo") metabolica += 1;
+    else if (f === "deficit") axial += 1;
+    else if (f === "sin-recibida") snc -= 1;
+  }
+  const clamp = (v: number): number => Math.max(1, Math.min(10, v));
+  return { snc: clamp(snc), axial: clamp(axial), metabolica: clamp(metabolica) };
 }
 
 const TIPO_ENVION_LABEL: Record<TipoEnvion, string> = {
@@ -78,6 +96,7 @@ export function buildMovements(bases: MovementBase[]): Movement[] {
               name: movementDisplayName(base.name, modifiers),
               rmRef: base.rmRef,
               complexity: computeComplexity(base.baseComplexity, modifiers),
+              loads: computeLoads(base.baseLoads, modifiers),
               modifiers,
             });
           }
