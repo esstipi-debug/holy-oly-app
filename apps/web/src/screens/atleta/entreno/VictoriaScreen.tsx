@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { MePlanView, SessionView } from "@holy-oly/core";
+import type { MePlanView, SessionView, WeekDoneSummary } from "@holy-oly/core";
 import { barKgForSexo, sessionTonnage, warmupTonnage, heaviestSet, completion, weekDoneSummary } from "@holy-oly/core";
 import * as me from "../../../data/meClient";
 import { DiscRow } from "../../../ui/Disc";
@@ -22,7 +22,7 @@ export function VictoriaScreen() {
   const [plan, setPlan] = useState<MePlanView | null>(null);
   const [session, setSession] = useState<SessionView | undefined>(undefined);
   const [sessionsCount, setSessionsCount] = useState(0);
-  const [weekKg, setWeekKg] = useState(0);
+  const [weekResumen, setWeekResumen] = useState<WeekDoneSummary | null>(null);
   const [state, setState] = useState<LoadState>("loading");
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function VictoriaScreen() {
         const s = views.find((v) => v.sessionIdx === idx);
         if (!s) { setState("error"); return; }
         // Micro de la semana (recorrido D1): acumulado de TODAS las vistas que ya viajan acá.
-        setPlan(p); setSession(s); setSessionsCount(views.length); setWeekKg(weekDoneSummary(views).totalKg); setState("ready");
+        setPlan(p); setSession(s); setSessionsCount(views.length); setWeekResumen(weekDoneSummary(views)); setState("ready");
       })
       .catch(() => { if (on) setState("error"); });
     return () => { on = false; };
@@ -91,10 +91,11 @@ export function VictoriaScreen() {
               : <>Tonelaje de las series de trabajo</>}
           </div>
           {/* Cierre micro de la semana (recorrido D1) — sólo si la semana ya supera al día:
-              si esta es la única sesión, repetir el mismo número no informa nada. */}
-          {weekKg > totalKg && (
+              si esta es la única sesión, repetir el mismo número no informa nada.
+              «~» cuando el acumulado incluye calentamiento: la rampa es ESTIMADA (regla 06-11). */}
+          {weekResumen && weekResumen.totalKg > totalKg && (
             <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-text)", marginTop: 8, fontVariantNumeric: "tabular-nums" }}>
-              Con esta, llevás {CL(weekKg)} kg en la semana.
+              Con esta, llevás {weekResumen.calentamientoKg > 0 ? "~" : ""}{CL(weekResumen.totalKg)} kg en la semana.
             </div>
           )}
         </div>

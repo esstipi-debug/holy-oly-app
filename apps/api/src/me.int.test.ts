@@ -152,7 +152,8 @@ describe("API integration — athlete self (/me/*)", () => {
     expect(w1.sesionesTotales).toBeGreaterThan(1);
     expect(w2).toMatchObject({ week: 2, trabajoKg: 160, sesionesHechas: 1 });
     expect(w3).toMatchObject({ week: 3, trabajoKg: 0, calentamientoKg: 0, sesionesHechas: 0 });
-    // HR-1: el payload del atleta no filtra RM/RPE/ACWR.
+    // HR-1: el payload del atleta no filtra RM/RPE/ACWR — claves EXACTAS, nada más viaja.
+    expect(Object.keys(w1).sort()).toEqual(["calentamientoKg", "sesionesHechas", "sesionesTotales", "trabajoKg", "week"]);
     expect(res.body).not.toMatch(/rpe/i);
     expect(res.body).not.toMatch(/"rms"/);
     expect(res.body).not.toMatch(/acwr/i);

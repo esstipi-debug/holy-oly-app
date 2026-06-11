@@ -68,8 +68,27 @@ test("otra sesión hecha en la semana → línea micro «Con esta, llevás X kg 
   vi.spyOn(me, "getMeSessions").mockResolvedValue(views);
   renderVictoria();
   expect(await screen.findByText("Sesión completada")).toBeInTheDocument();
-  // semana = 380 (día 0) + 100 (día 1) = 480 > 380 del día → la línea aparece
+  // semana = 380 (día 0) + 100 (día 1) = 480 > 380 del día → la línea aparece, SIN «~» (cero calentamiento)
   expect(screen.getByText("Con esta, llevás 480 kg en la semana.")).toBeInTheDocument();
+});
+
+test("acumulado semanal con calentamiento → «Con esta, llevás ~X kg…» (rampa estimada, regla 06-11)", async () => {
+  const views: SessionView[] = [
+    ...sessions(), // día 0: 380 kg de trabajo, sin rampa
+    {
+      week: 8, sessionIdx: 1,
+      exercises: [
+        { movementId: "sentadilla", movementName: "Sentadilla", sets: 5, reps: 5, pct: 75, targetKg: 124,
+          warmup: [{ pct: 0, kg: 20, reps: 5, label: "barra" }],
+          actual: actual({ movementId: "sentadilla", movementName: "Sentadilla", sets: [{ kg: 100, reps: 1, done: true }] }) },
+      ],
+    },
+  ];
+  vi.spyOn(me, "getMeSessions").mockResolvedValue(views);
+  renderVictoria();
+  expect(await screen.findByText("Sesión completada")).toBeInTheDocument();
+  // semana = 380 + 100 de trabajo + 100 de rampa prescrita del ejercicio hecho = ~580
+  expect(screen.getByText("Con esta, llevás ~580 kg en la semana.")).toBeInTheDocument();
 });
 
 test("0 hechos → «Sesión registrada», sin carga total ni serie más pesada", async () => {

@@ -60,7 +60,8 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
       </div>
       {resumen.totalKg > 0 && (
         <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 10, fontVariantNumeric: "tabular-nums" }}>
-          Esta semana: {resumen.totalKg.toLocaleString("es-CL")} kg · {resumen.sesionesHechas}/{resumen.sesionesTotales} sesiones
+          {/* «~» cuando el total incluye calentamiento: la rampa es ESTIMADA (prescrita, no registrada) — regla 06-11 */}
+          Esta semana: {resumen.calentamientoKg > 0 ? "~" : ""}{resumen.totalKg.toLocaleString("es-CL")} kg · {resumen.sesionesHechas}/{resumen.sesionesTotales} sesiones
         </div>
       )}
     </section>
