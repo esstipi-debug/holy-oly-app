@@ -112,9 +112,22 @@ function isTecnicoId(id: string): boolean {
 /** Pick ponderado determinístico con probe lineal: arranca en el índice que indica el hash y
  *  avanza hasta un candidato aceptable (base no repetida, técnicos bajo techo). Sin candidato
  *  aceptable → null (el slot se omite, honesto — jamás inventar). */
+/** Especificidad del pico (regla del SISTEMA, transversal a las escuelas — la receta curada
+ *  del Ruso lo muestra igual): en peaking el slot olímpico sólo admite lo que se compite
+ *  (arranque, envión completo, segundo tiempo en tijera) y el slot de pierna sólo las
+ *  sentadillas de fuerza (la OHS/balance son herramientas de técnica, no de semana de pico). */
+const PEAKING_OLIMPICO = new Set(["arranque", "cargada-envion", "envion.tijera"]);
+const PEAKING_RODILLA = new Set(["sentadilla", "sentadilla-frente"]);
+
+function allowedAtPeaking(slot: SlotKind, id: string, baseId: string): boolean {
+  if (slot === "olimpico") return PEAKING_OLIMPICO.has(id);
+  if (slot === "rodilla") return PEAKING_RODILLA.has(baseId);
+  return true;
+}
+
 function pickCandidate(
   items: RepertoireItem[], hash: number, usedBases: Set<string>, tecnicos: number, tecnicosMax: number,
-  forbidden: Set<string>,
+  forbidden: Set<string>, role: PhaseRole, slot: SlotKind,
 ): string | null {
   if (items.length === 0) return null;
   const totalWeight = items.reduce((acc, it) => acc + it.weight, 0);
@@ -139,6 +152,7 @@ function pickCandidate(
     if (!mv || mv.rmRef === "none") continue;            // kg siempre derivable (spec §3.2)
     if (forbidden.has(mv.baseId)) continue;              // defensa en profundidad
     if (usedBases.has(mv.baseId)) continue;              // sin base repetida en la sesión
+    if (role === "peaking" && !allowedAtPeaking(slot, id, mv.baseId)) continue;
     if (isTecnicoId(id) && tecnicos + 1 > tecnicosMax) continue;
     return id;
   }
@@ -167,11 +181,16 @@ function doseSlot(
   }
   if (slot === "olimpico") {
     const pct = Math.max(Math.min(corridorPct, CLASSIC_PCT_CAP), Math.min(lo, CLASSIC_PCT_CAP));
-    const zoneReps = pct >= 88 ? 1 : pct >= 80 ? 2 : 3;
+    // bordes de zona = los de la tabla Prilepin de la casa (90/80) — reps y auditoría alineadas
+    const zoneReps = pct >= 90 ? 1 : pct >= 80 ? 2 : 3;
     const reps = dna.dosage.singlesPhases.includes(role) && isTecnicoId(id)
       ? 1
       : Math.min(zoneReps, repsCapAislado(id));
-    return { pct, sets, reps };
+    // Prilepin-aware: las reps totales de la sesión no caen bajo el mínimo de la zona
+    // (70-80→12 · 80-90→10 · 90+→1) — la tabla del motor vigila al generador.
+    const zoneMin = pct >= 90 ? 1 : pct >= 80 ? 10 : 12;
+    const prilepinSets = sets * reps < zoneMin ? Math.ceil(zoneMin / reps) : sets;
+    return { pct, sets: Math.max(2, Math.min(6, prilepinSets)), reps };
   }
   if (slot === "tiron") return { pct: PULL_PCT[role], sets, reps: Math.min(TIRON_REPS[role], repsCapAislado(id)) };
   if (slot === "rodilla") {
@@ -197,7 +216,7 @@ function buildSession(
   archetype.slots.forEach((slot, slotIdx) => {
     const items = dna.repertoire[slot] ?? [];
     const hash = hashIdx([macro.id, phase.key, archetype.key, String(sessionIdx), String(slotIdx)]);
-    const id = pickCandidate(items, hash, usedBases, tecnicos, dna.tecnicosMax, forbidden);
+    const id = pickCandidate(items, hash, usedBases, tecnicos, dna.tecnicosMax, forbidden, role, slot);
     if (id == null) return; // slot sin candidato aceptable → se omite, jamás se inventa
     if (!isComplexId(id)) usedBases.add(getMovement(id)!.baseId);
     if (isTecnicoId(id)) tecnicos++;

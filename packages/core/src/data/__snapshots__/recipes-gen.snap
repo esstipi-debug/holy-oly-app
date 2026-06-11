@@ -1,0 +1,6904 @@
+[
+ {
+  "macroId": "bulgaro-6d",
+  "phases": [
+   {
+    "phaseKey": "dailymax",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 6,
+        "reps": 2,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 6,
+        "reps": 2,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 6,
+        "reps": 2,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 6,
+        "reps": 2,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 6,
+        "reps": 2,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 6,
+        "reps": 2,
+        "pct": 100
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "coreano-5d",
+  "phases": [
+   {
+    "phaseKey": "cimentacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "tiron-cargada.bloques.rodilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "transformacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 81
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 86
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 81
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 81
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 86
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 81
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 4,
+        "reps": 4,
+        "pct": 86
+       },
+       {
+        "movementId": "tiron-cargada.bloques.rodilla",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 95
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 2,
+        "pct": 95
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 95
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "coreano-6d",
+  "phases": [
+   {
+    "phaseKey": "cimentacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 5,
+        "reps": 4,
+        "pct": 80
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 80
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 80
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 4,
+        "pct": 80
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "transformacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-cargada.bloques.rodilla",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "chino-5d",
+  "phases": [
+   {
+    "phaseKey": "base",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "remo",
+        "sets": 4,
+        "reps": 10,
+        "pct": 60
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "remo",
+        "sets": 4,
+        "reps": 10,
+        "pct": 60
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque+ohs",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "remo",
+        "sets": 4,
+        "reps": 10,
+        "pct": 60
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "jerk-dip",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       },
+       {
+        "movementId": "remo",
+        "sets": 4,
+        "reps": 10,
+        "pct": 60
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "remo",
+        "sets": 4,
+        "reps": 10,
+        "pct": 60
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "acumulacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.bloques.rodilla",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 89
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 105
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.bloques.rodilla",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 89
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 5,
+        "reps": 2,
+        "pct": 105
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 89
+       },
+       {
+        "movementId": "tiron-cargada.bloques.rodilla",
+        "sets": 5,
+        "reps": 2,
+        "pct": 105
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "choque",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 4,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 2,
+        "pct": 99
+       },
+       {
+        "movementId": "remo",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 4,
+        "reps": 2,
+        "pct": 105
+       },
+       {
+        "movementId": "remo",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 4,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 2,
+        "pct": 99
+       },
+       {
+        "movementId": "remo",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 4,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "descarga",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 3,
+        "reps": 10,
+        "pct": 50
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 3,
+        "reps": 10,
+        "pct": 50
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "sots-press",
+        "sets": 3,
+        "reps": 5,
+        "pct": 45
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 3,
+        "reps": 10,
+        "pct": 50
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "snatch-balance",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 3,
+        "reps": 10,
+        "pct": 50
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "remo-menton",
+        "sets": 3,
+        "reps": 10,
+        "pct": 50
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "cubano-novicio-2d",
+  "phases": [
+   {
+    "phaseKey": "cimentacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-cargada+cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 60
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 65
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 60
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "desarrollo",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-potencia+arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 64
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 69
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 64
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "cubano-novicio-3d",
+  "phases": [
+   {
+    "phaseKey": "cimentacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-cargada+cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 62
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 67
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 62
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 62
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 67
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "desarrollo",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-potencia+arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 66
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 71
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 66
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 66
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 71
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "cubano-int-5d",
+  "phases": [
+   {
+    "phaseKey": "cimentacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-potencia+arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 67
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 72
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.colgado.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 67
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.colgado.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 67
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 72
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-potencia+arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 67
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 72
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.colgado.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 67
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 72
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "desarrollo",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.press-empuje+2t",
+        "sets": 4,
+        "reps": 2,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 79
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 79
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 79
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.press-empuje+2t",
+        "sets": 4,
+        "reps": 2,
+        "pct": 74
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "intensificacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-colgado+arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 4,
+        "pct": 85
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 3,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 4,
+        "pct": 85
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 3,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 4,
+        "pct": 85
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-colgado+arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 3,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "cubano-avanzado-5d",
+  "phases": [
+   {
+    "phaseKey": "cimentacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-cargada+cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 72
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 77
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 72
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 72
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 77
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-potencia+arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 72
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 77
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 72
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 77
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "desarrollo",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-potencia+arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 76
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 81
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.colgado.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 76
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.colgado.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 76
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 81
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.colgado.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 76
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 81
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-potencia+arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 76
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "intensificacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 3,
+        "pct": 87
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 3,
+        "pct": 87
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 2,
+        "pct": 105
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 3,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 3,
+        "pct": 87
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 4,
+        "reps": 5,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 3,
+        "pct": 87
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "cubano-competidor",
+  "phases": [
+   {
+    "phaseKey": "cimentacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.press-empuje+2t",
+        "sets": 5,
+        "reps": 2,
+        "pct": 72
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 77
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.colgado.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 72
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.colgado.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 72
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 77
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.arranque-colgado+arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 72
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 77
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.colgado.rodilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 72
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 77
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "desarrollo",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-cargada+cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 76
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 81
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 4,
+        "reps": 3,
+        "pct": 76
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 4,
+        "reps": 3,
+        "pct": 76
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 81
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 4,
+        "reps": 3,
+        "pct": 76
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 81
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-cargada+cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 76
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "intensificacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 3,
+        "pct": 87
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 3,
+        "pct": 87
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 3,
+        "reps": 3,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 3,
+        "pct": 87
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 3,
+        "reps": 5,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 3,
+        "pct": 87
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "polaco-4d",
+  "phases": [
+   {
+    "phaseKey": "reps-altas",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 5,
+        "pct": 79
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 74
+       },
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "tiron-cargada.bloques.rodilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 5,
+        "pct": 79
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 5,
+        "pct": 79
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "reps-medias",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 4,
+        "pct": 89
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 3,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "tiron-cargada.bloques.rodilla",
+        "sets": 3,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 4,
+        "pct": 89
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 4,
+        "pct": 89
+       },
+       {
+        "movementId": "tiron-arranque.bloques.alto",
+        "sets": 3,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "singles",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "envion.tijera",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "tiron-cargada.bloques.rodilla",
+        "sets": 2,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 2,
+        "reps": 2,
+        "pct": 99
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "polaco-5d",
+  "phases": [
+   {
+    "phaseKey": "reps-altas",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 5,
+        "pct": 79
+       },
+       {
+        "movementId": "tiron-cargada.bloques.rodilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "tiron-arranque.bloques.alto",
+        "sets": 4,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 5,
+        "pct": 79
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 5,
+        "pct": 79
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 5,
+        "pct": 79
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "reps-medias",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 4,
+        "pct": 89
+       },
+       {
+        "movementId": "tiron-arranque.bloques.rodilla",
+        "sets": 3,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "tiron-cargada.bloques.rodilla",
+        "sets": 3,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 4,
+        "pct": 89
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 4,
+        "pct": 89
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 3,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 4,
+        "pct": 89
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "singles",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "envion.tijera",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "tiron-arranque.bloques.alto",
+        "sets": 2,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 2,
+        "reps": 2,
+        "pct": 99
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "envion.tijera",
+        "sets": 2,
+        "reps": 1,
+        "pct": 94
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "ruso-5d",
+  "phases": [
+   {
+    "phaseKey": "hipertrofia",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 68
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 4,
+        "pct": 80
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 70
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 68
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 70
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 3,
+        "reps": 8,
+        "pct": 60
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 62
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 4,
+        "pct": 85
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 70
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 4,
+        "reps": 3,
+        "pct": 65
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 70
+       },
+       {
+        "movementId": "envion.tijera",
+        "sets": 5,
+        "reps": 2,
+        "pct": 70
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 3,
+        "reps": 8,
+        "pct": 40
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "fuerza-basica",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 78
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 80
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 78
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 3,
+        "pct": 78
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 3,
+        "reps": 6,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 4,
+        "reps": 2,
+        "pct": 72
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 3,
+        "reps": 3,
+        "pct": 72
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 4,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "envion.tijera",
+        "sets": 5,
+        "reps": 2,
+        "pct": 78
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 3,
+        "reps": 6,
+        "pct": 48
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "fuerza-potencia",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 6,
+        "reps": 1,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 2,
+        "pct": 105
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 3,
+        "pct": 88
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 1,
+        "pct": 88
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 2,
+        "pct": 85
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 3,
+        "reps": 5,
+        "pct": 72
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 4,
+        "reps": 1,
+        "pct": 80
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 2,
+        "pct": 108
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 3,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 1,
+        "pct": 90
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 2,
+        "pct": 90
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 3,
+        "reps": 2,
+        "pct": 78
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 4,
+        "reps": 1,
+        "pct": 90
+       },
+       {
+        "movementId": "envion.tijera",
+        "sets": 5,
+        "reps": 1,
+        "pct": 88
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "peaking",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 1,
+        "pct": 93
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 1,
+        "pct": 93
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 3,
+        "reps": 1,
+        "pct": 85
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 1,
+        "pct": 96
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 2,
+        "reps": 1,
+        "pct": 95
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 97
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "ucraniano-3d",
+  "phases": [
+   {
+    "phaseKey": "acumulacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 4,
+        "pct": 83
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 4,
+        "pct": 83
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "intensificacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "cargada",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 3,
+        "pct": 95
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "test",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 95,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 2,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 95,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 95,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "ucraniano-4d",
+  "phases": [
+   {
+    "phaseKey": "acumulacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 4,
+        "pct": 83
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 4,
+        "pct": 83
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 78,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "intensificacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "cargada",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 3,
+        "pct": 95
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "cargada.potencia",
+        "sets": 3,
+        "reps": 1,
+        "pct": 90,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "test",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 95,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 2,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 95,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 95,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 3,
+        "reps": 1,
+        "pct": 95,
+        "notes": "Estilo EMOM: una serie al minuto, técnica impecable."
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "colombiano-5d",
+  "phases": [
+   {
+    "phaseKey": "prep-general",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 6,
+        "reps": 3,
+        "pct": 62
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 6,
+        "reps": 5,
+        "pct": 67
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 6,
+        "reps": 5,
+        "pct": 67
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 6,
+        "reps": 3,
+        "pct": 62
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 6,
+        "reps": 5,
+        "pct": 67
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 6,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 6,
+        "reps": 3,
+        "pct": 62
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 6,
+        "reps": 5,
+        "pct": 67
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 6,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 6,
+        "reps": 3,
+        "pct": 62
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 6,
+        "reps": 5,
+        "pct": 67
+       },
+       {
+        "movementId": "jerk-dip",
+        "sets": 6,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 6,
+        "reps": 5,
+        "pct": 67
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 6,
+        "reps": 5,
+        "pct": 67
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 6,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "prep-especial",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 5,
+        "reps": 3,
+        "pct": 69
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 74
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 5,
+        "reps": 3,
+        "pct": 69
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 74
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 5,
+        "reps": 3,
+        "pct": 69
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 74
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 5,
+        "reps": 3,
+        "pct": 69
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 74
+       },
+       {
+        "movementId": "jerk-dip",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 74
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "precompetencia",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 4,
+        "reps": 3,
+        "pct": 77
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 82
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 82
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 4,
+        "reps": 3,
+        "pct": 77
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 82
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 4,
+        "reps": 3,
+        "pct": 77
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 82
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 4,
+        "reps": 3,
+        "pct": 77
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 82
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 4,
+        "reps": 3,
+        "pct": 77
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 82
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 3,
+        "pct": 70
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 4,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "hibrido-3d",
+  "phases": [
+   {
+    "phaseKey": "acumulacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.cargada+frontal+2t",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "transmutacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.cargada+frontal+2t",
+        "sets": 4,
+        "reps": 3,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 2,
+        "pct": 97
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "hibrido-4d",
+  "phases": [
+   {
+    "phaseKey": "acumulacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.cargada+frontal+2t",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 73
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-arranque+arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "transmutacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.press-empuje+2t",
+        "sets": 4,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 2,
+        "pct": 97
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 2,
+        "pct": 97
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "hibrido-5d",
+  "phases": [
+   {
+    "phaseKey": "acumulacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.press-empuje+2t",
+        "sets": 5,
+        "reps": 2,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "jerk-dip",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.cargada+frontal+2t",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 78
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 73
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "transmutacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-arranque+arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "jerk-dip",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 97
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 97
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 92
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "hibrido-block",
+  "phases": [
+   {
+    "phaseKey": "hipertrofia",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.cargada+frontal+2t",
+        "sets": 5,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 79
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 79
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 74
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.press-empuje+2t",
+        "sets": 5,
+        "reps": 2,
+        "pct": 74
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 79
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "fuerza",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 85
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 3,
+        "pct": 90
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 85
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 3,
+        "pct": 90
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 85
+       },
+       {
+        "movementId": "jerk-dip",
+        "sets": 4,
+        "reps": 3,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 85
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "potencia",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "usa-school",
+  "phases": [
+   {
+    "phaseKey": "acumulacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 70
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 75
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 70
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 70
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 75
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 70
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 70
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 75
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "desarrollo",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.cargada+2t-doble",
+        "sets": 4,
+        "reps": 3,
+        "pct": 80
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 85
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 85
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.cargada+2t-doble",
+        "sets": 4,
+        "reps": 3,
+        "pct": 80
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 85
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 80
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 85
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "usa-principiante",
+  "phases": [
+   {
+    "phaseKey": "anatomica",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 60
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 65
+       },
+       {
+        "movementId": "jerk-dip",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 60
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 60
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 65
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 60
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "fuerza-base",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 68
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 73
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 68
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 68
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 5,
+        "pct": 73
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 68
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "integracion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-arranque+arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 80
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 75
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 4,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 80
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-arranque+arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 4,
+        "pct": 80
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "intensificacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 85
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 3,
+        "pct": 90
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 85
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 3,
+        "reps": 3,
+        "pct": 90
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 3,
+        "reps": 3,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 85
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 85
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 3,
+        "reps": 3,
+        "pct": 90
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "usa-intermedio",
+  "phases": [
+   {
+    "phaseKey": "acumulacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 70
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 75
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 70
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 70
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 75
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 70
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 5,
+        "reps": 3,
+        "pct": 70
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 5,
+        "pct": 75
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "transmutacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-arranque+arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 79
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 84
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 79
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 4,
+        "reps": 3,
+        "pct": 79
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 84
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-arranque+arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 79
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 84
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 4,
+        "reps": 3,
+        "pct": 79
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 84
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "intensificacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 3,
+        "pct": 89
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 3,
+        "pct": 89
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 3,
+        "reps": 3,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "envion.tijera",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 3,
+        "pct": 89
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 84
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 3,
+        "pct": 89
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 3,
+        "reps": 5,
+        "pct": 68
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 96
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 91
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "usa-avanzado",
+  "phases": [
+   {
+    "phaseKey": "sobrecarga",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-arranque+arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 5,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-arranque+arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 5,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 3,
+        "pct": 100
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 5,
+        "reps": 2,
+        "pct": 83
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 5,
+        "reps": 4,
+        "pct": 88
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 5,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "choque-neural",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 89
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 2,
+        "pct": 105
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 4,
+        "reps": 3,
+        "pct": 94
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 89
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 3,
+        "pct": 94
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 3,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 89
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 4,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 89
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 3,
+        "pct": 94
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 89
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 4,
+        "reps": 3,
+        "pct": 94
+       },
+       {
+        "movementId": "buenos-dias",
+        "sets": 4,
+        "reps": 5,
+        "pct": 68
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 2,
+        "pct": 99
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 94
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 94
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 2,
+        "pct": 99
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 94
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "taper",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 93
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 98
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 3,
+        "reps": 1,
+        "pct": 93
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 93
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 93
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 2,
+        "pct": 98
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 3,
+        "reps": 1,
+        "pct": 93
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "macroId": "usa-master",
+  "phases": [
+   {
+    "phaseKey": "estabilidad",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 65
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 5,
+        "reps": 5,
+        "pct": 70
+       },
+       {
+        "movementId": "press-empuje",
+        "sets": 5,
+        "reps": 5,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 5,
+        "reps": 3,
+        "pct": 65
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 5,
+        "reps": 4,
+        "pct": 92
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 3,
+        "pct": 65
+       },
+       {
+        "movementId": "sentadilla-overhead",
+        "sets": 5,
+        "reps": 5,
+        "pct": 70
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 5,
+        "reps": 8,
+        "pct": 55
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "fuerza",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "cx.tiron-arranque+arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 80
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 2,
+        "pct": 75
+       },
+       {
+        "movementId": "tiron-arranque",
+        "sets": 4,
+        "reps": 3,
+        "pct": 100
+       },
+       {
+        "movementId": "peso-muerto-rumano",
+        "sets": 4,
+        "reps": 6,
+        "pct": 62
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada.potencia",
+        "sets": 4,
+        "reps": 3,
+        "pct": 75
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 4,
+        "reps": 4,
+        "pct": 80
+       },
+       {
+        "movementId": "press-hombros",
+        "sets": 4,
+        "reps": 4,
+        "pct": 62
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "phaseKey": "realizacion",
+    "sessions": [
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 86
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 3,
+        "reps": 3,
+        "pct": 91
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada",
+        "sets": 5,
+        "reps": 2,
+        "pct": 86
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 3,
+        "reps": 3,
+        "pct": 91
+       },
+       {
+        "movementId": "jerk-dip",
+        "sets": 3,
+        "reps": 3,
+        "pct": 68
+       }
+      ]
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque.potencia",
+        "sets": 5,
+        "reps": 2,
+        "pct": 86
+       },
+       {
+        "movementId": "tiron-cargada",
+        "sets": 3,
+        "reps": 2,
+        "pct": 105
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+]

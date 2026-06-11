@@ -42,8 +42,9 @@ export const SCHOOL_DNA: SchoolDNA[] = [
     family: "Ruso",
     character: "Ondulación de volumen sobre una base general ancha: tirones 90–110%, mucha sentadilla, complejos en la base y peaking clásico.",
     repertoire: {
+      // pesos hacia las bases de la receta CURADA (es el benchmark de regresión del modelo, D4)
       olimpico: [
-        { id: "arranque", weight: 3 }, { id: "cargada-envion", weight: 2 }, { id: "cargada", weight: 2 },
+        { id: "arranque", weight: 4 }, { id: "cargada-envion", weight: 3 }, { id: "cargada", weight: 2 },
         { id: "arranque.potencia", weight: 1 }, { id: "cargada.potencia", weight: 1 }, { id: "envion.tijera", weight: 1 },
       ],
       tiron: [{ id: "tiron-arranque", weight: 3 }, { id: "tiron-cargada", weight: 3 }, { id: "tiron-arranque.bloques.rodilla", weight: 1 }],
@@ -103,6 +104,7 @@ export const SCHOOL_DNA: SchoolDNA[] = [
         { id: "arranque.potencia", weight: 2 }, { id: "cargada.potencia", weight: 2 },
         { id: "arranque", weight: 2 }, { id: "cargada", weight: 2 }, { id: "snatch-balance", weight: 2 },
         { id: "arranque.bloques.rodilla", weight: 1 }, { id: "cargada.bloques.rodilla", weight: 1 },
+        { id: "cargada-envion", weight: 1 }, // el gesto completo — el pico lo exige (especificidad)
       ],
       tiron: [
         { id: "tiron-arranque.bloques.rodilla", weight: 2 }, { id: "tiron-cargada.bloques.rodilla", weight: 2 },
@@ -164,6 +166,7 @@ export const SCHOOL_DNA: SchoolDNA[] = [
         { id: "arranque.potencia", weight: 2 }, { id: "cargada.potencia", weight: 2 },
         { id: "arranque", weight: 2 }, { id: "cargada", weight: 2 },
         { id: "arranque.colgado.rodilla", weight: 1 }, { id: "cargada.colgado.rodilla", weight: 1 },
+        { id: "cargada-envion", weight: 1 }, // el gesto completo — el pico lo exige (especificidad)
       ],
       complejo: [
         { id: "cx.arranque-potencia+arranque", weight: 3 }, { id: "cx.tiron-cargada+cargada", weight: 2 },
