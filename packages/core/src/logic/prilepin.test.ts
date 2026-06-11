@@ -1,6 +1,124 @@
 import { describe, expect, it } from "vitest";
-import { PHASE_PROFILE, PRILEPIN, phasePlan, wavePhase } from "./prilepin";
-import type { EnginePhase } from "../types";
+import { PHASE_PROFILE, PRILEPIN, generateWeek, phasePlan, wavePhase } from "./prilepin";
+import type { EngineInput, EnginePhase } from "../types";
+
+const base = (over: Partial<EngineInput> = {}): EngineInput => ({
+  weeksToComp: 3, lift: "arranque", rmKg: 100, recentACWR: 1.1, readiness: "green", ...over,
+});
+const totalReps = (w: { sets: { sets: number; reps: number }[] }): number =>
+  w.sets.reduce((t, s) => t + s.sets * s.reps, 0);
+
+describe("generateWeek — intensificación a 3 semanas (caso canónico del owner)", () => {
+  const w = generateWeek(base())!;
+  it("fase, label y rationale presentes", () => {
+    expect(w.phase).toBe("intensification");
+    expect(w.label).toBe("Intensificación");
+    expect(w.rationale).toContain("volumen");
+  });
+  it("sets exactos: 2×2@75 · 4×2@85 · 1×1@90 (piso de la zona top, D5)", () => {
+    expect(w.sets).toEqual([
+      { sets: 2, reps: 2, pct: 75, weightKg: 75, zone: "70-80" },
+      { sets: 4, reps: 2, pct: 85, weightKg: 85, zone: "80-90" },
+      { sets: 1, reps: 1, pct: 90, weightKg: 90, zone: "90+" },
+    ]);
+  });
+  it("audits de TODAS las zonas prescritas, withinRange aritmético", () => {
+    expect(w.audits).toEqual([
+      { zone: "70-80", optimalReps: 18, prescribedReps: 4, withinRange: false },
+      { zone: "80-90", optimalReps: 15, prescribedReps: 8, withinRange: false },
+      { zone: "90+", optimalReps: 4, prescribedReps: 1, withinRange: true },
+    ]);
+  });
+  it("eco auditable: taper y inputs", () => {
+    expect(w.taper.base).toBe(0.8);
+    expect(w.taper.acwrFactor).toBe(1);
+    expect(w.taper.readinessFactor).toBe(1);
+    expect(w.taper.final).toBeCloseTo(0.8, 9);
+    expect(w.inputs).toEqual({ acwr: 1.1, readiness: "green" });
+    expect(w.heavySinglesAdvisory).toBe(false);
+  });
+});
+
+describe("generateWeek — ajuste híbrido por ACWR (banda de la casa [0.8, 1.3], D3)", () => {
+  const acc = (acwr: number | null) =>
+    generateWeek(base({ weeksToComp: 8, lift: "sentadilla", recentACWR: acwr, readiness: null }))!;
+  it("neutro (en banda) = sin dato: mismo volumen, inputs honestos", () => {
+    const neutral = acc(1.0);
+    const sinDato = acc(null);
+    expect(totalReps(neutral)).toBe(18);
+    expect(totalReps(sinDato)).toBe(18);
+    expect(sinDato.inputs.acwr).toBeNull();
+    expect(sinDato.taper.acwrFactor).toBe(1);
+  });
+  it("cargado (>1.3) baja volumen; liviano (<0.8) lo sube; bordes en banda", () => {
+    expect(totalReps(acc(1.5))).toBeLessThan(18);
+    expect(totalReps(acc(0.7))).toBeGreaterThan(18);
+    expect(acc(1.3).taper.acwrFactor).toBe(1);
+    expect(acc(0.8).taper.acwrFactor).toBe(1);
+  });
+});
+
+describe("generateWeek — readiness modula el día (criterio 5)", () => {
+  it("amber y red reducen volumen vs green", () => {
+    const g = generateWeek(base())!;
+    const a = generateWeek(base({ readiness: "amber" }))!;
+    const r = generateWeek(base({ readiness: "red" }))!;
+    expect(totalReps(a)).toBeLessThan(totalReps(g));
+    expect(totalReps(r)).toBeLessThan(totalReps(g));
+    expect(r.taper.readinessFactor).toBe(0.75);
+  });
+  it("red + zona 90+ → advisory true y el single top NO se borra (mover ≠ borrar)", () => {
+    const r = generateWeek(base({ readiness: "red" }))!;
+    expect(r.heavySinglesAdvisory).toBe(true);
+    expect(r.sets.some((s) => s.zone === "90+")).toBe(true);
+  });
+  it("green/null → advisory false", () => {
+    expect(generateWeek(base())!.heavySinglesAdvisory).toBe(false);
+    expect(generateWeek(base({ readiness: null }))!.heavySinglesAdvisory).toBe(false);
+  });
+});
+
+describe("generateWeek — % y kg (D4 + D6)", () => {
+  it("comp_week: el set más pesado va a 95, jamás 100 (aperturas)", () => {
+    const w = generateWeek(base({ weeksToComp: 0 }))!;
+    expect(Math.max(...w.sets.map((s) => s.pct))).toBe(95);
+    expect(w.sets).toEqual([
+      { sets: 1, reps: 2, pct: 85, weightKg: 85, zone: "80-90" },
+      { sets: 1, reps: 1, pct: 95, weightKg: 95, zone: "90+" },
+    ]);
+  });
+  it("taper (n=1): top 90+ también capado a 95", () => {
+    const w = generateWeek(base({ weeksToComp: 1 }))!;
+    expect(w.phase).toBe("taper");
+    expect(Math.max(...w.sets.map((s) => s.pct))).toBe(95);
+  });
+  it("deload por ola: topPct 80 capa a la zona top 80-90", () => {
+    const w = generateWeek(base({ weeksToComp: null, waveWeek: 6, lift: "sentadilla" }))!;
+    expect(w.phase).toBe("deload");
+    expect(w.sets).toEqual([
+      { sets: 2, reps: 3, pct: 75, weightKg: 75, zone: "70-80" },
+      { sets: 1, reps: 2, pct: 80, weightKg: 80, zone: "80-90" },
+    ]);
+  });
+  it("kg a 1 kg de la casa, NO múltiplos de 2.5 (rm 91 @ 85% → 77)", () => {
+    const w = generateWeek(base({ weeksToComp: 8, rmKg: 91, recentACWR: null, readiness: null }))!;
+    const z85 = w.sets.find((s) => s.pct === 85)!;
+    expect(z85.weightKg).toBe(77);
+  });
+});
+
+describe("generateWeek — clásicos vs sentadilla (criterio 8)", () => {
+  it("arranque usa 2 reps/set en 70-80; sentadilla usa 3", () => {
+    const cl = generateWeek(base({ weeksToComp: 8, recentACWR: null, readiness: null }))!;
+    const sq = generateWeek(base({ weeksToComp: 8, lift: "sentadilla", recentACWR: null, readiness: null }))!;
+    expect(cl.sets.find((s) => s.zone === "70-80")!.reps).toBe(2);
+    expect(sq.sets.find((s) => s.zone === "70-80")!.reps).toBe(3);
+  });
+  it("ola sin waveWeek → default semana 1 (acumulación); semana 5 → mini-pico", () => {
+    expect(generateWeek(base({ weeksToComp: null }))!.phase).toBe("accumulation");
+    expect(generateWeek(base({ weeksToComp: null, waveWeek: 5 }))!.phase).toBe("peak");
+  });
+});
 
 describe("wavePhase (ola continua, mini-pico en semana 5)", () => {
   it("semanas 1..6", () => {
