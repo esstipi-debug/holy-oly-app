@@ -16,6 +16,10 @@
 /* ---------- tokens globales ---------- */
 :root{ /* Paleta semántica oficial — espejo EXACTO de apps/web/src/ui/status.ts (cambiar ambos a la vez) */ --ok:#1bc98a; --warn:#ffab2e; --alert:#ff3b46; --gold:#E8B23A; --mono:'Space Mono', ui-monospace, monospace; }
 
+/* Skins CLARAS: anulan el `color-scheme: dark` global (index.css) para que los controles
+   nativos (date pickers, scrollbars, selects) no salgan oscuros sobre lienzo claro. */
+.wl--chalk, .wl--neonlight { color-scheme: light; }
+
 /* ---------- base / shared structure ---------- */
 .wl{
   --ease-spring: cubic-bezier(.34,1.56,.64,1);

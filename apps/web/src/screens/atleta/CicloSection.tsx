@@ -87,7 +87,7 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
   }
 
   const inputStyle = {
-    width: "100%", boxSizing: "border-box" as const, padding: "10px 12px", borderRadius: 10,
+    width: "100%", boxSizing: "border-box" as const, padding: "10px 12px", borderRadius: "var(--wl-radius)",
     border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)",
     color: "var(--wl-text)", fontFamily: "var(--mono)", fontSize: 14,
   };

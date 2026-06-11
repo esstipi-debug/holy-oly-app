@@ -61,8 +61,11 @@ export function CompSheet({
         sorted.map(({ c, i }) => (
           <div key={`${c.week}-${c.name}-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderTop: "1px solid color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
             <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: "var(--wl-text)" }}>🚩 {c.name} · {show(c)}</span>
+            {/* Hit-area 44px (padding transparente, margen negativo lo cancela en el layout); el ✕ visible sigue 26px. */}
             <button type="button" aria-label="quitar" disabled={busy} onClick={() => void run(() => onRemove(i))}
-              style={{ width: 26, height: 26, borderRadius: 8, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-muted)", cursor: busy ? "default" : "pointer" }}>✕</button>
+              style={{ width: 44, height: 44, padding: 9, margin: -9, border: 0, background: "transparent", color: "var(--wl-muted)", cursor: busy ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", flex: "0 0 auto" }}>
+              <span aria-hidden style={{ width: 26, height: 26, borderRadius: 8, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</span>
+            </button>
           </div>
         ))
       )}

@@ -10,7 +10,8 @@ function CalendarHeatmap({ days, today }: { days: string[]; today: string }) {
   const grid = calendarWeeks(today, 8);
   const cell = (date: string): CSSProperties => {
     const base: CSSProperties = { width: 16, height: 16, borderRadius: 4, boxSizing: "border-box" };
-    const ring = date === today ? "inset 0 0 0 1.5px rgba(255,255,255,.92)" : undefined;
+    // Anillo derivado del texto del skin (no blanco fijo): contrasta en skins oscuras Y claras.
+    const ring = date === today ? "inset 0 0 0 1.5px color-mix(in srgb, var(--wl-text) 88%, transparent)" : undefined;
     if (date > today) return { ...base, background: "color-mix(in srgb, var(--wl-text) 3%, transparent)" };
     if (set.has(date)) return { ...base, background: "color-mix(in srgb, var(--wl-accent) 86%, transparent)", boxShadow: ring };
     return { ...base, background: "color-mix(in srgb, var(--wl-text) 7%, transparent)", boxShadow: ring };

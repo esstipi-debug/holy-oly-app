@@ -81,9 +81,11 @@ function WeightStep({ value, onChange }: { value: number; onChange: (v: number) 
   );
 }
 
-export function CheckIn({ variant, initial, onClose, onDone }: {
+export function CheckIn({ variant, initial, lastWeight, onClose, onDone }: {
   variant: CheckinVariant;
   initial?: DayLog | null;
+  /** Último peso corporal conocido (serie) — siembra el dial cuando hoy aún no hay registro. */
+  lastWeight?: number | undefined;
   onClose: () => void;
   onDone: (input: DayLogInput) => void | Promise<void>;
 }) {
@@ -96,7 +98,8 @@ export function CheckIn({ variant, initial, onClose, onDone }: {
       ? { fatiga: initial.fatiga, dolor: initial.dolor, estres: initial.estres, humor: initial.humor, motivacion: initial.motivacion, sueno: initial.sueno }
       : {},
   );
-  const [weight, setWeight] = useState<number>(initial?.weight ?? 80);
+  // Siembra: hoy ya registrado > último bodyweight de la serie > 80 (fallback sin datos).
+  const [weight, setWeight] = useState<number>(initial?.weight ?? lastWeight ?? 80);
   const [finished, setFinished] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +155,7 @@ export function CheckIn({ variant, initial, onClose, onDone }: {
         <button className="ho-ci__close" onClick={step === 0 ? onClose : () => go(step - 1)} aria-label="atrás">{step === 0 ? "✕" : "‹"}</button>
         <div className="ho-ci__seg">
           {Array.from({ length: total }).map((_, i) => (
-            <i key={i} className={i < step ? "done" : i === step ? "cur" : ""} onClick={() => i <= maxReached && go(i)} style={{ cursor: i <= maxReached ? "pointer" : "default" }} />
+            <button key={i} type="button" aria-label={`Ir al paso ${i + 1}`} className={i < step ? "done" : i === step ? "cur" : ""} onClick={() => i <= maxReached && go(i)} style={{ cursor: i <= maxReached ? "pointer" : "default" }} />
           ))}
         </div>
         <span className="ho-ci__count">{step + 1}/{total}</span>

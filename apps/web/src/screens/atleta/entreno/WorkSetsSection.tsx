@@ -3,7 +3,7 @@ import { DiscRow } from "../../../ui/Disc";
 
 export interface SetRow { kg?: number; reps?: number; done: boolean; }
 
-const num: CSSProperties = { width: 64, boxSizing: "border-box", padding: "6px 7px", borderRadius: 8, textAlign: "center", border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontSize: 14 };
+const num: CSSProperties = { width: 64, boxSizing: "border-box", padding: "6px 7px", borderRadius: "var(--wl-radius)", textAlign: "center", border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontSize: 14 };
 const chip: CSSProperties = { border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", borderRadius: 999, background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5, padding: "6px 11px", cursor: "pointer" };
 
 /** Series de trabajo: cada serie nace hecha al target (adherencia por defecto). ✎ modifica esa serie
@@ -22,7 +22,7 @@ export function WorkSetsSection({
         {series.map((s, i) => {
           const open = openSet === i;
           return (
-            <div key={i} style={{ background: "var(--wl-surface)", borderRadius: 10, padding: "9px 11px", opacity: s.done ? 1 : 0.55 }}>
+            <div key={i} style={{ background: "var(--wl-surface)", borderRadius: "var(--wl-radius)", padding: "9px 11px", opacity: s.done ? 1 : 0.55 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                 <span style={{ fontFamily: "var(--wl-display)", fontSize: 12, color: "var(--wl-muted)" }}>Serie {i + 1}/{series.length}</span>
                 <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>{s.kg != null ? s.kg : "—"}<span style={{ fontSize: 11, color: "var(--wl-muted)", fontWeight: 600 }}> kg</span></span>

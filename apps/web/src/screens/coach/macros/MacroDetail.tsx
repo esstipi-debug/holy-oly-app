@@ -2,6 +2,8 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { MACROCYCLES, weekOfDate, type Atleta, type Plan } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
+import { BackButton } from "../../../ui/BackButton";
+import { Toast } from "../../../ui/Toast";
 import { MacroPeriodization } from "../../../ui/charts/MacroPeriodization";
 import { LoadMeters } from "./LoadMeters";
 import { MacroTemplateMap } from "./MacroTemplateMap";
@@ -11,11 +13,6 @@ import { levelLabel } from "./macroFilter";
 const page: CSSProperties = {
   padding: "12px 14px 84px", color: "var(--wl-text)", background: "var(--wl-bg)",
   minHeight: "100vh", maxWidth: 390, margin: "0 auto",
-};
-const back: CSSProperties = {
-  width: 34, height: 34, borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-text) 15%,transparent)",
-  background: "var(--wl-surface)", color: "var(--wl-text)", fontSize: 19, lineHeight: 1, cursor: "pointer",
-  display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
 };
 const titleStyle: CSSProperties = {
   fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 25, lineHeight: 1, textTransform: "uppercase",
@@ -82,7 +79,7 @@ export function MacroDetail() {
 
   return (
     <div style={page}>
-      <button type="button" aria-label="volver" style={back} onClick={() => navigate("/coach/macros")}>‹</button>
+      <BackButton onClick={() => navigate("/coach/macros")} />
 
       <h1 style={titleStyle}>{macro.name}</h1>
       <div style={tagsRow}>
@@ -119,15 +116,7 @@ export function MacroDetail() {
 
       <AssignSheet open={assignOpen} onClose={() => setAssignOpen(false)} macro={macro} athletes={athletes} onAssign={onAssign}
         rosterError={rosterError} onRetryRoster={() => setRosterReload((r) => r + 1)} />
-      {toast && (
-        <div role="status" style={{
-          position: "fixed", left: 14, right: 14, bottom: 78, zIndex: 40, maxWidth: 362, margin: "0 auto",
-          background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13,
-          padding: "13px 16px", borderRadius: 12, textAlign: "center", boxShadow: "0 14px 40px -12px rgba(0,0,0,.7)",
-        }}>
-          {toast}
-        </div>
-      )}
+      <Toast message={toast ?? ""} show={toast != null} />
     </div>
   );
 }

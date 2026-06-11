@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import * as vc from "../../data/vinculoClient";
+import { BackButton } from "../../ui/BackButton";
 
 const muted = { fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" } as const;
 
 export function InvitacionesScreen() {
+  const navigate = useNavigate();
   const [code, setCode] = useState<string | null>(null);
   const [vinculos, setVinculos] = useState<vc.VinculoRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ export function InvitacionesScreen() {
 
   return (
     <div style={{ padding: "16px 14px 26px", maxWidth: 390, margin: "0 auto", color: "var(--wl-text)", background: "var(--wl-bg)", minHeight: "100vh" }}>
-      <Link to="/coach" style={{ ...muted, textDecoration: "none" }}>‹ Plantel</Link>
+      <BackButton ariaLabel="Volver al Plantel" onClick={() => navigate("/coach")} />
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 22, marginTop: 8 }}>Invitaciones</div>
 
       {error && <div role="alert" style={{ ...muted, color: "var(--wl-danger)", marginTop: 10 }}>{error}</div>}
@@ -84,9 +86,9 @@ export function InvitacionesScreen() {
             <div key={v.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: "1px solid color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
               <b style={{ fontFamily: "var(--wl-display)", fontSize: 13, flex: 1 }}>{v.athlete.nombre}</b>
               <button type="button" onClick={() => void confirm(v.id)}
-                style={{ padding: "5px 10px", borderRadius: 8, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Confirmar</button>
+                style={{ minHeight: 44, padding: "5px 12px", borderRadius: 8, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Confirmar</button>
               <button type="button" onClick={() => void deny(v.id)}
-                style={{ padding: "5px 10px", borderRadius: 8, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer" }}>Rechazar</button>
+                style={{ minHeight: 44, padding: "5px 12px", borderRadius: 8, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer" }}>Rechazar</button>
             </div>
           ))}
 

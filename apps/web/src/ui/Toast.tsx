@@ -1,4 +1,12 @@
-export function Toast({ message, show }: { message: string; show: boolean }) {
+/**
+ * Toast compartido — anclado al viewport (fixed), no al ancestro posicionado de turno.
+ * `bottomOffset` default 78 deja libre el BottomNav; las pantallas sin nav pueden bajarlo.
+ */
+export function Toast({ message, show, bottomOffset = 78 }: {
+  message: string;
+  show: boolean;
+  bottomOffset?: number;
+}) {
   if (!show) return null;
 
   return (
@@ -6,11 +14,13 @@ export function Toast({ message, show }: { message: string; show: boolean }) {
       role="status"
       aria-live="polite"
       style={{
-        position: "absolute",
+        position: "fixed",
         left: 14,
         right: 14,
-        bottom: 16,
+        bottom: bottomOffset,
         zIndex: 41,
+        maxWidth: 362,
+        margin: "0 auto",
         background: "var(--wl-accent)",
         color: "var(--wl-bg)",
         fontFamily: "var(--wl-display)",

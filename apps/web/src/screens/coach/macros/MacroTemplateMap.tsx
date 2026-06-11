@@ -28,8 +28,8 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
   if (heat === null) {
     return (
       <p style={{ fontFamily: "var(--mono)", fontSize: 11, lineHeight: 1.6, color: "var(--wl-muted)", margin: 0 }}>
-        Este macro todavía no tiene la receta sesión-por-sesión cargada — el reparto de fases de
-        arriba es la guía. (La receta detallada hoy existe para el Ruso 5D.)
+        Este programa aún no tiene el detalle sesión-por-sesión — guiate por el reparto de fases
+        de arriba.
       </p>
     );
   }

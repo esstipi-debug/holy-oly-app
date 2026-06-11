@@ -108,6 +108,7 @@
 .ho-plan__meso.now { border-color: color-mix(in srgb, var(--wl-accent) 55%, transparent); background: color-mix(in srgb, var(--wl-accent) 7%, transparent); }
 .ho-plan__mesohead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .ho-plan__mesonm { font-family: var(--wl-display); font-weight: 700; font-size: 14px; color: var(--wl-text); }
+.ho-plan__flag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--wl-muted); }
 .ho-plan__hoy { font-family: var(--mono); font-size: 10px; color: var(--wl-accent); font-weight: 700; }
 .ho-plan__mesowk { font-family: var(--mono); font-size: 9.5px; color: var(--wl-muted); white-space: nowrap; flex: 0 0 auto; }
 .ho-plan__mesofocus { font-family: var(--mono); font-size: 11px; color: var(--wl-muted); margin-top: 4px; }
@@ -144,9 +145,10 @@
 .ho-ci__top { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; padding: 16px 18px 8px; }
 .ho-ci__close { width: 36px; height: 36px; flex: 0 0 auto; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--wl-text) 16%, transparent); background: transparent; color: var(--wl-text); font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .ho-ci__seg { flex: 1; display: flex; gap: 5px; }
-.ho-ci__seg i { flex: 1; height: 5px; border-radius: 99px; background: color-mix(in srgb, var(--wl-text) 14%, transparent); transition: background .3s; }
-.ho-ci__seg i.done { background: var(--wl-accent); }
-.ho-ci__seg i.cur { background: color-mix(in srgb, var(--wl-accent) 55%, transparent); }
+/* segmentos = <button> reales (a11y): reset de button + el mismo look de barrita */
+.ho-ci__seg button { flex: 1; height: 5px; border: 0; padding: 0; border-radius: 99px; background: color-mix(in srgb, var(--wl-text) 14%, transparent); transition: background .3s; -webkit-tap-highlight-color: transparent; }
+.ho-ci__seg button.done { background: var(--wl-accent); }
+.ho-ci__seg button.cur { background: color-mix(in srgb, var(--wl-accent) 55%, transparent); }
 .ho-ci__count { font-family: var(--mono); font-size: 10px; color: var(--wl-muted); flex: 0 0 auto; }
 .ho-ci__body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: hidden; }
 .ho-ci__card { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 18px 24px 28px; max-width: 460px; margin: 0 auto; width: 100%; }

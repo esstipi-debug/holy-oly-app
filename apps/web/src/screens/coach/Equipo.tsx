@@ -52,7 +52,7 @@ export function Equipo() {
   const rest = rows.filter((r) => r.id !== hero?.id);
 
   return (
-    <div style={{ padding: "14px 18px 26px", color: "var(--wl-text)", minHeight: "100vh", maxWidth: 390, margin: "0 auto", background: "radial-gradient(130% 50% at 50% -5%, #1A1813 0%, #0A0B0E 55%)" }}>
+    <div style={{ padding: "14px 18px 26px", color: "var(--wl-text)", minHeight: "100vh", maxWidth: 390, margin: "0 auto", background: "radial-gradient(130% 50% at 50% -5%, color-mix(in srgb, var(--wl-accent) 7%, var(--wl-bg)) 0%, var(--wl-bg) 55%)" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
         <h1 style={{ margin: 0, fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 24, letterSpacing: -.4 }}>Plantel</h1>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>

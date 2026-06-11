@@ -104,7 +104,7 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
       <CaminoCard plan={plan.plan} client={client} sexo={plan.athlete.sexo} />
 
       {checkinOpen && (
-        <CheckIn variant={variant} initial={daylog.entry} onClose={() => setCheckinOpen(false)} onDone={onCheckinDone} />
+        <CheckIn variant={variant} initial={daylog.entry} lastWeight={series?.bodyweight?.at(-1)} onClose={() => setCheckinOpen(false)} onDone={onCheckinDone} />
       )}
       {API_ENABLED && user && !preview && (
         <OnboardingCard

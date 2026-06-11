@@ -13,6 +13,7 @@ import { WeightChart } from "../../ui/charts/WeightChart";
 import { MacroTimeline } from "../../ui/charts/MacroTimeline";
 import { Medal as MedalIcon } from "../../ui/Medal";
 import { Badge } from "../../ui/Badge";
+import { BackButton } from "../../ui/BackButton";
 import { MedalSheet } from "./MedalSheet";
 import { CompSheet } from "./CompSheet";
 import { SessionAdherence } from "./sessions/SessionAdherence";
@@ -139,8 +140,7 @@ export function Drilldown() {
 
   return (
     <div style={{ padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)", minHeight: "100vh", maxWidth: 390, margin: "0 auto", position: "relative" }}>
-      <button type="button" aria-label="Volver a Atletas" onClick={() => navigate("/coach")}
-        style={{ width: 34, height: 34, borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-text) 15%,transparent)", background: "var(--wl-surface)", color: "var(--wl-text)", fontSize: 19, lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, marginBottom: 10 }}>‹</button>
+      <BackButton ariaLabel="Volver a Atletas" onClick={() => navigate("/coach")} style={{ marginBottom: 5 }} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
         <div>
           <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 22, lineHeight: 1 }}>{athlete.nombre}</div>

@@ -17,7 +17,7 @@ export interface HeatMapComp { name: string; day?: number }
  * (col i = día i; las semanas se anclan al weekday del startDate, así que los headers ROTAN
  * con `firstDow` — columna, fecha y marcadores comparten un solo eje). Encoding mixto: tono =
  * % tope del día, opacidad = volumen relativo. Presentacional puro. Compe con fecha = celda
- * dorada; sólo semana = etiqueta dorada. HOY = anillo blanco interior. Hit area de cada celda
+ * dorada; sólo semana = etiqueta dorada. HOY = anillo interior (color del texto). Hit area de cada celda
  * = el pitch completo de la grilla (22px); el cuadrado visible mide 18 (compacto por diseño —
  * un target de 44px es inalcanzable en esta densidad; el panel de abajo corrige cualquier
  * mis-tap en un tap).
@@ -66,7 +66,8 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
             const cmark = cycleMarks?.get(`${w.week}-${day}`);
             const rings = [
               isSel ? "0 0 0 2px var(--wl-accent)" : "",
-              isHoy ? "inset 0 0 0 1.5px rgba(255,255,255,.92)" : "",
+              // Anillo HOY derivado del texto del skin (no blanco fijo) — visible en claras y oscuras.
+              isHoy ? "inset 0 0 0 1.5px color-mix(in srgb, var(--wl-text) 88%, transparent)" : "",
             ].filter(Boolean).join(", ");
             const label = `Semana ${w.week} ${names[day]}`
               + (d ? "" : " · descanso") + (isHoy ? " · HOY" : "") + (isComp ? ` · competencia ${comp!.name}` : "")

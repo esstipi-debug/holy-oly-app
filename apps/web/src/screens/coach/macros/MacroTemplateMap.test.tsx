@@ -19,6 +19,8 @@ test("macro con receta: pinta el mapa y el tap muestra la sesión (ejercicios co
 
 test("macro sin receta: nota honesta, sin mapa falso", () => {
   render(<MacroTemplateMap macro={cubano} />);
-  expect(screen.getByText(/todavía no tiene la receta/)).toBeInTheDocument();
+  // W6: copy neutro — sin exponer roadmap interno («…existe para el Ruso 5D»)
+  expect(screen.getByText(/aún no tiene el detalle sesión-por-sesión/)).toBeInTheDocument();
+  expect(screen.queryByText(/Ruso 5D/)).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /^Semana 1 Lun$/ })).not.toBeInTheDocument();
 });

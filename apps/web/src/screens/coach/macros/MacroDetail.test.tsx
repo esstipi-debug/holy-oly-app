@@ -24,7 +24,7 @@ test("renders the program detail (header + periodization) for a valid id", () =>
   expect(screen.getByText("INTENSIDAD")).toBeInTheDocument(); // LoadMeters
   // «Adentro del plan»: sin receta → nota honesta (el mapa vive en MacroTemplateMap.test)
   expect(screen.getByText(/Adentro del plan/i)).toBeInTheDocument();
-  expect(screen.getByText(/todavía no tiene la receta/)).toBeInTheDocument();
+  expect(screen.getByText(/aún no tiene el detalle sesión-por-sesión/)).toBeInTheDocument();
 });
 
 test("macro con receta (ruso-5d): el detalle incluye el mapa de intensidad", () => {

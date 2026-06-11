@@ -22,17 +22,28 @@ export function BottomSheet({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+  // Modal de viewport (overlay fixed): bloquear el scroll del body mientras está abierto —
+  // sin esto el contenido de atrás sigue scrolleable debajo del backdrop.
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [open]);
   if (!open) return null;
 
   return (
     <div
       onClick={onClose}
       style={{
-        position: "absolute",
+        // fixed (no absolute): el sheet ancla SIEMPRE al viewport, no al ancestro posicionado
+        // de turno — antes el backdrop cubría sólo el primer viewport en pantallas largas.
+        position: "fixed",
         inset: 0,
         background: "rgba(0,0,0,.5)",
         display: "flex",
         alignItems: "flex-end",
+        justifyContent: "center",
         zIndex: 40,
       }}
     >
@@ -45,8 +56,9 @@ export function BottomSheet({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%",
+          maxWidth: 460, // misma columna que .ho-shell/.ho-nav — en desktop no se estira al viewport
           background: "var(--wl-surface)",
-          borderRadius: "18px 18px 0 0",
+          borderRadius: "var(--wl-radius) var(--wl-radius) 0 0",
           padding: "16px 16px 18px",
           maxHeight: "90%",
           overflowY: "auto",

@@ -29,16 +29,16 @@ export function AtletaMiniCard({ row, onPick }: { row: RosterRow; onPick: (id: s
       style={{
         position: "relative", textAlign: "left", borderRadius: 16, overflow: "hidden", padding: "12px 13px",
         cursor: "pointer", color: "var(--wl-text)",
-        background: "linear-gradient(158deg,#20262E 0%,#11151A 55%,#0B0E12 100%)", border: "1px solid rgba(255,255,255,.08)",
+        background: "linear-gradient(158deg, var(--wl-surface-2) 0%, var(--wl-surface) 55%, var(--wl-bg) 100%)", border: "1px solid rgba(255,255,255,.08)",
       }}>
       <div style={{ position: "absolute", inset: 0, backgroundImage: LEGEND_NOISE, backgroundSize: "90px", opacity: .05, mixBlendMode: "overlay", pointerEvents: "none" }} />
       <span style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${st}, transparent)` }} />
       <div style={{ position: "relative", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div style={{ width: 34, height: 34, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: `color-mix(in srgb, ${st} 16%, transparent)`, border: `1px solid color-mix(in srgb, ${st} 45%, transparent)`, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: nd ? "var(--wl-muted)" : st }}>{row.iniciales}</div>
-        <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 28, lineHeight: .9, color: nd ? "var(--wl-muted)" : "#fff" }}>{nd ? "—" : row.readiness}</span>
+        <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 28, lineHeight: .9, color: nd ? "var(--wl-muted)" : "var(--wl-text)" }}>{nd ? "—" : row.readiness}</span>
       </div>
       <div style={{ position: "relative", marginTop: 10 }}>
-        <div style={{ fontFamily: "var(--wl-cond, var(--wl-display))", fontWeight: 700, fontSize: 17, letterSpacing: .2, textTransform: "uppercase", lineHeight: 1, color: "#fff" }}>{row.nombre}</div>
+        <div style={{ fontFamily: "var(--wl-cond, var(--wl-display))", fontWeight: 700, fontSize: 17, letterSpacing: .2, textTransform: "uppercase", lineHeight: 1, color: "var(--wl-text)" }}>{row.nombre}</div>
         <div style={{ fontFamily: "var(--mono)", fontSize: 8.5, color: "var(--wl-muted)", textTransform: "uppercase", marginTop: 3 }}>{row.metodo}{row.cat ? ` · ${row.cat}` : ""}</div>
       </div>
       <div style={{ position: "relative", marginTop: 9 }}><HeatStrip history={row.history} /></div>

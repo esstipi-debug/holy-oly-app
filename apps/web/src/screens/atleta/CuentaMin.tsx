@@ -101,7 +101,7 @@ function VincularSection() {
             onChange={(e) => setCode(e.target.value)}
             placeholder="CÓDIGO"
             aria-label="Código de invitación"
-            style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 18, letterSpacing: ".18em", textAlign: "center" }}
+            style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: "var(--wl-radius)", border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 18, letterSpacing: ".18em", textAlign: "center" }}
           />
           {error && <div role="alert" style={{ color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11, marginTop: 10 }}>{error}</div>}
           <button type="submit" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 12 }} disabled={busy || !code.trim()}>

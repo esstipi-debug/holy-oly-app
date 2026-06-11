@@ -29,7 +29,7 @@ export function MedalSheet({
 }) {
   const [metal, setMetal] = useState<Medal["medal"]>("oro");
   const [comp, setComp] = useState("");
-  const [date, setDate] = useState("2026-05");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 7)); // YYYY-MM de hoy
   const [cat, setCat] = useState("81");
   const [sn, setSn] = useState("");
   const [cj, setCj] = useState("");
@@ -42,7 +42,7 @@ export function MedalSheet({
     setBusy(true);
     try {
       const place = METALS.find((m) => m.k === metal)!.place;
-      await onSubmit({ comp: comp || "Competencia", date: date || "2026", cat: cat || "—", medal: metal, sn: Number(sn) || 0, cj: Number(cj) || 0, place });
+      await onSubmit({ comp: comp || "Competencia", date: date || new Date().toISOString().slice(0, 7), cat: cat || "—", medal: metal, sn: Number(sn) || 0, cj: Number(cj) || 0, place });
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo guardar la medalla");
@@ -75,7 +75,7 @@ export function MedalSheet({
       <input style={input} value={comp} onChange={(e) => setComp(e.target.value)} placeholder="Ej. Nacional Absoluto" />
 
       <div style={{ display: "flex", gap: 10 }}>
-        <div style={{ flex: 1 }}><label style={label}>Fecha</label><input style={input} value={date} onChange={(e) => setDate(e.target.value)} placeholder="2026-05" /></div>
+        <div style={{ flex: 1 }}><label style={label}>Fecha</label><input style={input} type="month" value={date} onChange={(e) => setDate(e.target.value)} /></div>
         <div style={{ flex: 1 }}><label style={label}>Categoría (kg)</label><input style={input} value={cat} onChange={(e) => setCat(e.target.value)} placeholder="81" /></div>
       </div>
       <div style={{ display: "flex", gap: 10 }}>

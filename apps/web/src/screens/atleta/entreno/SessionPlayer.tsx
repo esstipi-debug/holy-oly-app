@@ -48,7 +48,7 @@ export function SessionPlayer({
         <div style={{ fontFamily: "var(--wl-display)", fontSize: 11, color: "var(--wl-muted)", marginTop: 4 }}>prescripto: {getMovement(row.prescribedMovementId)?.name ?? row.prescribedMovementId}</div>
       )}
       {row.notes && !substituted && (
-        <div style={{ fontFamily: "var(--wl-display)", fontSize: 12.5, color: "var(--wl-text)", marginTop: 8, padding: "8px 10px", background: "var(--wl-surface)", borderRadius: 10 }}>
+        <div style={{ fontFamily: "var(--wl-display)", fontSize: 12.5, color: "var(--wl-text)", marginTop: 8, padding: "8px 10px", background: "var(--wl-surface)", borderRadius: "var(--wl-radius)" }}>
           <span style={{ color: "var(--wl-accent)", fontWeight: 700 }}>Coach:</span> {row.notes}
         </div>
       )}

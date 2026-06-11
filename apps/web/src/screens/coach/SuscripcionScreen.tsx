@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatClp, MULTISEDE } from "@holy-oly/core";
 import { billingCheckout, billingPlans, billingStatus, mockActivate, type BillingPeriod, type BillingPlan, type BillingStatus } from "../../billing/billingClient";
 import { useAuth } from "../../auth/AuthContext";
+import { BackButton } from "../../ui/BackButton";
 import { VerifyEmailBanner } from "../../ui/VerifyEmailBanner";
 
 const monthsFree = (p: BillingPlan): number => Math.round((p.priceClpMonthly * 12 - p.priceClpAnnual) / p.priceClpMonthly);
@@ -10,6 +11,7 @@ const coachesLabel = (n: number | null): string => (n == null ? "Coaches ilimita
 
 export function SuscripcionScreen() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const [plans, setPlans] = useState<BillingPlan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<BillingPlan["id"]>("coach");
@@ -67,7 +69,7 @@ export function SuscripcionScreen() {
 
   return (
     <div style={{ padding: "14px 13px 26px", maxWidth: 390, margin: "0 auto", minHeight: "100vh", background: "var(--wl-bg)", color: "var(--wl-text)" }}>
-      <Link to="/coach/cuenta" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>← Cuenta</Link>
+      <BackButton ariaLabel="Volver a Cuenta" onClick={() => navigate("/coach/cuenta")} />
       <h1 style={{ fontFamily: "var(--wl-display)", fontSize: 22, fontWeight: 800, margin: "10px 0 6px" }}>Suscripción</h1>
       <p style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
         Los atletas son gratis. El coach necesita plan activo para editar programas. Precios + IVA.
