@@ -110,6 +110,30 @@ test("atrapa Shift+Tab: desde el primer elemento va al último", () => {
   expect(document.activeElement).toBe(segundo);
 });
 
+// W6/D8 (verificado en W8): el sheet es un modal fixed de viewport — abierto bloquea el scroll
+// del body, cerrado/desmontado restaura EXACTAMENTE el valor previo (no lo pisa con "").
+test("abrir bloquea el scroll del body y cerrar lo restaura", () => {
+  render(<Harness />);
+  expect(document.body.style.overflow).toBe("");
+
+  open();
+  expect(document.body.style.overflow).toBe("hidden");
+
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(document.body.style.overflow).toBe("");
+});
+
+test("desmontar con el sheet abierto restaura el overflow previo del body", () => {
+  document.body.style.overflow = "scroll"; // valor previo no-vacío: el cleanup no debe pisarlo
+  const { unmount } = render(<Harness />);
+  open();
+  expect(document.body.style.overflow).toBe("hidden");
+
+  unmount();
+  expect(document.body.style.overflow).toBe("scroll");
+  document.body.style.overflow = "";
+});
+
 test("sin hijos enfocables enfoca el contenedor y Tab no lo abandona", () => {
   render(<StaticHarness />);
   open();

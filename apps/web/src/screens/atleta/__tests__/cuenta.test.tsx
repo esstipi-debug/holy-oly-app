@@ -36,8 +36,10 @@ test("muestra la sección de vínculo, el toggle de variante y los skins", () =>
   expect(screen.getByRole("link", { name: "Privacidad" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Términos" })).toBeInTheDocument();
 });
-// NOTA W8: las ramas API del vínculo (pendiente/activo vía GET /me/vinculo) y el flujo de
-// export/borrado necesitan infra de mocks de fetch que este archivo no tiene — cubrir en W8.
+// W8: las ramas API del vínculo (activo/pendiente/sin vínculo vía GET /me/vinculo) viven en
+// cuenta.vinculo.test.tsx (mock parcial de AuthContext + mock de vinculoClient — no hizo falta
+// mockear fetch ni apiConfig). El flujo de export/borrado (clicks de TusDatosSection) sigue
+// pendiente de cobertura.
 
 test("elegir una skin la aplica al shell y la persiste", () => {
   const { container } = renderCuenta();

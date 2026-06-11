@@ -92,6 +92,29 @@ test("'no la hice (todo)' → todas las series done:false, exercise done:false",
   expect(sent.sets!.every((s) => s.done === false)).toBe(true);
 });
 
+// W4/D5 (verificado en W8): error de carga ≠ día vacío — un fallo de API no puede disfrazarse
+// de "no hay sesión"; rinde role="alert" + Reintentar, y el retry re-dispara el fetch.
+test("error de carga → alert con Reintentar; el retry recupera la sesión", async () => {
+  vi.spyOn(me, "getMeSessions").mockRejectedValueOnce(new Error("network"));
+  renderEntreno();
+  const alert = await screen.findByRole("alert");
+  expect(alert).toHaveTextContent("No se pudo cargar la sesión.");
+  expect(screen.queryByText("No hay sesión para este día.")).not.toBeInTheDocument();
+  // el retry vuelve a pedir (el spy del beforeEach resuelve la fixture) → renderiza el resumen
+  fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+  expect(await screen.findByRole("button", { name: /iniciar entrenamiento/i })).toBeInTheDocument();
+  expect(screen.getByText("Arranque")).toBeInTheDocument();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+
+test("0 filas → 'No hay sesión para este día.' sin alert (vacío honesto)", async () => {
+  vi.spyOn(me, "getMeSessions").mockResolvedValue([]);
+  renderEntreno();
+  expect(await screen.findByText("No hay sesión para este día.")).toBeInTheDocument();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Reintentar" })).not.toBeInTheDocument();
+});
+
 test("sustituir → kg de las series se limpia → cargar kg en serie 1 → guardar → movementId correcto", async () => {
   await start();
   fireEvent.click(screen.getByRole("button", { name: /cambiar movimiento de Arranque/i }));
