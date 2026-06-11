@@ -210,6 +210,17 @@ export interface Movement {
   modifiers: MovementModifiers;
 }
 
+// ── Complejos (slice entrenamientos-distintivos, D6/D7): composición ordenada de movimientos
+//    en UNA serie con UNA barra. El % se programa contra el eslabón MÁS DÉBIL (min RM de los
+//    rmRef de los eslabones); la notación de reps ("1+1+2") vive en el nombre. ──
+export interface ComplexLink { movementId: string; reps: number }
+export interface ComplexDef {
+  id: string;          // namespace "cx." — p.ej. "cx.tiron-arranque+arranque"
+  name: string;        // "Tirón de arranque + Arranque (2+1)" — notación incluida
+  links: ComplexLink[]; // 2..4 eslabones, orden de ejecución
+  notes?: string;
+}
+
 // ── Prescription (SP2). The macro carries a recipe; assigning instantiates the athlete's
 //    editable prescription; kg = %×RM (or an explicit override). Reuses SP1 movements. ──
 export interface PrescribedExercise {
