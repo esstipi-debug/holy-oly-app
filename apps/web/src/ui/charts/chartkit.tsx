@@ -17,7 +17,7 @@ export function linePath(pts: [number, number][]): string {
 export function weekLabels(weeks: number, yB: number, xAt: (w: number) => number): ReactNode {
   const marks = weeks <= 1 ? [1] : [1, Math.ceil(weeks / 2), weeks];
   return marks.map((w) => (
-    <text key={w} x={xAt(w)} y={yB} textAnchor="middle" fontSize={8} fontFamily="JetBrains Mono" style={{ fill: "var(--wl-muted)" }}>S{w}</text>
+    <text key={w} x={xAt(w)} y={yB} textAnchor="middle" fontSize={8} style={{ fill: "var(--wl-muted)", fontFamily: "var(--mono)" }}>S{w}</text>
   ));
 }
 

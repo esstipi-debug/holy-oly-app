@@ -74,7 +74,7 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
               <button type="button" style={mini} aria-label={`cambiar ${r.movementName}`} onClick={() => setSubFor(i)}>⇄</button>
               <button type="button" style={mini} aria-label={`subir ${r.movementName}`} onClick={() => move(i, -1)}>↑</button>
               <button type="button" style={mini} aria-label={`bajar ${r.movementName}`} onClick={() => move(i, 1)}>↓</button>
-              <button type="button" style={{ ...mini, color: "#ff5e5e" }} aria-label={`Quitar ${r.movementName}`} onClick={() => remove(i)}>✕</button>
+              <button type="button" style={{ ...mini, color: "var(--wl-danger)" }} aria-label={`Quitar ${r.movementName}`} onClick={() => remove(i)}>✕</button>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
               <input style={num} type="number" min={1} aria-label={`sets de ${r.movementName}`} value={r.sets} onChange={(e) => patch(i, { sets: Number(e.target.value) })} />×
@@ -87,7 +87,7 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
       </div>
       <button type="button" onClick={() => setPickerOpen(true)}
         style={{ width: "100%", marginTop: 10, padding: 10, borderRadius: 10, border: "1px dashed color-mix(in srgb,var(--wl-text) 24%,transparent)", background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>+ Agregar ejercicio</button>
-      {error && <div role="alert" style={{ marginTop: 8, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
+      {error && <div role="alert" style={{ marginTop: 8, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
       <button type="button" disabled={busy} onClick={() => void save()}
         style={{ width: "100%", marginTop: 12, padding: 13, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15 }}>
         {busy ? "Guardando…" : "Guardar sesión"}

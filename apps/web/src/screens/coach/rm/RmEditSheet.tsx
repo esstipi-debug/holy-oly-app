@@ -105,7 +105,7 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
         ))}
       </div>
       {saveError && (
-        <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "#ff3b46", marginTop: 10 }}>
+        <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 10 }}>
           No se pudo guardar. Reintentá.
         </div>
       )}

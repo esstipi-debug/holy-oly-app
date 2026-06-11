@@ -77,7 +77,7 @@ export function CompSheet({
         Cae en la <b>semana {week}</b> de {totalWeeks} del macro.
       </div>
 
-      {error && <div role="alert" style={{ marginTop: 10, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
+      {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
       <button type="button" disabled={busy} onClick={() => void run(async () => { await onAdd(name || nextName, date); setName(""); })}
         style={{ width: "100%", marginTop: 12, padding: 12, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer",

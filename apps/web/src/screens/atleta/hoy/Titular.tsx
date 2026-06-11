@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import type { CellState } from "@holy-oly/core";
+import { STATUS } from "../../../ui/status";
 
-// The 4 state colors (the ONLY place color = estado on Hoy). Mirrors the prototype ST palette.
-const ST: Record<"ok" | "warn" | "alert", string> = { ok: "#1bc98a", warn: "#ffab2e", alert: "#ff3b46" };
+// Color = estado (the ONLY place color = estado on Hoy) — derivado de la paleta oficial ui/status.ts.
+const ST: Record<"ok" | "warn" | "alert", string> = { ok: STATUS.ok, warn: STATUS.warn, alert: STATUS.alert };
 const COPY: Record<"ok" | "warn" | "alert", { st: string; msg: ReactNode }> = {
   ok: { st: "Vas bien", msg: <>Tu recuperación está <b>en tu rango normal</b>. Seguí el plan como viene.</> },
   warn: { st: "Cuidate hoy", msg: <>Tu recuperación está algo por debajo de tu normal. Hoy bajá un escalón la intensidad y <b>priorizá dormir</b>.</> },

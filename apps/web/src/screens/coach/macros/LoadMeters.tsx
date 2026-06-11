@@ -7,6 +7,8 @@ const label: CSSProperties = {
 };
 const value: CSSProperties = { fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", flexShrink: 0 };
 
+const VOLUME_CYAN = "#2dd4e6"; // paleta de carga — candidata a token
+
 function Meter({ name, val, color }: { name: string; val: number; color: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6, height: 12, marginBottom: 5 }}>
@@ -16,7 +18,7 @@ function Meter({ name, val, color }: { name: string; val: number; color: string 
           <i key={i} style={{
             width: 7, height: 7, borderRadius: 1.5,
             background: i < val ? color : "rgba(127,134,148,.18)",
-            boxShadow: i < val ? `0 0 5px ${color}66` : "none",
+            boxShadow: i < val ? `0 0 5px color-mix(in srgb, ${color} 40%, transparent)` : "none",
           }} />
         ))}
       </span>
@@ -29,9 +31,9 @@ function Meter({ name, val, color }: { name: string; val: number; color: string 
 export function LoadMeters({ macro }: { macro: Macrocycle }) {
   return (
     <div>
-      <Meter name="INTENSIDAD" val={macro.intensity} color="#ff5e5e" />
-      <Meter name="VOLUMEN" val={macro.volume} color="#2dd4e6" />
-      <Meter name="RECOVERY" val={deriveRecovery(macro)} color="#34d058" />
+      <Meter name="INTENSIDAD" val={macro.intensity} color="var(--wl-danger)" />
+      <Meter name="VOLUMEN" val={macro.volume} color={VOLUME_CYAN} />
+      <Meter name="RECOVERY" val={deriveRecovery(macro)} color="var(--ok)" />
     </div>
   );
 }

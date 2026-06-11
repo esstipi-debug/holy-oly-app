@@ -71,7 +71,7 @@ export function EntrenoScreen() {
     finally { setBusy(false); }
   }, [rows, week, idx, navigate]);
 
-  if (rows === null) return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>Cargando…</div>;
+  if (rows === null) return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
 
   // NOTE: rendered inside AthleteShell's `<main className="ho-scroll">` — no agregar otro wrapper ho-scroll.
   return (
@@ -80,7 +80,7 @@ export function EntrenoScreen() {
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>Entreno · sem {week} · día {idx + 1}</div>
 
       {rows.length === 0 ? (
-        <div style={{ marginTop: 14, fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>No hay sesión para este día.</div>
+        <div style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>No hay sesión para este día.</div>
       ) : !started ? (
         <div style={{ marginTop: 12 }}>
           <ResumenDia
@@ -100,7 +100,7 @@ export function EntrenoScreen() {
             onNext={() => setCur((c) => Math.min(rows.length - 1, c + 1))}
             onFinish={() => void save()}
           />
-          {error && <div role="alert" style={{ marginTop: 10, color: "#ff3b46", fontFamily: "var(--ho-mono)", fontSize: 11 }}>{error}</div>}
+          {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
         </div>
       )}
 

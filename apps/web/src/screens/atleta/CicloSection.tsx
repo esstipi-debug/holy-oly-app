@@ -89,9 +89,9 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
   const inputStyle = {
     width: "100%", boxSizing: "border-box" as const, padding: "10px 12px", borderRadius: 10,
     border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)",
-    color: "var(--wl-text)", fontFamily: "var(--ho-mono, var(--mono))", fontSize: 14,
+    color: "var(--wl-text)", fontFamily: "var(--mono)", fontSize: 14,
   };
-  const noteStyle = { fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10.5, color: "var(--wl-muted)", lineHeight: 1.5, marginTop: 6 };
+  const noteStyle = { fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", lineHeight: 1.5, marginTop: 6 };
 
   return (
     <div className="ho-acct__group">
@@ -104,16 +104,16 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
         {loading ? (
           <div role="status" aria-busy="true" style={noteStyle}>Cargando…</div>
         ) : loadError ? (
-          <div role="alert" style={{ ...noteStyle, color: "#ff3b46" }}>
+          <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>
             No se pudo cargar tu registro.{" "}
             <button type="button" onClick={() => { setLoading(true); void load(); }}
-              style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10.5, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
+              style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 10.5, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
               Reintentar
             </button>
           </div>
         ) : (
           <>
-            <div style={{ marginTop: 10, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Compartir con el coach</div>
+            <div style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Compartir con el coach</div>
             <div className="ho-seg" style={{ marginTop: 6 }}>
               {SHARE_OPTS.map(([v, label]) => (
                 <button key={v} type="button" aria-pressed={share === v} className={share === v ? "on" : ""} onClick={() => { setShare(v); setSaved(false); }}>{label}</button>
@@ -121,7 +121,7 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
             </div>
             <div style={noteStyle}>{SHARE_OPTS.find(([v]) => v === share)![2]}</div>
 
-            <div style={{ marginTop: 12, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Mi ciclo</div>
+            <div style={{ marginTop: 12, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Mi ciclo</div>
             <div className="ho-seg" style={{ marginTop: 6 }}>
               {STATE_OPTS.map(([v, label]) => (
                 <button key={v} type="button" aria-pressed={state === v} className={state === v ? "on" : ""} onClick={() => { setState(v); setSaved(false); }}>{label}</button>
@@ -135,18 +135,18 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
             )}
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
-              <label style={{ display: "grid", gap: 4, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10, color: "var(--wl-muted)" }}>
+              <label style={{ display: "grid", gap: 4, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>
                 Inicio del último período
                 <input type="date" value={start} onChange={(e) => { setStart(e.target.value); setSaved(false); }} style={inputStyle} />
               </label>
-              <label style={{ display: "grid", gap: 4, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10, color: "var(--wl-muted)" }}>
+              <label style={{ display: "grid", gap: 4, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>
                 Duración típica (días, {CYCLE_LEN_MIN}–{CYCLE_LEN_MAX})
                 <input type="text" inputMode="numeric" value={len}
                   aria-invalid={!validLen(len) || undefined}
                   aria-describedby={!validLen(len) ? "ciclo-len-error" : undefined}
                   onChange={(e) => { setLen(e.target.value); setSaved(false); }} style={inputStyle} />
                 {!validLen(len) && (
-                  <span id="ciclo-len-error" role="alert" style={{ fontSize: 10, color: "#ff3b46", fontFamily: "var(--ho-mono, var(--mono))" }}>
+                  <span id="ciclo-len-error" role="alert" style={{ fontSize: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)" }}>
                     Debe ser un entero entre {CYCLE_LEN_MIN} y {CYCLE_LEN_MAX}.
                   </span>
                 )}
@@ -160,7 +160,7 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
             )}
 
             {saveError && (
-              <div role="alert" style={{ ...noteStyle, color: "#ff3b46" }}>No se pudo guardar. Reintentá.</div>
+              <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>No se pudo guardar. Reintentá.</div>
             )}
             <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 12 }}
               disabled={!canSave} onClick={() => void save()}>

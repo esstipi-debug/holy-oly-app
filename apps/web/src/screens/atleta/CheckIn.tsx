@@ -180,13 +180,13 @@ export function CheckIn({ variant, initial, onClose, onDone }: {
       </div>
 
       <div className="ho-ci__foot">
-        {error && <div role="alert" style={{ textAlign: "center", color: "#ff3b46", fontFamily: "var(--ho-mono)", fontSize: 11, marginBottom: 8 }}>{error}</div>}
+        {error && <div role="alert" style={{ textAlign: "center", color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11, marginBottom: 8 }}>{error}</div>}
         {onWeight ? (
           <button className="wl-btn wl-btn--primary" style={{ width: "100%" }} onClick={() => void finish(true)} disabled={busy}>{busy ? "Guardando…" : "Guardar check-in"}</button>
         ) : variant === "dial" ? (
           <button className="wl-btn" style={{ width: "100%" }} onClick={() => { if (!answers[item!.field]) pickDial(item!, 3); go(step + 1); }}>Siguiente</button>
         ) : (
-          <div style={{ textAlign: "center", fontFamily: "var(--ho-mono)", fontSize: 10, color: "var(--wl-muted)" }}>Tocá una carita</div>
+          <div style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>Tocá una carita</div>
         )}
       </div>
     </div>

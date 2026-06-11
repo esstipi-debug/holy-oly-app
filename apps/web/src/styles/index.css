@@ -2,5 +2,5 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-:root { color-scheme: dark; --mono: 'JetBrains Mono', ui-monospace, monospace; }
+:root { color-scheme: dark; } /* --mono vive en theme.css (tokens globales) — una sola fuente de verdad */
 body { margin: 0; background: var(--wl-bg); color: var(--wl-text); font-family: Manrope, system-ui, sans-serif; }

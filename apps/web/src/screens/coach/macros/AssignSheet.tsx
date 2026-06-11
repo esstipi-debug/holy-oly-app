@@ -144,7 +144,7 @@ export function AssignSheet({
               marginTop: 10, padding: "9px 11px", borderRadius: 10, background: "var(--wl-surface)",
               border: "1px solid color-mix(in srgb,var(--wl-text) 10%,transparent)",
               fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.6,
-              color: anchor.status === "pasada" ? "#ff3b46" : "var(--wl-muted)",
+              color: anchor.status === "pasada" ? "var(--wl-danger)" : "var(--wl-muted)",
             }}>
               {anchor.status === "pasada" && <>Esa fecha ya pasó — elegí una futura.</>}
               {anchor.status === "completo" && (
@@ -177,7 +177,7 @@ export function AssignSheet({
         ))}
       </div>
 
-      {error && <div role="alert" style={{ marginTop: 10, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
+      {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
       <button type="button" disabled={!canSubmit} onClick={() => void submit()}
         style={{ width: "100%", marginTop: 16, padding: 13, borderRadius: 12, border: 0, cursor: canSubmit ? "pointer" : "default",

@@ -39,7 +39,7 @@ export function VictoriaScreen() {
   }, [week, idx, navigate]);
 
   if (state === "loading") {
-    return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>Cargando…</div>;
+    return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
   }
   if (state === "error" || !session || !plan) {
     return (
@@ -65,12 +65,12 @@ export function VictoriaScreen() {
   return (
     <div>
       {/* header */}
-      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--ho-mono)", fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--wl-muted)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--mono)", fontSize: 10.5, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--wl-muted)" }}>
         <span>Holy Oly · Sesión</span>
         {plan.plan?.currentPhase && <span style={{ color: "var(--wl-accent)" }}>{plan.plan.currentPhase}</span>}
       </div>
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 30, lineHeight: 1, textTransform: "uppercase", color: "var(--wl-text)", marginTop: 8 }}>{title}</div>
-      <div style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.5 }}>Día {idx + 1} — {dayMoves}<br />{fecha}</div>
+      <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.5 }}>Día {idx + 1} — {dayMoves}<br />{fecha}</div>
 
       {/* carga total del día */}
       {didWork && tonnage > 0 && (
@@ -79,7 +79,7 @@ export function VictoriaScreen() {
           <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 48, lineHeight: 1, color: "var(--wl-text)", fontVariantNumeric: "tabular-nums", marginTop: 6 }}>
             {CL(tonnage)}<span style={{ fontSize: 18, color: "var(--wl-muted)", marginLeft: 6 }}>kg</span>
           </div>
-          <div style={{ fontFamily: "var(--ho-mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 8 }}>Tonelaje movido en la sesión · el calentamiento no cuenta</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 8 }}>Tonelaje movido en la sesión · el calentamiento no cuenta</div>
         </div>
       )}
 
@@ -92,7 +92,7 @@ export function VictoriaScreen() {
             <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 24, color: "var(--wl-text)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{heaviest.kg}<span style={{ fontSize: 13, color: "var(--wl-muted)" }}> kg</span></span>
           </div>
           <div style={{ marginTop: 12 }}><DiscRow kg={heaviest.kg} barKg={barKg} /></div>
-          <div style={{ fontFamily: "var(--ho-mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 10 }}>Discos IWF por lado · aproximan al kg</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 10 }}>Discos IWF por lado · aproximan al kg</div>
         </div>
       )}
 
@@ -101,8 +101,8 @@ export function VictoriaScreen() {
         <div className="ho-card__head"><span className="ho-card__t">Cumplimiento</span></div>
         <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "var(--ho-mono)", fontWeight: 700, fontSize: 20, color: "var(--wl-text)" }}>{comp.done}/{comp.total}</div>
-            <div style={{ fontFamily: "var(--ho-mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>ejercicios completados</div>
+            <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 20, color: "var(--wl-text)" }}>{comp.done}/{comp.total}</div>
+            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>ejercicios completados</div>
             <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
               {Array.from({ length: comp.total }).map((_, i) => (
                 <div key={i} style={{ height: 5, flex: 1, borderRadius: 2, background: i < comp.done ? "var(--ok)" : muteFill }} />
@@ -110,8 +110,8 @@ export function VictoriaScreen() {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "var(--ho-mono)", fontWeight: 700, fontSize: 20, color: "var(--wl-text)" }}>{idx + 1} / {sessionsCount}</div>
-            <div style={{ fontFamily: "var(--ho-mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>sesión de la semana</div>
+            <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 20, color: "var(--wl-text)" }}>{idx + 1} / {sessionsCount}</div>
+            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>sesión de la semana</div>
           </div>
         </div>
       </div>

@@ -51,8 +51,8 @@ function PeriodizationChart({ macro }: { macro: Macrocycle }) {
     <g key={`grid-${gv}`}>
       <line x1={padL} y1={iy(gv)} x2={W - padR} y2={iy(gv)}
         stroke="color-mix(in srgb,var(--wl-text) 10%,transparent)" strokeWidth={1} strokeDasharray="2 3" />
-      <text x={padL - 3} y={iy(gv) + 3} textAnchor="end" fontSize={7} fontFamily="JetBrains Mono"
-        style={{ fill: "var(--wl-muted)" }}>{gv}</text>
+      <text x={padL - 3} y={iy(gv) + 3} textAnchor="end" fontSize={7}
+        style={{ fill: "var(--wl-muted)", fontFamily: "var(--mono)" }}>{gv}</text>
     </g>
   ));
 
@@ -95,14 +95,14 @@ function PeriodizationChart({ macro }: { macro: Macrocycle }) {
         <rect x={x0} y={yT} width={Math.max(2, x1 - x0)} height={vBase - yT} rx={2}
           style={{ fill: "color-mix(in srgb,var(--wl-text) 36%,transparent)" }} />
         <text x={Cx((p.weeks[0] + p.weeks[1]) / 2)} y={yT - 2} textAnchor="middle" fontSize={7}
-          fontFamily="JetBrains Mono" style={{ fill: "var(--wl-muted)" }}>{p.volRel}</text>
+          style={{ fill: "var(--wl-muted)", fontFamily: "var(--mono)" }}>{p.volRel}</text>
       </g>
     );
   });
 
   const weekLabels = phases.map((p) => (
     <text key={`wk-${p.key}`} x={Cx((p.weeks[0] + p.weeks[1]) / 2)} y={H - 4} textAnchor="middle"
-      fontSize={7.5} fontFamily="JetBrains Mono" style={{ fill: "var(--wl-muted)" }}>{weekRange(p)}</text>
+      fontSize={7.5} style={{ fill: "var(--wl-muted)", fontFamily: "var(--mono)" }}>{weekRange(p)}</text>
   ));
 
   return (
@@ -118,8 +118,8 @@ function PeriodizationChart({ macro }: { macro: Macrocycle }) {
       <line x1={padL} y1={vBase} x2={W - padR} y2={vBase}
         stroke="color-mix(in srgb,var(--wl-text) 14%,transparent)" strokeWidth={1} />
       {weekLabels}
-      <text x={W - padR} y={padT - 4} textAnchor="end" fontSize={7} fontFamily="Chakra Petch"
-        letterSpacing=".1em" style={{ fill: "var(--wl-muted)" }}>%1RM · SEMANAS</text>
+      <text x={W - padR} y={padT - 4} textAnchor="end" fontSize={7}
+        letterSpacing=".1em" style={{ fill: "var(--wl-muted)", fontFamily: "var(--wl-display)" }}>%1RM · SEMANAS</text>
     </svg>
   );
 }

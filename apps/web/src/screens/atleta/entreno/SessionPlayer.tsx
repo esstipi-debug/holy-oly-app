@@ -37,8 +37,8 @@ export function SessionPlayer({
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <span style={{ fontFamily: "var(--ho-mono)", fontSize: 11, color: "var(--wl-muted)" }}>Movimiento {index + 1}/{total}</span>
-        <span style={{ fontFamily: "var(--ho-mono)", fontSize: 12, color: "var(--wl-muted)" }}>{mmss(secs)}</span>
+        <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Movimiento {index + 1}/{total}</span>
+        <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>{mmss(secs)}</span>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, marginTop: 4 }}>
         <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>{row.movementName}</span>

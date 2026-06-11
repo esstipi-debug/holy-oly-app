@@ -104,12 +104,12 @@ export function AuthScreen() {
         )}
 
         {googleError && (
-          <div role="alert" style={{ marginTop: 12, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>
+          <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>
             No se pudo completar el ingreso con Google. Intentá de nuevo.
           </div>
         )}
 
-        {error && <div role="alert" style={{ marginTop: 12, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
+        {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
         {googleEnabled && (
           <>

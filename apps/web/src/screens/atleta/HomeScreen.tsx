@@ -56,10 +56,10 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
   }, [client]);
 
   if (load === "loading") {
-    return <div aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>Cargando…</div>;
+    return <div aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
   }
   if (load === "error" || !plan || !daylog) {
-    return <div role="alert" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--ho-mono)" }}>No se pudo cargar tu inicio. Probá de nuevo más tarde.</div>;
+    return <div role="alert" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>No se pudo cargar tu inicio. Probá de nuevo más tarde.</div>;
   }
 
   // Without an assigned plan there is no date anchor, so there is no honest "estado de hoy"

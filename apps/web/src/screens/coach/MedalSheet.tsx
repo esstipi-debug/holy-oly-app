@@ -86,7 +86,7 @@ export function MedalSheet({
       <div style={{ marginTop: 14, fontFamily: "var(--wl-display)", fontSize: 14, color: "var(--wl-muted)" }}>
         Total <b style={{ color: "var(--wl-text)", fontSize: 18 }}>{total}</b> kg
       </div>
-      {error && <div role="alert" style={{ marginTop: 10, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
+      {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
       <button type="button" onClick={() => void save()} disabled={busy}
         style={{ width: "100%", marginTop: 14, padding: 12, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer",

@@ -44,7 +44,7 @@ export function ResetPasswordScreen() {
         <h1 style={{ margin: 0, fontSize: 20 }}>Nueva contraseña</h1>
         <label style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 12, display: "block" }}>Contraseña (mín. 12)</label>
         <input style={input} type="password" required minLength={12} value={password} onChange={(e) => setPassword(e.target.value)} />
-        {error && <div role="alert" style={{ marginTop: 10, color: "#ff3b46", fontSize: 12 }}>{error}</div>}
+        {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontSize: 12 }}>{error}</div>}
         <button type="submit" disabled={busy} style={{ width: "100%", marginTop: 16, padding: 12, borderRadius: 12, border: 0, background: "var(--wl-accent)", fontWeight: 800, cursor: busy ? "default" : "pointer" }}>
           Guardar
         </button>

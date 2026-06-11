@@ -18,7 +18,7 @@ function CalendarHeatmap({ days, today }: { days: string[]; today: string }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 16px)", gap: 4, justifyContent: "center" }}>
       {DAY_HEADS.map((d, i) => (
-        <span key={`h${i}`} style={{ textAlign: "center", fontFamily: "var(--ho-mono, var(--mono))", fontSize: 8.5, color: "var(--wl-muted)" }}>{d}</span>
+        <span key={`h${i}`} style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 8.5, color: "var(--wl-muted)" }}>{d}</span>
       ))}
       {grid.flatMap((week) => week.map((date) => <div key={date} title={date} style={cell(date)} />))}
     </div>

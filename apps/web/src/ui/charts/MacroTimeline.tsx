@@ -57,7 +57,7 @@ export function MacroTimeline({
         <rect x={x0} y={10} width={Math.max(0, x1 - x0 - 2)} height={20} rx={4}
           style={{ fill: phaseColor(i), opacity: 0.85 }} />
         <text x={(x0 + x1) / 2} y={24} textAnchor="middle" fontSize={8.5} fontWeight={700}
-          style={{ fill: "#0b0b11" }} fontFamily="Chakra Petch">{p.name}</text>
+          style={{ fill: "#0b0b11", fontFamily: "var(--wl-display)" }}>{p.name}</text>
       </g>
     );
   });

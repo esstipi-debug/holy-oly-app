@@ -209,7 +209,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
                     {!r.comp && r.isTaper && <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>taper</span>}
                   </span>
                   <span style={{ flexShrink: 0, fontFamily: "var(--mono)", fontSize: 10.5,
-                    color: r.perWeek > 0 && r.done >= r.perWeek ? "#34d058" : "var(--wl-muted)" }}>
+                    color: r.perWeek > 0 && r.done >= r.perWeek ? "var(--ok)" : "var(--wl-muted)" }}>
                     {r.perWeek > 0 ? `${r.done}/${r.perWeek}` : "—"}
                   </span>
                 </button>

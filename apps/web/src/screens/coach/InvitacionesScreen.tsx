@@ -60,7 +60,7 @@ export function InvitacionesScreen() {
       <Link to="/coach" style={{ ...muted, textDecoration: "none" }}>‹ Plantel</Link>
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 22, marginTop: 8 }}>Invitaciones</div>
 
-      {error && <div role="alert" style={{ ...muted, color: "#ff3b46", marginTop: 10 }}>{error}</div>}
+      {error && <div role="alert" style={{ ...muted, color: "var(--wl-danger)", marginTop: 10 }}>{error}</div>}
       {loading ? (
         <div aria-busy="true" style={{ ...muted, padding: "16px 0" }}>Cargando…</div>
       ) : (

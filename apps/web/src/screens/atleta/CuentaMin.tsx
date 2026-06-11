@@ -51,7 +51,7 @@ function VincularSection() {
             aria-label="Código de invitación"
             style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 18, letterSpacing: ".18em", textAlign: "center" }}
           />
-          {error && <div role="alert" style={{ color: "#ff3b46", fontFamily: "var(--ho-mono)", fontSize: 11, marginTop: 10 }}>{error}</div>}
+          {error && <div role="alert" style={{ color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11, marginTop: 10 }}>{error}</div>}
           <button type="submit" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 12 }} disabled={busy || !code.trim()}>
             {busy ? "..." : "Enviar solicitud"}
           </button>
@@ -94,10 +94,10 @@ export function CuentaMin() {
       <CicloSection />
 
       <div className="ho-acct__group">
-        <button type="button" onClick={() => void logout()} className="wl-btn wl-btn--ghost" style={{ width: "100%", color: "#ff5e5e" }}>Cerrar sesión</button>
+        <button type="button" onClick={() => void logout()} className="wl-btn wl-btn--ghost" style={{ width: "100%", color: "var(--wl-danger)" }}>Cerrar sesión</button>
       </div>
 
-      <div style={{ textAlign: "center", fontFamily: "var(--ho-mono)", fontSize: 9, color: "var(--wl-muted)", margin: "22px 0 4px", letterSpacing: ".04em" }}>
+      <div style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", margin: "22px 0 4px", letterSpacing: ".04em" }}>
         HOLY OLY · smart training · zero burnout
       </div>
     </>

@@ -47,7 +47,7 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
               style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "10px 12px", borderRadius: 11, border: "1px solid color-mix(in srgb,var(--wl-text) 10%,transparent)", background: "var(--wl-bg)", cursor: "pointer" }}>
               <span style={{ width: 9, height: 9, borderRadius: 99, background: dot, flex: "0 0 auto" }} />
               <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14, color: "var(--wl-text)" }}>Día {s.sessionIdx + 1}</span>
-              <span style={{ fontFamily: "var(--ho-mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>{done}/{total} · {state}</span>
+              <span style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>{done}/{total} · {state}</span>
             </button>
           );
         })}

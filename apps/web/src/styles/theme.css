@@ -1,15 +1,20 @@
 /* ============================================================
-   WEIGHTLIFTING CONTROLS — 4 PERSONALITIES
+   WEIGHTLIFTING CONTROLS — 6 PERSONALITIES
    Each personality is a theme scoped under .wl.wl--<name>
-     · plates   → industrial / metallic / olympic plate coding
-     · neon     → electric night-gym, glow + pulse
-     · chalk    → raw brutalist, concrete + chalk, hard shadows
-     · premium  → refined dark glass, soft springs, gold/teal
+     · plates    → industrial / metallic / olympic plate coding
+     · neon      → electric night-gym, glow + pulse
+     · chalk     → raw brutalist, concrete + chalk, hard shadows
+     · premium   → refined dark glass, soft springs, gold/teal
+     · neonlight → Neon Bloom, light sister of neon
+     · legend    → coach: metal/oro/holo, "modo leyenda"
    Components read tokens; signature treatments live per-theme.
    ============================================================ */
 
 /* ---------- fonts ---------- */
 @import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Saira:wght@600;700;800;900&family=Space+Mono:wght@400;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=Chakra+Petch:wght@500;600;700&family=Anton&family=Archivo:wght@500;600;700;800&family=Sora:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap');
+
+/* ---------- tokens globales ---------- */
+:root{ /* Paleta semántica oficial — espejo EXACTO de apps/web/src/ui/status.ts (cambiar ambos a la vez) */ --ok:#1bc98a; --warn:#ffab2e; --alert:#ff3b46; --gold:#E8B23A; --mono:'Space Mono', ui-monospace, monospace; }
 
 /* ---------- base / shared structure ---------- */
 .wl{
@@ -130,6 +135,7 @@
   --wl-accent-2:#2274d4;          /* 20kg blue                   */
   --wl-gold:#f2c12e;              /* 15kg yellow                 */
   --wl-green:#2fa84f;             /* 10kg green                  */
+  --wl-danger:#ff3b46;            /* rojo semántico (= --alert)  */
   --wl-display:'Saira Condensed', sans-serif;
   --wl-body:'Barlow Semi Condensed', sans-serif;
   --wl-radius:9px;
@@ -262,7 +268,7 @@
 .wl--neon .wl-skip:hover{ box-shadow:0 0 18px rgba(31,231,255,.4); }
 .wl--neon .wl-skip:active{ transform:scale(.95); }
 .wl--neon .wl-badge{ font-family:var(--wl-display); font-weight:700; font-size:13px; letter-spacing:.08em; padding:5px 11px; border-radius:4px; display:inline-flex; align-items:center; gap:6px; text-transform:uppercase; }
-.wl--neon .wl-badge--intensity{ color:var(--wl-gold,#ffd23d); color:#0a0410; background:#ffd23d; box-shadow:0 0 16px rgba(255,210,61,.6); }
+.wl--neon .wl-badge--intensity{ color:#0a0410; background:#ffd23d; box-shadow:0 0 16px rgba(255,210,61,.6); }
 .wl--neon .wl-badge--progress{ color:var(--wl-accent); background:transparent; border:1px solid rgba(200,255,45,.4); box-shadow:0 0 12px rgba(200,255,45,.2); }
 .wl--neon .wl-badge--scheme{ color:var(--wl-accent); background:transparent; padding:0; font-size:19px; text-shadow:0 0 12px rgba(200,255,45,.6); }
 .wl--neon .wl-badge--target{ color:var(--wl-accent); background:rgba(200,255,45,.08); border:1px solid rgba(200,255,45,.4); box-shadow:0 0 16px rgba(200,255,45,.18); padding:8px 13px; text-transform:none; }
@@ -284,6 +290,7 @@
   --wl-text:#16130c; --wl-muted:#736d5f;
   --wl-accent:#ff5400;      /* safety orange */
   --wl-accent-2:#2b59ff;    /* chalk blue */
+  --wl-danger:#ff3b46;      /* rojo semántico (= --alert) */
   --wl-ink:#16130c;
   --wl-display:'Anton', sans-serif;
   --wl-body:'Archivo', sans-serif;
@@ -483,6 +490,7 @@
   --wl-text:#EEF2F6; --wl-muted:#6B7480;
   --wl-accent:#E9C46A;      /* oro — identidad legend */
   --wl-accent-2:#2EE6A0;    /* verde-ok como secundario */
+  --wl-danger:#ff3b46;      /* rojo semántico (= --alert) */
   --wl-display:'Saira', sans-serif;
   --wl-cond:'Saira Condensed', sans-serif;
   --wl-body:'Archivo', sans-serif;

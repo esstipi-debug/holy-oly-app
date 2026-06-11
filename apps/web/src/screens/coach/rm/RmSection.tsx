@@ -74,7 +74,7 @@ export function RmSection({ athleteId, plan, today, onRmsChange }: {
         </button>
       </div>
       {error && (
-        <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "#ff3b46", marginTop: 8 }}>
+        <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 8 }}>
           No se pudieron cargar los PRs/historial.{" "}
           <button type="button" onClick={() => void load()}
             style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 10.5, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
@@ -96,7 +96,7 @@ export function RmSection({ athleteId, plan, today, onRmsChange }: {
                   <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)" }}>{RM_LABELS[l]}</div>
                   <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, marginTop: 2 }}>{plan.rms[l]} kg</div>
                   <div title={stale ? STALE_HINT : undefined}
-                    style={{ fontFamily: "var(--mono)", fontSize: 9.5, marginTop: 2, color: stale ? "#eab308" : "var(--wl-muted)" }}>
+                    style={{ fontFamily: "var(--mono)", fontSize: 9.5, marginTop: 2, color: stale ? "var(--warn)" : "var(--wl-muted)" }}>
                     {vigLabel(l)}{stale ? " · re-testear" : ""}
                   </div>
                 </div>

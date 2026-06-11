@@ -50,8 +50,7 @@ function Mini({ arr, base, label, pad, pointState, onPick }: MiniProps) {
         x={14}
         y={7}
         fontSize={7}
-        fontFamily="JetBrains Mono"
-        style={{ fill: "var(--wl-muted)" } as React.CSSProperties}
+        style={{ fill: "var(--wl-muted)", fontFamily: "var(--mono)" } as React.CSSProperties}
       >
         {label}
       </text>

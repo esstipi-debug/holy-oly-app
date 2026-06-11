@@ -5,7 +5,7 @@ import { phaseColor } from "./phasePalette";
 import { heatCellColor, HEAT_STOPS } from "./heatPalette";
 import { dayColumnHeads, dayColumnNames } from "./planDates";
 
-const GOLD = "var(--gold, #e9b365)";
+const GOLD = "var(--gold)";
 // Marca del ciclo: paleta NEUTRA derivada del texto (regla del rulebook — jamás la de estado).
 const CYCLE_NEUTRAL = "color-mix(in srgb, var(--wl-text) 65%, transparent)";
 

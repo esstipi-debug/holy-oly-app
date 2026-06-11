@@ -7,7 +7,7 @@ import { markFor, weekDone } from "../../screens/coach/sessions/sessionLog";
 import type { WeekSignal } from "./weekSignals";
 
 const GLYPH: Record<SessionStatus, string> = { done: "✓", missed: "✗" };
-const TINT: Record<SessionStatus, string> = { done: "#34d058", missed: "#ff5e5e" };
+const TINT: Record<SessionStatus, string> = { done: STATUS.ok, missed: "var(--wl-danger)" };
 function cell(status: SessionStatus | undefined): CSSProperties {
   return {
     width: 26, height: 26, flex: "0 0 auto", borderRadius: 6, cursor: "pointer", padding: 0,

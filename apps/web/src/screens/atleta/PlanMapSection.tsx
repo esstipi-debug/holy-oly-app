@@ -139,7 +139,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
 
   const retryLink = (onClick: () => void) => (
     <button type="button" onClick={onClick}
-      style={{ background: "none", border: "none", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, padding: 0, textDecoration: "underline" }}>
+      style={{ background: "none", border: "none", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11, padding: 0, textDecoration: "underline" }}>
       Reintentar
     </button>
   );
@@ -150,12 +150,12 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
         focus={selPhase.focus} isRest exercises={[]} barKg={barKg} {...(contextLine != null ? { contextLine } : {})} />
     )
     : dayError ? (
-      <div role="alert" style={{ marginTop: 10, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, color: "var(--wl-muted)" }}>
+      <div role="alert" style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
         No se pudo cargar el día. {retryLink(() => setDayError(false))}
       </div>
     )
     : selViews === undefined ? (
-      <div role="status" aria-busy="true" style={{ marginTop: 10, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, color: "var(--wl-muted)" }}>Cargando día…</div>
+      <div role="status" aria-busy="true" style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Cargando día…</div>
     )
     : (
       <PlanDayDetail title={title}
@@ -170,18 +170,18 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
       <div style={{ marginTop: 6 }}><HeatLegend showCycle={cycleMarks != null} /></div>
       {cycleMarks != null && cycleLen != null && (
         // HR-2: el cómo-se-forma de la proyección, visible junto a la señal (no sólo el qué).
-        <div style={{ marginTop: 4, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 9.5, color: "var(--wl-muted)", lineHeight: 1.5 }}>
+        <div style={{ marginTop: 4, fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", lineHeight: 1.5 }}>
           Proyección asumiendo ciclos de {cycleLen} días desde tu última fecha — período = primeros {CYCLE_PERIOD_DAYS} días,
           pre-período = últimos {CYCLE_PRE_DAYS}; se apaga a los {CYCLE_HORIZON_CYCLES} ciclos sin actualizar.
         </div>
       )}
       <div style={{ marginTop: 8 }}>
         {heatError ? (
-          <div role="alert" style={{ fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, color: "var(--wl-muted)" }}>
+          <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
             No se pudo cargar el mapa. {retryLink(() => setHeatError(false))}
           </div>
         ) : heat === null ? (
-          <div role="status" aria-busy="true" style={{ fontFamily: "var(--ho-mono, var(--mono))", fontSize: 11, color: "var(--wl-muted)" }}>Cargando mapa…</div>
+          <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Cargando mapa…</div>
         ) : (
           <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow}
             onSelectDay={selectDay} phaseIndexFor={phaseIdx} comps={comps}
@@ -189,7 +189,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
         )}
       </div>
       {collision != null && (
-        <div role="status" style={{ marginTop: 8, fontFamily: "var(--ho-mono, var(--mono))", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
+        <div role="status" style={{ marginTop: 8, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
           Tu semana más pesada (S{collision.week}) cae en tu ventana {collision.kind === "periodo" ? "de período" : "pre-período"} (proyección).
         </div>
       )}

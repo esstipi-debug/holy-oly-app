@@ -1,6 +1,6 @@
 import { DiscRow } from "../Disc";
 
-const GOLD = "var(--gold, #e9b365)";
+const GOLD = "var(--gold)";
 
 export interface DayDetailExercise { name: string; sets: number; reps: number; pct?: number; kg?: number }
 export type DayEstado = "done" | "missed" | "today" | "pending";

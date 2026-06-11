@@ -159,7 +159,7 @@ export function SuscripcionScreen() {
         </>
       )}
 
-      {error && <div role="alert" style={{ marginTop: 12, color: "#ff3b46", fontSize: 12 }}>{error}</div>}
+      {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontSize: 12 }}>{error}</div>}
 
       <button
         type="button"

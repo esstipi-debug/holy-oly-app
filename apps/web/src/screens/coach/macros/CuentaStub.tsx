@@ -28,7 +28,7 @@ export function CuentaStub() {
       <button
         type="button"
         onClick={() => { void logout(); }}
-        style={{ ...row, width: "100%", textAlign: "left", cursor: "pointer", color: "#ff5e5e" }}
+        style={{ ...row, width: "100%", textAlign: "left", cursor: "pointer", color: "var(--wl-danger)" }}
       >
         Cerrar sesión
       </button>

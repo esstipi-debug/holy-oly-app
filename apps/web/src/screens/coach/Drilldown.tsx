@@ -226,7 +226,7 @@ export function Drilldown() {
             <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Planificación · sesiones</div>
             <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>tocá: · → ✓ → ✗</span>
           </div>
-          {sessionError && <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "#ff3b46", marginTop: 6 }}>No se pudo guardar la sesión. Reintentá.</div>}
+          {sessionError && <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 6 }}>No se pudo guardar la sesión. Reintentá.</div>}
           <div style={{ marginTop: 8 }}>
             <SessionAdherence marks={sessionLog} weeks={maxWeek} perWeek={perWeek} onToggle={(w, i) => void onToggleSession(w, i)} />
           </div>

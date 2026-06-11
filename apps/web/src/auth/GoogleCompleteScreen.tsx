@@ -56,7 +56,7 @@ export function GoogleCompleteScreen() {
         <label style={label}>Nombre</label>
         <input style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" />
 
-        {error && <div role="alert" style={{ marginTop: 12, color: "#ff3b46", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
+        {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
         <button type="submit" disabled={busy} style={{ width: "100%", marginTop: 18, padding: 12, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer",
           background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, opacity: busy ? 0.6 : 1 }}>

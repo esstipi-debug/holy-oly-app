@@ -1,9 +1,10 @@
 import type { CSSProperties } from "react";
 import type { SessionLog, SessionStatus } from "@holy-oly/core";
+import { STATUS } from "../../../ui/status";
 import { markFor, weekDone } from "./sessionLog";
 
 const GLYPH: Record<SessionStatus, string> = { done: "✓", missed: "✗" };
-const TINT: Record<SessionStatus, string> = { done: "#34d058", missed: "#ff5e5e" };
+const TINT: Record<SessionStatus, string> = { done: STATUS.ok, missed: "var(--wl-danger)" };
 
 const row: CSSProperties = { display: "flex", alignItems: "center", gap: 8 };
 const wkLabel: CSSProperties = {
