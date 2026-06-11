@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cycleDayOf, cycleMarkFor, lutealNow, redactCycle } from "./cycle";
+import { cycleDayOf, cycleMarkFor, lutealNow, nextCycleWindow, redactCycle } from "./cycle";
 
 // start 2026-06-01, len 28 → período 1–5 jun · pre-período 24–28 jun · lútea desde día 14 (15 jun).
 const START = "2026-06-01";
@@ -48,6 +48,49 @@ describe("lutealNow", () => {
   });
   it("sin proyección válida → null", () => {
     expect(lutealNow(START, LEN, "2026-05-01")).toBeNull();
+  });
+});
+
+describe("nextCycleWindow", () => {
+  // Ventana 1 con START/LEN: pre = días 23..27 (24–28 jun) · período = días 28..32 (29 jun – 3 jul).
+  const W1 = { preStart: "2026-06-24", preEnd: "2026-06-28", periodStart: "2026-06-29", periodEnd: "2026-07-03" };
+  // Ventana 2: pre = días 51..55 (22–26 jul) · período = días 56..60 (27–31 jul).
+  const W2 = { preStart: "2026-07-22", preEnd: "2026-07-26", periodStart: "2026-07-27", periodEnd: "2026-07-31" };
+
+  it("hoy DENTRO de la ventana (pre o período) → esa misma ventana", () => {
+    expect(nextCycleWindow(START, LEN, "2026-06-25")).toEqual(W1); // día 24, en el pre
+    expect(nextCycleWindow(START, LEN, "2026-07-01")).toEqual(W1); // día 30, en el período
+    expect(nextCycleWindow(START, LEN, "2026-07-03")).toEqual(W1); // día 32, último día del período
+  });
+
+  it("hoy entre ventanas → la próxima que termina ≥ hoy", () => {
+    expect(nextCycleWindow(START, LEN, "2026-06-22")).toEqual(W1); // día 21 (caso Mara)
+    expect(nextCycleWindow(START, LEN, "2026-07-04")).toEqual(W2); // día 33, justo después del período de W1
+  });
+
+  it("hoy en el período registrado (días 0..4) → la PRÓXIMA ventana completa (el pre del registro no se proyecta al pasado)", () => {
+    expect(nextCycleWindow(START, LEN, "2026-06-01")).toEqual(W1); // día 0
+    expect(nextCycleWindow(START, LEN, "2026-06-05")).toEqual(W1); // día 4
+  });
+
+  it("fuera de horizonte → null (la última ventana proyectable termina el día 2·len+4)", () => {
+    expect(nextCycleWindow(START, LEN, "2026-07-31")).toEqual(W2);  // día 60 = última cobertura
+    expect(nextCycleWindow(START, LEN, "2026-08-01")).toBeNull();   // día 61: sin ventana restante
+    expect(nextCycleWindow(START, LEN, "2026-08-24")).toBeNull();   // día 84 = 3·28, horizonte duro
+  });
+
+  it("hoy antes del inicio → null (no proyectar al pasado)", () => {
+    expect(nextCycleWindow(START, LEN, "2026-05-31")).toBeNull();
+  });
+
+  it("largo fuera de 21..45 → null", () => {
+    expect(nextCycleWindow(START, 20, "2026-06-10")).toBeNull();
+    expect(nextCycleWindow(START, 46, "2026-06-10")).toBeNull();
+  });
+
+  it("fecha degenerada → null (disciplina NaN-null: jamás fabricar fechas)", () => {
+    expect(nextCycleWindow("2026-99-99", LEN, "2026-06-10")).toBeNull();
+    expect(nextCycleWindow(START, LEN, "no-fecha")).toBeNull();
   });
 });
 

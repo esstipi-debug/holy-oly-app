@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CycleData, CycleMark, MePlanView, SessionView, WeekHeat } from "@holy-oly/core";
-import { barKgForSexo, cycleMarkFor, dateOfWeek, CYCLE_PERIOD_DAYS, CYCLE_PRE_DAYS, CYCLE_HORIZON_CYCLES } from "@holy-oly/core";
+import { barKgForSexo, cycleMarkFor, dateOfWeek, nextCycleWindow, CYCLE_PERIOD_DAYS, CYCLE_PRE_DAYS, CYCLE_HORIZON_CYCLES } from "@holy-oly/core";
 import type { MeClient } from "../../data/meClient";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../ui/charts/PlanHeatMap";
 import { PlanDayDetail, type DayDetailExercise } from "../../ui/charts/PlanDayDetail";
-import { dayDateLabel, dayOffsetInWeek, weekdayMonFirst } from "../../ui/charts/planDates";
+import { dayDateLabel, dayOffsetInWeek, isoRangeLabel, weekdayMonFirst } from "../../ui/charts/planDates";
 import { phaseColor } from "../../ui/charts/phasePalette";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
@@ -80,6 +80,11 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
   // Proyección elegible SOLO con ciclo regular + datos + fechas del plan (sin startDate no hay verdad).
   const cycleStart = cycle?.state === "regular" ? cycle.lastPeriodStart : undefined;
   const cycleLen = cycle?.state === "regular" ? cycle.cycleLengthDays : undefined;
+  // La próxima ventana es de SU ciclo (no del plan): no exige startDate; null fuera de horizonte.
+  const nextWindow = useMemo(
+    () => (cycleStart != null && cycleLen != null ? nextCycleWindow(cycleStart, cycleLen, today) : null),
+    [cycleStart, cycleLen, today],
+  );
   const cycleMarks = useMemo<ReadonlyMap<string, CycleMark> | undefined>(() => {
     if (cycleStart == null || cycleLen == null || plan.startDate == null || heat == null) return undefined;
     const m = new Map<string, CycleMark>();
@@ -146,7 +151,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
 
   const panel = sel === null || selPhase === undefined ? null : selCell === null
     ? (
-      <PlanDayDetail title={title} phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))}
+      <PlanDayDetail key={`${sel.week}-${sel.day}`} title={title} phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))}
         focus={selPhase.focus} isRest exercises={[]} barKg={barKg} {...(contextLine != null ? { contextLine } : {})} />
     )
     : dayError ? (
@@ -158,7 +163,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
       <div role="status" aria-busy="true" style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Cargando día…</div>
     )
     : (
-      <PlanDayDetail title={title}
+      <PlanDayDetail key={`${sel.week}-${sel.day}`} title={title}
         sub={`Sesión ${sel.day + 1}${den > 0 ? ` de ${den}` : ""}${selCell.topPct != null ? ` · tope ${selCell.topPct}%` : ""}`}
         phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))} focus={selPhase.focus}
         exercises={exercises} barKg={barKg} {...(contextLine != null ? { contextLine } : {})} />
@@ -173,6 +178,12 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
         <div style={{ marginTop: 4, fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", lineHeight: 1.5 }}>
           Proyección asumiendo ciclos de {cycleLen} días desde tu última fecha — período = primeros {CYCLE_PERIOD_DAYS} días,
           pre-período = últimos {CYCLE_PRE_DAYS}; se apaga a los {CYCLE_HORIZON_CYCLES} ciclos sin actualizar.
+        </div>
+      )}
+      {nextWindow != null && (
+        // La línea que el mapa solo no cuenta: aunque HOY no tenga marca, la ventana que viene.
+        <div role="status" style={{ marginTop: 4, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
+          Tu próxima ventana: pre-período {isoRangeLabel(nextWindow.preStart, nextWindow.preEnd)} · período {isoRangeLabel(nextWindow.periodStart, nextWindow.periodEnd)}
         </div>
       )}
       <div style={{ marginTop: 8 }}>

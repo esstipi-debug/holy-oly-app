@@ -106,6 +106,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
   const panel = sel === null || selPhase == null ? null : (isCompDay || selCell === null)
     ? (
       <PlanDayDetail
+        key={`${sel.week}-${sel.day}`}
         title={`${dayDateLabel(startDate, sel.week, sel.day)} · S${sel.week}`}
         phaseName={selPhase.name} phaseTint={phaseColor(phaseIndexFor(sel.week))} focus={selPhase.focus}
         {...(isCompDay ? { compName: selComp!.name } : { isRest: true })}
@@ -126,6 +127,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
     )
     : (
       <PlanDayDetail
+        key={`${sel.week}-${sel.day}`}
         title={`${dayDateLabel(startDate, sel.week, sel.day)} · S${sel.week}`}
         sub={`Sesión ${sel.day + 1} de ${perWeek}${selCell.topPct != null ? ` · tope ${selCell.topPct}%` : ""} · ${selCell.lifts} levant.`}
         phaseName={selPhase.name} phaseTint={phaseColor(phaseIndexFor(sel.week))} focus={selPhase.focus}
@@ -161,7 +163,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
           </div>
 
           {view === "mapa" && (
-            <div style={{ marginTop: 8 }}>
+            <div className="wl-viewfade" style={{ marginTop: 8 }}>
               <HeatLegend />
               <div style={{ marginTop: 8 }}>
                 {heatError ? (
@@ -184,7 +186,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
           )}
 
           {view === "lista" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
+            <div className="wl-viewfade" style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
               {rows.map((r) => (
                 <button key={r.week} type="button" onClick={() => onWeekClick(r.week)}
                   aria-label={`Semana ${r.week} · ${r.range}${r.comp ? ` · 🚩 ${r.comp}` : ""} · ${r.done} de ${r.perWeek} sesiones`}

@@ -36,7 +36,9 @@ export function PlanDayDetail({ title, sub, phaseName, phaseTint, focus, estado,
 }) {
   const est = estado ? ESTADO_LABEL[estado] : undefined;
   return (
-    <div style={{ marginTop: 10, background: "var(--wl-surface)", borderRadius: 12, padding: "12px 12px 10px", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+    // wl-daydetail-in: entrada opacity+translateY (compositor-only, guard reduced-motion en theme.css);
+    // los callers re-montan con key=semana-día para que el cambio de día también la dispare.
+    <div className="wl-daydetail-in" style={{ marginTop: 10, background: "var(--wl-surface)", borderRadius: 12, padding: "12px 12px 10px", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 13.5, color: "var(--wl-text)" }}>{title}</span>
         <span style={{ fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, color: "#0b0b11", background: phaseTint, borderRadius: 5, padding: "2px 7px", whiteSpace: "nowrap" }}>{phaseName}</span>

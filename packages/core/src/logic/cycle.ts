@@ -16,6 +16,7 @@ export const CYCLE_LEN_MAX = 45;
 
 const DAY = 86_400_000;
 const ms = (iso: string): number => new Date(`${iso}T00:00:00Z`).getTime();
+const isoAt = (iso: string, plusDays: number): string => new Date(ms(iso) + plusDays * DAY).toISOString().slice(0, 10);
 
 /** Día 0-based dentro del ciclo para `date`; null si date < inicio, fuera de horizonte, o len inválido. */
 export function cycleDayOf(lastPeriodStart: string, lengthDays: number, date: string): number | null {
@@ -34,6 +35,34 @@ export function cycleMarkFor(lastPeriodStart: string, lengthDays: number, date: 
   if (d == null) return null;
   if (d < CYCLE_PERIOD_DAYS) return "periodo";
   if (d >= lengthDays - CYCLE_PRE_DAYS) return "preperiodo";
+  return null;
+}
+
+/** Ventana proyectada del ciclo: el pre-período del ciclo k y el período que lo sigue (contiguos). */
+export interface CycleWindow { preStart: string; preEnd: string; periodStart: string; periodEnd: string }
+
+/**
+ * La PRÓXIMA ventana (pre + período contiguos) que termina ≥ `today`; null si ya no queda
+ * ninguna dentro del horizonte, si `today` es anterior al inicio, o con datos degenerados
+ * (misma disciplina NaN-null de cycleDayOf). Sólo ventanas COMPLETAS (k ≥ 1): el pre del
+ * período registrado caería antes de lastPeriodStart y eso sería proyectar al pasado —
+ * el mapa tampoco lo marca; estando en el período registrado, la próxima es la del ciclo 1.
+ */
+export function nextCycleWindow(lastPeriodStart: string, lengthDays: number, today: string): CycleWindow | null {
+  if (!Number.isInteger(lengthDays) || lengthDays < CYCLE_LEN_MIN || lengthDays > CYCLE_LEN_MAX) return null;
+  const diff = Math.floor((ms(today) - ms(lastPeriodStart)) / DAY);
+  if (!Number.isFinite(diff)) return null;
+  if (diff < 0 || diff >= lengthDays * CYCLE_HORIZON_CYCLES) return null;
+  for (let k = 1; k < CYCLE_HORIZON_CYCLES; k++) {
+    const periodEndDay = k * lengthDays + CYCLE_PERIOD_DAYS - 1;
+    if (periodEndDay < diff) continue;
+    return {
+      preStart: isoAt(lastPeriodStart, k * lengthDays - CYCLE_PRE_DAYS),
+      preEnd: isoAt(lastPeriodStart, k * lengthDays - 1),
+      periodStart: isoAt(lastPeriodStart, k * lengthDays),
+      periodEnd: isoAt(lastPeriodStart, periodEndDay),
+    };
+  }
   return null;
 }
 

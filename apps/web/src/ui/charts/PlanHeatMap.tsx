@@ -7,7 +7,9 @@ import { dayColumnHeads, dayColumnNames } from "./planDates";
 
 const GOLD = "var(--gold)";
 // Marca del ciclo: paleta NEUTRA derivada del texto (regla del rulebook — jamás la de estado).
-const CYCLE_NEUTRAL = "color-mix(in srgb, var(--wl-text) 65%, transparent)";
+// 85% de mezcla + 7px + halo del fondo: perceptible a un brazo de distancia sin tocar el matiz.
+const CYCLE_NEUTRAL = "color-mix(in srgb, var(--wl-text) 85%, transparent)";
+const CYCLE_DOT = 7;
 
 export interface HeatMapPos { week: number; day: number }
 export interface HeatMapComp { name: string; day?: number }
@@ -73,10 +75,10 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
               + (d ? "" : " · descanso") + (isHoy ? " · HOY" : "") + (isComp ? ` · competencia ${comp!.name}` : "")
               + (cmark === "periodo" ? " · período (proy.)" : cmark === "preperiodo" ? " · pre-período (proy.)" : "");
             return (
-              <button key={`c${w.week}-${day}`} type="button" aria-label={label}
+              <button key={`c${w.week}-${day}`} type="button" aria-label={label} className="wl-heatcell"
                 onClick={() => onSelectDay(w.week, day)}
                 style={{ position: "relative", width: 22, height: 22, padding: 2, margin: 0, border: 0, background: "transparent", cursor: "pointer", boxSizing: "border-box" }}>
-                <span style={{
+                <span className="wl-heatcell__sq" style={{
                   display: "block", width: 18, height: 18, borderRadius: 5, boxSizing: "border-box",
                   border: isComp ? `1.5px solid ${GOLD}` : "none",
                   background: isComp
@@ -85,13 +87,17 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
                       ? heatCellColor(d.topPct, d.lifts, max)
                       : "color-mix(in srgb, var(--wl-text) 5%, transparent)",
                   boxShadow: rings || undefined,
+                  // Realce suave del seleccionado — transform (compositor); la transición vive en CSS.
+                  transform: isSel ? "scale(1.12)" : undefined,
                 }} />
                 {cmark != null && (
+                  // Período = sólido · pre = hueco. Halo del fondo para despegarse del color de la celda.
                   <span aria-hidden style={{
                     position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 0,
-                    width: 5, height: 5, borderRadius: "50%", boxSizing: "border-box",
+                    width: CYCLE_DOT, height: CYCLE_DOT, borderRadius: "50%", boxSizing: "border-box",
                     background: cmark === "periodo" ? CYCLE_NEUTRAL : "var(--wl-bg)",
-                    border: `1.5px solid ${CYCLE_NEUTRAL}`,
+                    border: `2px solid ${CYCLE_NEUTRAL}`,
+                    boxShadow: "0 0 0 1.5px var(--wl-bg)",
                   }} />
                 )}
               </button>
@@ -120,9 +126,9 @@ export const HeatLegend = memo(function HeatLegend({ showCycle = false }: { show
       {showCycle && (
         <>
           <span style={{ width: 6 }} />
-          <span style={{ width: 5, height: 5, borderRadius: "50%", background: CYCLE_NEUTRAL, display: "inline-block" }} />
+          <span style={{ width: CYCLE_DOT, height: CYCLE_DOT, borderRadius: "50%", background: CYCLE_NEUTRAL, border: `2px solid ${CYCLE_NEUTRAL}`, boxSizing: "border-box", display: "inline-block" }} />
           <span>período (proy.)</span>
-          <span style={{ width: 5, height: 5, borderRadius: "50%", border: `1.5px solid ${CYCLE_NEUTRAL}`, boxSizing: "border-box", display: "inline-block" }} />
+          <span style={{ width: CYCLE_DOT, height: CYCLE_DOT, borderRadius: "50%", border: `2px solid ${CYCLE_NEUTRAL}`, boxSizing: "border-box", display: "inline-block" }} />
           <span>pre-período</span>
         </>
       )}

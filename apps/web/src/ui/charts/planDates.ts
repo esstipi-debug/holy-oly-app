@@ -22,6 +22,15 @@ export function isoDateLabel(iso: string): string {
   return `${d.getUTCDate()} ${MES[d.getUTCMonth()]!}`;
 }
 
+/** "13–17 jun" (mismo mes) o "29 jun – 3 jul" — rango corto es-CL entre dos ISO. */
+export function isoRangeLabel(a: string, b: string): string {
+  const da = new Date(`${a}T00:00:00Z`);
+  const db = new Date(`${b}T00:00:00Z`);
+  return da.getUTCMonth() === db.getUTCMonth() && da.getUTCFullYear() === db.getUTCFullYear()
+    ? `${da.getUTCDate()}–${isoDateLabel(b)}`
+    : `${isoDateLabel(a)} – ${isoDateLabel(b)}`;
+}
+
 const DOW_SHORT = ["L", "M", "X", "J", "V", "S", "D"];
 
 /** Offset 0..6 de una fecha dentro de la semana `week` del macro; null si cae fuera de ella.

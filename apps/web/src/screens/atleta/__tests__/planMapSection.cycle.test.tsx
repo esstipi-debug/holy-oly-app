@@ -52,12 +52,26 @@ test("día marcado seleccionado → línea de contexto (proyección, no regla)",
   expect(await screen.findByText(/\(proyección según tu registro\) — contexto, no regla/i)).toBeInTheDocument();
 });
 
+test("regular + datos → línea «Tu próxima ventana» con ambas mitades (pre-período · período)", async () => {
+  render(<PlanMapSection plan={PLAN} client={client(CYCLE_OK)} sexo="F" />);
+  const line = await screen.findByText(/Tu próxima ventana: pre-período .+ · período .+/i);
+  expect(line).toBeInTheDocument();
+});
+
+test("sin registro (sin fechas) → SIN línea de próxima ventana ni marcas (opt-in: nada aparece)", async () => {
+  render(<PlanMapSection plan={PLAN} client={client({ share: "none", state: "regular" })} sexo="F" />);
+  await waitFor(() => expect(screen.getAllByRole("button").length).toBeGreaterThan(20));
+  expect(screen.queryByText(/Tu próxima ventana/i)).toBeNull();
+  expect(screen.queryByRole("button", { name: /período \(proy\.\)/i })).toBeNull();
+});
+
 test("ciclo irregular → SIN marcas ni leyenda (proyectar sería precisión falsa)", async () => {
   render(<PlanMapSection plan={PLAN} client={client({ ...CYCLE_OK, state: "unreliable" })} sexo="F" />);
   // El mapa carga (celdas comunes presentes) pero ninguna con ventana.
   await waitFor(() => expect(screen.getAllByRole("button").length).toBeGreaterThan(20));
   expect(screen.queryByRole("button", { name: /período \(proy\.\)/i })).toBeNull();
   expect(screen.queryByText("período (proy.)")).toBeNull();
+  expect(screen.queryByText(/Tu próxima ventana/i)).toBeNull();
 });
 
 test("sin startDate → sin overlay (sin fechas no hay verdad)", async () => {

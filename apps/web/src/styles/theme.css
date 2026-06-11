@@ -122,6 +122,21 @@
 .wl-seg__bar{ flex:1 1 0; height:7px; border-radius:99px; background:rgba(255,255,255,.1); padding:0; cursor:pointer; transition:background .25s var(--ease-out), box-shadow .25s; }
 .wl--chalk .wl-seg__bar{ background:rgba(22,19,12,.12); border-radius:0; height:9px; }
 
+/* ---- plan heat map / day detail: fluidez (SOLO transform/opacity — compositor) ---- */
+.wl-heatcell{ -webkit-tap-highlight-color:transparent; transition:transform 120ms var(--ease-out, ease-out); }
+.wl-heatcell:active{ transform:scale(.92); }
+.wl-heatcell__sq{ transition:transform 150ms var(--ease-out, ease-out), box-shadow 150ms var(--ease-out, ease-out); }
+@keyframes wlDayDetailIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+.wl-daydetail-in{ animation:wlDayDetailIn 180ms var(--ease-out, ease-out) backwards; }
+@keyframes wlViewFadeIn{ from{ opacity:0; } to{ opacity:1; } }
+/* min-height: el contenido del toggle Mapa↔Lista carga lazy — reserva contra el salto de layout. */
+.wl-viewfade{ animation:wlViewFadeIn 150ms ease-out backwards; min-height:120px; }
+@media (prefers-reduced-motion: reduce){
+  .wl-heatcell, .wl-heatcell__sq{ transition:none; }
+  .wl-heatcell:active{ transform:none; }
+  .wl-daydetail-in, .wl-viewfade{ animation:none; }
+}
+
 /* demo cell scaffolding (used in the canvas detail artboards) */
 .wl-cell{ padding:22px; display:flex; flex-direction:column; gap:18px; min-height:100%; background:var(--wl-bg); }
 .wl-cell__title{ font-family:var(--wl-display); font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--wl-muted); margin:0; }
