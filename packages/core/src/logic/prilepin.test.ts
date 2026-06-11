@@ -1,6 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { PHASE_PROFILE, PRILEPIN, phasePlan } from "./prilepin";
+import { PHASE_PROFILE, PRILEPIN, phasePlan, wavePhase } from "./prilepin";
 import type { EnginePhase } from "../types";
+
+describe("wavePhase (ola continua, mini-pico en semana 5)", () => {
+  it("semanas 1..6", () => {
+    expect([1, 2, 3, 4, 5, 6].map(wavePhase)).toEqual([
+      "accumulation", "accumulation", "intensification", "intensification", "peak", "deload",
+    ]);
+  });
+  it("cicla indefinidamente", () => {
+    expect(wavePhase(7)).toBe("accumulation");
+    expect(wavePhase(11)).toBe("peak");
+    expect(wavePhase(12)).toBe("deload");
+    expect(wavePhase(13)).toBe("accumulation");
+  });
+  it("inválida → null (jamás fabricar fase desde NaN)", () => {
+    expect(wavePhase(0)).toBeNull();
+    expect(wavePhase(-3)).toBeNull();
+    expect(wavePhase(1.5)).toBeNull();
+    expect(wavePhase(NaN)).toBeNull();
+  });
+});
 
 describe("phasePlan", () => {
   it("3 semanas: intensificación → pico → semana de compe (sin reiniciar)", () => {

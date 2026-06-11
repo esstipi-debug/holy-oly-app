@@ -25,6 +25,16 @@ export const PHASE_PROFILE: Record<EnginePhase, {
   deload: { taperFactor: 0.5, zoneMix: { "70-80": 0.8, "80-90": 0.2, "90+": 0 }, topPct: 80, label: "Descarga" },
 };
 
+const WAVE: readonly EnginePhase[] = [
+  "accumulation", "accumulation", "intensification", "intensification", "peak", "deload",
+];
+
+/** Fase de la ola sin compe (1-based, cicla). `peak` en semana 5 = mini-pico (test opcional). */
+export function wavePhase(waveWeek: number): EnginePhase | null {
+  if (!Number.isInteger(waveWeek) || waveWeek < 1) return null;
+  return WAVE[(waveWeek - 1) % WAVE.length]!;
+}
+
 /** Semanas restantes → fase de CADA semana hasta la compe. Inválido → [] (sin plan honesto). */
 export function phasePlan(weeksToComp: number): EnginePhase[] {
   if (!Number.isInteger(weeksToComp) || weeksToComp < 0) return [];
