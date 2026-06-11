@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PHASE_PROFILE, PRILEPIN, generateWeek, phasePlan, wavePhase } from "./prilepin";
+import { PHASE_PROFILE, PRILEPIN, athleteWeekView, generateWeek, phasePlan, wavePhase } from "./prilepin";
 import type { EngineInput, EnginePhase } from "../types";
 
 const base = (over: Partial<EngineInput> = {}): EngineInput => ({
@@ -36,6 +36,21 @@ describe("generateWeek — intensificación a 3 semanas (caso canónico del owne
     expect(w.taper.final).toBeCloseTo(0.8, 9);
     expect(w.inputs).toEqual({ acwr: 1.1, readiness: "green" });
     expect(w.heavySinglesAdvisory).toBe(false);
+  });
+});
+
+describe("generateWeek — countdown fijado al anclar (D13, HIGH de El Carnicero)", () => {
+  it("la secuencia VIVIDA (weekIdx 0..n−1) ES el array: el taper no reaparece en n=3", () => {
+    const lived3 = [0, 1, 2].map((i) => generateWeek(base({ weekIdx: i }))!.phase);
+    expect(lived3).toEqual(["intensification", "peak", "comp_week"]);
+    const lived5 = [0, 1, 2, 3, 4].map((i) => generateWeek(base({ weeksToComp: 5, weekIdx: i }))!.phase);
+    expect(lived5).toEqual(phasePlan(5));
+  });
+  it("weekIdx fuera del countdown o degenerado → null honesto", () => {
+    expect(generateWeek(base({ weekIdx: 3 }))).toBeNull(); // countdown de 3: idx máx 2
+    expect(generateWeek(base({ weekIdx: -1 }))).toBeNull();
+    expect(generateWeek(base({ weekIdx: 1.5 }))).toBeNull();
+    expect(generateWeek(base({ weekIdx: NaN }))).toBeNull();
   });
 });
 
@@ -79,18 +94,28 @@ describe("generateWeek — readiness modula el día (criterio 5)", () => {
 });
 
 describe("generateWeek — % y kg (D4 + D6)", () => {
-  it("comp_week: el set más pesado va a 95, jamás 100 (aperturas)", () => {
-    const w = generateWeek(base({ weeksToComp: 0 }))!;
+  it("comp_week (n=1): el set más pesado va a 95, jamás 100 (aperturas)", () => {
+    const w = generateWeek(base({ weeksToComp: 1 }))!;
+    expect(w.phase).toBe("comp_week");
     expect(Math.max(...w.sets.map((s) => s.pct))).toBe(95);
     expect(w.sets).toEqual([
       { sets: 1, reps: 2, pct: 85, weightKg: 85, zone: "80-90" },
       { sets: 1, reps: 1, pct: 95, weightKg: 95, zone: "90+" },
     ]);
   });
-  it("taper (n=1): top 90+ también capado a 95", () => {
-    const w = generateWeek(base({ weeksToComp: 1 }))!;
+  it("taper (n=4, weekIdx 2): top 90+ también capado a 95", () => {
+    const w = generateWeek(base({ weeksToComp: 4, weekIdx: 2 }))!;
     expect(w.phase).toBe("taper");
     expect(Math.max(...w.sets.map((s) => s.pct))).toBe(95);
+  });
+  it("propiedad: ningún set prescrito supera 95% en ninguna fase (el 100 jamás se programa)", () => {
+    const cases = [];
+    for (let idx = 0; idx < 6; idx++)
+      for (const lift of ["arranque", "sentadilla"] as const)
+        cases.push(base({ weeksToComp: 6, weekIdx: idx, lift, recentACWR: null, readiness: null }));
+    for (let wv = 1; wv <= 6; wv++) cases.push(base({ weeksToComp: null, waveWeek: wv }));
+    for (const c of cases)
+      for (const s of generateWeek(c)!.sets) expect(s.pct).toBeLessThanOrEqual(95);
   });
   it("deload por ola: topPct 80 capa a la zona top 80-90", () => {
     const w = generateWeek(base({ weeksToComp: null, waveWeek: 6, lift: "sentadilla" }))!;
@@ -114,8 +139,8 @@ describe("generateWeek — clásicos vs sentadilla (criterio 8)", () => {
     expect(cl.sets.find((s) => s.zone === "70-80")!.reps).toBe(2);
     expect(sq.sets.find((s) => s.zone === "70-80")!.reps).toBe(3);
   });
-  it("ola sin waveWeek → default semana 1 (acumulación); semana 5 → mini-pico", () => {
-    expect(generateWeek(base({ weeksToComp: null }))!.phase).toBe("accumulation");
+  it("ola sin waveWeek → null honesto (la posición en la ola es estado, no un default); semana 5 → mini-pico", () => {
+    expect(generateWeek(base({ weeksToComp: null }))).toBeNull();
     expect(generateWeek(base({ weeksToComp: null, waveWeek: 5 }))!.phase).toBe("peak");
   });
   it("envión es clásico (2 reps/set en 70-80); frente es sentadilla frontal → tabla (3)", () => {
@@ -136,7 +161,8 @@ describe("generateWeek — sin-dato honesto, jamás inventar (D7 / lección NaN 
     expect(generateWeek(base({ rmKg: -50 }))).toBeNull();
     expect(generateWeek(base({ rmKg: NaN }))).toBeNull();
   });
-  it("compe en el pasado / semanas degeneradas → null", () => {
+  it("compe pasada / semanas degeneradas → null", () => {
+    expect(generateWeek(base({ weeksToComp: 0 }))).toBeNull();
     expect(generateWeek(base({ weeksToComp: -1 }))).toBeNull();
     expect(generateWeek(base({ weeksToComp: NaN }))).toBeNull();
     expect(generateWeek(base({ weeksToComp: 2.5 }))).toBeNull();
@@ -156,6 +182,17 @@ describe("regla intocable: cero RPE en el shape (D1)", () => {
   it("el JSON serializado no contiene ninguna key rpe", () => {
     const w = generateWeek(base())!;
     expect(JSON.stringify(w).toLowerCase()).not.toContain("rpe");
+  });
+});
+
+describe("athleteWeekView — redacción HR-1 en core (patrón redactCycle, D12)", () => {
+  it("SOLO phase/label/rationale/sets — sin audits, sin factores, sin ACWR crudo", () => {
+    const view = athleteWeekView(generateWeek(base())!);
+    expect(Object.keys(view).sort()).toEqual(["label", "phase", "rationale", "sets"]);
+    const json = JSON.stringify(view).toLowerCase();
+    expect(json).not.toContain("acwr");
+    expect(json).not.toContain("audit");
+    expect(json).not.toContain("advisory");
   });
 });
 
@@ -183,11 +220,17 @@ describe("phasePlan", () => {
   it("3 semanas: intensificación → pico → semana de compe (sin reiniciar)", () => {
     expect(phasePlan(3)).toEqual(["intensification", "peak", "comp_week"]);
   });
-  it("casos cortos exactos", () => {
-    expect(phasePlan(0)).toEqual(["comp_week"]);
-    expect(phasePlan(1)).toEqual(["taper"]);
+  it("casos cortos exactos (la compe SIEMPRE es la última semana)", () => {
+    expect(phasePlan(1)).toEqual(["comp_week"]);
     expect(phasePlan(2)).toEqual(["peak", "comp_week"]);
     expect(phasePlan(4)).toEqual(["intensification", "peak", "taper", "comp_week"]);
+  });
+  it("comp_week es la última semana y aparece exactamente una vez (n=1..12)", () => {
+    for (let n = 1; n <= 12; n++) {
+      const plan = phasePlan(n);
+      expect(plan[plan.length - 1]).toBe("comp_week");
+      expect(plan.filter((p) => p === "comp_week")).toHaveLength(1);
+    }
   });
   it("n=7 (el hueco del bundle): 3 acumulaciones + las 4 finales, largo 7", () => {
     expect(phasePlan(7)).toEqual([
@@ -198,7 +241,8 @@ describe("phasePlan", () => {
   it("largo = n para n=1..12", () => {
     for (let n = 1; n <= 12; n++) expect(phasePlan(n)).toHaveLength(n);
   });
-  it("inválido → [] honesto (negativo, no-entero, NaN, Infinity)", () => {
+  it("inválido o sin semanas → [] honesto (0 = compe pasada, negativo, no-entero, NaN, Infinity)", () => {
+    expect(phasePlan(0)).toEqual([]);
     expect(phasePlan(-1)).toEqual([]);
     expect(phasePlan(2.5)).toEqual([]);
     expect(phasePlan(NaN)).toEqual([]);

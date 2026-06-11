@@ -38,11 +38,12 @@ export type IntensityZone = "70-80" | "80-90" | "90+";
 export type ReadinessBand = "green" | "amber" | "red";
 
 export interface EngineInput {
-  weeksToComp: number | null;     // null = sin compe → ola continua
+  weeksToComp: number | null;     // largo del countdown FIJADO AL ANCLAR (la compe = última semana); null = ola
+  weekIdx?: number;               // semana del countdown a generar (0-based, default 0) — D13
   lift: RmLift;                   // arranque | envion | sentadilla | frente (house, no enum paralelo)
   rmKg: number;                   // RM vigente del lift (SP5; el coach lo fija — acá jamás se estima)
   recentACWR: number | null;      // de monitor.ts; null = sin dato (sin ajuste, jamás inventar)
-  waveWeek?: number;              // 1-based, posición en la ola si weeksToComp === null (default 1)
+  waveWeek?: number;              // 1-based, posición en la ola si weeksToComp === null — SIN default (D13b)
   readiness?: ReadinessBand | null; // banda sobre readiness.ts 0-100; null/ausente = sin dato
 }
 
@@ -72,9 +73,13 @@ export interface EngineWeek {
   heavySinglesAdvisory: boolean;  // readiness red + zona 90+ presente → "mover los singles a otro día"
 }
 
+/** Cara del atleta (redacción EN CORE, patrón redactCycle — D12): solo phase/label/rationale/sets. */
+export interface EngineWeekAthleteView { phase: EnginePhase; label: string; rationale: string; sets: EngineSet[]; }
+
 export function generateWeek(input: EngineInput): EngineWeek | null;
 export function phasePlan(weeksToComp: number): EnginePhase[];
 export function wavePhase(waveWeek: number): EnginePhase | null;
+export function athleteWeekView(week: EngineWeek): EngineWeekAthleteView;
 // + en readiness.ts (aditivo): export function readinessBand(score: number | undefined): ReadinessBand | null;
 ```
 
@@ -111,28 +116,38 @@ cansancio sin perder fuerza" · comp_week = "solo aperturas: disipar fatiga para
 deload = "acá es donde el cuerpo se vuelve más fuerte". Texto final en el código (constante por
 fase); sin emojis (regla emoji=contenido).
 
-## 4. `phasePlan(weeksToComp)` — semanas restantes → fases
+## 4. `phasePlan(weeksToComp)` — el countdown FIJADO AL ANCLAR (D13)
 
-- `n ≥ 5` → `(n−4) × accumulation` + `[intensification, peak, taper, comp_week]` (cubre el hueco
-  del bundle en n=7, que devolvía 6 fases).
-- `n = 4` → `[intensification, peak, taper, comp_week]`
-- `n = 3` → `[intensification, peak, comp_week]` (el caso explícito del owner: sin taper aparte,
-  sin reiniciar nada)
-- `n = 2` → `[peak, comp_week]` · `n = 1` → `[taper]` · `n = 0` → `[comp_week]`
-- `n < 0` o no-entero o no-finito → `[]` (compe en el pasado / input degenerado → sin plan;
-  `generateWeek` devuelve `null`).
+**Semántica (corregida por el HIGH de El Carnicero):** `n` = largo del countdown en semanas,
+**fijado al anclar la compe**; la semana de la compe es **siempre la última** (`weekIdx = n−1`).
+La semana vivida `i` es `phasePlan(n)[i]` — **JAMÁS re-derivar `[0]` con un weeksToComp
+recomputado semana a semana**: la compresión depende del largo TOTAL (n=3 salta el taper, n≥4
+no), así que una función pura de la distancia sola produce una secuencia vivida distinta del
+array (y el caso del owner perdía su forma en vivo). Re-anclar/mover la compe recomputa el
+countdown entero (mismo patrón que `anchorPlanToComp`).
+
+- `n ≥ 4` → `(n−4) × accumulation` + `[intensification, peak, taper, comp_week]` (cubre el
+  hueco del bundle en n=7).
+- `n = 3` → `[intensification, peak, comp_week]` (el caso explícito del owner: sin taper aparte
+  — la disipación vive en comp_week, taperFactor 0.25)
+- `n = 2` → `[peak, comp_week]` · `n = 1` → `[comp_week]` (la compe es esta misma semana)
+- `n < 1` o no-entero o no-finito → `[]` (compe pasada / input degenerado → sin plan;
+  `generateWeek` devuelve `null`). Invariantes testeadas: largo = n; comp_week última y única.
 
 ## 5. `wavePhase(waveWeek)` — ola continua de 6 semanas
 
 `[accumulation, accumulation, intensification, intensification, peak, deload]`, 1-based, cicla
-indefinidamente (`((w−1) mod 6 + 6) mod 6`). El `peak` de la semana 5 es el **mini-pico** (la spec
-[4] §3.1: single/test *opcional* — la obligatoriedad es decisión abierta del owner, no de core).
+indefinidamente. El `peak` de la semana 5 es el **mini-pico** (la spec [4] §3.1: single/test
+*opcional* — la obligatoriedad es decisión abierta del owner, no de core).
 `waveWeek` no-entero, < 1 o no-finito → `null` (jamás fabricar una fase desde NaN).
+**Sin default (D13b):** la posición en la ola es ESTADO del cableado; `waveWeek` ausente con
+`weeksToComp === null` → `generateWeek` devuelve `null` honesto — el default 1 del bundle
+fabricaba la semana de MÁS volumen desde un dato faltante (hallazgo de El Carnicero).
 
 ## 6. `generateWeek` — los 4 pasos
 
-1. **Fase**: `weeksToComp !== null` → `phasePlan(weeksToComp)[0]` (vacío → null); si no →
-   `wavePhase(waveWeek ?? 1)` (null → null).
+1. **Fase**: `weeksToComp !== null` → `phasePlan(weeksToComp)[weekIdx ?? 0]` (fuera de rango o
+   weekIdx degenerado → null); si no → `waveWeek` ausente → null, presente → `wavePhase(waveWeek)`.
 2. **Ajuste ACWR** (banda de la casa, no la del bundle — D3): `> 1.3 → ×0.9` · `< 0.8 → ×1.1` ·
    en banda o `null`/no-finito → ×1.0.
 3. **Ajuste readiness**: `amber → ×0.9` · `red → ×0.75` + `heavySinglesAdvisory` si hay zona 90+ ·
@@ -174,6 +189,10 @@ indefinidamente (`((w−1) mod 6 + 6) mod 6`). El `peak` de la semana 5 es el **
 - **D9 · Bandas readiness = cortes de la casa.** `readinessBand` (aditivo en `readiness.ts`):
   `≥80 green · 70-79 amber · <70 red · sin dato → null` — espejo de `recoveryState`
   (`monitor.ts:67`, misma escala 0-100). El semáforo EXISTENTE (worse-of) no se toca.
+  **Enmienda (El Carnicero):** como `readiness` ya penaliza ACWR fuera de banda (hasta −20),
+  un ACWR muy alto puede pegar DOS veces (factor estructural ×0.9 + banda amber/red del día) —
+  **deliberado y conservador**: venir cargado y venir poco recuperado son dos razones distintas
+  para bajar volumen. Candidato explícito a la calibración con coaches piloto (§7.1 reconc.).
 - **D10 · `withinRange` puede ser `false` y está bien.** En zonas secundarias el mix chico queda
   bajo el rango Prilepin — el audit lo dice honesto; la UI del peek (cableado) lo fraseará. No se
   "arregla" inflando reps.
@@ -181,14 +200,30 @@ indefinidamente (`((w−1) mod 6 + 6) mod 6`). El `peak` de la semana 5 es el **
   sus propias fórmulas (p.ej. 5 singles 90+ en pico con taper 0.55×0.4 ≈ 1). El contrato son los
   criterios de §8 + estas decisiones; El Carnicero juzga la cordura de dominio de las salidas
   reales.
-- **D12 · HR-1 en el shape.** `sets[]` (kg incluidos) es la cara del atleta; `audits`/`taper`/
-  `inputs` son material de coach/peek. El cableado NO debe poner el audit (ACWR, factores) en
-  superficie de atleta; se deja dicho acá para ese slice.
+- **D12 · HR-1 en el shape, con redactor EN CORE.** `sets[]` (kg incluidos) es la cara del
+  atleta; `audits`/`taper`/`inputs` (incluye el ACWR crudo — número gameable) son material de
+  coach/peek. **Enmienda (El Carnicero):** declararlo no basta — el precedente del ciclo es
+  redacción en core (`redactCycle`), una sola fuente. Por eso `athleteWeekView(week)` vive YA
+  en `prilepin.ts` y el cableado consume ESO para el atleta, no filtra por su cuenta.
+- **D13 · Countdown fijado al anclar (fix del HIGH de El Carnicero).** `phasePlan(n)` y la
+  secuencia vivida eran inconsistentes si el caller re-derivaba `[0]` semanalmente (el taper
+  reaparecía en el caso n=3 del owner). Contrato nuevo: `n` se fija AL ANCLAR la compe,
+  comp_week es siempre la última semana, y la semana vivida es `phasePlan(n)[weekIdx]`.
+  **D13b:** `waveWeek` sin default — ausente → null honesto (el default 1 fabricaba la semana
+  de más volumen desde dato faltante).
+- **D14 · Unidad = SESIÓN, no semana (El Carnicero).** La tabla Prilepin es una heurística POR
+  SESIÓN; `EngineWeek` es la dosis del lift para su sesión PRINCIPAL de la semana, y
+  `withinRange` se lee contra esa unidad. El reparto multi-sesión (p.ej. ruso-5d entrena un
+  lift 2-3×/sem) es del slice de cableado/peaking — si los audits llegan a superficie con la
+  unidad sin resolver allá, es HIGH por HR-2.
 
 ## 8. Criterios de aceptación (TDD — los 9 del bundle, adaptados, + los de la casa)
 
-1. `phasePlan(n)` correcto para n = 0..12 (largo = n para n ≥ 1; n=7 → 3·acc + 4 finales;
-   n=3 → `[intensification, peak, comp_week]`); n inválido (<0, no-entero, NaN) → `[]`.
+1. `phasePlan(n)` correcto para n = 0..12 (largo = n; comp_week última y única; n=7 → 3·acc +
+   4 finales; n=3 → `[intensification, peak, comp_week]`); n inválido (<1, no-entero, NaN) → `[]`.
+   La secuencia VIVIDA (`generateWeek` con weekIdx 0..n−1) ES el array — el taper no reaparece
+   en n=3; weekIdx fuera de rango/degenerado → null. Ningún set de ninguna fase supera 95%
+   (test de propiedad). `athleteWeekView` expone SOLO phase/label/rationale/sets.
 2. Con 3 semanas: intensificación → pico → semana de compe, sin reiniciar (el motor sólo lee
    `weeksToComp`).
 3. `PHASE_PROFILE`: `taperFactor` estrictamente decreciente y `topPct` no-decreciente a lo largo
@@ -213,5 +248,13 @@ indefinidamente (`((w−1) mod 6 + 6) mod 6`). El `peak` de la semana 5 es el **
 
 El consumidor natural es el slice **readiness→modulación** (el ajuste del paso 3 por día con
 explicación visible) y luego **peaking** (que concilia `phasePlan` con `volumeCurve` y la
-`Competencia`; `weeksToComp` saldrá de `Competencia.date` − hoy vía `schedule.ts` — verdad anclada
-a fecha, §2b). El `rationale`/`audits` alimentan el peek de app-viva ("¿por qué esta semana?").
+`Competencia`). Obligaciones del cableado que esta spec deja fijadas:
+- El countdown (`weeksToComp` + `weekIdx`) se computa **UNA vez al anclar/re-anclar** la compe
+  desde `Competencia.date` vía `schedule.ts` (verdad anclada a fecha, §2b) — jamás re-derivar
+  semana a semana (D13).
+- `waveWeek` se **persiste** como estado del plan en modo ola — el motor no acepta ausencia.
+- El atleta consume `athleteWeekView`; los `audits`/`taper`/`inputs` van SOLO al peek del coach
+  (D12). El fraseo del "por qué null" (sin RM vigente ≠ compe pasada) lo resuelve el cableado
+  pre-validando inputs.
+- Resolver la unidad sesión-vs-semana del reparto (D14) ANTES de poner `withinRange` en
+  superficie. El `rationale`/`audits` alimentan el peek de app-viva ("¿por qué esta semana?").

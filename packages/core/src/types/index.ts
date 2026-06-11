@@ -271,15 +271,20 @@ export type IntensityZone = "70-80" | "80-90" | "90+";
 export type ReadinessBand = "green" | "amber" | "red";
 
 export interface EngineInput {
-  /** null = sin competencia → ola continua. */
+  /** Largo del countdown a la compe FIJADO AL ANCLAR (la compe es la última semana);
+   *  null = sin competencia → ola continua. Jamás re-derivarlo semana a semana (D13). */
   weeksToComp: number | null;
+  /** Semana del countdown a generar (0-based; default 0). La secuencia vivida es
+   *  phasePlan(weeksToComp)[weekIdx] por construcción. Ignorado en modo ola. */
+  weekIdx?: number;
   /** Lift del RM de la casa (D2) — no el enum del bundle. */
   lift: RmLift;
   /** RM vigente del lift en kg (SP5). Acá jamás se estima. */
   rmKg: number;
   /** ACWR reciente de monitor.ts; null = sin dato → sin ajuste, jamás inventar (D7). */
   recentACWR: number | null;
-  /** Posición 1-based en la ola si weeksToComp === null (default 1). */
+  /** Posición 1-based en la ola si weeksToComp === null. SIN default: la posición en la ola
+   *  es estado del cableado; ausente → null honesto (jamás fabricar la semana más pesada). */
   waveWeek?: number;
   /** Banda del día (readinessBand); null/ausente = sin dato. */
   readiness?: ReadinessBand | null;
@@ -289,6 +294,9 @@ export interface EngineSet { sets: number; reps: number; pct: number; weightKg: 
 
 export interface EngineZoneAudit { zone: IntensityZone; optimalReps: number; prescribedReps: number; withinRange: boolean; }
 
+/** La dosis del motor es POR SESIÓN — la sesión principal del lift en la semana (la tabla
+ *  Prilepin es por sesión; `withinRange` se lee contra ESA unidad). El reparto multi-sesión
+ *  es del cableado (D14). */
 export interface EngineWeek {
   phase: EnginePhase;
   label: string;
@@ -302,4 +310,10 @@ export interface EngineWeek {
   inputs: { acwr: number | null; readiness: ReadinessBand | null };
   /** readiness red + zona 90+ presente → el cableado sugiere mover los singles, no borrarlos. */
   heavySinglesAdvisory: boolean;
+}
+
+/** Cara del atleta del motor (redacción en core, patrón redactCycle — D12/HR-1): SOLO
+ *  fase/label/rationale/sets. Sin audits, sin factores, sin ACWR crudo (número gameable). */
+export interface EngineWeekAthleteView {
+  phase: EnginePhase; label: string; rationale: string; sets: EngineSet[];
 }

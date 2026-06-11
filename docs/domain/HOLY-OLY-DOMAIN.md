@@ -69,6 +69,7 @@ Valores **verificados contra `packages/core/src/logic/`**. Si el código cambió
 - Motor: para cada semana `w` y comp en semana `c.week`, **`d = c.week − w`**; taper si `d ∈ [0,3]` con caps de volumen **d≤1→26, d≤2→40, d≤3→56**; tras la última comp, semanas a **~55%**. `restructure.ts:8`.
 - **Semana de taper** = `c.week−2 .. c.week`. `restructure.ts:30`.
 - *Por qué:* se baja volumen para **picar** en la competencia. **1 comp → adelanta** la bajada; **varias comps → se repite** el taper antes de cada una. **MUST** resaltarse el segmento reestructurado en el timeline (🚩 por comp).
+- ⚠️ **Motor Prilepin (dormant, 2026-06-10):** existe `prilepin.ts` (`PHASE_PROFILE`/`phasePlan`/`generateWeek`) **sin consumidores**. Su `taperFactor` (1.0→0.25) es la dosis de sets del motor, **NO reemplaza** la curva de volumen de `restructure.ts` (los caps 56/40/26 siguen siendo LA verdad del taper instanciado); `EnginePhase` ≠ las fases del catálogo (`phaseProfile.imrPct` del IMR-vs-fase). La conciliación motor↔`volumeCurve` es del slice **peaking**. La cara de atleta del motor es `athleteWeekView` (redacción en core; los audits/ACWR son coach-only, HR-1). Spec: `2026-06-10-motor-prilepin-design.md` (D1–D14).
 
 ### 1RM, discos y verdad del kg
 - **El kg es la verdad; los discos son aproximados.** Sólo existen discos **10/15/20/25** (colores IWF: 10 verde, 15 amarillo, 20 azul, 25 rojo). `discs.ts:1`.

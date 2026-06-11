@@ -5,7 +5,8 @@
  * del rulebook) y pasa el RM vigente (SP5). Sin RPE en ningún shape; sin ciclo como input.
  */
 import type {
-  EngineInput, EnginePhase, EngineSet, EngineWeek, EngineZoneAudit, IntensityZone, RmLift,
+  EngineInput, EnginePhase, EngineSet, EngineWeek, EngineWeekAthleteView, EngineZoneAudit,
+  IntensityZone, RmLift,
 } from "../types";
 
 /** Tabla de Prilepin: reps óptimas y rango por zona (heurística observacional soviética, no ECA). */
@@ -37,14 +38,18 @@ export function wavePhase(waveWeek: number): EnginePhase | null {
   return WAVE[(waveWeek - 1) % WAVE.length] ?? null;
 }
 
-/** Semanas restantes → fase de CADA semana hasta la compe. Inválido → [] (sin plan honesto). */
+/** Countdown FIJADO AL ANCLAR: fase de cada semana (0-based), la compe SIEMPRE es la última.
+ *  Los consumidores indexan `phasePlan(n)[weekIdx]` — JAMÁS re-derivar `[0]` con un
+ *  weeksToComp recomputado semana a semana: la compresión depende del largo TOTAL (n=3 salta
+ *  el taper; n≥4 no), así que la secuencia vivida solo es consistente si el countdown se fija
+ *  al anclar la compe y re-anclar lo recomputa entero (hallazgo HIGH de El Carnicero, D13).
+ *  n<1 (compe pasada / sin semanas) o inválido → [] (sin plan honesto). */
 export function phasePlan(weeksToComp: number): EnginePhase[] {
-  if (!Number.isInteger(weeksToComp) || weeksToComp < 0) return [];
-  if (weeksToComp === 0) return ["comp_week"];
-  if (weeksToComp === 1) return ["taper"];
+  if (!Number.isInteger(weeksToComp) || weeksToComp < 1) return [];
+  if (weeksToComp === 1) return ["comp_week"];
   if (weeksToComp === 2) return ["peak", "comp_week"];
-  // n=3 comprime pico → semana de compe SIN semana taper aparte (caso canónico del owner;
-  // la disipación de fatiga vive en comp_week, taperFactor 0.25). No es un hueco.
+  // n=3 comprime: SIN semana taper aparte (caso canónico del owner; la disipación de fatiga
+  // vive en comp_week, taperFactor 0.25). No es un hueco.
   if (weeksToComp === 3) return ["intensification", "peak", "comp_week"];
   return [
     ...Array<EnginePhase>(weeksToComp - 4).fill("accumulation"),
@@ -77,18 +82,26 @@ const CLASSIC_LIFTS: readonly RmLift[] = ["arranque", "envion"];
 const ACWR_HIGH = 1.3;
 const ACWR_LOW = 0.8;
 
-/** La prescripción de la semana, o null honesto (RM/semana degenerados — jamás inventar). */
+/** La prescripción de la semana, o null honesto (RM/countdown/ola degenerados — jamás inventar). */
 export function generateWeek(input: EngineInput): EngineWeek | null {
   if (!Number.isFinite(input.rmKg) || input.rmKg <= 0) return null;
 
+  const weekIdx = input.weekIdx ?? 0;
+  if (!Number.isInteger(weekIdx) || weekIdx < 0) return null;
   const phase: EnginePhase | null = input.weeksToComp !== null
-    ? phasePlan(input.weeksToComp)[0] ?? null
-    : wavePhase(input.waveWeek ?? 1);
+    ? phasePlan(input.weeksToComp)[weekIdx] ?? null
+    // Ola: la posición es ESTADO del cableado — ausente → null honesto, jamás defaultear a la
+    // semana de más volumen (hallazgo de El Carnicero sobre el default 1).
+    : input.waveWeek === undefined ? null : wavePhase(input.waveWeek);
   if (phase === null) return null;
   const profile = PHASE_PROFILE[phase];
 
   const acwr = input.recentACWR !== null && Number.isFinite(input.recentACWR) ? input.recentACWR : null;
   const acwrFactor = acwr === null ? 1 : acwr > ACWR_HIGH ? 0.9 : acwr < ACWR_LOW ? 1.1 : 1;
+  // Nota D9: readiness YA viene penalizado por ACWR (readiness.ts, hasta −20) — un ACWR muy
+  // alto puede pegar dos veces (factor estructural + banda del día). Deliberado y conservador:
+  // venir cargado y venir poco recuperado son dos razones distintas para bajar volumen.
+  // Candidato a calibración con coaches piloto (reconciliación §7.1).
   const readiness = input.readiness ?? null;
   const readinessFactor = readiness === "amber" ? 0.9 : readiness === "red" ? 0.75 : 1;
   const taperFinal = profile.taperFactor * acwrFactor * readinessFactor;
@@ -130,4 +143,12 @@ export function generateWeek(input: EngineInput): EngineWeek | null {
     inputs: { acwr, readiness },
     heavySinglesAdvisory: readiness === "red" && sets.some((s) => s.zone === "90+"),
   };
+}
+
+/** Redacción atleta-facing (vive en core, patrón redactCycle — una sola fuente, sin drift):
+ *  SOLO fase/label/rationale/sets. Los audits, factores y el eco de inputs (ACWR crudo =
+ *  número gameable, HR-1) son material coach-only y JAMÁS van en superficie de atleta.
+ *  El cableado consume ESTO para el atleta — no filtra por su cuenta (D12). */
+export function athleteWeekView(week: EngineWeek): EngineWeekAthleteView {
+  return { phase: week.phase, label: week.label, rationale: week.rationale, sets: week.sets };
 }
