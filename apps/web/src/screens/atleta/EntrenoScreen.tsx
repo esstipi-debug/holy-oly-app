@@ -114,6 +114,7 @@ export function EntrenoScreen() {
             onPrev={() => setCur((c) => Math.max(0, c - 1))}
             onNext={() => setCur((c) => Math.min(rows.length - 1, c + 1))}
             onFinish={() => void save()}
+            onExit={() => setStarted(false)}
           />
           {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
         </div>

@@ -7,9 +7,10 @@ const SETS: WarmupSet[] = [
   { pct: 39, kg: 45, reps: 5, label: "rampa" },
 ];
 
-test("renderiza sets con kg, % y discos; marca 'no cuenta'", () => {
+test("renderiza sets con kg, % y discos; valora la rampa (técnica + volumen de base)", () => {
   render(<WarmupSection sets={SETS} barKg={15} />);
-  expect(screen.getByText(/no cuenta/i)).toBeInTheDocument();
+  expect(screen.getByText(/técnica \+ volumen de base/i)).toBeInTheDocument();
+  expect(screen.queryByText(/no cuenta/i)).not.toBeInTheDocument(); // copy desestimante prohibido (owner 06-11)
   expect(screen.getByText("Barra")).toBeInTheDocument();
   expect(screen.getByText("39%")).toBeInTheDocument();
   expect(document.querySelectorAll("svg").length).toBeGreaterThanOrEqual(1); // discos

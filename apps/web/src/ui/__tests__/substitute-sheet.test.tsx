@@ -19,8 +19,8 @@ test("ofrece bajar-complejidad + sustituir y elige uno", () => {
   );
   expect(screen.getByText(/Bajar complejidad/i)).toBeInTheDocument();
   expect(screen.getByText(/Sustituir/i)).toBeInTheDocument();
-  // simplerVariants("arranque")[0] = arranque.colgado.bajo, name = "Arranque colgado (bajo)"
-  const opt = screen.getByRole("button", { name: /Arranque colgado \(bajo\)/i });
+  // simplerVariants("arranque")[0] = arranque.colgado.bajo, name = "Arranque desde colgado (bajo)"
+  const opt = screen.getByRole("button", { name: /Arranque desde colgado \(bajo\)/i });
   fireEvent.click(opt);
   expect(onPick).toHaveBeenCalledWith("arranque.colgado.bajo");
 });
@@ -36,7 +36,7 @@ test("llama onClose al elegir una opción", () => {
       onPick={onPick}
     />,
   );
-  fireEvent.click(screen.getByRole("button", { name: /Arranque colgado \(bajo\)/i }));
+  fireEvent.click(screen.getByRole("button", { name: /Arranque desde colgado \(bajo\)/i }));
   expect(onClose).toHaveBeenCalledTimes(1);
 });
 

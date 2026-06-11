@@ -2,7 +2,9 @@ import { useState } from "react";
 import type { WarmupSet } from "@holy-oly/core";
 import { DiscRow } from "../../../ui/Disc";
 
-/** Calentamiento: se muestra y NO cuenta. Salteable (colapsable). Discos vía DiscRow. */
+/** Calentamiento: volumen de base + afinación técnica (decisión owner 2026-06-11 — el copy
+ *  jamás lo desestima). Sigue salteable (colapsable) y fuera de la gamificación. Discos vía
+ *  DiscRow. Su tonelaje se reporta aparte (warmupTonnage) y JAMÁS entra al monitor. */
 export function WarmupSection({ sets, barKg }: { sets: WarmupSet[]; barKg: number }) {
   const [open, setOpen] = useState(true);
   if (sets.length === 0) return null;
@@ -14,7 +16,7 @@ export function WarmupSection({ sets, barKg }: { sets: WarmupSet[]; barKg: numbe
         onClick={() => setOpen((o) => !o)}
         style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "center", border: 0, background: "transparent", padding: 0, cursor: "pointer", fontFamily: "var(--wl-display)", fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--wl-muted)" }}
       >
-        <span>Calentamiento · no cuenta</span>
+        <span>Calentamiento · técnica + volumen de base</span>
         <span>{open ? "▾" : "▸"}</span>
       </button>
       {open && (

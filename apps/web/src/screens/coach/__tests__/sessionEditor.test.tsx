@@ -44,11 +44,11 @@ test("sustituye un movimiento y onSave recibe el nuevo movementId con esquema pr
   render(<SessionEditor open week={1} sessionIdx={0} exercises={exs} onClose={() => {}} onSave={onSave} />);
   // Open the substitute sheet for "Arranque"
   fireEvent.click(screen.getByRole("button", { name: "cambiar Arranque" }));
-  // The sheet should be open — pick "Arranque colgado (bajo)" (simpler variant id: arranque.colgado.bajo)
-  const pickBtn = await screen.findByRole("button", { name: "Arranque colgado (bajo)" });
+  // The sheet should be open — pick "Arranque desde colgado (bajo)" (simpler variant id: arranque.colgado.bajo)
+  const pickBtn = await screen.findByRole("button", { name: "Arranque desde colgado (bajo)" });
   fireEvent.click(pickBtn);
   // Row now shows the new movement name
-  expect(screen.getByText("Arranque colgado (bajo)")).toBeInTheDocument();
+  expect(screen.getByText("Arranque desde colgado (bajo)")).toBeInTheDocument();
   // Save and verify onSave receives the new movementId with scheme (sets/reps) preserved
   fireEvent.click(screen.getByRole("button", { name: "Guardar sesión" }));
   await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));

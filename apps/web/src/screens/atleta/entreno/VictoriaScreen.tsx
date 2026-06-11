@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { MePlanView, SessionView } from "@holy-oly/core";
-import { barKgForSexo, sessionTonnage, heaviestSet, completion } from "@holy-oly/core";
+import { barKgForSexo, sessionTonnage, warmupTonnage, heaviestSet, completion } from "@holy-oly/core";
 import * as me from "../../../data/meClient";
 import { DiscRow } from "../../../ui/Disc";
 import { CaminoCard } from "../hoy/CaminoCard";
@@ -55,6 +55,10 @@ export function VictoriaScreen() {
   const comp = completion(exercises);
   const didWork = comp.done > 0;
   const tonnage = sessionTonnage(exercises);
+  // Decisión owner 2026-06-11: el calentamiento cuenta como volumen (base + técnica). Estimado
+  // de la rampa prescrita — visible y separado del trabajo; jamás entra al monitor.
+  const warmKg = warmupTonnage(exercises);
+  const totalKg = tonnage + warmKg;
   const heaviest = heaviestSet(exercises);
   const title = didWork ? "Sesión completada" : "Sesión registrada";
   const dayMoves = exercises.slice(0, 2).map((e) => e.actual?.movementName ?? e.movementName).join(" + ");
@@ -72,14 +76,18 @@ export function VictoriaScreen() {
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 30, lineHeight: 1, textTransform: "uppercase", color: "var(--wl-text)", marginTop: 8 }}>{title}</div>
       <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.5 }}>Día {idx + 1} — {dayMoves}<br />{fecha}</div>
 
-      {/* carga total del día */}
-      {didWork && tonnage > 0 && (
+      {/* carga total del día = trabajo + calentamiento (decisión owner 2026-06-11) */}
+      {didWork && totalKg > 0 && (
         <div className="ho-card">
           <div className="ho-card__head"><span className="ho-card__t">Carga total del día</span><span className="ho-card__end" style={{ color: "var(--wl-muted)" }}>kg</span></div>
           <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 48, lineHeight: 1, color: "var(--wl-text)", fontVariantNumeric: "tabular-nums", marginTop: 6 }}>
-            {CL(tonnage)}<span style={{ fontSize: 18, color: "var(--wl-muted)", marginLeft: 6 }}>kg</span>
+            {CL(totalKg)}<span style={{ fontSize: 18, color: "var(--wl-muted)", marginLeft: 6 }}>kg</span>
           </div>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 8 }}>Tonelaje movido en la sesión · el calentamiento no cuenta</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 8 }}>
+            {warmKg > 0
+              ? <>Trabajo {CL(tonnage)} kg · calentamiento ~{CL(warmKg)} kg (rampa prescrita) — también construye: volumen de base y técnica</>
+              : <>Tonelaje de las series de trabajo</>}
+          </div>
         </div>
       )}
 
@@ -114,6 +122,35 @@ export function VictoriaScreen() {
             <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>sesión de la semana</div>
           </div>
         </div>
+      </div>
+
+      {/* el entrenamiento completo (pedido owner 2026-06-11): cada ejercicio con sus series */}
+      <div className="ho-card">
+        <div className="ho-card__head"><span className="ho-card__t">Tu entrenamiento</span></div>
+        {exercises.map((e, i) => {
+          const name = e.actual?.movementName ?? e.movementName;
+          const sets = e.actual?.sets ?? [];
+          const hecho = sets.length > 0 ? sets.some((s) => s.done) : e.actual?.done === true;
+          const doneSets = sets.filter((s) => s.done);
+          const detalle = doneSets.length > 0
+            ? doneSets.map((s) => `${s.kg ?? "—"} kg × ${s.reps ?? "—"}`).join("  ·  ")
+            : hecho ? `${e.sets} × ${e.reps}${e.targetKg != null ? ` @ ${e.targetKg} kg` : ""}` : null;
+          return (
+            <div key={i} style={{ paddingTop: 10, marginTop: 10, borderTop: i > 0 ? "1px solid color-mix(in srgb, var(--wl-text) 10%, transparent)" : "none" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14.5, color: "var(--wl-text)" }}>
+                  {name}{e.actual?.substituted ? <span style={{ color: "var(--wl-muted)", fontWeight: 500 }}> · cambiado</span> : null}
+                </span>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: hecho ? "var(--ok)" : "var(--wl-muted)", whiteSpace: "nowrap" }}>
+                  {hecho ? "✓ hecha" : "no la hizo"}
+                </span>
+              </div>
+              {detalle && (
+                <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{detalle}</div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* posición en el macro — reuso del componente existente */}

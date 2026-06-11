@@ -20,12 +20,14 @@ function mmss(s: number): string {
  *  calentamiento (oculto si está sustituido) + series de trabajo + navegación. */
 export function SessionPlayer({
   row, index, total, barKg, busy,
-  onPatchSet, onSubstitute, onMovementNotDone, onPrev, onNext, onFinish,
+  onPatchSet, onSubstitute, onMovementNotDone, onPrev, onNext, onFinish, onExit,
 }: {
   row: PlayerRow; index: number; total: number; barKg: number; busy: boolean;
   onPatchSet: (i: number, p: Partial<SetRow>) => void;
   onSubstitute: () => void; onMovementNotDone: () => void;
   onPrev: () => void; onNext: () => void; onFinish: () => void;
+  /** Salida desde el primer movimiento: la flecha atrás vuelve al resumen del día. */
+  onExit: () => void;
 }) {
   const [secs, setSecs] = useState(0);
   useEffect(() => { const id = setInterval(() => setSecs((s) => s + 1), 1000); return () => clearInterval(id); }, []);
@@ -62,7 +64,10 @@ export function SessionPlayer({
       </div>
 
       <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-        <button type="button" className="wl-btn" disabled={isFirst} onClick={onPrev} aria-label="movimiento anterior" style={{ flex: "0 0 auto", opacity: isFirst ? 0.4 : 1 }}>‹ Ant</button>
+        {/* Flecha atrás SIEMPRE viva (pedido owner): en el 1er movimiento sale al resumen. */}
+        <button type="button" className="wl-btn" onClick={isFirst ? onExit : onPrev}
+          aria-label={isFirst ? "volver al resumen del día" : "movimiento anterior"}
+          style={{ flex: "0 0 auto", minWidth: 48 }}>‹</button>
         {isLast ? (
           <button type="button" className="wl-btn wl-btn--primary" disabled={busy} onClick={onFinish} aria-label="guardar entreno" style={{ flex: 1, opacity: busy ? 0.6 : 1 }}>{busy ? "Guardando…" : "Fin · Guardar entreno"}</button>
         ) : (

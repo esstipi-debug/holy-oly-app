@@ -118,7 +118,14 @@ Fuente autoritativa: `modulo-ciclo-menstrual.md`. **Tres decisiones innegociable
 
 ### Más allá del ciclo
 - **El atleta es dueño de todos sus datos** (activar/editar/ocultar/borrar).
-- **Warm-up se muestra, no se cuenta** (no entra en el cómputo de carga/volumen).
+- **Warm-up CUENTA como volumen visible (decisión owner 2026-06-11):** la rampa es volumen de
+  base (hipertrofia) + afinación técnica — suma al tonelaje de la sesión del ATLETA como
+  componente SEPARADO y estimado (`warmupTonnage`: rampa prescrita de ejercicios hechos sin
+  sustituir; copy con «~»). El copy jamás la desestima («no cuenta» prohibido). **NEVER** entra a
+  ACWR/IMR/`MonitorSeries`/semáforo: la rampa es casi-constante por sesión → inflaría aguda Y
+  crónica por un sumando parejo → comprime el ratio → falso-ok estructural. Sigue salteable y
+  fuera de la gamificación. Si el calentamiento gana registro editable que alimente el titular →
+  re-review HR-1 explícito. `sessionStats.ts` (guard de regresión en su test).
 
 ---
 

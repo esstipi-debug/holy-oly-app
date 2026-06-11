@@ -118,8 +118,8 @@ test("0 filas → 'No hay sesión para este día.' sin alert (vacío honesto)", 
 test("sustituir → kg de las series se limpia → cargar kg en serie 1 → guardar → movementId correcto", async () => {
   await start();
   fireEvent.click(screen.getByRole("button", { name: /cambiar movimiento de Arranque/i }));
-  // simplerVariants("arranque")[0] = "arranque.colgado.bajo" → "Arranque colgado (bajo)"
-  fireEvent.click(await screen.findByRole("button", { name: /Arranque colgado \(bajo\)/i }));
+  // simplerVariants("arranque")[0] = "arranque.colgado.bajo" → "Arranque desde colgado (bajo)"
+  fireEvent.click(await screen.findByRole("button", { name: /Arranque desde colgado \(bajo\)/i }));
   fireEvent.click(screen.getByRole("button", { name: /modificar serie 1/i }));
   fireEvent.change(screen.getByLabelText(/kg serie 1/i), { target: { value: "50" } });
   fireEvent.click(screen.getByRole("button", { name: /listo serie 1/i }));

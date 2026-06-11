@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { PrescribedExerciseView, SetActual } from "../types";
-import { setTonnage, sessionTonnage, heaviestSet, completion } from "./sessionStats";
+import { setTonnage, sessionTonnage, heaviestSet, completion, warmupTonnage } from "./sessionStats";
 
 const ex = (over: Partial<PrescribedExerciseView>): PrescribedExerciseView => ({
   movementId: "arranque", movementName: "Arranque", sets: 3, reps: 2, ...over,
@@ -62,6 +62,39 @@ describe("heaviestSet", () => {
       ex({ actual: { done: false, movementId: "envion", movementName: "Envión", substituted: false, desfasado: false, sets: [set(140, 1, false)] } }),
     ];
     expect(heaviestSet(exercises)).toBeNull();
+  });
+});
+
+describe("warmupTonnage (decisión owner 2026-06-11: la rampa cuenta como volumen visible)", () => {
+  const W = [
+    { pct: 0, kg: 20, reps: 5, label: "barra" as const },
+    { pct: 50, kg: 51, reps: 5, label: "rampa" as const },
+  ]; // 20×5 + 51×5 = 355
+  it("suma kg×reps de la rampa PRESCRITA de los ejercicios hechos", () => {
+    const exercises: PrescribedExerciseView[] = [
+      ex({ warmup: W, actual: { done: true, movementId: "arranque", movementName: "Arranque", substituted: false, desfasado: false, sets: [set(80, 2, true)] } }),
+    ];
+    expect(warmupTonnage(exercises)).toBe(355);
+  });
+  it("ejercicio NO hecho → su rampa no suma (no se movió)", () => {
+    const exercises: PrescribedExerciseView[] = [
+      ex({ warmup: W, actual: { done: false, movementId: "arranque", movementName: "Arranque", substituted: false, desfasado: false, sets: [set(80, 2, false)] } }),
+      ex({ warmup: W }), // sin actual
+    ];
+    expect(warmupTonnage(exercises)).toBe(0);
+  });
+  it("sustituido en vivo → su rampa no se mostró → no suma (honestidad del 'movido')", () => {
+    const exercises: PrescribedExerciseView[] = [
+      ex({ warmup: W, actual: { done: true, movementId: "sentadilla", movementName: "Sentadilla trasera", substituted: true, desfasado: false, sets: [set(80, 2, true)] } }),
+    ];
+    expect(warmupTonnage(exercises)).toBe(0);
+  });
+  it("regresión guarda Carnicero: sessionTonnage (trabajo) JAMÁS incluye la rampa", () => {
+    const exercises: PrescribedExerciseView[] = [
+      ex({ warmup: W, actual: { done: true, movementId: "arranque", movementName: "Arranque", substituted: false, desfasado: false, sets: [set(80, 2, true)] } }),
+    ];
+    expect(sessionTonnage(exercises)).toBe(160);
+    expect(sessionTonnage(exercises) + warmupTonnage(exercises)).toBe(515);
   });
 });
 

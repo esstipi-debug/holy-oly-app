@@ -36,7 +36,7 @@ describe("mergeActuals", () => {
     expect(a.substituted).toBe(true);
     expect(a.desfasado).toBe(false);
     expect(a.movementId).toBe("arranque.potencia.colgado.rodilla");
-    expect(a.movementName).toMatch(/Arranque de potencia colgado/);
+    expect(a.movementName).toMatch(/Arranque de potencia desde colgado/);
   });
 
   it("flags desfase: prescribedMovementId ≠ the current slot's movement (coach edited after)", () => {

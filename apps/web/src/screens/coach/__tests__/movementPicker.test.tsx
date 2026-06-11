@@ -11,7 +11,7 @@ test("busca por término bilingüe y elige un movimiento", () => {
   const onPick = vi.fn();
   render(<MovementPicker open onClose={() => {}} onPick={onPick} />);
   fireEvent.change(screen.getByPlaceholderText(/buscar movimiento/i), { target: { value: "hang power snatch" } });
-  const hit = screen.getByRole("button", { name: /Arranque de potencia colgado \(rodilla\)/i });
+  const hit = screen.getByRole("button", { name: /Arranque de potencia desde colgado \(rodilla\)/i });
   fireEvent.click(hit);
   expect(onPick).toHaveBeenCalledWith("arranque.potencia.colgado.rodilla");
 });

@@ -37,9 +37,9 @@ describe("computeComplexity", () => {
 describe("movementDisplayName", () => {
   it("composes the Spanish name from base + modifiers", () => {
     expect(movementDisplayName("Arranque", { captura: "potencia", origen: "colgado", posicion: "rodilla", flags: [] }))
-      .toBe("Arranque de potencia colgado (rodilla)");
-    expect(movementDisplayName("Envión", { tipoEnvion: "tijera", flags: [] })).toBe("Envión en tijera");
-    expect(movementDisplayName("Sentadilla", { flags: ["pausa"] })).toBe("Sentadilla con pausa");
+      .toBe("Arranque de potencia desde colgado (rodilla)"); // "desde colgado": neutro de género (curaduría 06-11)
+    expect(movementDisplayName("Segundo tiempo", { tipoEnvion: "tijera", flags: [] })).toBe("Segundo tiempo en tijera");
+    expect(movementDisplayName("Sentadilla trasera", { flags: ["pausa"] })).toBe("Sentadilla trasera con pausa");
     expect(movementDisplayName("Arranque", { captura: "completo", origen: "piso", flags: [] })).toBe("Arranque");
   });
 });

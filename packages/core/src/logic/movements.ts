@@ -35,7 +35,8 @@ export function movementDisplayName(baseName: string, m: MovementModifiers): str
   const parts: string[] = [baseName];
   if (m.captura === "potencia") parts.push("de potencia");
   if (m.origen === "bloques") parts.push(m.posicion ? `desde bloques (${m.posicion})` : "desde bloques");
-  else if (m.origen === "colgado") parts.push(m.posicion ? `colgado (${m.posicion})` : "colgado");
+  // "desde colgado": neutro de género — "Cargada colgado" discordaba (oráculo Carnicero 06-11).
+  else if (m.origen === "colgado") parts.push(m.posicion ? `desde colgado (${m.posicion})` : "desde colgado");
   if (m.tipoEnvion) parts.push(TIPO_ENVION_LABEL[m.tipoEnvion]);
   for (const f of m.flags) parts.push(FLAG_LABEL[f]);
   return parts.join(" ");
