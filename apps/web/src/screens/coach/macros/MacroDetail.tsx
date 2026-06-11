@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { MACROCYCLES, weekOfDate, type Atleta, type Plan } from "@holy-oly/core";
+import { MACROCYCLES, weekOfDate, dnaForFamily, type Atleta, type Plan } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { BackButton } from "../../../ui/BackButton";
 import { Toast } from "../../../ui/Toast";
@@ -57,6 +57,7 @@ export function MacroDetail() {
   const macro = MACROCYCLES.find((m) => m.id === id);
   if (!macro) return <Navigate to="/coach/macros" replace />;
   const m = macro;
+  const dna = dnaForFamily(macro.family);
 
   async function onAssign(plan: Plan, comp?: AssignComp): Promise<void> {
     await repo.savePlan(plan); // throws propagate to the sheet's submit handler
@@ -90,6 +91,22 @@ export function MacroDetail() {
           : <span style={lvTag}>sin pico</span>}
       </div>
       <p style={descStyle}>{macro.desc}</p>
+
+      {dna != null && (
+        <>
+          <div style={sec}>Metodología</div>
+          <div style={{ background: "var(--wl-surface)", borderRadius: "var(--wl-radius)", padding: "12px 13px", border: "1px solid color-mix(in srgb,var(--wl-accent) 18%,transparent)" }}>
+            <p style={{ fontFamily: "var(--wl-display)", fontSize: 13, lineHeight: 1.5, color: "var(--wl-text)", margin: 0, fontStyle: "italic" }}>
+              &ldquo;{dna.character}&rdquo;
+            </p>
+            {dna.sources.length > 0 && (
+              <p style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", margin: "8px 0 0", lineHeight: 1.45 }}>
+                {dna.sources.slice(0, 2).join(" · ")}
+              </p>
+            )}
+          </div>
+        </>
+      )}
 
       <div style={statsRow}>
         <div style={statBox}><b style={statN}>{macro.duration.replace(/\s*semanas?/i, "")}</b><span style={statL}>semanas</span></div>
