@@ -50,6 +50,37 @@ describe("buildSessionViews", () => {
   });
 });
 
+describe("complejos en la prescripción (D6 — kg vs eslabón débil)", () => {
+  const rms: RM = { arranque: 100, envion: 120, sentadilla: 150, frente: 130 };
+  it("resolveTargetKg de cx.* = pct × min RM de los eslabones", () => {
+    // cargada(envion 120) + frontal(frente 130) + 2t(envion 120) ⇒ débil 120 → 80% = 96
+    expect(resolveTargetKg({ movementId: "cx.cargada+frontal+2t", sets: 4, reps: 3, pct: 80 }, rms)).toBe(96);
+    // arranque+ohs: ambos arranque (100) → 70% = 70
+    expect(resolveTargetKg({ movementId: "cx.arranque+ohs", sets: 3, reps: 3, pct: 70 }, rms)).toBe(70);
+  });
+  it("kgOverride sigue mandando sobre el % del complejo", () => {
+    expect(resolveTargetKg({ movementId: "cx.arranque+ohs", sets: 3, reps: 3, pct: 70, kgOverride: 62 }, rms)).toBe(62);
+  });
+  it("cx desconocido → kg undefined y nombre = id (sin throw, sin-dato honesto)", () => {
+    expect(resolveTargetKg({ movementId: "cx.nope", sets: 1, reps: 1, pct: 80 }, rms)).toBeUndefined();
+    const views = buildSessionViews([{ movementId: "cx.nope", sets: 1, reps: 1, pct: 80, week: 1, sessionIdx: 0, order: 0 }], rms);
+    expect(views[0]!.exercises[0]!.movementName).toBe("cx.nope");
+  });
+  it("buildSessionViews: nombre del complejo (con notación) + warmup con rampa del 1er eslabón", () => {
+    const views = buildSessionViews(
+      [{ movementId: "cx.cargada+frontal+2t", sets: 4, reps: 3, pct: 80, week: 1, sessionIdx: 0, order: 0 }],
+      rms,
+    );
+    const ex = views[0]!.exercises[0]!;
+    expect(ex.movementName).toBe("Cargada + Sent. frontal + Segundo tiempo (1+1+1)");
+    expect(ex.targetKg).toBe(96);
+    expect(ex.warmup && ex.warmup.length).toBeGreaterThan(0);
+    // la rampa apunta al kg de trabajo del complejo (96), nunca lo alcanza, y abre con barra (1er mov)
+    expect(ex.warmup![0]!.label).toBe("barra");
+    for (const w of ex.warmup!) expect(w.kg).toBeLessThan(96);
+  });
+});
+
 describe("accesorios por %×RM (sin RPE)", () => {
   it("un accesorio resuelve kg por %×RM de su referencia (sin RPE)", () => {
     const rms = { arranque: 92, envion: 116, sentadilla: 150, frente: 122 };

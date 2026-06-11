@@ -3,15 +3,30 @@ import type {
 } from "../types";
 import { phaseForWeek } from "../data/macrocycles";
 import { getMovement } from "./movements";
+import { getComplex, complexWeakRmKg, isComplexId } from "./complexes";
 import { warmupForExercise } from "./warmup";
 
 /** Target kg of a prescribed exercise: explicit override wins; else %1RM × the movement's reference RM
- *  (rounded to 1 kg). Explicit override → kgOverride; no pct and no override → undefined. */
+ *  (rounded to 1 kg). Complejos ("cx.*"): %×RM del eslabón MÁS DÉBIL (D6 — una barra, el techo lo
+ *  pone el eslabón que falla primero). Explicit override → kgOverride; sin pct / id desconocido →
+ *  undefined (sin-dato honesto). */
 export function resolveTargetKg(ex: PrescribedExercise, rms: RM): number | undefined {
   if (ex.kgOverride != null) return ex.kgOverride;
+  if (ex.pct == null) return undefined;
+  if (isComplexId(ex.movementId)) {
+    const cx = getComplex(ex.movementId);
+    const weak = cx ? complexWeakRmKg(cx, rms) : undefined;
+    return weak == null ? undefined : Math.round((ex.pct / 100) * weak);
+  }
   const mv = getMovement(ex.movementId);
-  if (!mv || mv.rmRef === "none" || ex.pct == null) return undefined;
+  if (!mv || mv.rmRef === "none") return undefined;
   return Math.round((ex.pct / 100) * rms[mv.rmRef]);
+}
+
+/** Display name de un id programable: variante de la librería o complejo (con su notación). */
+export function programmableName(id: string): string {
+  if (isComplexId(id)) return getComplex(id)?.name ?? id;
+  return getMovement(id)?.name ?? id;
 }
 
 /** The session templates for a given week = the recipe's templates for that week's phase ([] if none). */
@@ -53,7 +68,7 @@ export function buildSessionViews(rows: PrescriptionRow[], rms: RM, barKg = 20):
       exercises: ordered.map((r, i) => ({
         movementId: r.movementId, sets: r.sets, reps: r.reps, pct: r.pct, kgOverride: r.kgOverride,
         flags: r.flags, notes: r.notes,
-        movementName: getMovement(r.movementId)?.name ?? r.movementId,
+        movementName: programmableName(r.movementId),
         targetKg: resolveTargetKg(r, rms),
         warmup: warmupForExercise({ movementId: r.movementId, pct: r.pct, order: i }, rms, barKg),
       })),

@@ -1,5 +1,6 @@
 import type { RM, WarmupSet } from "../types";
 import { getMovement, getBase } from "./movements";
+import { getComplex, complexWeakRmKg, isComplexId } from "./complexes";
 
 const FRACTIONS: ReadonlyArray<{ f: number; reps: number; minW?: number }> = [
   { f: 0.50, reps: 5 },
@@ -58,8 +59,17 @@ export function warmupForExercise(
   args: { movementId: string; pct?: number; order: number },
   rms: RM, barKg: number,
 ): WarmupSet[] {
+  if (args.pct == null) return [];
+  // Complejo: rampa completa hacia el kg de trabajo del complejo (pct sobre el RM del eslabón
+  // débil — D6); la transición se calienta con el primer eslabón, mismos kg de rampa.
+  if (isComplexId(args.movementId)) {
+    const cx = getComplex(args.movementId);
+    const weakKg = cx ? complexWeakRmKg(cx, rms) : undefined;
+    if (weakKg == null) return [];
+    return warmupSets(args.pct, weakKg, barKg, args.order === 0);
+  }
   const mv = getMovement(args.movementId);
-  if (!mv || mv.rmRef === "none" || args.pct == null) return [];
+  if (!mv || mv.rmRef === "none") return [];
   const rm = rms[mv.rmRef];
   if (!Number.isFinite(rm) || rm <= 0) return [];
   const W = args.pct;
