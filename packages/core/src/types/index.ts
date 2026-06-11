@@ -232,7 +232,10 @@ export interface PrescribedExercise {
   flags?: MovementFlag[];
   notes?: string;
 }
-export interface SessionTemplate { exercises: PrescribedExercise[] }
+/** `day`/`turno` (D9, opcionales): rama de doble sesión por día. Ausentes = comportamiento
+ *  histórico (sesión n = día n). La UI AM/PM llega cuando la primera receta bi-diaria se
+ *  habilite (D14) — el shape queda listo desde ya. */
+export interface SessionTemplate { exercises: PrescribedExercise[]; day?: number; turno?: "AM" | "PM" }
 export interface PhaseTemplate { phaseKey: string; sessions: SessionTemplate[] } // sessions[idx], idx 0-based
 export interface MacroRecipe { macroId: string; phases: PhaseTemplate[] }
 
@@ -292,6 +295,49 @@ export interface RmUpdate { lift: RmLift; kg: number; setAt: string; reason: RmR
 export interface PrCandidate { lift: RmLift; movementId: string; movementName: string; kg: number; week: number; sessionIdx: number; doneAt?: string; }
 /** Vigencia por lift: cuándo se fijó y hace cuántas semanas ({} = sin dato, nunca inventar). */
 export type RmVigencia = Record<RmLift, { setAt?: string; weeksAgo?: number }>;
+
+// ── ADN de escuela (slice entrenamientos-distintivos 2026-06-11): cada familia del catálogo
+//    descrita como DATOS — el generador determinístico los convierte en MacroRecipe. ──────────
+
+/** Rol funcional de una fase, derivado del propio dato (imrPct/volRel) vía phaseRole. */
+export type PhaseRole = "base" | "fuerza" | "intensidad" | "peaking" | "descarga";
+
+/** Slot por patrón de movimiento — el esqueleto de la sesión. */
+export type SlotKind = "olimpico" | "tiron" | "rodilla" | "empuje" | "bisagra" | "complejo" | "metabolico";
+
+/** Arquetipo de sesión de una escuela: secuencia DESEADA de slots (el generador reordena por
+ *  demanda neural). `optionalFrom` = índice desde el cual los slots son recortables si la
+ *  sesión excede el presupuesto SNC (los firmados JAMÁS se recortan). */
+export interface SessionArchetype {
+  key: string;                 // "A", "B", … — entra al hash de rotación
+  slots: SlotKind[];
+  optionalFrom?: number;
+}
+
+/** Un candidato del repertorio: id de variante de la librería o de complejo ("cx.*"), con peso
+ *  de preferencia para la rotación determinística. */
+export interface RepertoireItem { id: string; weight: number }
+
+/** El ADN de una escuela — lo que la hace inconfundible, hecho datos con fuentes citadas. */
+export interface SchoolDNA {
+  family: MacrocycleFamily;
+  character: string;                       // 1 línea es-CL (espejo del rulebook §Escuelas)
+  repertoire: Partial<Record<SlotKind, RepertoireItem[]>>;
+  /** baseIds que la escuela JAMÁS programa (defensa en profundidad: el generador también filtra). */
+  forbidden: string[];
+  archetypes: Partial<Record<PhaseRole, SessionArchetype[]>>;
+  sessionsPerDay: 1 | 2;                   // 2 = bi-diario (shape listo; v1 todas en 1 — D14)
+  tecnicosMax: 1 | 2 | 3;                  // techo duro del sistema: 3 (D8)
+  sncBudget: Record<PhaseRole, number>;    // presupuesto de Σsnc por sesión
+  dosage: {
+    mainBias: "low" | "mid" | "high";      // dónde del corredor imrPct se paran los lifts
+    setsBias: -1 | 0 | 1;                  // ± sets sobre la base derivada de volRel
+    singlesPhases: PhaseRole[];            // roles donde los clásicos van a 1 rep
+  };
+  /** Nota de estilo opcional que el generador estampa en los olímpicos (p.ej. "EMOM" ucraniano). */
+  sessionNotes?: Partial<Record<SlotKind, string>>;
+  sources: string[];                       // literatura que funda el ADN (citada en el dato)
+}
 
 // ── Motor Prilepin (core dormant — spec 2026-06-10-motor-prilepin-design.md) ──────────────────
 
