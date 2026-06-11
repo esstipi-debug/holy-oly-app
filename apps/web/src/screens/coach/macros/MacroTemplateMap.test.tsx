@@ -17,10 +17,17 @@ test("macro con receta: pinta el mapa y el tap muestra la sesión (ejercicios co
   expect(screen.getByText(/se derivan de los RMs/)).toBeInTheDocument();
 });
 
-test("macro sin receta: nota honesta, sin mapa falso", () => {
+test("macro generado (cubano): el mapa vive — las 23 recetas salen del ADN de su escuela", () => {
   render(<MacroTemplateMap macro={cubano} />);
-  // W6: copy neutro — sin exponer roadmap interno («…existe para el Ruso 5D»)
+  const lunes1 = screen.getByRole("button", { name: /^Semana 1 Lun$/ });
+  fireEvent.click(lunes1);
+  expect(screen.getByText(/Semana 1 · sesión 1/)).toBeInTheDocument();
+});
+
+test("macro fuera de catálogo (sin receta): nota honesta, sin mapa falso", () => {
+  // un macro desconocido no tiene receta curada NI generada → empty-state (D13, sin-dato honesto)
+  const fantasma = { ...cubano, id: "no-existe" };
+  render(<MacroTemplateMap macro={fantasma} />);
   expect(screen.getByText(/aún no tiene el detalle sesión-por-sesión/)).toBeInTheDocument();
-  expect(screen.queryByText(/Ruso 5D/)).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /^Semana 1 Lun$/ })).not.toBeInTheDocument();
 });

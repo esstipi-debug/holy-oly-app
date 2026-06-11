@@ -145,7 +145,6 @@ describe("regresión Ruso (D4 — el modelo debe poder aproximar la receta curad
     const dna = dnaForFamily("Ruso")!;
     // generateRecipe salta macros curados → generamos contra un alias del mismo macro
     const alias = { ...m, id: "ruso-5d__regression" };
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const gen = generateRecipeForTest(dna, alias)!;
     const curated = MACRO_RECIPES.find((r) => r.macroId === "ruso-5d")!;
     for (const ph of curated.phases) {

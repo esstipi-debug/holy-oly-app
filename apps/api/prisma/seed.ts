@@ -1,7 +1,7 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { hash } from "@node-rs/argon2";
 import type { MacrocycleLevel, MonitorSeries, RM } from "@holy-oly/core";
-import { MACROCYCLES, MACRO_RECIPES, instantiatePrescription } from "@holy-oly/core";
+import { MACROCYCLES, ALL_RECIPES, instantiatePrescription } from "@holy-oly/core";
 import { seriesToRows } from "../src/db/mapping";
 import { loadSeedConfig } from "./seed-guard";
 import { encryptAtRest } from "../src/crypto-at-rest";
@@ -141,7 +141,7 @@ async function seedPlanBundle(athleteId: string): Promise<void> {
   for (const c of input.comps) {
     await prisma.competencia.create({ data: { athleteId, name: c.name, week: c.week } });
   }
-  const presc = instantiatePrescription(MACRO_RECIPES, macro, totalWeeks);
+  const presc = instantiatePrescription([...ALL_RECIPES], macro, totalWeeks);
   await prisma.prescribedExercise.createMany({
     data: presc.map((r) => ({
       athleteId,

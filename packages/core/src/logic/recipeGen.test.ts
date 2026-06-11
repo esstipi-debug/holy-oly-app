@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { SessionTemplate } from "../types";
 import { MACROCYCLES, phaseForWeek } from "../data/macrocycles";
-import { phaseRole, hashIdx, sessionsPerWeek } from "./recipeGen";
+import { phaseRole, hashIdx, sessionsPerWeekFor } from "./recipeGen";
 
 const macro = (id: string) => MACROCYCLES.find((m) => m.id === id)!;
 const phase = (macroId: string, key: string) => macro(macroId).phaseProfile.find((p) => p.key === key)!;
@@ -43,10 +43,10 @@ describe("hashIdx (rotación determinística, D10)", () => {
 
 describe("sessionsPerWeek (frecuencia → sesiones, D15)", () => {
   it("parsea Nd/sem y aplica los overrides nombrados", () => {
-    expect(sessionsPerWeek(macro("ruso-5d"))).toBe(5);
-    expect(sessionsPerWeek(macro("cubano-novicio-2d"))).toBe(2);
-    expect(sessionsPerWeek(macro("usa-school"))).toBe(5);   // "4-5d/sem"
-    expect(sessionsPerWeek(macro("hibrido-block"))).toBe(4); // "variable"
+    expect(sessionsPerWeekFor(macro("ruso-5d"))).toBe(5);
+    expect(sessionsPerWeekFor(macro("cubano-novicio-2d"))).toBe(2);
+    expect(sessionsPerWeekFor(macro("usa-school"))).toBe(5);   // "4-5d/sem"
+    expect(sessionsPerWeekFor(macro("hibrido-block"))).toBe(4); // "variable"
   });
 });
 
@@ -94,7 +94,7 @@ describe("generateRecipe (D10 — determinístico, dentro de techos)", () => {
       expect(recipe.macroId).toBe(m.id);
       expect(recipe.phases.map((p) => p.phaseKey)).toEqual(m.phaseProfile.map((p) => p.key));
       for (const ph of recipe.phases) {
-        expect(ph.sessions.length).toBe(sessionsPerWeek(m));
+        expect(ph.sessions.length).toBe(sessionsPerWeekFor(m));
         for (const s of ph.sessions) expect(s.exercises.length).toBeGreaterThan(0);
       }
     }

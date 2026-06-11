@@ -22,9 +22,9 @@ test("renders the program detail (header + periodization) for a valid id", () =>
   expect(screen.getByText("Cubano Intermedio 5D")).toBeInTheDocument();
   expect(screen.getByText(/Fases en detalle/i)).toBeInTheDocument(); // the MacroPeriodization block
   expect(screen.getByText("INTENSIDAD")).toBeInTheDocument(); // LoadMeters
-  // «Adentro del plan»: sin receta → nota honesta (el mapa vive en MacroTemplateMap.test)
+  // «Adentro del plan»: TODO macro tiene receta (curada o generada del ADN de su escuela) → mapa vivo
   expect(screen.getByText(/Adentro del plan/i)).toBeInTheDocument();
-  expect(screen.getByText(/aún no tiene el detalle sesión-por-sesión/)).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /^Semana 1 Lun$/ })).toBeInTheDocument();
 });
 
 test("macro con receta (ruso-5d): el detalle incluye el mapa de intensidad", () => {

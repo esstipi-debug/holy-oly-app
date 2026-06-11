@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import type { Macrocycle } from "@holy-oly/core";
-import { MACRO_RECIPES, instantiatePrescription, planHeat, getMovement, phaseForWeek } from "@holy-oly/core";
+import { ALL_RECIPES, instantiatePrescription, planHeat, phaseForWeek, programmableName } from "@holy-oly/core";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../../ui/charts/PlanHeatMap";
 import { PlanDayDetail, type DayDetailExercise } from "../../../ui/charts/PlanDayDetail";
 import { phaseColor } from "../../../ui/charts/phasePalette";
@@ -14,7 +14,7 @@ const EMPTY_COMPS: ReadonlyMap<number, { name: string; day?: number }> = new Map
  */
 export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
   const totalWeeks = macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
-  const rows = useMemo(() => instantiatePrescription(MACRO_RECIPES, macro, totalWeeks), [macro, totalWeeks]);
+  const rows = useMemo(() => instantiatePrescription([...ALL_RECIPES], macro, totalWeeks), [macro, totalWeeks]);
   const heat = useMemo(() => (rows.length > 0 ? planHeat(rows, totalWeeks) : null), [rows, totalWeeks]);
   const [sel, setSel] = useState<HeatMapPos | null>(null);
   // Identidades estables → el memo de PlanHeatMap sólo re-renderiza la grilla con cambios reales.
@@ -41,7 +41,7 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
         .filter((r) => r.week === sel.week && r.sessionIdx === sel.day)
         .sort((a, b) => a.order - b.order)
         .map((r) => ({
-          name: getMovement(r.movementId)?.name ?? r.movementId,
+          name: programmableName(r.movementId), // variante o complejo (con su notación)
           sets: r.sets, reps: r.reps,
           ...(r.pct != null ? { pct: r.pct } : {}),
         }))

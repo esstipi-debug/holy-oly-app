@@ -7,7 +7,7 @@ import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
   PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema,
-  MACROCYCLES, MACRO_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
+  MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
   prCandidates, RM_LIFTS, lutealNow, redactCycle,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
@@ -47,7 +47,7 @@ export class LocalRepository implements Repository {
         startDate: defaultStartDate(today, inp.currentWeek), rms: inp.rms, comps: inp.comps,
       };
       this.s.set(KEYS.plan(id), plan);
-      this.s.set(KEYS.prescription(id), macro ? instantiatePrescription(MACRO_RECIPES, macro, totalWeeks) : []);
+      this.s.set(KEYS.prescription(id), macro ? instantiatePrescription([...ALL_RECIPES], macro, totalWeeks) : []);
       this.s.set(KEYS.dayLog(id), makeDayLogYear(today));
     }
     this.s.set(KEYS.seeded, SEED_VERSION);
@@ -74,7 +74,7 @@ export class LocalRepository implements Repository {
     this.s.set(KEYS.plan(plan.atletaId), plan);
     const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
     const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
-    const rows: PrescriptionRow[] = macro ? instantiatePrescription(MACRO_RECIPES, macro, totalWeeks) : [];
+    const rows: PrescriptionRow[] = macro ? instantiatePrescription([...ALL_RECIPES], macro, totalWeeks) : [];
     this.s.set(KEYS.prescription(plan.atletaId), rows);
     // SP5: cada asignación fija los 4 RMs → baseline del historial (mirror del API).
     // setAt = HOY (la fecha del acto de fijarlos, no el startDate — que con anclaje por compe

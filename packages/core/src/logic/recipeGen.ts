@@ -4,6 +4,7 @@ import type {
 } from "../types";
 import { MACRO_RECIPES } from "../data/recipes";
 import { getBase, getMovement } from "./movements";
+import { sessionsPerWeek } from "./schedule";
 import { complexComplexity, complexLoads, complexPctCeiling, complexTotalReps, getComplex, isComplexId } from "./complexes";
 
 // ── Fallback de roles ──────────────────────────────────────────────────────────
@@ -61,11 +62,10 @@ export function hashIdx(parts: string[]): number {
  *  hibrido-block "variable" → 4 (el bloque modular canónico se ondula sobre 4 días). */
 const FREQUENCY_OVERRIDES: Record<string, number> = { "usa-school": 5, "hibrido-block": 4 };
 
-export function sessionsPerWeek(macro: Macrocycle): number {
+export function sessionsPerWeekFor(macro: Macrocycle): number {
   const override = FREQUENCY_OVERRIDES[macro.id];
   if (override != null) return override;
-  const m = /^(\d+)/.exec(macro.frequency);
-  const n = m ? Number(m[1]) : NaN;
+  const n = sessionsPerWeek(macro.frequency); // parser de la casa (schedule.ts)
   return Number.isInteger(n) && n >= 1 && n <= 7 ? n : 0;
 }
 
@@ -252,7 +252,7 @@ function buildSession(
  *  (sin-dato honesto, D13): la UI ya tiene el empty-state. */
 export function generateRecipe(dna: SchoolDNA, macro: Macrocycle): MacroRecipe | null {
   if (MACRO_RECIPES.some((r) => r.macroId === macro.id)) return null;
-  const n = sessionsPerWeek(macro);
+  const n = sessionsPerWeekFor(macro);
   if (n < 1) return null;
   const phases: PhaseTemplate[] = [];
   for (const phase of macro.phaseProfile) {
