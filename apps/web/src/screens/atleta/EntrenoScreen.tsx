@@ -72,7 +72,7 @@ export function EntrenoScreen() {
         const sets = r.series.map((s) => ({ kg: s.kg, reps: s.reps, done: s.done }));
         return { order, movementId: r.movementId, prescribedMovementId: r.prescribedMovementId, done: sets.some((s) => s.done), sets };
       });
-      await me.putMeSession(week, idx, actuals);
+      await me.putMeSession(week, idx, { actuals });
       navigate(`/atleta/entreno/${week}/${idx}/victoria`);
     } catch (e) { setError(e instanceof Error ? e.message : "No se pudo guardar"); }
     finally { setBusy(false); }

@@ -3,10 +3,14 @@
  * (`httpMeClient`) when the app talks to a backend, or to `LocalMeClient` (localStorage, demo
  * athlete Kevin) when standalone — the exact mirror of how `RepositoryProvider` picks Http vs Local.
  */
-import type { CycleData, MePlanView, MeRecorrido, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, ExerciseActualInput, WeekHeat } from "@holy-oly/core";
+import type { CycleData, MePlanView, MeRecorrido, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, WeekHeat, PutMeSessionInput } from "@holy-oly/core";
 import { API_ENABLED } from "./apiConfig";
 import * as http from "./httpMeClient";
 import { LocalMeClient } from "./LocalMeClient";
+
+// Re-exportar para que los callers (pantallas, tests) tengan un único punto de importación.
+export { FechaOcupadaError } from "./fechaError";
+export type { PutMeSessionInput };
 
 // Lazy so the standalone client (which touches localStorage) is only built when actually used.
 let _local: LocalMeClient | null = null;
@@ -33,8 +37,8 @@ export function getMeHeat(): Promise<WeekHeat[]> {
 export function getMeRecorrido(): Promise<MeRecorrido> {
   return API_ENABLED ? http.getMeRecorrido() : local().getMeRecorrido();
 }
-export function putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void> {
-  return API_ENABLED ? http.putMeSession(week, idx, actuals) : local().putMeSession(week, idx, actuals);
+export function putMeSession(week: number, idx: number, input: PutMeSessionInput): Promise<void> {
+  return API_ENABLED ? http.putMeSession(week, idx, input) : local().putMeSession(week, idx, input);
 }
 export function getMeCycle(): Promise<CycleData> {
   return API_ENABLED ? http.getMeCycle() : local().getMeCycle();
@@ -67,7 +71,7 @@ export interface MeClient {
   getMeHeat(): Promise<WeekHeat[]>;
   /** Recorrido del macro: lo HECHO acumulado por semana (kg propios — jamás RM/RPE/ACWR). */
   getMeRecorrido(): Promise<MeRecorrido>;
-  putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void>;
+  putMeSession(week: number, idx: number, input: PutMeSessionInput): Promise<void>;
   /** Registro propio del ciclo (slice ciclo-visible) — la verdad de la atleta, jamás del coach. */
   getMeCycle(): Promise<CycleData>;
   putMeCycle(input: CycleData): Promise<void>;

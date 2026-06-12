@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { afterEach, beforeEach, test, expect, vi, type MockInstance } from "vitest";
-import type { ExerciseActualInput, MePlanView, SessionView } from "@holy-oly/core";
+import type { MePlanView, PutMeSessionInput, SessionView } from "@holy-oly/core";
 import * as me from "../../../data/meClient";
 import { EntrenoScreen } from "../EntrenoScreen";
 
@@ -62,7 +62,7 @@ test("guardar sin modificar → sets de 3 series done@target, top-level done:tru
   await start();
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
-  const sent = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!;
+  const sent = (put.mock.calls[0]![2] as PutMeSessionInput).actuals[0]!;
   expect(sent.done).toBe(true);
   expect(sent.movementId).toBe("arranque");
   expect(sent.sets).toHaveLength(3);
@@ -76,7 +76,7 @@ test("modificar la serie 2 (kg=60) → guardar → sólo esa serie cambia (indep
   fireEvent.click(screen.getByRole("button", { name: /listo serie 2/i }));
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
-  const sets = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!.sets!;
+  const sets = (put.mock.calls[0]![2] as PutMeSessionInput).actuals[0]!.sets!;
   expect(sets[0]!.kg).toBe(64);
   expect(sets[1]!.kg).toBe(60); // sólo la 2
   expect(sets[2]!.kg).toBe(64);
@@ -87,7 +87,7 @@ test("'no la hice (todo)' → todas las series done:false, exercise done:false",
   fireEvent.click(screen.getByRole("button", { name: /no la hice \(todo\)/i }));
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
-  const sent = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!;
+  const sent = (put.mock.calls[0]![2] as PutMeSessionInput).actuals[0]!;
   expect(sent.done).toBe(false);
   expect(sent.sets!.every((s) => s.done === false)).toBe(true);
 });
@@ -125,7 +125,7 @@ test("sustituir → kg de las series se limpia → cargar kg en serie 1 → guar
   fireEvent.click(screen.getByRole("button", { name: /listo serie 1/i }));
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
-  const sent = (put.mock.calls[0]![2] as ExerciseActualInput[])[0]!;
+  const sent = (put.mock.calls[0]![2] as PutMeSessionInput).actuals[0]!;
   expect(sent.movementId).toBe("arranque.colgado.bajo");
   expect(sent.prescribedMovementId).toBe("arranque");
   expect(sent.sets![0]!.kg).toBe(50);

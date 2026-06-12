@@ -271,6 +271,8 @@ export const SessionRegistroSchema: z.ZodType<SessionRegistro> = z.object({
   sessionIdx: z.number().int().min(0).max(13),
   fecha: IsoDateSchema,
 });
+/** Array listo para el read-side local (espejo del SessionActualsSchema). */
+export const SessionRegistrosSchema = z.array(SessionRegistroSchema);
 
 // The actual rides the prescribed-exercise view (no `order` — positional). Extend the view schema.
 // Read-side (lo que el server ya validó al escribir) → sin bounds; el INPUT (ExerciseActualInputSchema) es el que acota.

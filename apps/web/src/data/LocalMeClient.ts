@@ -10,15 +10,17 @@
 import type {
   Atleta, CycleData, MePlanView, MeRecorrido, MonitorSeries, Plan, PrescriptionRow, RecorridoSemana,
   DayLog, DayLogView, DayLogResult, DayLogInput,
-  SessionView, SessionActual, ExerciseActualInput, WeekHeat,
+  SessionView, SessionActual, WeekHeat, SessionRegistro, PutMeSessionInput,
 } from "@holy-oly/core";
 import {
   buildMePlanView, computeStreak, mergeActuals, buildSessionViews, summarizeSets, barKgForSexo,
-  DayLogInputSchema, SessionActualsInputSchema, PutMeCycleInputSchema,
+  DayLogInputSchema, PutMeSessionInputSchema, PutMeCycleInputSchema,
   MonitorSeriesSchema, PlanSchema, RosterSchema, PrescriptionRowsSchema,
-  DayLogsSchema, SessionActualsSchema, CycleShareSchema, CycleStateSchema,
-  MACROCYCLES, planHeat, weekDoneSummary,
+  DayLogsSchema, SessionActualsSchema, SessionRegistrosSchema, CycleShareSchema, CycleStateSchema,
+  MACROCYCLES, planHeat, weekDoneSummary, dayLayoutFor,
+  validateFechaEntreno, fechaConflict,
 } from "@holy-oly/core";
+import { FechaOcupadaError } from "./fechaError";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
 import type { MeClient } from "./meClient";
@@ -60,6 +62,10 @@ export class LocalMeClient implements MeClient {
     const r = SessionActualsSchema.safeParse(this.s.getOptional<unknown>(KEYS.sessionActuals(this.id)));
     return r.success ? r.data : [];
   }
+  private registros(): SessionRegistro[] {
+    const r = SessionRegistrosSchema.safeParse(this.s.getOptional<unknown>(KEYS.sessionRegistros(this.id)));
+    return r.success ? r.data : [];
+  }
 
   /** Greeting + camino. Mirrors repo.getMePlanView (throws "no athlete" → screen error state). */
   async getMePlan(): Promise<MePlanView> {
@@ -94,25 +100,43 @@ export class LocalMeClient implements MeClient {
     return { entry, streak: computeStreak(next.map((l) => l.date), today) };
   }
 
-  /** A week's sessions (kg from plan RMs) merged with the athlete's actuals. [] when no plan.
-   *  Mirrors repo.getPrescriptionWeek. */
+  /** A week's sessions (kg from plan RMs) merged with actuals, with day/turno/fecha. Mirrors server. */
   async getMeSessions(week: number): Promise<SessionView[]> {
     const plan = this.plan();
     if (!plan) return [];
     const rows = this.prescriptionRows().filter((r) => r.week === week);
     const actuals = this.actuals().filter((a) => a.week === week);
     const barKg = barKgForSexo(this.athlete()?.sexo ?? "M");
-    return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals);
+    const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+    const layout = macro ? dayLayoutFor(macro, week) : null;
+    const fechaByIdx = new Map(
+      this.registros().filter((r) => r.week === week).map((r) => [r.sessionIdx, r.fecha]),
+    );
+    return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals).map((v) => ({
+      ...v,
+      ...(layout?.[v.sessionIdx] ? layout[v.sessionIdx]! : {}),
+      ...(fechaByIdx.has(v.sessionIdx) ? { fecha: fechaByIdx.get(v.sessionIdx)! } : {}),
+    }));
   }
 
-  /** Per-day heat of the athlete's own plan (calendar map). Mirrors repo.getPlanHeat. */
+  /** Per-day heat of the athlete's own plan (calendar map). Mirrors repo.getPlanHeat (con day). */
   async getMeHeat(): Promise<WeekHeat[]> {
     const plan = this.plan();
     if (!plan) return [];
     const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
     const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
     if (totalWeeks === 0) return [];
-    return planHeat(this.prescriptionRows(), totalWeeks);
+    // Adjuntar `day` por semana (caché de layout para no recomputar por fila).
+    const layoutCache = new Map<number, { day: number; turno?: "AM" | "PM" }[] | null>();
+    const rows = this.prescriptionRows().map((r) => {
+      if (!layoutCache.has(r.week)) {
+        layoutCache.set(r.week, macro ? dayLayoutFor(macro, r.week) : null);
+      }
+      const layout = layoutCache.get(r.week) ?? null;
+      const day = layout?.[r.sessionIdx]?.day;
+      return day != null ? { ...r, day } : r;
+    });
+    return planHeat(rows, totalWeeks);
   }
 
   /** Recorrido del macro: lo HECHO acumulado por semana, con el MISMO builder de vistas que
@@ -139,22 +163,40 @@ export class LocalMeClient implements MeClient {
     return { semanas };
   }
 
-  /** Replace one session's actuals (self-written). Mirrors repo.setSessionActuals (top-set summary). */
-  async putMeSession(week: number, sessionIdx: number, actuals: ExerciseActualInput[]): Promise<void> {
-    const parsed = SessionActualsInputSchema.parse(actuals);
-    const today = this.today();
+  /** Replace one session's actuals (self-written). Mirrors repo.setSessionActuals con regla D1 (1×fecha). */
+  async putMeSession(week: number, sessionIdx: number, input: PutMeSessionInput): Promise<void> {
+    const parsed = PutMeSessionInputSchema.parse(input);
+    const hoy = this.today();
+    const fecha = parsed.fecha ?? hoy;
+    if (validateFechaEntreno(fecha, hoy) === "futuro") throw new Error("fecha futura");
+    const macro = MACROCYCLES.find((m) => m.id === this.plan()?.macroId);
+    const layout = macro ? dayLayoutFor(macro, week) : null;
+    const dayOf = (idx: number): number => layout?.[idx]?.day ?? idx + 1;
+    const registros = this.registros();
+    const summarized = parsed.actuals.map((a) => ({
+      a,
+      sum: a.sets && a.sets.length > 0 ? summarizeSets(a.sets) : { done: a.done, kg: a.kg, reps: a.reps },
+    }));
+    const anyDone = summarized.some(({ sum }) => sum.done);
+    if (anyDone) {
+      const conflict = fechaConflict(registros, week, sessionIdx, fecha, dayOf);
+      if (conflict) throw new FechaOcupadaError(conflict);
+    }
     const kept = this.actuals().filter((a) => !(a.week === week && a.sessionIdx === sessionIdx));
-    const added: SessionActual[] = parsed.map((a) => {
-      const sum = a.sets && a.sets.length > 0 ? summarizeSets(a.sets) : { done: a.done, kg: a.kg, reps: a.reps };
-      return {
-        week, sessionIdx, order: a.order, movementId: a.movementId,
-        prescribedMovementId: a.prescribedMovementId,
-        done: sum.done, actualKg: sum.kg, actualReps: sum.reps, note: a.note,
-        sets: a.sets && a.sets.length > 0 ? a.sets : undefined,
-        doneAt: sum.done ? today : undefined,
-      };
-    });
+    const added: SessionActual[] = summarized.map(({ a, sum }) => ({
+      week, sessionIdx, order: a.order, movementId: a.movementId,
+      prescribedMovementId: a.prescribedMovementId,
+      done: sum.done, actualKg: sum.kg, actualReps: sum.reps, note: a.note,
+      sets: a.sets && a.sets.length > 0 ? a.sets : undefined,
+      doneAt: sum.done ? fecha : undefined,
+    }));
     this.s.set(KEYS.sessionActuals(this.id), [...kept, ...added]);
+    // Actualizar el registro de fecha de la sesión (D1).
+    const keptRegs = registros.filter((r) => !(r.week === week && r.sessionIdx === sessionIdx));
+    this.s.set(
+      KEYS.sessionRegistros(this.id),
+      anyDone ? [...keptRegs, { week, sessionIdx, fecha }] : keptRegs,
+    );
   }
 
   // ── cuenta (D3/D4) — espejo honesto: en la demo NO hay cuenta. La UI gatea "Tus datos" por
