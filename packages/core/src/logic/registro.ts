@@ -11,7 +11,7 @@ export function validateFechaEntreno(fecha: string, hoy: string): "ok" | "futuro
 
 /** D1: máx 1 entreno por fecha. Devuelve el registro en conflicto o null. Excepciones:
  *  la sesión editándose a sí misma (D12) y los turnos del MISMO día de receta de la MISMA
- *  semana (D9 — partir el día doble en dos fechas también es legítimo, esto sólo PERMITE). */
+ *  semana (D9 — partir el día doble en dos fechas también es legítimo, esto sólo PERMITE). Acepta la lista completa de registros; no es necesario pre-filtrar por fecha. */
 export function fechaConflict(
   registros: readonly SessionRegistro[],
   week: number,

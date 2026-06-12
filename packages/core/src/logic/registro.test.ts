@@ -35,6 +35,7 @@ describe("weekRange/fueraDeSemana (D2: aviso suave, jamás bloqueo)", () => {
   it("semana w = [startDate+(w-1)*7, +6]", () => {
     expect(weekRange("2026-04-01", 1)).toEqual({ from: "2026-04-01", to: "2026-04-07" });
     expect(weekRange("2026-04-01", 9)).toEqual({ from: "2026-05-27", to: "2026-06-02" });
+    expect(weekRange("2025-12-29", 1)).toEqual({ from: "2025-12-29", to: "2026-01-04" });
   });
   it("fecha degenerada → null/false, jamás NaN fabricando booleanos (lección Carnicero)", () => {
     expect(weekRange("garbage", 1)).toBeNull();
