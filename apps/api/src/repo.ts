@@ -374,7 +374,9 @@ export class FechaOcupadaError extends Error {
  *  Transaccional. `fecha` = fecha REAL del entreno (la ruta ya validó ≤ hoy): estampa doneAt
  *  en filas done (las ediciones ya no corren la procedencia) y aplica la regla 1×fecha con
  *  la excepción AM/PM intra-semana vía dayLayoutFor (core). 0 filas done → el registro se
- *  borra y la fecha se libera (D11). */
+ *  borra y la fecha se libera (D11).
+ *  Asume escritor único por atleta (app móvil, sin retries concurrentes en vuelo): dos
+ *  transacciones simultáneas con la misma fecha podrían pasar el chequeo (read-committed). */
 export async function setSessionActuals(
   prisma: PrismaClient, athleteId: string, week: number, sessionIdx: number,
   actuals: ExerciseActualInput[],
@@ -383,6 +385,8 @@ export async function setSessionActuals(
   const plan = await getPlan(prisma, athleteId);
   const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
   const layout = macro ? dayLayoutFor(macro, week) : null;
+  // dayOf se deriva antes de la tx: TOCTOU inofensivo — si el coach re-asigna el macro en
+  // vuelo, a lo sumo la excepción AM/PM de ESTA escritura usa el layout viejo (no corrompe).
   const dayOf: DayOf = (idx) => layout?.[idx]?.day ?? idx + 1;
   const summarized = actuals.map((a) => ({
     a, sum: a.sets && a.sets.length > 0 ? summarizeSets(a.sets) : { done: a.done, kg: a.kg, reps: a.reps },

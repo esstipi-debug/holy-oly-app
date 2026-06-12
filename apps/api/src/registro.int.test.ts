@@ -14,10 +14,14 @@ function sess(res: InjectRes): { cookie: string } {
 }
 const RMS = { arranque: 80, envion: 100, sentadilla: 140, frente: 110 };
 
-const HOY = new Date().toISOString().slice(0, 10);
-const MANANA = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
-const AYER = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-const ANTEAYER = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
+// Ancladas a UN instante (no cuatro new Date() sueltos) — sin esto un run a las 23:59 UTC
+// podía leer HOY un día corrido respecto al todayISO() del server.
+const NOW = Date.now();
+const iso = (offsetDays: number): string => new Date(NOW + offsetDays * 86_400_000).toISOString().slice(0, 10);
+const HOY = iso(0);
+const MANANA = iso(1);
+const AYER = iso(-1);
+const ANTEAYER = iso(-2);
 
 describe("API integration — registro con fecha (regla 1×fecha + excepción AM/PM)", () => {
   let app: FastifyInstance;
