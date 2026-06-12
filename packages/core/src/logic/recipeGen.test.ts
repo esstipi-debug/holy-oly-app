@@ -332,6 +332,27 @@ describe("generateRecipe bi-diario (D6/D7 — Búlgaro AM/PM, spec 2026-06-12)",
     }
   });
 
+  it("balance semanal de lifts (curaduría): |arranque - envión| ≤ 1 en el Búlgaro", () => {
+    const dna = dnaForFamily("Búlgaro")!;
+    for (const phase of bulgaro().phases) {
+      let arranqueCount = 0;
+      let envionCount = 0;
+      for (const s of phase.sessions) {
+        const firstEx = s.exercises[0];
+        if (!firstEx) continue;
+        const mv = getMovement(firstEx.movementId);
+        if (!mv) continue;
+        if (mv.rmRef === "arranque") arranqueCount++;
+        if (mv.rmRef === "envion") envionCount++;
+      }
+      expect(
+        Math.abs(arranqueCount - envionCount),
+        `${phase.phaseKey}: arranque=${arranqueCount} envión=${envionCount} — diferencia debe ser ≤ 1`,
+      ).toBeLessThanOrEqual(1);
+    }
+    void dna; // dna declarada para coherencia de scope pero la aserción va en la receta
+  });
+
   it("las escuelas mono-diarias NO cambian: ninguna emite day/turno", () => {
     // muestra de macros generados de familias ≠ Búlgaro (ids verificados contra el catálogo)
     const ids = ["cubano-novicio-2d", "usa-school", "hibrido-block"];

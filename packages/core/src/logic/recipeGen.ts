@@ -404,7 +404,7 @@ export function generateRecipe(dna: SchoolDNA, macro: Macrocycle): MacroRecipe |
             idx += 1;
           }
         } else {
-          sessions.push({ ...buildSession(dna, macro, phase, role, archetypes[(day - 1) % archetypes.length]!, idx), day });
+          sessions.push({ ...buildSession(dna, macro, phase, role, archetypes[(day / 2 - 1) % archetypes.length]!, idx), day }); // días pares alternan arquetipos — sin esto todos caían en B y el lift de foco A quedaba subexpuesto (curaduría)
           idx += 1;
         }
       }
