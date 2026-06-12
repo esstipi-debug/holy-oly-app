@@ -23,6 +23,7 @@ export * from "./logic/warmup";
 export * from "./logic/sessionStats";
 export * from "./logic/planHeat";
 export * from "./logic/adherence";
+export * from "./logic/dailyView";
 export * from "./logic/rm";
 export * from "./logic/cycle";
 export * from "./logic/prilepin";

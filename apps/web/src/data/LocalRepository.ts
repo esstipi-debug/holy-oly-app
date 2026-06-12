@@ -1,14 +1,14 @@
 import type {
   Repository, Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleState, CycleContext, SessionLog, SessionView, PrescribedExercise, PrescriptionRow, WeekHeat,
-  PrCandidate, RmLift, RmUpdate, AthleteDailyView, DailyCheckin, PlannedSession, SessionActual, EngineWeek,
+  PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek,
 } from "@holy-oly/core";
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
   PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema, DayLogsSchema,
   MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
-  prCandidates, RM_LIFTS, lutealNow, redactCycle, reconcileAdherence, weekOfDate, prilepinPreviewWeek,
+  prCandidates, RM_LIFTS, lutealNow, redactCycle, buildDailyView, DAILY_WINDOW_WEEKS, prilepinPreviewWeek,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -167,51 +167,25 @@ export class LocalRepository implements Repository {
   }
 
   // ── Lazo diario (mirror del API repo.getDailyView). Check-ins crudos + adherencia reconciliada
-  //    (atleta > coach > none). El ciclo JAMÁS sale por acá. ──
+  //    (atleta > coach > none). El CRITERIO (ventana/dedup/reconciliación) vive en core
+  //    `buildDailyView` — espejo exacto del repo Http. El ciclo JAMÁS sale por acá. ──
   async getDaily(id: string): Promise<AthleteDailyView> {
     const today = new Date().toISOString().slice(0, 10);
-    const windowWeeks = 8; // espejo de DAILY_WINDOW_WEEKS del API
-    const fromMs = new Date(`${today}T00:00:00Z`).getTime() - windowWeeks * 7 * 86_400_000;
-    const fromDate = new Date(fromMs).toISOString().slice(0, 10);
-
-    const dl = DayLogsSchema.safeParse(this.s.getOptional<unknown>(KEYS.dayLog(id)));
-    const checkins: DailyCheckin[] = (dl.success ? dl.data : [])
-      .filter((c) => c.date >= fromDate)
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .map((c) => ({
-        date: c.date, fatiga: c.fatiga, dolor: c.dolor, estres: c.estres,
-        humor: c.humor, motivacion: c.motivacion, sueno: c.sueno, weight: c.weight,
-      }));
-
     const plan = await this.getPlan(id);
-    if (!plan) return { today, fromDate, checkins, adherence: [] };
-    const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
-    const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
-    if (totalWeeks === 0) return { today, fromDate, checkins, adherence: [] };
-
-    const startDate = plan.startDate ?? defaultStartDate(today, totalWeeks);
-    const currentWeek = weekOfDate(startDate, today, totalWeeks);
-    const fromWeek = Math.max(1, currentWeek - windowWeeks + 1);
-    const inWindow = (week: number): boolean => week >= fromWeek && week <= currentWeek;
-
-    // Sesiones planificadas = (week, sessionIdx) DISTINTOS de la prescripción en la ventana.
-    const seen = new Set<string>();
-    const planned: PlannedSession[] = [];
-    for (const r of this.prescriptionRows(id)) {
-      if (!inWindow(r.week)) continue;
-      const key = `${r.week}:${r.sessionIdx}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      planned.push({ week: r.week, idx: r.sessionIdx });
-    }
-    planned.sort((a, b) => (a.week - b.week) || (a.idx - b.idx));
-
+    const dl = DayLogsSchema.safeParse(this.s.getOptional<unknown>(KEYS.dayLog(id)));
     const sa = SessionActualsSchema.safeParse(this.s.getOptional<unknown>(KEYS.sessionActuals(id)));
-    const actuals: SessionActual[] = (sa.success ? sa.data : []).filter((a) => inWindow(a.week));
     const sl = SessionLogSchema.safeParse(this.s.getOptional<unknown>(KEYS.sessionLog(id)));
-    const marks: SessionLog = (sl.success ? sl.data : []).filter((m) => inWindow(m.week));
 
-    return { today, fromDate, checkins, adherence: reconcileAdherence(planned, actuals, marks) };
+    return buildDailyView({
+      today,
+      windowWeeks: DAILY_WINDOW_WEEKS,
+      macroId: plan?.macroId ?? null,
+      startDate: plan?.startDate ?? null,
+      dayLogs: dl.success ? dl.data : [],
+      prescription: this.prescriptionRows(id).map((r) => ({ week: r.week, sessionIdx: r.sessionIdx })),
+      actuals: sa.success ? sa.data : [],
+      marks: sl.success ? sl.data : [],
+    });
   }
 
   async getCycleShare(id: string): Promise<CycleShare> {

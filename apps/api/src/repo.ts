@@ -4,9 +4,9 @@ import type {
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
   CycleShare, CycleState, CycleData, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
-  MeRecorrido, RecorridoSemana, AthleteDailyView, DailyCheckin, PlannedSession, EngineWeek,
+  MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, reconcileAdherence, weekOfDate, defaultStartDate, prilepinPreviewWeek } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -358,14 +358,9 @@ function groupByWeek<T extends { week: number }>(items: T[]): Map<number, T[]> {
 
 // ── Día a día (slice lazo-diario, GET /athletes/:id/daily). Coach-only (el caller autoriza con
 //    guardAthlete). Cierra el lazo atleta→coach: el check-in diario crudo + la adherencia
-//    RECONCILIADA (actuals del atleta > mark manual del coach > none). JAMÁS toca el ciclo. ──
-
-/** Ventana por defecto del día a día, en semanas (≈ 2 mesociclos). */
-const DAILY_WINDOW_WEEKS = 8;
-const DAILY_DAY_MS = 86_400_000;
-function isoMinusDays(iso: string, days: number): string {
-  return new Date(new Date(`${iso}T00:00:00Z`).getTime() - days * DAILY_DAY_MS).toISOString().slice(0, 10);
-}
+//    RECONCILIADA (actuals del atleta > mark manual del coach > none). JAMÁS toca el ciclo.
+//    El CRITERIO (ventana/dedup/reconciliación) vive en core `buildDailyView` — espejo exacto del
+//    repo Local (apps/web). Acá sólo se fetchan las filas y se mapean a la forma del input. ──
 
 /**
  * Vista coach del lazo diario: los check-ins crudos del atleta de los últimos N días + la
@@ -376,61 +371,33 @@ function isoMinusDays(iso: string, days: number): string {
 export async function getDailyView(
   prisma: PrismaClient, athleteId: string, today: string, windowWeeks: number = DAILY_WINDOW_WEEKS,
 ): Promise<AthleteDailyView> {
-  const fromDate = isoMinusDays(today, windowWeeks * 7);
+  const fromDate = dailyFromDate(today, windowWeeks);
 
-  // Check-ins crudos del atleta en la ventana (independientes del plan; orden cronológico asc).
-  const dayRows = await prisma.dayLog.findMany({
-    where: { athleteId, date: { gte: fromDate } },
-    orderBy: { date: "asc" },
-  });
-  const checkins: DailyCheckin[] = dayRows.map((r) => ({
-    date: r.date, fatiga: r.fatiga, dolor: r.dolor, estres: r.estres,
-    humor: r.humor, motivacion: r.motivacion, sueno: r.sueno, weight: r.weight ?? undefined,
-  }));
-
-  // Adherencia: ventana de semanas recientes del plan, reconciliando actuals (atleta) vs marks (coach).
+  // Filas crudas (el filtrado/dedup/ventana de semanas lo aplica core). Los queries acotan por
+  // fecha/semana sólo para no traer de más; core re-windowea con el mismo criterio (idempotente).
   const plan = await getPlan(prisma, athleteId);
-  if (!plan) return { today, fromDate, checkins, adherence: [] };
-  const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
-  const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
-  if (totalWeeks === 0) return { today, fromDate, checkins, adherence: [] };
-
-  // La semana del plan que cae HOY ancla la ventana [fromWeek..currentWeek]. startDate real (M5)
-  // o el fallback que ancla hoy a la semana de la serie (mismo criterio que el drill-down).
-  const startDate = plan.startDate ?? defaultStartDate(today, totalWeeks);
-  const currentWeek = weekOfDate(startDate, today, totalWeeks);
-  const fromWeek = Math.max(1, currentWeek - windowWeeks + 1);
-
-  const [presRows, actualRows] = await Promise.all([
+  const [dayRows, presRows, actualRows, markRows] = await Promise.all([
+    prisma.dayLog.findMany({ where: { athleteId, date: { gte: fromDate } } }),
     prisma.prescribedExercise.findMany({
-      where: { athleteId, week: { gte: fromWeek, lte: currentWeek } },
-      select: { week: true, sessionIdx: true },
+      where: { athleteId }, select: { week: true, sessionIdx: true },
     }),
-    prisma.sessionActual.findMany({ where: { athleteId, week: { gte: fromWeek, lte: currentWeek } } }),
+    prisma.sessionActual.findMany({ where: { athleteId } }),
+    prisma.sessionMark.findMany({ where: { athleteId } }),
   ]);
-  const marks = await prisma.sessionMark.findMany({
-    where: { athleteId, week: { gte: fromWeek, lte: currentWeek } },
-    orderBy: [{ week: "asc" }, { idx: "asc" }],
+
+  return buildDailyView({
+    today,
+    windowWeeks,
+    macroId: plan?.macroId ?? null,
+    startDate: plan?.startDate ?? null,
+    dayLogs: dayRows.map((r) => ({
+      date: r.date, fatiga: r.fatiga, dolor: r.dolor, estres: r.estres,
+      humor: r.humor, motivacion: r.motivacion, sueno: r.sueno, weight: r.weight ?? undefined,
+    })),
+    prescription: presRows.map((r) => ({ week: r.week, sessionIdx: r.sessionIdx })),
+    actuals: actualRows.map(toSessionActual),
+    marks: markRows.map((m) => ({ week: m.week, idx: m.idx, status: m.status })),
   });
-
-  // Sesiones planificadas = (week, sessionIdx) DISTINTOS de la prescripción, ordenadas.
-  const seen = new Set<string>();
-  const planned: PlannedSession[] = [];
-  for (const r of presRows) {
-    const key = `${r.week}:${r.sessionIdx}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    planned.push({ week: r.week, idx: r.sessionIdx });
-  }
-  planned.sort((a, b) => (a.week - b.week) || (a.idx - b.idx));
-
-  const actuals: SessionActual[] = actualRows.map(toSessionActual);
-  const adherence = reconcileAdherence(
-    planned,
-    actuals,
-    marks.map((m) => ({ week: m.week, idx: m.idx, status: m.status })),
-  );
-  return { today, fromDate, checkins, adherence };
 }
 
 /** Per-day heat aggregate of the WHOLE plan (calendar heat map). [] if no plan/macro. Light
