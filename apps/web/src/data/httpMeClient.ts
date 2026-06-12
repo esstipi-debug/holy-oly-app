@@ -81,8 +81,14 @@ export async function putMeSession(week: number, idx: number, input: PutMeSessio
     body: JSON.stringify(input),
   });
   if (res.status === 409) {
-    const body = (await res.json()) as { conflicto: { week: number; sessionIdx: number; fecha: string } };
-    throw new FechaOcupadaError(body.conflicto);
+    const body = (await res.json().catch(() => null)) as { conflicto?: { week: number; sessionIdx: number; fecha: string } } | null;
+    const c = body?.conflicto;
+    if (c && typeof c.week === "number" && typeof c.sessionIdx === "number" && typeof c.fecha === "string") {
+      throw new FechaOcupadaError(c);
+    }
+    // 409 con cuerpo inesperado (proxy raro) → cae al manejo de error genérico
+    await fail(res);
+    return;
   }
   if (!res.ok) await fail(res);
 }

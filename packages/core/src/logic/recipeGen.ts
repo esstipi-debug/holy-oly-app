@@ -419,13 +419,13 @@ export function generateRecipe(dna: SchoolDNA, macro: Macrocycle): MacroRecipe |
     const role = phaseRole(phase);
     const archetypes = archetypesFor(dna, role);
     if (archetypes.length === 0) return null;
-    const sessions: SessionTemplate[] = dna.sessionsPerDay === 2
-      ? buildBiDailyWeek(dna, macro, phase, role, archetypes, n)
-      : [];
-    if (dna.sessionsPerDay !== 2) {
+    let sessions: SessionTemplate[];
+    if (dna.sessionsPerDay === 2) {
+      sessions = buildBiDailyWeek(dna, macro, phase, role, archetypes, n);
+    } else {
+      sessions = [];
       for (let i = 0; i < n; i++) {
-        const archetype = archetypes[i % archetypes.length]!;
-        sessions.push(buildSession(dna, macro, phase, role, archetype, i));
+        sessions.push(buildSession(dna, macro, phase, role, archetypes[i % archetypes.length]!, i));
       }
     }
     phases.push({ phaseKey: phase.key, sessions });

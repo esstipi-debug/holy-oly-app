@@ -11,8 +11,6 @@ import { ResumenDia } from "./entreno/ResumenDia";
 import { SessionPlayer, type PlayerRow } from "./entreno/SessionPlayer";
 import type { SetRow } from "./entreno/WorkSetsSection";
 
-const HOY = new Date().toISOString().slice(0, 10);
-
 export function EntrenoScreen() {
   const { week: weekP, idx: idxP } = useParams();
   const navigate = useNavigate();
@@ -28,7 +26,10 @@ export function EntrenoScreen() {
   // Error de carga ≠ día vacío (D5): un fallo de API no puede disfrazarse de "no hay sesión".
   const [loadError, setLoadError] = useState(false);
   const [reload, setReload] = useState(0);
-  // ── Fecha del entreno (spec 2026-06-12 D5/D12). `fecha` null = sin resolver; al guardar cae a HOY.
+  // HOY al montar (fix T14): evita que si la app queda abierta pasando medianoche, HOY sea ayer.
+  // mount-stable: el mismo componente usa la misma fecha para toda su vida.
+  const [hoy] = useState(() => new Date().toISOString().slice(0, 10));
+  // ── Fecha del entreno (spec 2026-06-12 D5/D12). `fecha` null = sin resolver; al guardar cae a hoy.
   const [fecha, setFecha] = useState<string | null>(null);
   const [fechaSheet, setFechaSheet] = useState<"conflicto" | "editar" | null>(null);
   const [ocupadas, setOcupadas] = useState<string[]>([]);
@@ -61,8 +62,8 @@ export function EntrenoScreen() {
           .map((v) => v.fecha!);
         setOcupadas(tomadas);
         if (s?.fecha != null) setFecha(s.fecha);
-        else if (tomadas.includes(HOY)) setFechaSheet("conflicto");
-        else setFecha(HOY);
+        else if (tomadas.includes(hoy)) setFechaSheet("conflicto");
+        else setFecha(hoy);
         setRows((s?.exercises ?? []).map((e) => {
           const fromActual = e.actual?.sets;
           const series: SetRow[] = fromActual && fromActual.length > 0
@@ -80,7 +81,7 @@ export function EntrenoScreen() {
       })
       .catch(() => { if (on) { setRows([]); setLoadError(true); } });
     return () => { on = false; };
-  }, [week, idx, navigate, reload]);
+  }, [week, idx, navigate, reload, hoy]);
 
   const patchSet = (setIdx: number, p: Partial<SetRow>): void =>
     setRows((rs) => rs ? rs.map((r, j) => j === cur ? { ...r, series: r.series.map((s, k) => k === setIdx ? { ...s, ...p } : s) } : r) : rs);
@@ -99,7 +100,7 @@ export function EntrenoScreen() {
         const sets = r.series.map((s) => ({ kg: s.kg, reps: s.reps, done: s.done }));
         return { order, movementId: r.movementId, prescribedMovementId: r.prescribedMovementId, done: sets.some((s) => s.done), sets };
       });
-      await me.putMeSession(week, idx, { fecha: fecha ?? HOY, actuals });
+      await me.putMeSession(week, idx, { fecha: fecha ?? hoy, actuals });
       navigate(`/atleta/entreno/${week}/${idx}/victoria`);
     } catch (e) {
       // Red de seguridad server-side (D5): una carrera entre dispositivos puede dejar la fecha
@@ -108,7 +109,7 @@ export function EntrenoScreen() {
       setError(e instanceof Error ? e.message : "No se pudo guardar");
     }
     finally { setBusy(false); }
-  }, [rows, week, idx, navigate, fecha]);
+  }, [rows, week, idx, navigate, fecha, hoy]);
 
   if (rows === null) return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
 
@@ -133,7 +134,7 @@ export function EntrenoScreen() {
           <ResumenDia
             rows={rows.map((r) => ({ movementName: r.movementName, sets: r.sets, reps: r.reps, kg: r.series[0]?.kg ?? r.targetKg }))}
             barKg={barKg}
-            fecha={fecha ?? HOY}
+            fecha={fecha ?? hoy}
             onFechaTap={() => setFechaSheet("editar")}
             onStart={() => { setCur(0); setStarted(true); }}
           />
@@ -162,7 +163,7 @@ export function EntrenoScreen() {
         <FechaSheet
           open
           motivo={fechaSheet}
-          hoy={HOY}
+          hoy={hoy}
           ocupadas={ocupadas}
           {...(startDate ? { fueraDeSemana: (f: string) => fueraDeSemana(f, startDate, week) } : {})}
           onPick={(f) => { setFecha(f); setFechaSheet(null); }}
