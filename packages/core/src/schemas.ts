@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { SessionRegistro } from "./types";
 
 /**
  * Runtime validation schemas for the domain entities. Single source of truth for
@@ -265,7 +266,7 @@ export const PutMeSessionInputSchema = z.object({
 });
 export type PutMeSessionInput = z.infer<typeof PutMeSessionInputSchema>;
 
-export const SessionRegistroSchema = z.object({
+export const SessionRegistroSchema: z.ZodType<SessionRegistro> = z.object({
   week: z.number().int().min(1).max(104),
   sessionIdx: z.number().int().min(0).max(13),
   fecha: IsoDateSchema,

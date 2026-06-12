@@ -83,4 +83,8 @@ describe("SessionRegistroSchema", () => {
     expect(SessionRegistroSchema.safeParse({ week: 0, sessionIdx: 0, fecha: "2026-06-12" }).success).toBe(false);
     expect(SessionRegistroSchema.safeParse({ week: 1, sessionIdx: 14, fecha: "2026-06-12" }).success).toBe(false);
   });
+  it("rechaza fecha no-calendario y acepta los bordes superiores (week 104, idx 13)", () => {
+    expect(SessionRegistroSchema.safeParse({ week: 1, sessionIdx: 0, fecha: "2026-99-99" }).success).toBe(false);
+    expect(SessionRegistroSchema.safeParse({ week: 104, sessionIdx: 13, fecha: "2026-06-12" }).success).toBe(true);
+  });
 });
