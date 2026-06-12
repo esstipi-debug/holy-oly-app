@@ -23,8 +23,16 @@ ALTER TABLE "SessionRegistro" ADD CONSTRAINT "SessionRegistro_athleteId_fkey" FO
 -- Backfill (D10): fecha = MIN(doneAt) de las filas done de cada sesión ya registrada —
 -- aproximación honesta a «primera vez registrada» (el doneAt histórico deriva con ediciones).
 -- Los SessionActual históricos NO se tocan (verdad histórica).
-INSERT INTO "SessionRegistro" ("id", "athleteId", "week", "sessionIdx", "fecha")
-SELECT gen_random_uuid(), "athleteId", "week", "sessionIdx", MIN("doneAt")
-FROM "SessionActual"
-WHERE "done" = true AND "doneAt" IS NOT NULL
-GROUP BY "athleteId", "week", "sessionIdx";
+-- CONDICIONAL: en DB fresca las migraciones 2..9 aplican DESPUÉS que esta (orden de colación
+-- de carpetas de Prisma) y "SessionActual" aún no existe — y tampoco hay nada que rellenar.
+-- En DB con datos (prod/demo) la tabla existe y el backfill corre completo.
+DO $$
+BEGIN
+  IF to_regclass('"SessionActual"') IS NOT NULL THEN
+    INSERT INTO "SessionRegistro" ("id", "athleteId", "week", "sessionIdx", "fecha")
+    SELECT gen_random_uuid(), "athleteId", "week", "sessionIdx", MIN("doneAt")
+    FROM "SessionActual"
+    WHERE "done" = true AND "doneAt" IS NOT NULL
+    GROUP BY "athleteId", "week", "sessionIdx";
+  END IF;
+END $$;
