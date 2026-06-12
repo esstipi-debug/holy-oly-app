@@ -434,3 +434,24 @@ export interface EngineWeek {
 export interface EngineWeekAthleteView {
   phase: EnginePhase; label: string; rationale: string; sets: EngineSet[];
 }
+
+/** Directiva legible del ajuste por readiness (spec 2026-06-12-readiness-modulacion-design):
+ *  allow = permitir lo planificado · hold = sostener · cut = recortar · none = sin señal. */
+export type ReadinessDirective = "allow" | "hold" | "cut" | "none";
+
+/** Rationale COACH-ONLY de la modulación por readiness que el motor YA aplicó (no recalcula nada;
+ *  deriva del EngineWeek — única fuente, sin drift). Read-only, NO va a superficie de atleta,
+ *  NO entra al semáforo. Sin readiness → directive "none" honesto. */
+export interface ReadinessModulation {
+  /** Eco de week.inputs.readiness (null = sin dato). */
+  band: ReadinessBand | null;
+  directive: ReadinessDirective;
+  /** week.taper.readinessFactor (1 / 0.9 / 0.75); null cuando directive === "none". */
+  factor: number | null;
+  /** Título corto coach-only (la banda en palabras). */
+  headline: string;
+  /** Explicación legible del ajuste. */
+  rationale: string;
+  /** Refleja week.heavySinglesAdvisory: mover los singles pesados, no borrarlos (solo "cut"). */
+  moveHeavySingles: boolean;
+}

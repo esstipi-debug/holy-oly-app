@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { EngineWeek, RmLift } from "@holy-oly/core";
-import { RM_LIFTS, barKgForSexo } from "@holy-oly/core";
+import { RM_LIFTS, barKgForSexo, readinessModulation } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { DiscRow } from "../../../ui/Disc";
 import { RM_LABELS } from "../rm/RmEditSheet";
@@ -8,6 +8,12 @@ import { RM_LABELS } from "../rm/RmEditSheet";
 /** Etiqueta de zona Prilepin tal cual (es el rango de % — el coach lo entiende). */
 const ZONE_LABEL: Record<EngineWeek["sets"][number]["zone"], string> = {
   "70-80": "70–80%", "80-90": "80–90%", "90+": "90%+",
+};
+
+/** Color semántico de la banda de readiness (espejo de la paleta status.ts: ok/warn/alert).
+ *  none = sin señal → tono neutro (jamás se pinta como un estado). */
+const BAND_COLOR: Record<NonNullable<ReturnType<typeof readinessModulation>["band"]> | "none", string> = {
+  green: "var(--ok)", amber: "var(--warn)", red: "var(--alert)", none: "var(--wl-muted)",
 };
 
 /**
@@ -105,6 +111,28 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
               )}
             </div>
             <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 4, lineHeight: 1.4 }}>{week.rationale}</div>
+
+            {/* Ajuste por readiness (coach-only, read-only): redacta lo que el motor YA aplicó con
+                la banda del día — no es el plan asignado, no entra al semáforo. Sin señal → fallback. */}
+            {(() => {
+              const mod = readinessModulation(week);
+              const color = BAND_COLOR[mod.band ?? "none"];
+              return (
+                <div aria-label="Ajuste por readiness" style={{ marginTop: 10, padding: "8px 10px", borderRadius: 10, background: "var(--wl-bg)", borderLeft: `3px solid ${color}`, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8, justifyContent: "space-between" }}>
+                    <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12 }}>
+                      Ajuste por readiness
+                    </div>
+                    <span style={{ fontFamily: "var(--mono)", fontSize: 9, color, border: `1px solid color-mix(in srgb,${color} 50%,transparent)`, padding: "2px 7px", borderRadius: 99 }}>
+                      {mod.headline}
+                    </span>
+                  </div>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 4, lineHeight: 1.4 }}>
+                    {mod.rationale}
+                  </div>
+                </div>
+              );
+            })()}
 
             {week.sets.length === 0 ? (
               <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 8 }}>
