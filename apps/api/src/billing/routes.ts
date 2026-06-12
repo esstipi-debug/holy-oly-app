@@ -29,13 +29,17 @@ import {
   verifyMercadoPagoSignature,
   type MercadoPagoWebhookNotification,
 } from "./mercadopago";
+import { assertBillingProdConfig, billingProvider, mockCheckoutAllowed } from "./config";
 
-const PROVIDER = process.env.BILLING_PROVIDER ?? "mock";
+const PROVIDER = billingProvider();
 
 const CheckoutBodySchema = z.object({ planId: z.string().optional(), period: z.string().optional() }).optional();
 
 /** Coach billing status, checkout, and provider webhooks (E3–E5). */
 export async function billingRoutes(app: FastifyInstance): Promise<void> {
+  // Fail fast: in production, refuse to register billing in mock mode (would charge $0).
+  assertBillingProdConfig();
+
   app.get("/billing/plans", async () => ({
     plans: COACH_PLANS.map((p) => ({
       id: p.id,
@@ -98,7 +102,10 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
       }
     }
 
-    if (PROVIDER === "mock" || process.env.NODE_ENV !== "production") {
+    // Dev/test convenience: mock checkout when not in production. NEVER falls back to mock in
+    // production — there the startup guard (assertBillingProdConfig) already forced a real provider,
+    // and this branch is gated so a stray BILLING_PROVIDER value can't reopen the $0 path.
+    if (mockCheckoutAllowed()) {
       await prisma.subscription.update({ where: { coachId }, data: { planId } }).catch(() => undefined);
       return { checkoutUrl: mockCheckoutUrl(coachId, origin), provider: "mock", planId, period };
     }

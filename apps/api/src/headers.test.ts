@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { buildServer } from "./server";
 
 // C1/C2 — security headers via @fastify/helmet. No DB needed (GET /health).
@@ -23,10 +23,26 @@ describe("security headers (C1/C2/C6)", () => {
   });
 
   it("emits HSTS only in production", async () => {
-    const prevEnv = process.env.NODE_ENV;
-    const prevOrigin = process.env.WEB_ORIGIN;
-    process.env.NODE_ENV = "production";
-    process.env.WEB_ORIGIN = "https://holy-oly.example"; // satisfy the CORS fail-fast
+    // A production boot now runs the billing prod-config guard (D2): it refuses to start in mock
+    // mode so prod can never charge $0. Simulate a fully-configured production so the guard passes
+    // and we can assert the HSTS header (the thing this test actually cares about).
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("WEB_ORIGIN", "https://holy-oly.example"); // satisfy the CORS fail-fast
+    vi.stubEnv("BILLING_PROVIDER", "mercadopago");
+    vi.stubEnv("MERCADOPAGO_ACCESS_TOKEN", "APP_USR-test-token");
+    vi.stubEnv("MERCADOPAGO_WEBHOOK_SECRET", "test-webhook-secret");
+    for (const key of [
+      "MERCADOPAGO_PLAN_COACH_MONTHLY",
+      "MERCADOPAGO_PLAN_COACH_ANNUAL",
+      "MERCADOPAGO_PLAN_PRO_MONTHLY",
+      "MERCADOPAGO_PLAN_PRO_ANNUAL",
+      "MERCADOPAGO_PLAN_ELITE_MONTHLY",
+      "MERCADOPAGO_PLAN_ELITE_ANNUAL",
+      "MERCADOPAGO_PLAN_BOX_MONTHLY",
+      "MERCADOPAGO_PLAN_BOX_ANNUAL",
+    ]) {
+      vi.stubEnv(key, "test-plan-id");
+    }
     const app = buildServer();
     await app.ready();
     try {
@@ -34,9 +50,7 @@ describe("security headers (C1/C2/C6)", () => {
       expect(String(res.headers["strict-transport-security"] ?? "")).toContain("max-age=31536000");
     } finally {
       await app.close();
-      process.env.NODE_ENV = prevEnv;
-      if (prevOrigin === undefined) delete process.env.WEB_ORIGIN;
-      else process.env.WEB_ORIGIN = prevOrigin;
+      vi.unstubAllEnvs();
     }
   });
 });
