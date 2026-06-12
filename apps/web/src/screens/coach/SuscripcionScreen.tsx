@@ -138,17 +138,20 @@ export function SuscripcionScreen() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                     <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{plan.name}</span>
                     <span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700 }}>
-                      {effectivePeriod === "semiannual" ? `${formatClp(plan.priceClpSemiannual)} + IVA/sem` : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
+                      {/* Headline siempre por mes → escalera comparable entre planes (sem y mensual no se mezclan). */}
+                      {effectivePeriod === "semiannual"
+                        ? `≈ ${formatClp(Math.round(plan.priceClpSemiannual / 6))} + IVA/mes`
+                        : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
                     </span>
                   </div>
                   {effectivePeriod === "semiannual" && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-accent)", marginTop: 3 }}>
-                      ≈ {formatClp(Math.round(plan.priceClpSemiannual / 6))}/mes · {monthsFree(plan)} mes gratis
+                      {formatClp(plan.priceClpSemiannual)} + IVA cada 6 meses · {monthsFree(plan)} mes gratis
                     </div>
                   )}
                   {period === "semiannual" && !hasSemiannual && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>
-                      Solo mensual disponible para este plan
+                      Facturación mensual
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{plan.description}</div>
