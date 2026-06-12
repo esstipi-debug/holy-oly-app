@@ -1,11 +1,13 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
-import type { PrescribedExerciseView } from "@holy-oly/core";
+import type { PrescribedExerciseView, RM } from "@holy-oly/core";
 import { SessionEditor } from "../sessions/SessionEditor";
 
 const exs: PrescribedExerciseView[] = [
   { movementId: "arranque", sets: 5, reps: 3, pct: 70, movementName: "Arranque", targetKg: 56 },
 ];
+
+const RMS: RM = { arranque: 100, envion: 120, sentadilla: 150, frente: 130 };
 
 test("edita reps y guarda los ejercicios", async () => {
   const onSave = vi.fn().mockResolvedValue(undefined);
@@ -57,6 +59,24 @@ test("sustituye un movimiento y onSave recibe el nuevo movementId con esquema pr
   expect(saved.sets).toBe(5);
   expect(saved.reps).toBe(3);
   expect(saved.pct).toBeDefined(); // arranque.colgado.bajo has rmRef "arranque" → usesPct = true
+});
+
+test("V3: una fila cx.* muestra el análisis de carga neural con eslabón débil (RMs presentes)", () => {
+  const cxRow: PrescribedExerciseView[] = [
+    { movementId: "cx.cargada+frontal+2t", sets: 4, reps: 1, pct: 80, movementName: "Cargada + Sent. frontal + Segundo tiempo (1+1+1)", targetKg: 96 },
+  ];
+  render(<SessionEditor open week={1} sessionIdx={0} exercises={cxRow} rms={RMS} onClose={() => {}} onSave={vi.fn()} />);
+  const box = screen.getByLabelText(/análisis del complejo/i);
+  expect(box).toHaveTextContent("SNC");
+  expect(box).toHaveTextContent("85%"); // tope programable
+  expect(box).toHaveTextContent(/Eslabón débil/);
+  expect(box).toHaveTextContent("Envión");
+  expect(box).toHaveTextContent("120 kg"); // RM del eslabón débil
+});
+
+test("V3: una fila de movimiento simple NO muestra análisis de complejo", () => {
+  render(<SessionEditor open week={1} sessionIdx={0} exercises={exs} rms={RMS} onClose={() => {}} onSave={vi.fn()} />);
+  expect(screen.queryByLabelText(/análisis del complejo/i)).not.toBeInTheDocument();
 });
 
 test("reordena ejercicios con las flechas", () => {

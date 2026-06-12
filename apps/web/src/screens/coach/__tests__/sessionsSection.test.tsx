@@ -155,6 +155,38 @@ test("SP4 Fase D: desfasado gana sobre sustituido cuando ambos son true", async 
   expect(screen.queryByText(/\(sustituido\)/)).not.toBeInTheDocument();
 });
 
+test("V3: un ejercicio cx.* muestra el análisis de carga neural (eslabón débil con kg del plan)", async () => {
+  // RepositoryProvider re-siembra al montar (init()): los RMs vigentes de "mv" son los del seed
+  // (envion 98), que es justo lo que el coach ve — el componente lee getPlan().rms, source of truth.
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    {
+      week: 1,
+      sessionIdx: 0,
+      exercises: [
+        { movementId: "cx.cargada+frontal+2t", sets: 4, reps: 1, pct: 80, movementName: "Cargada + Sent. frontal + Segundo tiempo (1+1+1)", targetKg: 80 },
+      ],
+    },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  const box = await screen.findByLabelText(/análisis del complejo/i);
+  expect(box).toHaveTextContent("SNC");
+  expect(box).toHaveTextContent("Complej");
+  expect(box).toHaveTextContent("85%"); // tope programable (complejo de 3 eslabones)
+  // Eslabón débil del C+F+2T = el envión (cargada y 2t cuelgan del envión, el menor RM del plan).
+  await waitFor(() => expect(box).toHaveTextContent(/Eslabón débil.*Envión.*\d+ kg/s));
+});
+
+test("V3: un ejercicio simple NO muestra análisis de complejo", async () => {
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    { week: 1, sessionIdx: 0, exercises: [{ movementId: "arranque", sets: 5, reps: 3, pct: 70, movementName: "Arranque", targetKg: 56 }] },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  await screen.findByText(/Arranque/);
+  expect(screen.queryByLabelText(/análisis del complejo/i)).not.toBeInTheDocument();
+});
+
 test("D1: muestra nota del atleta cuando actual.note está presente", async () => {
   const repo = await repoWithPlan();
   vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([

@@ -1,8 +1,9 @@
 import { useState, type CSSProperties } from "react";
-import { getMovement, PrescribedExercisesSchema, type PrescribedExercise, type PrescribedExerciseView } from "@holy-oly/core";
+import { getMovement, PrescribedExercisesSchema, type PrescribedExercise, type PrescribedExerciseView, type RM } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 import { MovementPicker } from "./MovementPicker";
 import { SubstituteSheet } from "../../../ui/SubstituteSheet";
+import { ComplexAnalysis } from "./ComplexAnalysis";
 
 interface Draft { movementId: string; movementName: string; sets: number; reps: number; pct?: number; kgOverride?: number; }
 
@@ -33,8 +34,8 @@ function swapMovement(d: Draft, id: string): Draft {
   };
 }
 
-export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSave }: {
-  open: boolean; week: number; sessionIdx: number; exercises: PrescribedExerciseView[];
+export function SessionEditor({ open, week, sessionIdx, exercises, rms, onClose, onSave }: {
+  open: boolean; week: number; sessionIdx: number; exercises: PrescribedExerciseView[]; rms?: RM;
   onClose: () => void; onSave: (exercises: PrescribedExercise[]) => Promise<void> | void;
 }) {
   const [rows, setRows] = useState<Draft[]>(() =>
@@ -82,6 +83,7 @@ export function SessionEditor({ open, week, sessionIdx, exercises, onClose, onSa
               {r.pct != null && <>@<input style={num} type="number" aria-label={`% de ${r.movementName}`} value={r.pct} onChange={(e) => patch(i, { pct: Number(e.target.value) })} />%</>}
               <input style={{ ...num, width: 64 }} type="number" placeholder="kg" aria-label={`kg de ${r.movementName}`} value={r.kgOverride ?? ""} onChange={(e) => patch(i, { kgOverride: e.target.value ? Number(e.target.value) : undefined })} />
             </div>
+            <ComplexAnalysis movementId={r.movementId} rms={rms} />
           </div>
         ))}
       </div>

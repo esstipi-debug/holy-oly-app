@@ -24,4 +24,24 @@ describe("AtletaMiniCard", () => {
     render(<AtletaMiniCard row={nd} onPick={() => {}} />);
     expect(screen.getByText("—")).toBeInTheDocument();
   });
+  it("V5: trend negativo → flecha ▼ con la magnitud del Δ", () => {
+    render(<AtletaMiniCard row={{ ...row, readiness: 78, trend: -9 }} onPick={() => {}} />);
+    const chip = screen.getByLabelText(/tendencia baja 9/);
+    expect(chip).toHaveTextContent("▼");
+    expect(chip).toHaveTextContent("9");
+  });
+  it("V5: trend positivo → flecha ▲ (un 78 subiendo ≠ un 78 cayendo)", () => {
+    render(<AtletaMiniCard row={{ ...row, readiness: 78, trend: 6 }} onPick={() => {}} />);
+    const chip = screen.getByLabelText(/tendencia sube 6/);
+    expect(chip).toHaveTextContent("▲");
+    expect(chip).toHaveTextContent("6");
+  });
+  it("V5: trend estable (0) → → sin magnitud", () => {
+    render(<AtletaMiniCard row={{ ...row, readiness: 78, trend: 0 }} onPick={() => {}} />);
+    expect(screen.getByLabelText(/tendencia estable 0/)).toHaveTextContent("→");
+  });
+  it("V5: sin trend → no pinta flecha (sin-dato honesto)", () => {
+    render(<AtletaMiniCard row={{ ...row, readiness: 78, trend: undefined }} onPick={() => {}} />);
+    expect(screen.queryByLabelText(/tendencia/)).not.toBeInTheDocument();
+  });
 });

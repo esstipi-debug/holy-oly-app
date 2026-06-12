@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
-import type { PrescribedExercise, SessionView } from "@holy-oly/core";
+import type { PrescribedExercise, RM, SessionView } from "@holy-oly/core";
 import { kgDeviation } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { SessionEditor } from "./SessionEditor";
+import { ComplexAnalysis } from "./ComplexAnalysis";
 
 const sec: CSSProperties = { fontFamily: "var(--wl-display)", fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--wl-muted)", margin: "22px 0 10px" };
 const card: CSSProperties = { background: "var(--wl-surface)", borderRadius: "var(--wl-radius)", padding: "10px 12px", marginTop: 8 };
@@ -23,6 +24,8 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
   const repo = useRepository();
   const [week, setWeek] = useState(Math.min(Math.max(hoyWeek, 1), totalWeeks));
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
+  // RMs vigentes del plan — base del eslabón débil del complejo (sin plan → sin kg, oculto honesto).
+  const [rms, setRms] = useState<RM | undefined>(undefined);
   const [editing, setEditing] = useState<SessionView | null>(null);
   // Error ≠ vacío (D5): un fallo de carga no puede mostrarse como "Sin sesiones".
   const [error, setError] = useState(false);
@@ -41,6 +44,14 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
       .catch(() => { if (on) setError(true); });
     return () => { on = false; };
   }, [repo, athleteId, week, reload]);
+
+  // RMs del plan (para el eslabón débil del complejo). Independiente de la semana; fallo silencioso
+  // → el análisis cae a sólo carga/complejidad (kg oculto), nunca un kg inventado.
+  useEffect(() => {
+    let on = true;
+    repo.getPlan(athleteId).then((p) => { if (on) setRms(p?.rms); }, () => { if (on) setRms(undefined); });
+    return () => { on = false; };
+  }, [repo, athleteId, reload]);
 
   const onSave = useCallback(async (exercises: PrescribedExercise[]) => {
     if (!editing) return;
@@ -101,6 +112,7 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
                   {e.actual?.note && (
                     <div style={noteStyle}>📝 {e.actual.note}</div>
                   )}
+                  <ComplexAnalysis movementId={e.movementId} rms={rms} />
                 </div>
               );
             })}
@@ -108,7 +120,7 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
         ))
       )}
       {editing && (
-        <SessionEditor open week={editing.week} sessionIdx={editing.sessionIdx} exercises={editing.exercises} onClose={() => setEditing(null)} onSave={onSave} />
+        <SessionEditor open week={editing.week} sessionIdx={editing.sessionIdx} exercises={editing.exercises} rms={rms} onClose={() => setEditing(null)} onSave={onSave} />
       )}
     </div>
   );
