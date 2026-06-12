@@ -101,6 +101,13 @@ describe("dayLayoutFor (layout día/turno derivado de la receta — D8, no se pe
     const ruso = MACROCYCLES.find((m) => m.id === "ruso-5d")!;
     expect(dayLayoutFor(ruso, 999)).toBeNull();
   });
+  it("bulgaro-6d (bi-diario): día 1 con turnos AM/PM, días pares simples", () => {
+    const bulgaro = MACROCYCLES.find((m) => m.id === "bulgaro-6d")!;
+    const layout = dayLayoutFor(bulgaro, 1)!;
+    expect(layout[0]).toEqual({ day: 1, turno: "AM" });
+    expect(layout[1]).toEqual({ day: 1, turno: "PM" });
+    expect(layout.filter((l) => l.day === 2)).toEqual([{ day: 2 }]);
+  });
 });
 
 // minimal fixture so the test doesn't depend on the full curated recipe

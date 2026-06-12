@@ -304,6 +304,22 @@ function applyPrilepinSessionClamp(ordered: Filled[]): void {
   }
 }
 
+/** Techo SNC del DÍA (D7): los turnos de un día doble suman contra esto. Factor curaduría
+ *  del coach (calibrable acá): 1.5× el presupuesto de sesión — dos sesiones cortas caben,
+ *  dos sesiones llenas no. El Carnicero revisa el valor. */
+const DAILY_SNC_FACTOR = 1.5;
+
+const sessionSnc = (s: SessionTemplate): number =>
+  s.exercises.reduce((acc, ex) => acc + effLoads(ex.movementId).snc, 0);
+
+/** Arquetipo de un turno (Abadjiev): AM busca focus arranque, PM focus envión. Escuela sin
+ *  ese focus declarado → rota por día (jamás inventa estructura). */
+function archetypeForTurno(archetypes: SessionArchetype[], turno: "AM" | "PM", day: number): SessionArchetype {
+  const want = turno === "AM" ? "arranque" : "envion";
+  return archetypes.find((a) => a.focus === want)
+    ?? archetypes[(day - 1 + (turno === "PM" ? 1 : 0)) % archetypes.length]!;
+}
+
 /** Una sesión: rellena el arquetipo, recorta por presupuesto (sólo slots ≥ optionalFrom),
  *  ordena por demanda neural descendente con los metabólicos al final y ajusta Prilepin. */
 function buildSession(
@@ -369,9 +385,34 @@ export function generateRecipe(dna: SchoolDNA, macro: Macrocycle): MacroRecipe |
     const archetypes = archetypesFor(dna, role);
     if (archetypes.length === 0) return null;
     const sessions: SessionTemplate[] = [];
-    for (let i = 0; i < n; i++) {
-      const archetype = archetypes[i % archetypes.length]!;
-      sessions.push(buildSession(dna, macro, phase, role, archetype, i));
+    if (dna.sessionsPerDay === 2) {
+      // Bi-diario (D6): días IMPARES dobles, pares simples — mezcla visible de layouts,
+      // volumen sano para humanos (curaduría v1; El Carnicero revisa). sessionIdx = posición
+      // del array (idx corrido), day/turno viajan en el template (D9).
+      const dailyCap = Math.round(dna.sncBudget[role] * DAILY_SNC_FACTOR);
+      let idx = 0;
+      for (let day = 1; day <= n; day++) {
+        if (day % 2 === 1) {
+          const am = buildSession(dna, macro, phase, role, archetypeForTurno(archetypes, "AM", day), idx);
+          const pm = buildSession(dna, macro, phase, role, archetypeForTurno(archetypes, "PM", day), idx + 1);
+          if (sessionSnc(am) + sessionSnc(pm) <= dailyCap) {
+            sessions.push({ ...am, day, turno: "AM" }, { ...pm, day, turno: "PM" });
+            idx += 2;
+          } else {
+            // Guard D7: el día no aguanta dos turnos → degrada a día simple (honesto)
+            sessions.push({ ...am, day });
+            idx += 1;
+          }
+        } else {
+          sessions.push({ ...buildSession(dna, macro, phase, role, archetypes[(day - 1) % archetypes.length]!, idx), day });
+          idx += 1;
+        }
+      }
+    } else {
+      for (let i = 0; i < n; i++) {
+        const archetype = archetypes[i % archetypes.length]!;
+        sessions.push(buildSession(dna, macro, phase, role, archetype, i));
+      }
     }
     phases.push({ phaseKey: phase.key, sessions });
   }

@@ -19,7 +19,9 @@
         "reps": 1,
         "pct": 100
        }
-      ]
+      ],
+      "day": 1,
+      "turno": "AM"
      },
      {
       "exercises": [
@@ -35,7 +37,26 @@
         "reps": 1,
         "pct": 100
        }
-      ]
+      ],
+      "day": 1,
+      "turno": "PM"
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 6,
+        "reps": 1,
+        "pct": 100
+       }
+      ],
+      "day": 2
      },
      {
       "exercises": [
@@ -51,7 +72,62 @@
         "reps": 1,
         "pct": 100
        }
-      ]
+      ],
+      "day": 3,
+      "turno": "AM"
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 6,
+        "reps": 1,
+        "pct": 100
+       }
+      ],
+      "day": 3,
+      "turno": "PM"
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "cargada-envion",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla",
+        "sets": 6,
+        "reps": 1,
+        "pct": 100
+       }
+      ],
+      "day": 4
+     },
+     {
+      "exercises": [
+       {
+        "movementId": "arranque",
+        "sets": 6,
+        "reps": 1,
+        "pct": 95
+       },
+       {
+        "movementId": "sentadilla-frente",
+        "sets": 6,
+        "reps": 1,
+        "pct": 100
+       }
+      ],
+      "day": 5,
+      "turno": "AM"
      },
      {
       "exercises": [
@@ -67,23 +143,9 @@
         "reps": 1,
         "pct": 100
        }
-      ]
-     },
-     {
-      "exercises": [
-       {
-        "movementId": "arranque",
-        "sets": 6,
-        "reps": 1,
-        "pct": 95
-       },
-       {
-        "movementId": "sentadilla",
-        "sets": 6,
-        "reps": 1,
-        "pct": 100
-       }
-      ]
+      ],
+      "day": 5,
+      "turno": "PM"
      },
      {
       "exercises": [
@@ -94,12 +156,13 @@
         "pct": 95
        },
        {
-        "movementId": "sentadilla",
+        "movementId": "sentadilla-frente",
         "sets": 6,
         "reps": 1,
         "pct": 100
        }
-      ]
+      ],
+      "day": 6
      }
     ]
    }
