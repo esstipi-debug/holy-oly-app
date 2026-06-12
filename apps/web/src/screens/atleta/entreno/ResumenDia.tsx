@@ -2,10 +2,32 @@ import { DiscRow } from "../../../ui/Disc";
 
 export interface ResumenRow { movementName: string; sets: number; reps: number; kg?: number; }
 
-/** Entrada del Entreno guiado: la lista del día + "▶ Iniciar entrenamiento". */
-export function ResumenDia({ rows, barKg, onStart }: { rows: ResumenRow[]; barKg: number; onStart: () => void }) {
+/** Entrada del Entreno guiado: la lista del día + "▶ Iniciar entrenamiento". `fecha`/`onFechaTap`
+ *  (spec 2026-06-12 D12) muestran «Entreno del … ▾» tocable para reabrir el selector de fecha. */
+export function ResumenDia({
+  rows,
+  barKg,
+  fecha,
+  onFechaTap,
+  onStart,
+}: {
+  rows: ResumenRow[];
+  barKg: number;
+  fecha?: string;
+  onFechaTap?: () => void;
+  onStart: () => void;
+}) {
   return (
     <div>
+      {fecha && onFechaTap && (
+        <button
+          type="button"
+          onClick={onFechaTap}
+          style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "0 0 10px", display: "block" }}
+        >
+          Entreno del {fecha} <span aria-hidden>▾</span>
+        </button>
+      )}
       <button type="button" className="wl-btn wl-btn--primary" onClick={onStart} style={{ width: "100%" }}>▶ Iniciar entrenamiento</button>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
         {rows.map((r, i) => (

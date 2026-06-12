@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { SessionView, ExerciseActualInput, MePlanView } from "@holy-oly/core";
-import { getMovement, barKgForSexo } from "@holy-oly/core";
+import { getMovement, barKgForSexo, fueraDeSemana } from "@holy-oly/core";
 import * as me from "../../data/meClient";
+import { FechaOcupadaError } from "../../data/meClient";
 import { BackButton } from "../../ui/BackButton";
 import { SubstituteSheet } from "../../ui/SubstituteSheet";
+import { FechaSheet } from "./entreno/FechaSheet";
 import { ResumenDia } from "./entreno/ResumenDia";
 import { SessionPlayer, type PlayerRow } from "./entreno/SessionPlayer";
 import type { SetRow } from "./entreno/WorkSetsSection";
+
+const HOY = new Date().toISOString().slice(0, 10);
 
 export function EntrenoScreen() {
   const { week: weekP, idx: idxP } = useParams();
@@ -24,18 +28,41 @@ export function EntrenoScreen() {
   // Error de carga ≠ día vacío (D5): un fallo de API no puede disfrazarse de "no hay sesión".
   const [loadError, setLoadError] = useState(false);
   const [reload, setReload] = useState(0);
+  // ── Fecha del entreno (spec 2026-06-12 D5/D12). `fecha` null = sin resolver; al guardar cae a HOY.
+  const [fecha, setFecha] = useState<string | null>(null);
+  const [fechaSheet, setFechaSheet] = useState<"conflicto" | "editar" | null>(null);
+  const [ocupadas, setOcupadas] = useState<string[]>([]);
+  const [myDay, setMyDay] = useState(idx + 1);
+  const [myTurno, setMyTurno] = useState<"AM" | "PM" | undefined>(undefined);
+  const [startDate, setStartDate] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!Number.isInteger(week) || !Number.isInteger(idx)) { navigate("/atleta", { replace: true }); return; }
     let on = true;
     setRows(null); setLoadError(false);
+    setFecha(null); setFechaSheet(null); setOcupadas([]);
     // D5: si el plan falla, el rechazo cae al catch general (loadError) — nada de degradar en
     // silencio a barra de 20 kg. El plan null RESUELTO (sin plan asignado) sigue siendo legítimo.
     Promise.all([me.getMePlan(), me.getMeSessions(week)])
       .then(([plan, views]: [MePlanView, SessionView[]]) => {
         if (!on) return;
         setBarKg(barKgForSexo(plan.athlete.sexo));
+        setStartDate(plan.plan?.startDate);
         const s = views.find((v) => v.sessionIdx === idx);
+        // Fecha de ESTA sesión (D5/D12): mi día/turno + las fechas de las OTRAS sesiones de la
+        // semana. Sólo cuenta como "ocupada" un día DISTINTO (los gemelos AM/PM del mismo día
+        // comparten fecha — D9). Resolución: editar conserva su fecha; hoy ocupada → sheet
+        // arriba (antes de registrar); si no, HOY en silencio (cero fricción).
+        const day = s?.day ?? idx + 1;
+        setMyDay(day);
+        setMyTurno(s?.turno);
+        const tomadas = views
+          .filter((v) => v.sessionIdx !== idx && v.fecha != null && (v.day ?? v.sessionIdx + 1) !== day)
+          .map((v) => v.fecha!);
+        setOcupadas(tomadas);
+        if (s?.fecha != null) setFecha(s.fecha);
+        else if (tomadas.includes(HOY)) setFechaSheet("conflicto");
+        else setFecha(HOY);
         setRows((s?.exercises ?? []).map((e) => {
           const fromActual = e.actual?.sets;
           const series: SetRow[] = fromActual && fromActual.length > 0
@@ -72,11 +99,16 @@ export function EntrenoScreen() {
         const sets = r.series.map((s) => ({ kg: s.kg, reps: s.reps, done: s.done }));
         return { order, movementId: r.movementId, prescribedMovementId: r.prescribedMovementId, done: sets.some((s) => s.done), sets };
       });
-      await me.putMeSession(week, idx, { actuals });
+      await me.putMeSession(week, idx, { fecha: fecha ?? HOY, actuals });
       navigate(`/atleta/entreno/${week}/${idx}/victoria`);
-    } catch (e) { setError(e instanceof Error ? e.message : "No se pudo guardar"); }
+    } catch (e) {
+      // Red de seguridad server-side (D5): una carrera entre dispositivos puede dejar la fecha
+      // tomada recién al guardar → reabrimos el sheet en vez de un error opaco.
+      if (e instanceof FechaOcupadaError) { setFechaSheet("conflicto"); return; }
+      setError(e instanceof Error ? e.message : "No se pudo guardar");
+    }
     finally { setBusy(false); }
-  }, [rows, week, idx, navigate]);
+  }, [rows, week, idx, navigate, fecha]);
 
   if (rows === null) return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
 
@@ -84,7 +116,7 @@ export function EntrenoScreen() {
   return (
     <div>
       <BackButton ariaLabel="Volver" onClick={() => (started ? setStarted(false) : navigate("/atleta"))} style={{ marginBottom: 6 }} />
-      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>Entreno · sem {week} · día {idx + 1}</div>
+      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>Entreno · sem {week} · día {myDay}{myTurno ? ` · ${myTurno}` : ""}</div>
 
       {loadError ? (
         <div role="alert" style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
@@ -101,6 +133,8 @@ export function EntrenoScreen() {
           <ResumenDia
             rows={rows.map((r) => ({ movementName: r.movementName, sets: r.sets, reps: r.reps, kg: r.series[0]?.kg ?? r.targetKg }))}
             barKg={barKg}
+            fecha={fecha ?? HOY}
+            onFechaTap={() => setFechaSheet("editar")}
             onStart={() => { setCur(0); setStarted(true); }}
           />
         </div>
@@ -122,6 +156,18 @@ export function EntrenoScreen() {
 
       {subOpen && rows[cur] && (
         <SubstituteSheet open movementId={rows[cur]!.movementId} onClose={() => setSubOpen(false)} onPick={pickSub} />
+      )}
+
+      {fechaSheet && (
+        <FechaSheet
+          open
+          motivo={fechaSheet}
+          hoy={HOY}
+          ocupadas={ocupadas}
+          {...(startDate ? { fueraDeSemana: (f: string) => fueraDeSemana(f, startDate, week) } : {})}
+          onPick={(f) => { setFecha(f); setFechaSheet(null); }}
+          onClose={() => setFechaSheet(null)}
+        />
       )}
     </div>
   );
