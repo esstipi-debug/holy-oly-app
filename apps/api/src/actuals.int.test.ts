@@ -13,7 +13,13 @@ const RMS = { arranque: 80, envion: 100, sentadilla: 140, frente: 110 };
 
 describe("API integration — actuals (SP3)", () => {
   let app: FastifyInstance;
-  beforeAll(async () => { app = buildServer(); await app.ready(); });
+  beforeAll(async () => {
+    app = buildServer();
+    await app.ready();
+    // Regla 1×fecha (spec 2026-06-12): otro archivo int pudo dejar OTRA sesión de mv registrada
+    // HOY → el primer PUT sin fecha de este archivo daría 409. Estado limpio = determinista.
+    await prisma.sessionRegistro.deleteMany({ where: { athleteId: "mv" } });
+  });
   afterAll(async () => { await app.close(); await prisma.$disconnect(); });
 
   const login = (email: string) => app.inject({ method: "POST", url: "/auth/login", payload: { email, password: "holyoly-demo" } });
@@ -21,7 +27,7 @@ describe("API integration — actuals (SP3)", () => {
   it("rejects an athlete actuals body with an unsafe movementId → 400 (D7)", async () => {
     const athlete = sess(await login("mara@holyoly.dev"));
     const res = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
-      payload: [{ order: 0, movementId: "<script>alert(1)</script>", done: true }] });
+      payload: { actuals: [{ order: 0, movementId: "<script>alert(1)</script>", done: true }] } });
     expect(res.statusCode).toBe(400);
   });
 
@@ -33,7 +39,7 @@ describe("API integration — actuals (SP3)", () => {
 
     const athlete = sess(await login("mara@holyoly.dev")); // seeded login → athleteId mv
     const put = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
-      payload: [{ order: 0, movementId: "arranque", done: true, kg: 58, reps: 3 }] });
+      payload: { actuals: [{ order: 0, movementId: "arranque", done: true, kg: 58, reps: 3 }] } });
     expect(put.statusCode).toBe(200);
 
     const mine = await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: athlete });
@@ -51,9 +57,9 @@ describe("API integration — actuals (SP3)", () => {
     await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach,
       payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } });
     const athlete = sess(await login("mara@holyoly.dev"));
-    await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete, payload: [{ order: 0, movementId: "arranque", done: true, kg: 60 }] });
+    await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete, payload: { actuals: [{ order: 0, movementId: "arranque", done: true, kg: 60 }] } });
     // clear it
-    const cleared = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete, payload: [] });
+    const cleared = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete, payload: { actuals: [] } });
     expect(cleared.statusCode).toBe(200);
     const mine = await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: athlete });
     const s0 = (mine.json() as Array<{ sessionIdx: number; exercises: Array<{ actual?: unknown }> }>).find((s) => s.sessionIdx === 0)!;
@@ -88,7 +94,7 @@ describe("API integration — actuals (SP3)", () => {
     const athlete = sess(await login("mara@holyoly.dev"));
     // Athlete records: did "sentadilla" but prescribedMovementId="arranque" (the original macro intent).
     expect((await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
-      payload: [{ order: 0, movementId: "sentadilla", prescribedMovementId: "arranque", done: true, kg: 50 }] })).statusCode).toBe(200);
+      payload: { actuals: [{ order: 0, movementId: "sentadilla", prescribedMovementId: "arranque", done: true, kg: 50 }] } })).statusCode).toBe(200);
     const coachView = await app.inject({ method: "GET", url: "/athletes/mv/prescription?week=1", headers: coach });
     const s0 = (coachView.json() as Array<{ sessionIdx: number; exercises: Array<{ movementId: string; actual?: { substituted: boolean; movementId: string; movementName: string; kg?: number } }> }>).find((s) => s.sessionIdx === 0)!;
     expect(s0.exercises[0]!.actual?.substituted).toBe(true);
@@ -99,7 +105,7 @@ describe("API integration — actuals (SP3)", () => {
   it("requires week on GET, validates the body, and is athlete-self (coach → 401 on /me)", async () => {
     const athlete = sess(await login("mara@holyoly.dev"));
     expect((await app.inject({ method: "GET", url: "/me/sessions", headers: athlete })).statusCode).toBe(400);
-    expect((await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete, payload: [{ order: 0, movementId: "x", done: true, kg: 999 }] })).statusCode).toBe(400);
+    expect((await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete, payload: { actuals: [{ order: 0, movementId: "x", done: true, kg: 999 }] } })).statusCode).toBe(400);
     const coach = sess(await login("coach@holyoly.dev"));
     expect((await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: coach })).statusCode).toBe(401);
   });
@@ -110,9 +116,9 @@ describe("API integration — actuals (SP3)", () => {
       payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } })).statusCode).toBe(200);
     const athlete = sess(await login("mara@holyoly.dev"));
     const put = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
-      payload: [{ order: 0, movementId: "arranque", done: true, sets: [
+      payload: { actuals: [{ order: 0, movementId: "arranque", done: true, sets: [
         { kg: 64, reps: 2, done: true }, { kg: 64, reps: 2, done: true }, { kg: 60, reps: 2, done: true },
-      ] }] });
+      ] }] } });
     expect(put.statusCode).toBe(200);
 
     const mine = await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: athlete });
@@ -129,9 +135,9 @@ describe("API integration — actuals (SP3)", () => {
     const athlete = sess(await login("mara@holyoly.dev"));
     // El atleta hizo las series pero sin registrar kg (p.ej. tras sustituir un movimiento → kg limpio).
     const put = await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
-      payload: [{ order: 0, movementId: "arranque", done: true, sets: [
+      payload: { actuals: [{ order: 0, movementId: "arranque", done: true, sets: [
         { reps: 2, done: true }, { reps: 2, done: true },
-      ] }] });
+      ] }] } });
     expect(put.statusCode).toBe(200);
 
     const mine = await app.inject({ method: "GET", url: "/me/sessions?week=1", headers: athlete });

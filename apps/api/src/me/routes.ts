@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { DayLogInputSchema, PutMeCycleInputSchema, SessionActualsInputSchema } from "@holy-oly/core";
+import { DayLogInputSchema, PutMeCycleInputSchema, PutMeSessionInputSchema, validateFechaEntreno } from "@holy-oly/core";
 import { prisma } from "../db/client";
 import { requireAthlete } from "../auth/guards";
 import { SESSION_COOKIE, cookieOpts } from "../auth/routes";
@@ -92,6 +92,8 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     return reply.code(200).send({ ok: true });
   });
 
+  // Spec 2026-06-12: envelope { fecha?, actuals } — fecha real del entreno (default hoy, jamás
+  // futura, D2/D4) + regla 1×fecha en el repo (409 identificado, D1/D5).
   app.put<{ Params: { week: string; idx: string } }>("/me/session/:week/:idx", async (req, reply) => {
     const athleteId = requireAthlete(req, reply);
     if (!athleteId) return;
@@ -100,9 +102,19 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     if (!Number.isInteger(week) || week < 1 || week > 104 || !Number.isInteger(idx) || idx < 0 || idx > 13) {
       return reply.code(400).send({ error: "bad week/idx" });
     }
-    const parsed = SessionActualsInputSchema.safeParse(req.body);
+    const parsed = PutMeSessionInputSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid actuals" });
-    await repo.setSessionActuals(prisma, athleteId, week, idx, parsed.data, todayISO());
+    const hoy = todayISO();
+    const fecha = parsed.data.fecha ?? hoy;
+    if (validateFechaEntreno(fecha, hoy) === "futuro") return reply.code(400).send({ error: "fecha futura" });
+    try {
+      await repo.setSessionActuals(prisma, athleteId, week, idx, parsed.data.actuals, fecha);
+    } catch (e) {
+      if (e instanceof repo.FechaOcupadaError) {
+        return reply.code(409).send({ error: "fecha_ocupada", conflicto: e.conflicto });
+      }
+      throw e;
+    }
     return reply.code(200).send({ ok: true });
   });
 

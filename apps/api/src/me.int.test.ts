@@ -127,20 +127,23 @@ describe("API integration — athlete self (/me/*)", () => {
     const RMS = { arranque: 80, envion: 100, sentadilla: 140, frente: 110 };
     const coachLogin = await app.inject({ method: "POST", url: "/auth/login", payload: { email: "coach@holyoly.dev", password: "holyoly-demo" } });
     const coach = sessionHeader(coachLogin);
-    // Plan fresco para mv (re-instancia la receta) + actuals limpios → test determinista
+    // Plan fresco para mv (re-instancia la receta) + actuals/registros limpios → test determinista
     // aunque otros archivos int hayan registrado sesiones de mv antes.
     expect((await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach,
       payload: { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-01", rms: RMS, comps: [] } })).statusCode).toBe(200);
     await prisma.sessionActual.deleteMany({ where: { athleteId: "mv" } });
+    await prisma.sessionRegistro.deleteMany({ where: { athleteId: "mv" } });
 
     const maraLogin = await app.inject({ method: "POST", url: "/auth/login", payload: { email: "mara@holyoly.dev", password: "holyoly-demo" } });
     const athlete = sessionHeader(maraLogin);
+    const AYER = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
     // Semana 1: 2 series hechas de 60×2 → trabajo 240 kg (+ rampa prescrita del ejercicio hecho).
     expect((await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
-      payload: [{ order: 0, movementId: "arranque", done: true, sets: [{ kg: 60, reps: 2, done: true }, { kg: 60, reps: 2, done: true }] }] })).statusCode).toBe(200);
-    // Semana 2: 1 serie hecha de 80×2 → trabajo 160 kg.
+      payload: { actuals: [{ order: 0, movementId: "arranque", done: true, sets: [{ kg: 60, reps: 2, done: true }, { kg: 60, reps: 2, done: true }] }] } })).statusCode).toBe(200);
+    // Semana 2: 1 serie hecha de 80×2 → trabajo 160 kg. Fecha explícita ≠ hoy: la regla 1×fecha
+    // (spec 2026-06-12 D1) ya no permite dos sesiones distintas el mismo día.
     expect((await app.inject({ method: "PUT", url: "/me/session/2/0", headers: athlete,
-      payload: [{ order: 0, movementId: "arranque", done: true, sets: [{ kg: 80, reps: 2, done: true }] }] })).statusCode).toBe(200);
+      payload: { fecha: AYER, actuals: [{ order: 0, movementId: "arranque", done: true, sets: [{ kg: 80, reps: 2, done: true }] }] } })).statusCode).toBe(200);
 
     const res = await app.inject({ method: "GET", url: "/me/recorrido", headers: athlete });
     expect(res.statusCode).toBe(200);

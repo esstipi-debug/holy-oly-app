@@ -79,8 +79,11 @@ describe("API integration — RMs (SP5: updateRms / historial / PRs)", () => {
     await app.inject({ method: "PUT", url: "/athletes/mv/plan", headers: coach, payload: PLAN });
 
     const athlete = await login("mara@holyoly.dev");
+    // Registros limpios: el PUT va SIN fecha (default hoy — el assert de procedencia lo exige) y
+    // la regla 1×fecha (spec 2026-06-12 D1) chocaría con una sesión que otro archivo dejó HOY.
+    await prisma.sessionRegistro.deleteMany({ where: { athleteId: "mv" } });
     expect((await app.inject({ method: "PUT", url: "/me/session/2/0", headers: athlete,
-      payload: [{ order: 0, movementId: "arranque.potencia", done: true, kg: 86, reps: 1 }] })).statusCode).toBe(200);
+      payload: { actuals: [{ order: 0, movementId: "arranque.potencia", done: true, kg: 86, reps: 1 }] } })).statusCode).toBe(200);
 
     let cands = (await app.inject({ method: "GET", url: "/athletes/mv/pr-candidates", headers: coach })).json() as Candidate[];
     const arr = cands.find((c) => c.lift === "arranque")!;

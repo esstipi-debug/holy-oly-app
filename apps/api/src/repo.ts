@@ -4,9 +4,9 @@ import type {
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
   CycleShare, CycleState, CycleData, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
-  MeRecorrido, RecorridoSemana,
+  MeRecorrido, RecorridoSemana, DayOf,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, dayLayoutFor, fechaConflict } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -280,7 +280,9 @@ function toPrescriptionRow(r: PrescribedExerciseRow): PrescriptionRow {
 }
 
 /** A week's sessions with kg derived from the athlete's plan RMs, merged with any athlete actuals.
- *  [] if no plan. Serves both the coach (`guardAthlete`) and athlete self (`/me/sessions`). */
+ *  [] if no plan. Serves both the coach (`guardAthlete`) and athlete self (`/me/sessions`).
+ *  Spec 2026-06-12: cada vista lleva `day`/`turno` del layout de la receta (D8) y la `fecha`
+ *  real registrada por la atleta (D1) cuando existen. */
 export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: string, week: number): Promise<SessionView[]> {
   const plan = await getPlan(prisma, athleteId);
   if (!plan) return [];
@@ -293,7 +295,15 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
   // Actuals matched to exercises POSITIONALLY (order == view index). A coach edit that reorders a session after actuals are recorded can misalign them — acceptable for SP3 (revisit in SP4).
   const athlete = await prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } });
   const barKg = barKgForSexo((athlete?.sexo as "M" | "F" | undefined) ?? "M");
-  return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals);
+  const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+  const layout = macro ? dayLayoutFor(macro, week) : null;
+  const registros = await prisma.sessionRegistro.findMany({ where: { athleteId, week } });
+  const fechaByIdx = new Map(registros.map((r) => [r.sessionIdx, r.fecha]));
+  return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals).map((v) => ({
+    ...v,
+    ...(layout?.[v.sessionIdx] ? layout[v.sessionIdx]! : {}),
+    ...(fechaByIdx.has(v.sessionIdx) ? { fecha: fechaByIdx.get(v.sessionIdx)! } : {}),
+  }));
 }
 
 /** Recorrido del macro (GET /me/recorrido): lo HECHO acumulado por semana, construyendo las
@@ -353,28 +363,62 @@ export async function getPlanHeat(prisma: PrismaClient, athleteId: string): Prom
   return planHeat(rows.map((r) => ({ ...r, pct: r.pct ?? undefined })), totalWeeks);
 }
 
-/** Replace one session's athlete actuals (self-written). Transactional. `today` stamps doneAt only when the exercise was marked done. */
+/** El conflicto de la regla 1×fecha, identificado (la ruta lo traduce a 409). */
+export class FechaOcupadaError extends Error {
+  constructor(public readonly conflicto: { week: number; sessionIdx: number; fecha: string }) {
+    super("fecha_ocupada");
+  }
+}
+
+/** Replace one session's athlete actuals + su registro de fecha (spec 2026-06-12 D1/D3).
+ *  Transaccional. `fecha` = fecha REAL del entreno (la ruta ya validó ≤ hoy): estampa doneAt
+ *  en filas done (las ediciones ya no corren la procedencia) y aplica la regla 1×fecha con
+ *  la excepción AM/PM intra-semana vía dayLayoutFor (core). 0 filas done → el registro se
+ *  borra y la fecha se libera (D11). */
 export async function setSessionActuals(
   prisma: PrismaClient, athleteId: string, week: number, sessionIdx: number,
   actuals: ExerciseActualInput[],
-  today: string,
+  fecha: string,
 ): Promise<void> {
-  await prisma.$transaction([
-    prisma.sessionActual.deleteMany({ where: { athleteId, week, sessionIdx } }),
-    prisma.sessionActual.createMany({
-      data: actuals.map((a) => {
-        const sum = a.sets && a.sets.length > 0 ? summarizeSets(a.sets) : { done: a.done, kg: a.kg, reps: a.reps };
-        return {
+  const plan = await getPlan(prisma, athleteId);
+  const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
+  const layout = macro ? dayLayoutFor(macro, week) : null;
+  const dayOf: DayOf = (idx) => layout?.[idx]?.day ?? idx + 1;
+  const summarized = actuals.map((a) => ({
+    a, sum: a.sets && a.sets.length > 0 ? summarizeSets(a.sets) : { done: a.done, kg: a.kg, reps: a.reps },
+  }));
+  const anyDone = summarized.some(({ sum }) => sum.done);
+  await prisma.$transaction(async (tx) => {
+    if (anyDone) {
+      const registros = await tx.sessionRegistro.findMany({
+        where: { athleteId, fecha }, select: { week: true, sessionIdx: true, fecha: true },
+      });
+      const conflict = fechaConflict(registros, week, sessionIdx, fecha, dayOf);
+      if (conflict) throw new FechaOcupadaError(conflict);
+    }
+    await tx.sessionActual.deleteMany({ where: { athleteId, week, sessionIdx } });
+    if (summarized.length > 0) {
+      await tx.sessionActual.createMany({
+        data: summarized.map(({ a, sum }) => ({
           athleteId, week, sessionIdx, order: a.order, movementId: a.movementId,
           prescribedMovementId: a.prescribedMovementId ?? null,
           done: sum.done,
           actualKg: sum.kg ?? null, actualReps: sum.reps ?? null, note: a.note ?? null,
           sets: a.sets && a.sets.length > 0 ? (a.sets as Prisma.InputJsonValue) : Prisma.JsonNull,
-          doneAt: sum.done ? today : null,
-        };
-      }),
-    }),
-  ]);
+          doneAt: sum.done ? fecha : null,
+        })),
+      });
+    }
+    if (anyDone) {
+      await tx.sessionRegistro.upsert({
+        where: { athleteId_week_sessionIdx: { athleteId, week, sessionIdx } },
+        create: { athleteId, week, sessionIdx, fecha },
+        update: { fecha },
+      });
+    } else {
+      await tx.sessionRegistro.deleteMany({ where: { athleteId, week, sessionIdx } });
+    }
+  });
 }
 
 /** Replace one session's exercises (coach edit). Transactional. */
@@ -422,7 +466,7 @@ export async function getRmHistory(prisma: PrismaClient, athleteId: string): Pro
 
 /** D3: everything the athlete owns, for a self-service data export (the athlete gets RAW cycle). */
 export async function exportAthleteData(prisma: PrismaClient, athleteId: string): Promise<unknown> {
-  const [athlete, plan, cycle, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates] =
+  const [athlete, plan, cycle, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates, sessionRegistros] =
     await Promise.all([
       prisma.athlete.findUnique({ where: { id: athleteId } }),
       prisma.plan.findUnique({ where: { athleteId } }),
@@ -436,6 +480,8 @@ export async function exportAthleteData(prisma: PrismaClient, athleteId: string)
       prisma.sessionMark.findMany({ where: { athleteId } }),
       // SP5: la curva del 1RM es dato del atleta → viaja en su export (D3).
       prisma.rmUpdate.findMany({ where: { athleteId }, orderBy: [{ setAt: "asc" }, { createdAt: "asc" }] }),
+      // Spec 2026-06-12: la fecha real de cada entreno también es suya (D3).
+      prisma.sessionRegistro.findMany({ where: { athleteId }, select: { week: true, sessionIdx: true, fecha: true } }),
     ]);
   // The athlete owns their cycle → return it decrypted (raw values), not redacted.
   const cycleRaw = cycle
@@ -447,7 +493,7 @@ export async function exportAthleteData(prisma: PrismaClient, athleteId: string)
         cycleLengthDays: cycle.cycleLengthDays == null ? null : decryptAtRest(cycle.cycleLengthDays),
       }
     : null;
-  return { athlete, plan, cycle: cycleRaw, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates };
+  return { athlete, plan, cycle: cycleRaw, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates, sessionRegistros };
 }
 
 /**
