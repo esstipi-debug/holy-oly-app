@@ -9,6 +9,14 @@ import { VerifyEmailBanner } from "../../ui/VerifyEmailBanner";
 const monthsFree = (p: BillingPlan): number => Math.round((p.priceClpMonthly * 6 - p.priceClpSemiannual) / p.priceClpMonthly);
 const coachesLabel = (n: number | null): string => (n == null ? "Coaches ilimitados" : n === 1 ? "1 coach" : `Hasta ${n} coaches`);
 
+const ALL_PERIODS: readonly BillingPeriod[] = ["monthly", "semiannual"];
+// Un combo plan+período se paga "por interno" cuando MP no lo puede cobrar (semestral de tiers altos > $350K).
+const isManualPayment = (p: BillingPlan, per: BillingPeriod): boolean =>
+  !(p.mpCheckoutPeriods ?? ALL_PERIODS).includes(per);
+// Email para coordinar los pagos que no entran a MP (PayPal/transferencia).
+const coordinarPagoHref = (planName: string): string =>
+  `mailto:hola@holyoly.app?subject=${encodeURIComponent(`Pago semestral — ${planName} (PayPal/transferencia)`)}`;
+
 export function SuscripcionScreen() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -43,10 +51,7 @@ export function SuscripcionScreen() {
     setBusy(true);
     setError(null);
     try {
-      const selectedPlan = plans.find((p) => p.id === selectedPlanId);
-      const hasSemiannual = selectedPlan?.availablePeriods?.includes("semiannual") ?? true;
-      const effectivePeriod = period === "semiannual" && !hasSemiannual ? "monthly" : period;
-      const { checkoutUrl } = await billingCheckout(selectedPlanId, effectivePeriod);
+      const { checkoutUrl } = await billingCheckout(selectedPlanId, period);
       // Sólo http(s) reales navegan — bloquea javascript:/data: si el backend devolviera una URL hostil.
       let isWebUrl = false;
       try {
@@ -65,6 +70,8 @@ export function SuscripcionScreen() {
   }
 
   const activePlan = status?.planId ? plans.find((p) => p.id === status.planId) : null;
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null;
+  const checkoutIsManual = selectedPlan ? isManualPayment(selectedPlan, period) : false;
   const isDemo = status?.provider === "mock" || !import.meta.env.PROD;
   const periodBtn = (p: BillingPeriod, label: string) => (
     <button
@@ -118,8 +125,7 @@ export function SuscripcionScreen() {
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
             {plans.map((plan) => {
               const selected = plan.id === selectedPlanId;
-              const hasSemiannual = plan.availablePeriods?.includes("semiannual") ?? true;
-              const effectivePeriod = period === "semiannual" && !hasSemiannual ? "monthly" : period;
+              const manualSemi = period === "semiannual" && isManualPayment(plan, "semiannual");
               return (
                 <button
                   key={plan.id}
@@ -139,19 +145,19 @@ export function SuscripcionScreen() {
                     <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{plan.name}</span>
                     <span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700 }}>
                       {/* Headline siempre por mes → escalera comparable entre planes (sem y mensual no se mezclan). */}
-                      {effectivePeriod === "semiannual"
+                      {period === "semiannual"
                         ? `≈ ${formatClp(Math.round(plan.priceClpSemiannual / 6))} + IVA/mes`
                         : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
                     </span>
                   </div>
-                  {effectivePeriod === "semiannual" && (
+                  {period === "semiannual" && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-accent)", marginTop: 3 }}>
                       {formatClp(plan.priceClpSemiannual)} + IVA cada 6 meses · {monthsFree(plan)} mes gratis
                     </div>
                   )}
-                  {period === "semiannual" && !hasSemiannual && (
+                  {manualSemi && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>
-                      Facturación mensual
+                      Pago semestral coordinado por interno (PayPal o transferencia)
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{plan.description}</div>
@@ -187,6 +193,22 @@ export function SuscripcionScreen() {
             hola@holyoly.app
           </a>
         </div>
+      ) : checkoutIsManual ? (
+        <>
+          <a
+            href={coordinarPagoHref(selectedPlan?.name ?? "plan")}
+            style={{
+              display: "block", textAlign: "center", textDecoration: "none", boxSizing: "border-box",
+              width: "100%", marginTop: 16, padding: 14, borderRadius: 12, border: 0,
+              background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800,
+            }}
+          >
+            Coordinar pago por interno
+          </a>
+          <div style={{ marginTop: 8, fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", lineHeight: 1.5 }}>
+            El semestral de este plan supera el tope de Mercado Pago. Te coordinamos el pago por PayPal o transferencia.
+          </div>
+        </>
       ) : (
         <button
           type="button"

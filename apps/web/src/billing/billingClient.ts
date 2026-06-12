@@ -12,7 +12,8 @@ export interface BillingPlan {
   maxAthletes: number | null;
   maxCoaches: number | null;
   features: string[];
-  availablePeriods: BillingPeriod[];
+  /** Períodos que MP cobra automático. Los que faltan se ofrecen igual pero se coordinan por interno. */
+  mpCheckoutPeriods: BillingPeriod[];
 }
 
 export interface BillingStatus {

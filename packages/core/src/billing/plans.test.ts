@@ -24,12 +24,12 @@ describe("coach plans — tiers + semiannual", () => {
 
   it("planPriceClp picks the price for the period", () => {
     const coach = getCoachPlan("coach");
-    expect(planPriceClp(coach, "monthly")).toBe(19_900);
-    expect(planPriceClp(coach, "semiannual")).toBe(99_500);
+    expect(planPriceClp(coach, "monthly")).toBe(39_900);
+    expect(planPriceClp(coach, "semiannual")).toBe(199_500);
   });
 
   it("withIva adds 19%", () => {
-    expect(withIva(19_900)).toBe(23_681);
+    expect(withIva(39_900)).toBe(47_481);
   });
 
   it("MP env key is per tier + period", () => {

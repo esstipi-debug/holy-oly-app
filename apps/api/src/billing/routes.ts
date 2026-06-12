@@ -54,7 +54,9 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
         maxAthletes: p.maxAthletes,
         maxCoaches: p.maxCoaches,
         features: [...p.features],
-        availablePeriods: isMp
+        // Períodos que MP puede cobrar automáticamente (tiene plan_id y entra al techo $350K).
+        // Los que no (semestral de los tiers altos) se ofrecen igual, pero se coordinan por interno.
+        mpCheckoutPeriods: isMp
           ? allPeriods.filter((pr) => resolveMercadoPagoPlanId(p.id, pr) !== null)
           : allPeriods,
       })),

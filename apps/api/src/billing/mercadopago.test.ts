@@ -46,7 +46,7 @@ describe("mercadopago adapter", () => {
     const b = buildPreapprovalPlanBody(getCoachPlan("coach"), "semiannual", "https://x.app");
     expect(b.auto_recurring.frequency).toBe(6);
     expect(b.auto_recurring.frequency_type).toBe("months");
-    expect(b.auto_recurring.transaction_amount).toBe(withIva(99_500));
+    expect(b.auto_recurring.transaction_amount).toBe(withIva(199_500));
     expect(b.auto_recurring.currency_id).toBe("CLP");
     expect(b.back_url).toContain("/coach/suscripcion");
   });
@@ -54,6 +54,6 @@ describe("mercadopago adapter", () => {
   it("monthly → months + monthly gross amount", () => {
     const b = buildPreapprovalPlanBody(getCoachPlan("pro"), "monthly", "https://x.app");
     expect(b.auto_recurring.frequency_type).toBe("months");
-    expect(b.auto_recurring.transaction_amount).toBe(withIva(39_900));
+    expect(b.auto_recurring.transaction_amount).toBe(withIva(79_900));
   });
 });
