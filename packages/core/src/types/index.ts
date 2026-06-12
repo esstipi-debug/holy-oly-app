@@ -232,9 +232,7 @@ export interface PrescribedExercise {
   flags?: MovementFlag[];
   notes?: string;
 }
-/** `day`/`turno` (D9, opcionales): rama de doble sesión por día. Ausentes = comportamiento
- *  histórico (sesión n = día n). La UI AM/PM llega cuando la primera receta bi-diaria se
- *  habilite (D14) — el shape queda listo desde ya. */
+/** day/turno (D9): rama de doble sesión por día. Ausentes = comportamiento histórico (sesión n = día n). Primera receta bi-diaria: Búlgaro (spec 2026-06-12); la UI AM/PM llega en el mismo slice. */
 export interface SessionTemplate { exercises: PrescribedExercise[]; day?: number; turno?: "AM" | "PM" }
 export interface PhaseTemplate { phaseKey: string; sessions: SessionTemplate[] } // sessions[idx], idx 0-based
 export interface MacroRecipe { macroId: string; phases: PhaseTemplate[] }

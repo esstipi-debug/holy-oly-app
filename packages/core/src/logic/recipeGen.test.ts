@@ -97,10 +97,12 @@ describe("generateRecipe (D10 — determinístico, dentro de techos)", () => {
       const biDiario = dnaForFamily(m.family)!.sessionsPerDay === 2;
       for (const ph of recipe.phases) {
         if (biDiario) {
-          // bi-diario: los DÍAS siguen siendo n; las sesiones pueden excederlo (días dobles), jamás 2n
+          // bi-diario: los DÍAS siguen siendo n; las sesiones son exactamente n + ceil(n/2)
+          // (días impares = ceil(n/2) tienen doble sesión; días pares = floor(n/2) tienen simple).
+          const exactSessions = n + Math.ceil(n / 2);
           expect(new Set(ph.sessions.map((s) => s.day)).size, m.id).toBe(n);
           expect(ph.sessions.length, m.id).toBeGreaterThanOrEqual(n);
-          expect(ph.sessions.length, m.id).toBeLessThanOrEqual(2 * n);
+          expect(ph.sessions.length, m.id).toBe(exactSessions);
         } else {
           expect(ph.sessions.length).toBe(n);
         }
@@ -258,11 +260,17 @@ describe("generateRecipe bi-diario (D6/D7 — Búlgaro AM/PM, spec 2026-06-12)",
 
   it("emite day/turno: días impares dobles (AM/PM), pares simples", () => {
     for (const phase of bulgaro().phases) {
-      const dia1 = phase.sessions.filter((s) => s.day === 1);
-      expect(dia1.map((s) => s.turno)).toEqual(["AM", "PM"]);
-      const dia2 = phase.sessions.filter((s) => s.day === 2);
-      expect(dia2).toHaveLength(1);
-      expect(dia2[0]!.turno).toBeUndefined();
+      for (let day = 1; day <= 6; day++) {
+        const daySessions = phase.sessions.filter((s) => s.day === day);
+        if (day % 2 === 1) {
+          // días impares → exactamente dos sesiones AM/PM
+          expect(daySessions.map((s) => s.turno), `día ${day} debe ser AM/PM`).toEqual(["AM", "PM"]);
+        } else {
+          // días pares → exactamente una sesión sin turno
+          expect(daySessions, `día ${day} debe tener una sola sesión`).toHaveLength(1);
+          expect(daySessions[0]!.turno, `día ${day} no debe tener turno`).toBeUndefined();
+        }
+      }
     }
   });
 
@@ -274,6 +282,8 @@ describe("generateRecipe bi-diario (D6/D7 — Búlgaro AM/PM, spec 2026-06-12)",
       const amOly = am.exercises[0]!.movementId;
       const pmOly = pm.exercises[0]!.movementId;
       expect(amOly).not.toBe(pmOly);
+      expect(getMovement(amOly)!.rmRef).toBe("arranque");
+      expect(getMovement(pmOly)!.rmRef).toBe("envion");
     }
   });
 
@@ -285,16 +295,19 @@ describe("generateRecipe bi-diario (D6/D7 — Búlgaro AM/PM, spec 2026-06-12)",
 
   it("guard D7: la suma SNC de los turnos de un día jamás excede el techo diario (1.5×)", () => {
     const dna = dnaForFamily("Búlgaro")!;
-    for (const phase of bulgaro().phases) {
+    const m = macro("bulgaro-6d");
+    bulgaro().phases.forEach((phase, phaseIdx) => {
+      const macroPhase = m.phaseProfile[phaseIdx]!;
+      const role = phaseRole(macroPhase);
       const byDay = new Map<number, number>();
       for (const s of phase.sessions) {
         const snc = s.exercises.reduce((acc, ex) => acc + loadsOf(ex).snc, 0);
         byDay.set(s.day!, (byDay.get(s.day!) ?? 0) + snc);
       }
       for (const total of byDay.values()) {
-        expect(total).toBeLessThanOrEqual(Math.round(Math.max(...Object.values(dna.sncBudget)) * 1.5));
+        expect(total).toBeLessThanOrEqual(Math.round(dna.sncBudget[role] * 1.5));
       }
-    }
+    });
   });
 
   it("guard D7 (degradación honesta): si AM+PM no caben en el techo diario, el día queda SIMPLE con el AM", () => {
@@ -333,7 +346,6 @@ describe("generateRecipe bi-diario (D6/D7 — Búlgaro AM/PM, spec 2026-06-12)",
   });
 
   it("balance semanal de lifts (curaduría): |arranque - envión| ≤ 1 en el Búlgaro", () => {
-    const dna = dnaForFamily("Búlgaro")!;
     for (const phase of bulgaro().phases) {
       let arranqueCount = 0;
       let envionCount = 0;
@@ -350,7 +362,6 @@ describe("generateRecipe bi-diario (D6/D7 — Búlgaro AM/PM, spec 2026-06-12)",
         `${phase.phaseKey}: arranque=${arranqueCount} envión=${envionCount} — diferencia debe ser ≤ 1`,
       ).toBeLessThanOrEqual(1);
     }
-    void dna; // dna declarada para coherencia de scope pero la aserción va en la receta
   });
 
   it("las escuelas mono-diarias NO cambian: ninguna emite day/turno", () => {

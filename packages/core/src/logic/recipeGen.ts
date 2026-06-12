@@ -320,6 +320,41 @@ function archetypeForTurno(archetypes: SessionArchetype[], turno: "AM" | "PM", d
     ?? archetypes[(day - 1 + (turno === "PM" ? 1 : 0)) % archetypes.length]!;
 }
 
+/** Semana bi-diaria (D6): días impares AM/PM, pares simples alternando arquetipos; guard D7
+ *  con degradación honesta a día simple. sessionIdx = posición corrida del array (D9/D10). */
+function buildBiDailyWeek(
+  dna: SchoolDNA, macro: Macrocycle, phase: MacrocyclePhase, role: PhaseRole,
+  archetypes: SessionArchetype[], nDays: number,
+): SessionTemplate[] {
+  const dailyCap = Math.round(dna.sncBudget[role] * DAILY_SNC_FACTOR);
+  const sessions: SessionTemplate[] = [];
+  let idx = 0;
+  for (let day = 1; day <= nDays; day++) {
+    if (day % 2 === 1) {
+      const am = buildSession(dna, macro, phase, role, archetypeForTurno(archetypes, "AM", day), idx);
+      const pm = buildSession(dna, macro, phase, role, archetypeForTurno(archetypes, "PM", day), idx + 1);
+      if (sessionSnc(am) + sessionSnc(pm) <= dailyCap) {
+        sessions.push({ ...am, day, turno: "AM" }, { ...pm, day, turno: "PM" });
+        idx += 2;
+      } else {
+        // Guard D7: el día no aguanta dos turnos → degrada a día simple (honesto).
+        // ⚠ Curaduría pendiente (review 2026-06-12): si TODOS los días degradan, sobrevivir
+        // siempre el AM sesga la semana a arranque (5:1) — espejo del sesgo que cf133c2
+        // corrigió en días pares. Camino hoy sólo alcanzable por fixture; El Carnicero decide.
+        sessions.push({ ...am, day });
+        idx += 1;
+      }
+    } else {
+      // días pares alternan arquetipos — sin esto todos caían en B y el lift de foco A
+      // quedaba subexpuesto (curaduría)
+      const archetype = archetypes[(day / 2 - 1) % archetypes.length]!;
+      sessions.push({ ...buildSession(dna, macro, phase, role, archetype, idx), day });
+      idx += 1;
+    }
+  }
+  return sessions;
+}
+
 /** Una sesión: rellena el arquetipo, recorta por presupuesto (sólo slots ≥ optionalFrom),
  *  ordena por demanda neural descendente con los metabólicos al final y ajusta Prilepin. */
 function buildSession(
@@ -384,31 +419,10 @@ export function generateRecipe(dna: SchoolDNA, macro: Macrocycle): MacroRecipe |
     const role = phaseRole(phase);
     const archetypes = archetypesFor(dna, role);
     if (archetypes.length === 0) return null;
-    const sessions: SessionTemplate[] = [];
-    if (dna.sessionsPerDay === 2) {
-      // Bi-diario (D6): días IMPARES dobles, pares simples — mezcla visible de layouts,
-      // volumen sano para humanos (curaduría v1; El Carnicero revisa). sessionIdx = posición
-      // del array (idx corrido), day/turno viajan en el template (D9).
-      const dailyCap = Math.round(dna.sncBudget[role] * DAILY_SNC_FACTOR);
-      let idx = 0;
-      for (let day = 1; day <= n; day++) {
-        if (day % 2 === 1) {
-          const am = buildSession(dna, macro, phase, role, archetypeForTurno(archetypes, "AM", day), idx);
-          const pm = buildSession(dna, macro, phase, role, archetypeForTurno(archetypes, "PM", day), idx + 1);
-          if (sessionSnc(am) + sessionSnc(pm) <= dailyCap) {
-            sessions.push({ ...am, day, turno: "AM" }, { ...pm, day, turno: "PM" });
-            idx += 2;
-          } else {
-            // Guard D7: el día no aguanta dos turnos → degrada a día simple (honesto)
-            sessions.push({ ...am, day });
-            idx += 1;
-          }
-        } else {
-          sessions.push({ ...buildSession(dna, macro, phase, role, archetypes[(day / 2 - 1) % archetypes.length]!, idx), day }); // días pares alternan arquetipos — sin esto todos caían en B y el lift de foco A quedaba subexpuesto (curaduría)
-          idx += 1;
-        }
-      }
-    } else {
+    const sessions: SessionTemplate[] = dna.sessionsPerDay === 2
+      ? buildBiDailyWeek(dna, macro, phase, role, archetypes, n)
+      : [];
+    if (dna.sessionsPerDay !== 2) {
       for (let i = 0; i < n; i++) {
         const archetype = archetypes[i % archetypes.length]!;
         sessions.push(buildSession(dna, macro, phase, role, archetype, i));
