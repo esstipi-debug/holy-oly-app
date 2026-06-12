@@ -360,7 +360,15 @@ export async function getPlanHeat(prisma: PrismaClient, athleteId: string): Prom
     where: { athleteId },
     select: { week: true, sessionIdx: true, sets: true, reps: true, pct: true },
   });
-  return planHeat(rows.map((r) => ({ ...r, pct: r.pct ?? undefined })), totalWeeks);
+  const layoutCache = new Map<number, ReturnType<typeof dayLayoutFor>>();
+  const layoutOf = (week: number) => {
+    if (!layoutCache.has(week)) layoutCache.set(week, macro ? dayLayoutFor(macro, week) : null);
+    return layoutCache.get(week)!;
+  };
+  return planHeat(rows.map((r) => ({
+    ...r, pct: r.pct ?? undefined,
+    day: layoutOf(r.week)?.[r.sessionIdx]?.day,
+  })), totalWeeks);
 }
 
 /** El conflicto de la regla 1×fecha, identificado (la ruta lo traduce a 409). */
