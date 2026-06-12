@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { getCoachPlan, withIva } from "@holy-oly/core";
+import { getCoachPlan } from "@holy-oly/core";
 import {
   buildPreapprovalPlanBody,
   mapMercadoPagoPreapprovalStatus,
@@ -42,11 +42,11 @@ describe("mercadopago adapter", () => {
     );
   });
 
-  it("builds the preapproval_plan body: semiannual → 6 months, gross (net+IVA) amount", () => {
+  it("builds the preapproval_plan body: semiannual → 6 months, final closed amount (IVA included)", () => {
     const b = buildPreapprovalPlanBody(getCoachPlan("coach"), "semiannual", "https://x.app");
     expect(b.auto_recurring.frequency).toBe(6);
     expect(b.auto_recurring.frequency_type).toBe("months");
-    expect(b.auto_recurring.transaction_amount).toBe(withIva(199_500));
+    expect(b.auto_recurring.transaction_amount).toBe(199_500);
     expect(b.auto_recurring.currency_id).toBe("CLP");
     expect(b.back_url).toContain("/coach/suscripcion");
   });
@@ -54,6 +54,6 @@ describe("mercadopago adapter", () => {
   it("monthly → months + monthly gross amount", () => {
     const b = buildPreapprovalPlanBody(getCoachPlan("pro"), "monthly", "https://x.app");
     expect(b.auto_recurring.frequency_type).toBe("months");
-    expect(b.auto_recurring.transaction_amount).toBe(withIva(79_900));
+    expect(b.auto_recurring.transaction_amount).toBe(79_900);
   });
 });

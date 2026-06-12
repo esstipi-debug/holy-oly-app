@@ -6,7 +6,6 @@ import {
   getCoachPlan,
   mercadoPagoPlanEnvKey,
   planPriceClp,
-  withIva,
   type CoachPlan,
   type CoachPlanId,
   type BillingPeriod,
@@ -182,8 +181,8 @@ export interface PreapprovalPlanBody {
 }
 
 /**
- * MP `preapproval_plan` payload for a tier+period. `transaction_amount` is GROSS (net price + IVA),
- * which is what MP actually charges; semiannual → 6 months, monthly → 1 month.
+ * MP `preapproval_plan` payload for a tier+period. `transaction_amount` is the final closed price
+ * (IVA already included — the coach pays exactly this); semiannual → 6 months, monthly → 1 month.
  */
 export function buildPreapprovalPlanBody(plan: CoachPlan, period: BillingPeriod, origin: string): PreapprovalPlanBody {
   return {
@@ -191,7 +190,7 @@ export function buildPreapprovalPlanBody(plan: CoachPlan, period: BillingPeriod,
     auto_recurring: {
       frequency: period === "semiannual" ? 6 : 1,
       frequency_type: "months",
-      transaction_amount: withIva(planPriceClp(plan, period)),
+      transaction_amount: planPriceClp(plan, period),
       currency_id: "CLP",
     },
     back_url: `${origin}/coach/suscripcion?checkout=return`,

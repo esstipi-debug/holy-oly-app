@@ -93,7 +93,7 @@ export function SuscripcionScreen() {
       <BackButton ariaLabel="Volver a Cuenta" onClick={() => navigate("/coach/cuenta")} />
       <h1 style={{ fontFamily: "var(--wl-display)", fontSize: 22, fontWeight: 800, margin: "10px 0 6px" }}>Suscripción</h1>
       <p style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
-        Los atletas son gratis. El coach necesita plan activo para editar programas. Precios + IVA.
+        Los atletas son gratis. El coach necesita plan activo para editar programas. Precios finales · IVA incluido.
       </p>
 
       {user && user.emailVerified === false && <VerifyEmailBanner />}
@@ -104,7 +104,7 @@ export function SuscripcionScreen() {
           <div style={{ fontSize: 18, fontWeight: 800, marginTop: 4 }}>{status.active ? "Activa" : status.status}</div>
           {activePlan && (
             <div style={{ fontSize: 13, marginTop: 6 }}>
-              Plan: {activePlan.name} (desde {formatClp(activePlan.priceClpMonthly)} + IVA/mes)
+              Plan: {activePlan.name} (desde {formatClp(activePlan.priceClpMonthly)}/mes)
             </div>
           )}
           {status.currentPeriodEnd && (
@@ -146,13 +146,13 @@ export function SuscripcionScreen() {
                     <span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700 }}>
                       {/* Headline siempre por mes → escalera comparable entre planes (sem y mensual no se mezclan). */}
                       {period === "semiannual"
-                        ? `≈ ${formatClp(Math.round(plan.priceClpSemiannual / 6))} + IVA/mes`
-                        : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
+                        ? `≈ ${formatClp(Math.round(plan.priceClpSemiannual / 6))}/mes`
+                        : `${formatClp(plan.priceClpMonthly)}/mes`}
                     </span>
                   </div>
                   {period === "semiannual" && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-accent)", marginTop: 3 }}>
-                      {formatClp(plan.priceClpSemiannual)} + IVA cada 6 meses · {monthsFree(plan)} mes gratis
+                      {formatClp(plan.priceClpSemiannual)} cada 6 meses · {monthsFree(plan)} mes gratis
                     </div>
                   )}
                   {manualSemi && (
@@ -172,7 +172,7 @@ export function SuscripcionScreen() {
             <div style={{ padding: 14, borderRadius: 12, border: "1px dashed color-mix(in srgb,var(--wl-muted) 35%,transparent)", background: "var(--wl-surface)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                 <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{MULTISEDE.name}</span>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>desde {formatClp(MULTISEDE.fromClpMonthly)} + IVA/mes</span>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>desde {formatClp(MULTISEDE.fromClpMonthly)}/mes</span>
               </div>
               <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{MULTISEDE.description}</div>
               <a href="mailto:hola@holyoly.app?subject=Plan%20Multi-sede" style={{ display: "inline-block", marginTop: 8, fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-accent)", fontWeight: 700 }}>

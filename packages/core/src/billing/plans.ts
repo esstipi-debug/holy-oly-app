@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** Chilean VAT. Prices below are NET (pre-IVA) — B2B convention is to quote "net + IVA". */
+/** Chilean VAT (19%). Plan prices below are FINAL/closed — the coach pays exactly that, IVA included. */
 export const IVA_RATE = 0.19;
 
 /** Self-serve coach subscription tiers. Multi-sede (250+) is custom/contact (see MULTISEDE). */
@@ -15,9 +15,9 @@ export interface CoachPlan {
   id: CoachPlanId;
   name: string;
   description: string;
-  /** NET monthly price in CLP (pre-IVA). */
+  /** Final monthly price the coach pays in CLP (IVA included — precio cerrado). */
   priceClpMonthly: number;
-  /** NET semiannual price in CLP (paid every 6 months) = 5× monthly → 1 month free. */
+  /** Final semiannual price (paid every 6 months) = 5× monthly → 1 month free; IVA included. */
   priceClpSemiannual: number;
   /** Max active athletes on the plan. */
   maxAthletes: number;
@@ -82,7 +82,7 @@ export function getCoachPlan(planId: CoachPlanId): CoachPlan {
   return plan;
 }
 
-/** Price for a tier at a given billing period (NET, pre-IVA). */
+/** Final price for a tier at a given billing period (IVA included — what the coach pays). */
 export function planPriceClp(plan: CoachPlan, period: BillingPeriod): number {
   return period === "semiannual" ? plan.priceClpSemiannual : plan.priceClpMonthly;
 }
@@ -92,7 +92,7 @@ export function semiannualMonthsFree(plan: CoachPlan): number {
   return Math.round((plan.priceClpMonthly * 6 - plan.priceClpSemiannual) / plan.priceClpMonthly);
 }
 
-/** Gross amount (IVA included) for an actual charge, from a NET price. */
+/** Adds 19% IVA to a net amount (boleta/accounting helper; plan prices are already gross). */
 export function withIva(netClp: number): number {
   return Math.round(netClp * (1 + IVA_RATE));
 }
