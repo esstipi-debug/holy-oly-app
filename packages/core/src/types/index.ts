@@ -243,8 +243,16 @@ export interface MacroRecipe { macroId: string; phases: PhaseTemplate[] }
 export interface PrescriptionRow extends PrescribedExercise { week: number; sessionIdx: number; order: number }
 /** A prescribed exercise with its display name + derived target kg, for the front. */
 export interface PrescribedExerciseView extends PrescribedExercise { movementName: string; targetKg?: number; actual?: ExerciseActual; warmup?: WarmupSet[] }
-/** One instantiated session (a column in the week), kg already derived. */
-export interface SessionView { week: number; sessionIdx: number; exercises: PrescribedExerciseView[] }
+/** One instantiated session (a column in the week), kg already derived. `day`/`turno` vienen
+ *  del layout de la receta (D8); `fecha` del SessionRegistro del atleta (D1). */
+export interface SessionView {
+  week: number; sessionIdx: number; exercises: PrescribedExerciseView[];
+  day?: number; turno?: "AM" | "PM"; fecha?: string;
+}
+
+/** Registro de fecha de una sesión (spec 2026-06-12 D1/D3): cuándo se HIZO el entreno.
+ *  Fuente de verdad; doneAt por-ejercicio es copia estampada en la misma transacción. */
+export interface SessionRegistro { week: number; sessionIdx: number; fecha: string }
 
 /** One day's heat aggregate (calendar heat map). `topPct` absent = no % data that day. */
 export interface DayHeat { topPct?: number; lifts: number }

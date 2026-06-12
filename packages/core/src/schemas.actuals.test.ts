@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SessionActualsInputSchema, ExerciseActualSchema, ExerciseActualInputSchema } from "./schemas";
+import { SessionActualsInputSchema, ExerciseActualSchema, ExerciseActualInputSchema, PutMeSessionInputSchema, SessionRegistroSchema } from "./schemas";
 
 describe("SessionActualsInputSchema", () => {
   it("accepts a valid per-exercise actuals body", () => {
@@ -63,5 +63,24 @@ describe("ExerciseActualInputSchema · sets", () => {
   it("rechaza más de 20 series", () => {
     const many = Array.from({ length: 21 }, () => ({ kg: 50, reps: 1, done: true }));
     expect(ExerciseActualInputSchema.safeParse({ order: 0, movementId: "x", done: true, sets: many }).success).toBe(false);
+  });
+});
+
+describe("PutMeSessionInputSchema (registro con fecha — spec 2026-06-12)", () => {
+  it("acepta envelope { fecha?, actuals } y rechaza el array pelado legacy", () => {
+    expect(PutMeSessionInputSchema.safeParse({ actuals: [] }).success).toBe(true);
+    expect(PutMeSessionInputSchema.safeParse({ fecha: "2026-06-10", actuals: [{ order: 0, movementId: "arranque", done: true }] }).success).toBe(true);
+    expect(PutMeSessionInputSchema.safeParse([{ order: 0, movementId: "arranque", done: true }]).success).toBe(false);
+  });
+  it("rechaza fecha no-calendario (lección NaN del Carnicero)", () => {
+    expect(PutMeSessionInputSchema.safeParse({ fecha: "2026-99-99", actuals: [] }).success).toBe(false);
+  });
+});
+
+describe("SessionRegistroSchema", () => {
+  it("valida week/idx con los límites de la casa y fecha ISO", () => {
+    expect(SessionRegistroSchema.safeParse({ week: 1, sessionIdx: 0, fecha: "2026-06-12" }).success).toBe(true);
+    expect(SessionRegistroSchema.safeParse({ week: 0, sessionIdx: 0, fecha: "2026-06-12" }).success).toBe(false);
+    expect(SessionRegistroSchema.safeParse({ week: 1, sessionIdx: 14, fecha: "2026-06-12" }).success).toBe(false);
   });
 });
