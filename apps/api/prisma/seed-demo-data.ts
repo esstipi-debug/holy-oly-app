@@ -128,10 +128,10 @@ export const DEMO_PLAN_INPUTS: Record<string, { macroId: string; currentWeek: nu
     comps: [{ name: "Nacional", week: 16 }],
   },
   kv: {
-    macroId: "ruso-5d",
-    currentWeek: 12,
+    macroId: "bulgaro-6d",   // bi-diario AM/PM visible en demo (spec 2026-06-12 D6)
+    currentWeek: 8,          // bulgaro-6d = 12 sem en total; semana 8 = mid-plan
     rms: { arranque: 98, envion: 122, sentadilla: 165, frente: 132 },
-    comps: [{ name: "Sudamericano", week: 16 }],
+    comps: [{ name: "Sudamericano", week: 12 }],
   },
 };
 

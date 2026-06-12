@@ -18,14 +18,14 @@ export const SEED_ROSTER: Atleta[] = [
   { id: "bg", nombre: "Bruno G.", iniciales: "BG", nivel: "intermediate", sexo: "M",                 macroId: "hibrido-5d" },
   { id: "cf", nombre: "Caro F.",  iniciales: "CF", nivel: "intermediate", sexo: "F",                 macroId: "colombiano-5d" },
   // Kevin — the offline ATHLETE demo "me" (LocalMeClient). Seeded with a year of data: a 52-week
-  // monitor series, an active Ruso 5D plan (week ~12/16) and ~a year of check-ins. sexo M → barra 20.
-  { id: "kv", nombre: "Kevin A.", iniciales: "KV", nivel: "intermediate", sexo: "M", compite: true,  macroId: "ruso-5d" },
+  // monitor series, an active Búlgaro 6D plan (week ~8/12) and ~a year of check-ins. sexo M → barra 20.
+  { id: "kv", nombre: "Kevin A.", iniciales: "KV", nivel: "intermediate", sexo: "M", compite: true,  macroId: "bulgaro-6d" },
 ];
 
 // Mara's target competition (M4c seed). Others start with no comp → assigned from the sheet.
 export const SEED_COMPS: Record<string, Competencia[]> = {
   mv: [{ name: "Nacional", week: 16 }],
-  kv: [{ name: "Sudamericano", week: 16 }],
+  kv: [{ name: "Sudamericano", week: 12 }],
 };
 
 export const ROSTER_META: Record<string, RosterMeta> = {
@@ -33,7 +33,7 @@ export const ROSTER_META: Record<string, RosterMeta> = {
   lr: { metodo: "Coreano 5D" },     sm: { metodo: "Búlgaro 6D" },
   tl: { metodo: "Polaco 5D" },      ap: { metodo: "Cubano Int." },
   bg: { metodo: "Híbrido 5D" },     cf: { metodo: "Colombiano 5D" },
-  kv: { metodo: "Ruso 5D" },
+  kv: { metodo: "Búlgaro 6D" },
 };
 
 /**
@@ -214,10 +214,10 @@ export const SEED_MEDALS: Record<string, Medal[]> = {
  */
 export const SEED_PLAN_INPUTS: Record<string, { macroId: string; currentWeek: number; rms: RM; comps: Competencia[] }> = {
   kv: {
-    macroId: "ruso-5d",
-    currentWeek: 12, // of 16 → mid-plan: an active Camino + a real session to train today
+    macroId: "bulgaro-6d",   // bi-diario AM/PM visible en demo (spec 2026-06-12 D6)
+    currentWeek: 8,          // bulgaro-6d = 12 sem en total; semana 8 = mid-plan
     rms: { arranque: 98, envion: 122, sentadilla: 165, frente: 132 },
-    comps: [{ name: "Sudamericano", week: 16 }],
+    comps: [{ name: "Sudamericano", week: 12 }],
   },
   // Mara — the featured first card. So "ver como atleta" lands the money shot (discs) on her too,
   // not only Kevin. macroId matches her roster (ruso-5d, the only macro with a MACRO_RECIPES recipe
