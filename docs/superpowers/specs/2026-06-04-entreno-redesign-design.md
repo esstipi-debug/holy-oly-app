@@ -83,6 +83,8 @@ Resultado: el coach ve prescrito-vs-real (no-modificado → "=", sin desvío fal
 
 Reusar `apps/web/src/ui/Disc.tsx` (`Disc`/`DiscRow`) + `core` `perSide`/`DISC_COLORS`. Círculos IWF de frente (degradado + cubo + número; el 15 con número oscuro). **Nunca** redibujar como barras/barbell. Barra: 20 ♂ / 15 ♀ (del `sexo` del atleta). El kg es la verdad; los discos aproximan (sólo 10/15/20/25; remanente bajo un disco no se dibuja).
 
+> **Superado (owner 2026-06-12):** la vista por defecto de los entrenamientos pasó a la **¾ del ícono** (`holyOlyIconSvg` → `Disc.tsx`, `view="3q"` default) y el número va **siempre blanco** (el 15 ya NO lleva número oscuro; la frontal ajustada sigue disponible vía `view="front"`). El resto del párrafo (reusar `Disc.tsx`, kg-verdad, nunca barras) sigue vigente — ancla actual: rulebook `HOLY-OLY-DOMAIN.md` §«1RM, discos y verdad del kg».
+
 ## 7. Fuera de scope (YAGNI)
 
 - Warm-up (shown-not-counted) — no está en el modelo de prescripción; no se agrega ahora.

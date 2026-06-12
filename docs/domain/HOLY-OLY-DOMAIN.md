@@ -74,6 +74,7 @@ Valores **verificados contra `packages/core/src/logic/`**. Si el código cambió
 ### 1RM, discos y verdad del kg
 - **El kg es la verdad; los discos son aproximados.** Sólo existen discos **10/15/20/25** (colores IWF: 10 verde, 15 amarillo, 20 azul, 25 rojo). `discs.ts:1`.
 - Barra 20 (hombre) / 15 (mujer); resto < 5 kg/lado → **sin discos** (no hay fraccionarios). `discs.ts:13`.
+- **Vista del disco (owner 2026-06-12):** el dibujo canónico vive SOLO en `apps/web/src/ui/Disc.tsx` con dos vistas — la **¾ (default)**, portada del ícono `holyOlyIconSvg`, es el disco de **todas las filas de entrenamiento**; la frontal ajustada queda como `view="front"`. El **número va SIEMPRE en blanco** (el 15 amarillo incluido — ya no existe el número oscuro). **Nunca** redibujar el disco fuera de `Disc.tsx` ni como barras/otra forma.
 - *Se ve como:* inventar discos de 2.5/5, o tratar la suma de discos como la verdad en vez del kg.
 
 ### Semáforo — qué lo dispara y qué NO

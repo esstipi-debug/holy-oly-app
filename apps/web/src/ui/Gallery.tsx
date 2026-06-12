@@ -5,7 +5,7 @@ import { Card } from "./Card";
 import { Chip } from "./Chip";
 import { Stepper } from "./Stepper";
 import { WeekPicker } from "./WeekPicker";
-import { DiscRow } from "./Disc";
+import { Disc, DiscRow } from "./Disc";
 import { Medal } from "./Medal";
 import { MacroTimeline } from "./charts/MacroTimeline";
 import { MacroPeriodization } from "./charts/MacroPeriodization";
@@ -173,8 +173,16 @@ export function Gallery() {
       <WeekPicker weeks={16} value={weekVal} onChange={setWeekVal} />
 
       {/* DiscRow */}
-      <div style={LABEL as React.CSSProperties}>DiscRow · 140 kg</div>
+      <div style={LABEL as React.CSSProperties}>DiscRow · 140 kg · ¾ (entrenamientos)</div>
       <DiscRow kg={140} />
+
+      <div style={LABEL as React.CSSProperties}>Disc ¾ · familia completa</div>
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        {([25, 20, 15, 10] as const).map((w) => <Disc key={w} w={w} size={56} />)}
+      </div>
+
+      <div style={LABEL as React.CSSProperties}>DiscRow · 140 kg · frontal ajustada (15 en blanco)</div>
+      <DiscRow kg={140} view="front" />
 
       {/* Medal */}
       <div style={LABEL as React.CSSProperties}>Medal</div>
