@@ -21,7 +21,8 @@ function CalendarHeatmap({ days, today }: { days: string[]; today: string }) {
       {DAY_HEADS.map((d, i) => (
         <span key={`h${i}`} style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 8.5, color: "var(--wl-muted)" }}>{d}</span>
       ))}
-      {grid.flatMap((week) => week.map((date) => <div key={date} title={date} style={cell(date)} />))}
+      {/* Sin title: jamás tooltips de hover (regla owner) — la celda habla por color/anillo. */}
+      {grid.flatMap((week) => week.map((date) => <div key={date} style={cell(date)} />))}
     </div>
   );
 }
