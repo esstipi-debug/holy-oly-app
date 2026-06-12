@@ -122,12 +122,12 @@ export async function createMercadoPagoCheckout(opts: {
   if (!token) throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
 
   const plan = getCoachPlan(opts.planId);
-  // The MP preapproval_plan (created in the dashboard) defines the cadence (monthly/annual) and amount.
+  // The MP preapproval_plan (created in the dashboard) defines the cadence (monthly/semiannual) and amount.
   const preapprovalPlanId = resolveMercadoPagoPlanId(opts.planId, opts.period);
   if (!preapprovalPlanId) {
     throw new Error(`Mercado Pago plan not configured for "${opts.planId}/${opts.period}" (${mercadoPagoPlanEnvKey(opts.planId, opts.period)})`);
   }
-  const periodLabel = opts.period === "annual" ? "Anual" : "Mensual";
+  const periodLabel = opts.period === "semiannual" ? "Semestral" : "Mensual";
 
   const res = await fetch(`${MP_API}/preapproval`, {
     method: "POST",
@@ -183,13 +183,13 @@ export interface PreapprovalPlanBody {
 
 /**
  * MP `preapproval_plan` payload for a tier+period. `transaction_amount` is GROSS (net price + IVA),
- * which is what MP actually charges; annual → 12 months, monthly → 1 month.
+ * which is what MP actually charges; semiannual → 6 months, monthly → 1 month.
  */
 export function buildPreapprovalPlanBody(plan: CoachPlan, period: BillingPeriod, origin: string): PreapprovalPlanBody {
   return {
-    reason: `Holy Oly — ${plan.name} (${period === "annual" ? "Anual" : "Mensual"})`,
+    reason: `Holy Oly — ${plan.name} (${period === "semiannual" ? "Semestral" : "Mensual"})`,
     auto_recurring: {
-      frequency: period === "annual" ? 12 : 1,
+      frequency: period === "semiannual" ? 6 : 1,
       frequency_type: "months",
       transaction_amount: withIva(planPriceClp(plan, period)),
       currency_id: "CLP",
@@ -218,7 +218,7 @@ export function parseCheckoutPlanId(raw: unknown): CoachPlanId {
   return parsed.data;
 }
 
-/** Billing period from the checkout body; defaults to annual (the pushed option). */
+/** Billing period from the checkout body; defaults to semiannual (the pushed option). */
 export function parseCheckoutPeriod(raw: unknown): BillingPeriod {
-  return BillingPeriodSchema.safeParse(raw).data ?? "annual";
+  return BillingPeriodSchema.safeParse(raw).data ?? "semiannual";
 }

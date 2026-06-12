@@ -74,7 +74,7 @@ describe("billing config guard (assertBillingProdConfig)", () => {
     expect(message).toContain("BILLING_PROVIDER");
     expect(message).toContain("MERCADOPAGO_ACCESS_TOKEN");
     expect(message).toContain("MERCADOPAGO_WEBHOOK_SECRET");
-    expect(message).toContain("MERCADOPAGO_PLAN_COACH_ANNUAL");
+    expect(message).toContain("MERCADOPAGO_PLAN_COACH_SEMIANNUAL");
     expect(message).toContain("MERCADOPAGO_PLAN_BOX_MONTHLY");
     // Points the operator at the plan-generation script.
     expect(message).toContain("mp-setup-plans");

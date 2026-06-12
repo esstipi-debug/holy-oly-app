@@ -12,7 +12,7 @@
 import { COACH_PLANS, formatClp, mercadoPagoPlanEnvKey, type BillingPeriod } from "@holy-oly/core";
 import { buildPreapprovalPlanBody, createPreapprovalPlan } from "../src/billing/mercadopago";
 
-const PERIODS: readonly BillingPeriod[] = ["monthly", "annual"];
+const PERIODS: readonly BillingPeriod[] = ["monthly", "semiannual"];
 const dryRun = process.argv.includes("--dry-run");
 const origin = process.env.APP_ORIGIN ?? "http://localhost:8765";
 

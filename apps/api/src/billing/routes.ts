@@ -46,7 +46,7 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
       name: p.name,
       description: p.description,
       priceClpMonthly: p.priceClpMonthly,
-      priceClpAnnual: p.priceClpAnnual,
+      priceClpSemiannual: p.priceClpSemiannual,
       maxAthletes: p.maxAthletes,
       maxCoaches: p.maxCoaches,
       features: [...p.features],
@@ -72,7 +72,7 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
 
     const body = CheckoutBodySchema.parse(req.body ?? {});
     const planId = parseCheckoutPlanId(body?.planId ?? "coach");
-    const period = parseCheckoutPeriod(body?.period); // defaults to "annual" (pushed option)
+    const period = parseCheckoutPeriod(body?.period); // defaults to "semiannual" (pushed option)
     await ensureCoachSubscription(prisma, coachId, PROVIDER);
     const origin = appOrigin();
 

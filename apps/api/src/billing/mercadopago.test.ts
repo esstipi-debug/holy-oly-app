@@ -42,11 +42,11 @@ describe("mercadopago adapter", () => {
     );
   });
 
-  it("builds the preapproval_plan body: annual → 12 months, gross (net+IVA) amount", () => {
-    const b = buildPreapprovalPlanBody(getCoachPlan("coach"), "annual", "https://x.app");
-    expect(b.auto_recurring.frequency).toBe(12);
+  it("builds the preapproval_plan body: semiannual → 6 months, gross (net+IVA) amount", () => {
+    const b = buildPreapprovalPlanBody(getCoachPlan("coach"), "semiannual", "https://x.app");
+    expect(b.auto_recurring.frequency).toBe(6);
     expect(b.auto_recurring.frequency_type).toBe("months");
-    expect(b.auto_recurring.transaction_amount).toBe(withIva(199_000));
+    expect(b.auto_recurring.transaction_amount).toBe(withIva(99_500));
     expect(b.auto_recurring.currency_id).toBe("CLP");
     expect(b.back_url).toContain("/coach/suscripcion");
   });

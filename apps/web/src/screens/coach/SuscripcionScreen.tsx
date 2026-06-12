@@ -6,7 +6,7 @@ import { useAuth } from "../../auth/AuthContext";
 import { BackButton } from "../../ui/BackButton";
 import { VerifyEmailBanner } from "../../ui/VerifyEmailBanner";
 
-const monthsFree = (p: BillingPlan): number => Math.round((p.priceClpMonthly * 12 - p.priceClpAnnual) / p.priceClpMonthly);
+const monthsFree = (p: BillingPlan): number => Math.round((p.priceClpMonthly * 6 - p.priceClpSemiannual) / p.priceClpMonthly);
 const coachesLabel = (n: number | null): string => (n == null ? "Coaches ilimitados" : n === 1 ? "1 coach" : `Hasta ${n} coaches`);
 
 export function SuscripcionScreen() {
@@ -15,7 +15,7 @@ export function SuscripcionScreen() {
   const [params] = useSearchParams();
   const [plans, setPlans] = useState<BillingPlan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<BillingPlan["id"]>("coach");
-  const [period, setPeriod] = useState<BillingPeriod>("annual"); // anual-first (caja)
+  const [period, setPeriod] = useState<BillingPeriod>("semiannual"); // semestral-first (caja)
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -108,7 +108,7 @@ export function SuscripcionScreen() {
       {!status?.active && plans.length > 0 && (
         <>
           <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-            {periodBtn("annual", "Anual · 2 meses gratis")}
+            {periodBtn("semiannual", "Semestral · 1 mes gratis")}
             {periodBtn("monthly", "Mensual")}
           </div>
 
@@ -133,12 +133,12 @@ export function SuscripcionScreen() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                     <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{plan.name}</span>
                     <span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700 }}>
-                      {period === "annual" ? `${formatClp(plan.priceClpAnnual)} + IVA/año` : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
+                      {period === "semiannual" ? `${formatClp(plan.priceClpSemiannual)} + IVA/sem` : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
                     </span>
                   </div>
-                  {period === "annual" && (
+                  {period === "semiannual" && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-accent)", marginTop: 3 }}>
-                      ≈ {formatClp(Math.round(plan.priceClpAnnual / 12))}/mes · {monthsFree(plan)} meses gratis
+                      ≈ {formatClp(Math.round(plan.priceClpSemiannual / 6))}/mes · {monthsFree(plan)} mes gratis
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{plan.description}</div>
