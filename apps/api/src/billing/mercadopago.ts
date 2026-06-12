@@ -177,20 +177,20 @@ export async function applyMercadoPagoPreapproval(
 
 export interface PreapprovalPlanBody {
   reason: string;
-  auto_recurring: { frequency: number; frequency_type: "months" | "years"; transaction_amount: number; currency_id: "CLP" };
+  auto_recurring: { frequency: number; frequency_type: "months"; transaction_amount: number; currency_id: "CLP" };
   back_url: string;
 }
 
 /**
  * MP `preapproval_plan` payload for a tier+period. `transaction_amount` is GROSS (net price + IVA),
- * which is what MP actually charges; annual → 1×/year, monthly → 1×/month.
+ * which is what MP actually charges; annual → 12 months, monthly → 1 month.
  */
 export function buildPreapprovalPlanBody(plan: CoachPlan, period: BillingPeriod, origin: string): PreapprovalPlanBody {
   return {
     reason: `Holy Oly — ${plan.name} (${period === "annual" ? "Anual" : "Mensual"})`,
     auto_recurring: {
-      frequency: 1,
-      frequency_type: period === "annual" ? "years" : "months",
+      frequency: period === "annual" ? 12 : 1,
+      frequency_type: "months",
       transaction_amount: withIva(planPriceClp(plan, period)),
       currency_id: "CLP",
     },
