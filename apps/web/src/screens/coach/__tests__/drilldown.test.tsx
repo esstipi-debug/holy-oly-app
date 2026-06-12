@@ -18,7 +18,7 @@ function renderAt(id: string) {
   );
 }
 
-test("shows the athlete header, the monitor charts, and the palmarés medals (Mara)", async () => {
+test("shows the athlete header and monitor charts — palmarés/medallas desactivadas (Mara)", async () => {
   const { container } = renderAt("mv");
   await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
   expect(screen.getByText("ACWR")).toBeInTheDocument();
@@ -27,8 +27,9 @@ test("shows the athlete header, the monitor charts, and the palmarés medals (Ma
   expect(screen.getByText("Bienestar")).toBeInTheDocument();
   expect(screen.getByText("Cumplimiento")).toBeInTheDocument();
   expect(screen.getByText("Peso vs categoría")).toBeInTheDocument();
-  expect(screen.getByText(/Palmar/)).toBeInTheDocument();
-  expect(screen.getByText("Nacional Absoluto")).toBeInTheDocument();
+  // Medallas desactivadas por el owner (2026-06-12): el palmarés no se renderiza.
+  expect(screen.queryByText(/Palmar/)).toBeNull();
+  expect(screen.queryByText("Nacional Absoluto")).toBeNull();
   expect(container.querySelectorAll("svg").length).toBeGreaterThan(3);
 });
 

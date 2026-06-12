@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
-import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type CycleContext, type Macrocycle, type Medal, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
+import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type CycleContext, type Macrocycle, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
 import { AcwrChart } from "../../ui/charts/AcwrChart";
 import { LoadChart } from "../../ui/charts/LoadChart";
@@ -11,10 +11,8 @@ import { WellnessChart } from "../../ui/charts/WellnessChart";
 import { CompChart } from "../../ui/charts/CompChart";
 import { WeightChart } from "../../ui/charts/WeightChart";
 import { MacroTimeline } from "../../ui/charts/MacroTimeline";
-import { Medal as MedalIcon } from "../../ui/Medal";
 import { Badge } from "../../ui/Badge";
 import { BackButton } from "../../ui/BackButton";
-import { MedalSheet } from "./MedalSheet";
 import { CompSheet } from "./CompSheet";
 import { SessionAdherence } from "./sessions/SessionAdherence";
 import { applyToggle } from "./sessions/sessionLog";
@@ -36,12 +34,10 @@ export function Drilldown() {
   const repo = useRepository();
   const [athlete, setAthlete] = useState<Atleta | undefined>();
   const [series, setSeries] = useState<MonitorSeries | undefined>();
-  const [medals, setMedals] = useState<Medal[]>([]);
   const [comps, setComps] = useState<Competencia[]>([]);
   const [plan, setPlan] = useState<Plan | undefined>();
   const [sessionLog, setSessionLog] = useState<SessionLog>([]);
   const [sessionError, setSessionError] = useState(false);
-  const [medalOpen, setMedalOpen] = useState(false);
   const [compOpen, setCompOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
@@ -70,10 +66,10 @@ export function Drilldown() {
   useEffect(() => {
     let on = true;
     setLoaded(false); setError(false); setAsAthlete(false); // reset on athlete change (incl. the athlete-view toggle)
-    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getMedals(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id), repo.getCycleContext(id)])
-      .then(([a, s, m, c, sl, pl, cy]) => {
+    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id), repo.getCycleContext(id)])
+      .then(([a, s, c, sl, pl, cy]) => {
         if (!on) return;
-        setAthlete(a); setSeries(s); setMedals(m); setComps(c); setSessionLog(sl); setPlan(pl); setCycleCtx(cy); setLoaded(true);
+        setAthlete(a); setSeries(s); setComps(c); setSessionLog(sl); setPlan(pl); setCycleCtx(cy); setLoaded(true);
       })
       .catch(() => { if (on) { setError(true); setLoaded(true); } });
     return () => { on = false; };
@@ -97,8 +93,6 @@ export function Drilldown() {
   const metodo = ROSTER_META[athlete.id]?.metodo ?? "";
   const cell = rosterStatus(series);
   const estadoLabel = cell === "alert" ? "Alerta" : cell === "warn" ? "Vigilar" : cell === "ok" ? "OK" : "Sin datos";
-  const counts = { oro: 0, plata: 0, bronce: 0 } as Record<Medal["medal"], number>;
-  for (const m of medals) counts[m.medal]++;
 
   const maxWeek = macro?.phaseProfile.at(-1)?.weeks[1] ?? 16;
   // Effective plan start date: real one once M5 sets it; until then anchor today to the current
@@ -107,10 +101,6 @@ export function Drilldown() {
   // Real plan anchor once assigned (M5); else derive so today maps to the current series week.
   const startDate = plan?.startDate ?? defaultStartDate(today, series?.weeks ?? 1);
   const hoyWeek = weekOfDate(startDate, today, maxWeek);
-  async function onAddMedal(m: Medal): Promise<void> {
-    await repo.addMedal(id, m);
-    setMedals(await repo.getMedals(id));
-  }
   async function onAddComp(name: string, date: string): Promise<void> {
     const week = weekOfDate(startDate, date, maxWeek);
     await repo.setComps(id, [...comps, { name, week, date }]);
@@ -259,35 +249,10 @@ export function Drilldown() {
           read-only, coach-only (% + zonas), NO reemplaza el plan de recetas. Requiere plan (RM). */}
       {plan && <PrilepinSection athleteId={id} hoyWeek={hoyWeek} sexo={athlete.sexo} />}
 
-      <div style={{ marginTop: 16, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Palmarés · competencias</div>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0" }}>
-        {(["oro", "plata", "bronce"] as const).map((k) => (
-          <span key={k} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <MedalIcon metal={k} size={22} />
-            <b style={{ fontFamily: "var(--mono)", fontSize: 12 }}>{counts[k]}</b>
-          </span>
-        ))}
-      </div>
-      {medals.length === 0 ? (
-        <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>Sin medallas registradas.</div>
-      ) : (
-        medals.map((m, i) => (
-          <div key={`${m.date}-${m.comp}-${m.medal}-${i}`} style={{ display: "flex", gap: 10, alignItems: "center", padding: "6px 0", borderTop: "1px solid color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
-            <MedalIcon metal={m.medal} size={26} />
-            <div>
-              <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12 }}>{m.comp}</div>
-              <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>{m.date} · {m.cat} · Arr {m.sn} · Env {m.cj} · Total {m.sn + m.cj}</div>
-            </div>
-          </div>
-        ))
-      )}
-      {athlete.compite && (
-        <button type="button" onClick={() => setMedalOpen(true)}
-          style={{ marginTop: 12, padding: "8px 14px", borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-accent) 50%,transparent)", background: "color-mix(in srgb,var(--wl-accent) 12%,transparent)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>+ Añadir medalla</button>
-      )}
+      {/* Palmarés/medallas DESACTIVADAS por el owner (2026-06-12). Medal.tsx + MedalSheet.tsx y la
+          capa de datos (getMedals/addMedal, seeds) quedan vivas para reactivar. */}
       </>)}
 
-      <MedalSheet open={medalOpen} onClose={() => setMedalOpen(false)} onSubmit={onAddMedal} />
       <CompSheet open={compOpen} onClose={() => setCompOpen(false)} comps={comps} startDate={startDate} totalWeeks={maxWeek} onAdd={onAddComp} onRemove={onRemoveComp} />
       {selectedWeek != null && (
         <WeekDetailSheet
