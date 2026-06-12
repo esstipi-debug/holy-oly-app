@@ -207,8 +207,10 @@ export async function createPreapprovalPlan(body: PreapprovalPlanBody): Promise<
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const data = (await res.json().catch(() => ({}))) as { id?: string };
-  if (!res.ok || !data.id) throw new Error(`preapproval_plan create failed (${res.status})`);
+  const text = await res.text().catch(() => "");
+  let data: { id?: string } = {};
+  try { data = JSON.parse(text); } catch { /* non-JSON response */ }
+  if (!res.ok || !data.id) throw new Error(`preapproval_plan create failed (${res.status}): ${text.slice(0, 400)}`);
   return data.id;
 }
 

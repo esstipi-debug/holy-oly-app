@@ -43,7 +43,10 @@ export function SuscripcionScreen() {
     setBusy(true);
     setError(null);
     try {
-      const { checkoutUrl } = await billingCheckout(selectedPlanId, period);
+      const selectedPlan = plans.find((p) => p.id === selectedPlanId);
+      const hasSemiannual = selectedPlan?.availablePeriods?.includes("semiannual") ?? true;
+      const effectivePeriod = period === "semiannual" && !hasSemiannual ? "monthly" : period;
+      const { checkoutUrl } = await billingCheckout(selectedPlanId, effectivePeriod);
       // Sólo http(s) reales navegan — bloquea javascript:/data: si el backend devolviera una URL hostil.
       let isWebUrl = false;
       try {
@@ -115,6 +118,8 @@ export function SuscripcionScreen() {
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
             {plans.map((plan) => {
               const selected = plan.id === selectedPlanId;
+              const hasSemiannual = plan.availablePeriods?.includes("semiannual") ?? true;
+              const effectivePeriod = period === "semiannual" && !hasSemiannual ? "monthly" : period;
               return (
                 <button
                   key={plan.id}
@@ -133,12 +138,17 @@ export function SuscripcionScreen() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                     <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{plan.name}</span>
                     <span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700 }}>
-                      {period === "semiannual" ? `${formatClp(plan.priceClpSemiannual)} + IVA/sem` : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
+                      {effectivePeriod === "semiannual" ? `${formatClp(plan.priceClpSemiannual)} + IVA/sem` : `${formatClp(plan.priceClpMonthly)} + IVA/mes`}
                     </span>
                   </div>
-                  {period === "semiannual" && (
+                  {effectivePeriod === "semiannual" && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-accent)", marginTop: 3 }}>
                       ≈ {formatClp(Math.round(plan.priceClpSemiannual / 6))}/mes · {monthsFree(plan)} mes gratis
+                    </div>
+                  )}
+                  {period === "semiannual" && !hasSemiannual && (
+                    <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>
+                      Solo mensual disponible para este plan
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{plan.description}</div>

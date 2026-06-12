@@ -12,6 +12,7 @@ export interface BillingPlan {
   maxAthletes: number | null;
   maxCoaches: number | null;
   features: string[];
+  availablePeriods: BillingPeriod[];
 }
 
 export interface BillingStatus {

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { COACH_PLANS, CoachPlanIdSchema } from "@holy-oly/core";
+import { COACH_PLANS, CoachPlanIdSchema, BillingPeriodSchema, type BillingPeriod } from "@holy-oly/core";
 import { z } from "zod";
 import { prisma } from "../db/client";
 import { requireCoach } from "../auth/guards";
@@ -26,6 +26,7 @@ import {
   mercadoPagoWebhookEventId,
   parseCheckoutPlanId,
   parseCheckoutPeriod,
+  resolveMercadoPagoPlanId,
   verifyMercadoPagoSignature,
   type MercadoPagoWebhookNotification,
 } from "./mercadopago";
@@ -40,18 +41,25 @@ export async function billingRoutes(app: FastifyInstance): Promise<void> {
   // Fail fast: in production, refuse to register billing in mock mode (would charge $0).
   assertBillingProdConfig();
 
-  app.get("/billing/plans", async () => ({
-    plans: COACH_PLANS.map((p) => ({
-      id: p.id,
-      name: p.name,
-      description: p.description,
-      priceClpMonthly: p.priceClpMonthly,
-      priceClpSemiannual: p.priceClpSemiannual,
-      maxAthletes: p.maxAthletes,
-      maxCoaches: p.maxCoaches,
-      features: [...p.features],
-    })),
-  }));
+  app.get("/billing/plans", async () => {
+    const allPeriods: BillingPeriod[] = [...BillingPeriodSchema.options];
+    const isMp = PROVIDER === "mercadopago" && mercadoPagoConfigured();
+    return {
+      plans: COACH_PLANS.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        priceClpMonthly: p.priceClpMonthly,
+        priceClpSemiannual: p.priceClpSemiannual,
+        maxAthletes: p.maxAthletes,
+        maxCoaches: p.maxCoaches,
+        features: [...p.features],
+        availablePeriods: isMp
+          ? allPeriods.filter((pr) => resolveMercadoPagoPlanId(p.id, pr) !== null)
+          : allPeriods,
+      })),
+    };
+  });
 
   app.get("/billing/status", async (req, reply) => {
     const coachId = requireCoach(req, reply);
