@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { MacroRecipe, RM } from "../types";
 import { MACROCYCLES } from "../data/macrocycles";
-import { resolveTargetKg, sessionTemplateFor, instantiatePrescription, buildSessionViews } from "./prescription";
+import { resolveTargetKg, sessionTemplateFor, instantiatePrescription, buildSessionViews, dayLayoutFor } from "./prescription";
 
 const RMS: RM = { arranque: 80, envion: 100, sentadilla: 140, frente: 110 };
 const ruso = MACROCYCLES.find((m) => m.id === "ruso-5d")!;
@@ -86,6 +86,20 @@ describe("accesorios por %×RM (sin RPE)", () => {
     const rms = { arranque: 92, envion: 116, sentadilla: 150, frente: 122 };
     expect(resolveTargetKg({ movementId: "peso-muerto-rumano", sets: 3, reps: 6, pct: 68 }, rms)).toBe(102);
     expect(resolveTargetKg({ movementId: "press-empuje", sets: 4, reps: 4, pct: 62 }, rms)).toBe(72);
+  });
+});
+
+describe("dayLayoutFor (layout día/turno derivado de la receta — D8, no se persiste)", () => {
+  it("ruso-5d (mono-diario): day = idx+1, sin turno", () => {
+    const ruso = MACROCYCLES.find((m) => m.id === "ruso-5d")!;
+    const layout = dayLayoutFor(ruso, 1)!;
+    expect(layout).toHaveLength(5);
+    expect(layout[0]).toEqual({ day: 1 });
+    expect(layout[4]).toEqual({ day: 5 });
+  });
+  it("macro sin receta para la semana → null (sin-dato honesto)", () => {
+    const ruso = MACROCYCLES.find((m) => m.id === "ruso-5d")!;
+    expect(dayLayoutFor(ruso, 999)).toBeNull();
   });
 });
 
