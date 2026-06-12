@@ -150,6 +150,34 @@ test("«Listo» navega al inicio", async () => {
   await waitFor(() => expect(screen.getByText("HOY")).toBeInTheDocument());
 });
 
+test("D13: header muestra day/turno del view cuando están presentes", async () => {
+  const views: SessionView[] = [{
+    week: 8, sessionIdx: 0,
+    day: 1, turno: "PM", fecha: "2026-06-12",
+    exercises: [
+      { movementId: "arranque", movementName: "Arranque", sets: 2, reps: 2, pct: 80, targetKg: 64,
+        actual: actual({ movementId: "arranque", movementName: "Arranque", sets: [{ kg: 64, reps: 2, done: true }] }) },
+    ],
+  }];
+  vi.spyOn(me, "getMeSessions").mockResolvedValue(views);
+  renderVictoria();
+  // header muestra "Día 1 · PM" y la fecha del view
+  expect(await screen.findByText(/Día 1 · PM/)).toBeInTheDocument();
+  expect(screen.getByText(/2026-06-12/)).toBeInTheDocument();
+});
+
+test("D13: header fallback a idx+1 y fecha local cuando el view no trae day/turno/fecha", async () => {
+  vi.spyOn(me, "getMeSessions").mockResolvedValue(sessions()); // sin day/turno/fecha
+  renderVictoria();
+  // idx=0 → fallback a "Día 1" sin · PM/AM, sin turno
+  await screen.findByText("Sesión completada");
+  // La línea contiene "Día 1 —" con los movimientos (no debe romper el fallback)
+  expect(screen.getByText(/Día 1/)).toBeInTheDocument();
+  // No debe aparecer ningún turno
+  expect(screen.queryByText(/· PM/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/· AM/)).not.toBeInTheDocument();
+});
+
 test("API falla → estado de error con volver al inicio", async () => {
   vi.spyOn(me, "getMeSessions").mockRejectedValue(new Error("boom"));
   renderVictoria();

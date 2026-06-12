@@ -76,7 +76,7 @@ export function VictoriaScreen() {
         {plan.plan?.currentPhase && <span style={{ color: "var(--wl-accent)" }}>{plan.plan.currentPhase}</span>}
       </div>
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 30, lineHeight: 1, textTransform: "uppercase", color: "var(--wl-text)", marginTop: 8 }}>{title}</div>
-      <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.5 }}>Día {idx + 1} — {dayMoves}<br />{fecha}</div>
+      <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.5 }}>Día {session.day ?? idx + 1}{session.turno ? ` · ${session.turno}` : ""} — {dayMoves}<br />{session.fecha ?? fecha}</div>
 
       {/* carga total del día = trabajo + calentamiento (decisión owner 2026-06-11) */}
       {didWork && totalKg > 0 && (
