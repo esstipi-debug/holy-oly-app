@@ -1,7 +1,7 @@
 import type {
   Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleContext, SessionLog, SessionView, PrescribedExercise, WeekHeat,
-  PrCandidate, RmLift, RmUpdate,
+  PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek,
 } from "./types";
 
 export interface Repository {
@@ -31,6 +31,11 @@ export interface Repository {
   getPrescriptionWeek(id: string, week: number): Promise<SessionView[]>;
   /** Per-day intensity/volume aggregate of the WHOLE plan (calendar heat map). [] if no plan. */
   getPlanHeat(id: string): Promise<WeekHeat[]>;
+  /** PREVIEW del motor Prilepin (COACH-ONLY): la semana del motor para un lift, generada desde
+   *  los datos reales del atleta. Read-only — NO persiste ni reemplaza la prescripción de
+   *  recetas. `null` = sin datos honesto (sin plan/RM vigente, semana fuera de rango). El coach
+   *  ve pct/zonas/audits (HR-1: jamás llega a superficie de atleta). */
+  getPrilepinWeek(id: string, week: number, lift: RmLift): Promise<EngineWeek | null>;
   /** Replace one session's exercises (coach edit). Valid after savePlan has instantiated the
    *  athlete's prescription; coach-authorized server-side. */
   setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void>;
@@ -41,4 +46,7 @@ export interface Repository {
   getPrCandidates(id: string): Promise<PrCandidate[]>;
   /** Historial append-only de RMs, más nuevo primero. [] sin historial (planes pre-SP5). */
   getRmHistory(id: string): Promise<RmUpdate[]>;
+  /** Lazo diario (coach): check-ins crudos del atleta (6 ítems + peso, SIN RPE) + adherencia
+   *  reconciliada (atleta > coach > none) de las últimas semanas. El ciclo NUNCA viaja por acá. */
+  getDaily(id: string): Promise<AthleteDailyView>;
 }

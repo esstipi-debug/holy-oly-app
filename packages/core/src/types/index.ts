@@ -256,6 +256,40 @@ export interface WeekHeat { week: number; days: (DayHeat | null)[] }
 export interface RecorridoSemana { week: number; trabajoKg: number; calentamientoKg: number; sesionesHechas: number; sesionesTotales: number }
 export interface MeRecorrido { semanas: RecorridoSemana[] }
 
+// ── Adherencia reconciliada (slice lazo-diario; lógica en logic/adherence.ts). Por sesión
+//    planificada, prioriza la VERDAD del atleta sobre el toggle manual del coach. ──
+/** Estado reconciliado de una sesión planificada para la cara del coach:
+ *  - `done`    todas las prescripciones de la sesión quedaron hechas
+ *  - `partial` algunas hechas, otras no (el atleta dejó la sesión a medias)
+ *  - `skipped` el atleta registró la sesión y NINGUNA quedó hecha (o el coach marcó "missed")
+ *  - `planned` reservado para una fuente futura ("agendada pero aún sin tocar")
+ *  - `none`    sin ningún dato — jamás inventar (HR de dominio). */
+export type AdherenceStatus = "done" | "partial" | "skipped" | "planned" | "none";
+/** De dónde sale el estado: la verdad registrada por el atleta vs el toggle manual del coach. */
+export type AdherenceSource = "athlete" | "coach" | "none";
+/** Una sesión planificada (coordenada en el plan). */
+export interface PlannedSession { week: number; idx: number }
+/** Estado reconciliado de una sesión planificada, con su origen. */
+export interface ReconciledSession { week: number; idx: number; status: AdherenceStatus; source: AdherenceSource }
+
+// ── Día a día (slice lazo-diario, wire de GET /athletes/:id/daily). Cara COACH: el check-in
+//    crudo del atleta (6 ítems + peso, SIN RPE) + la adherencia RECONCILIADA (atleta > coach >
+//    none, vía reconcileAdherence). El ciclo JAMÁS viaja por acá (sigue por su endpoint redactado). ──
+/** Un check-in diario del atleta tal como lo registró (los 6 ítems 1..5 + peso opcional). */
+export interface DailyCheckin {
+  date: string; // ISO YYYY-MM-DD
+  fatiga: number; dolor: number; estres: number; humor: number; motivacion: number; sueno: number;
+  weight?: number;
+}
+/** Respuesta de GET /athletes/:id/daily: ventana de los últimos N días. `today` ancla el marco
+ *  del cliente; `checkins` orden cronológico ascendente. `adherence` ya viene reconciliada. */
+export interface AthleteDailyView {
+  today: string;                          // ISO
+  fromDate: string;                       // ISO — inicio de la ventana (inclusive)
+  checkins: DailyCheckin[];               // crudos del atleta, asc por fecha
+  adherence: ReconciledSession[];         // estado reconciliado por sesión planificada
+}
+
 // ── SP3 actuals: what the athlete actually lifted, per prescribed exercise. ──
 /** Una serie de trabajo registrada (Opción B: registro por serie). */
 export interface SetActual { kg?: number; reps?: number; done: boolean; }

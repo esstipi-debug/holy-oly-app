@@ -68,6 +68,21 @@ describe("HttpRepository", () => {
     await expect(new HttpRepository(BASE).getPlanHeat("mv")).rejects.toThrow();
   });
 
+  it("getDaily hits /athletes/:id/daily, valida el shape (check-ins + adherencia) y rechaza inválido", async () => {
+    const view = {
+      today: "2026-06-12", fromDate: "2026-04-17",
+      checkins: [{ date: "2026-06-12", fatiga: 2, dolor: 1, estres: 2, humor: 4, motivacion: 5, sueno: 4, weight: 61 }],
+      adherence: [{ week: 1, idx: 0, status: "done", source: "athlete" }],
+    };
+    global.fetch = mock(200, view);
+    expect(await new HttpRepository(BASE).getDaily("mv")).toEqual(view);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(`${BASE}/athletes/mv/daily`);
+    expect(initsSeen[0]?.credentials).toBe("include");
+    // Un status/source fuera del enum → rechazo en el límite (jamás confía en el wire).
+    global.fetch = mock(200, { ...view, adherence: [{ week: 1, idx: 0, status: "hecho", source: "athlete" }] });
+    await expect(new HttpRepository(BASE).getDaily("mv")).rejects.toThrow();
+  });
+
   it("savePlan PUTs the plan to the athlete path (id from plan.atletaId, with credentials)", async () => {
     global.fetch = mock(200, { ok: true });
     const plan: Plan = {

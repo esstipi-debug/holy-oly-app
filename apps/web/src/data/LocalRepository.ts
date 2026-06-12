@@ -1,14 +1,14 @@
 import type {
   Repository, Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleState, CycleContext, SessionLog, SessionView, PrescribedExercise, PrescriptionRow, WeekHeat,
-  PrCandidate, RmLift, RmUpdate,
+  PrCandidate, RmLift, RmUpdate, AthleteDailyView, DailyCheckin, PlannedSession, SessionActual, EngineWeek,
 } from "@holy-oly/core";
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
-  PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema,
+  PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema, DayLogsSchema,
   MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
-  prCandidates, RM_LIFTS, lutealNow, redactCycle,
+  prCandidates, RM_LIFTS, lutealNow, redactCycle, reconcileAdherence, weekOfDate, prilepinPreviewWeek,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -126,6 +126,18 @@ export class LocalRepository implements Repository {
     return planHeat(this.prescriptionRows(id), totalWeeks);
   }
 
+  /** PREVIEW del motor Prilepin (coach-only). Mirror del API repo.getPrilepinWeek: genera la
+   *  semana del motor desde plan+comps+serie, SIN persistir. `null` = sin datos honesto. */
+  async getPrilepinWeek(id: string, week: number, lift: RmLift): Promise<EngineWeek | null> {
+    const plan = await this.getPlan(id);
+    if (!plan) return null;
+    const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+    const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+    if (totalWeeks === 0) return null;
+    const series = await this.getSeries(id);
+    return prilepinPreviewWeek({ lift, rms: plan.rms, requestedWeek: week, totalWeeks, comps: plan.comps, series });
+  }
+
   // ── SP5: RMs a mitad de ciclo (mirror del API). updateRms NO re-instancia. ──
   private rmRows(id: string): RmUpdate[] {
     const r = RmUpdatesSchema.safeParse(this.s.getOptional<unknown>(KEYS.rmUpdates(id)));
@@ -152,6 +164,54 @@ export class LocalRepository implements Repository {
   }
   async getRmHistory(id: string): Promise<RmUpdate[]> {
     return [...this.rmRows(id)].reverse(); // append-order → más nuevo primero
+  }
+
+  // ── Lazo diario (mirror del API repo.getDailyView). Check-ins crudos + adherencia reconciliada
+  //    (atleta > coach > none). El ciclo JAMÁS sale por acá. ──
+  async getDaily(id: string): Promise<AthleteDailyView> {
+    const today = new Date().toISOString().slice(0, 10);
+    const windowWeeks = 8; // espejo de DAILY_WINDOW_WEEKS del API
+    const fromMs = new Date(`${today}T00:00:00Z`).getTime() - windowWeeks * 7 * 86_400_000;
+    const fromDate = new Date(fromMs).toISOString().slice(0, 10);
+
+    const dl = DayLogsSchema.safeParse(this.s.getOptional<unknown>(KEYS.dayLog(id)));
+    const checkins: DailyCheckin[] = (dl.success ? dl.data : [])
+      .filter((c) => c.date >= fromDate)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((c) => ({
+        date: c.date, fatiga: c.fatiga, dolor: c.dolor, estres: c.estres,
+        humor: c.humor, motivacion: c.motivacion, sueno: c.sueno, weight: c.weight,
+      }));
+
+    const plan = await this.getPlan(id);
+    if (!plan) return { today, fromDate, checkins, adherence: [] };
+    const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+    const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+    if (totalWeeks === 0) return { today, fromDate, checkins, adherence: [] };
+
+    const startDate = plan.startDate ?? defaultStartDate(today, totalWeeks);
+    const currentWeek = weekOfDate(startDate, today, totalWeeks);
+    const fromWeek = Math.max(1, currentWeek - windowWeeks + 1);
+    const inWindow = (week: number): boolean => week >= fromWeek && week <= currentWeek;
+
+    // Sesiones planificadas = (week, sessionIdx) DISTINTOS de la prescripción en la ventana.
+    const seen = new Set<string>();
+    const planned: PlannedSession[] = [];
+    for (const r of this.prescriptionRows(id)) {
+      if (!inWindow(r.week)) continue;
+      const key = `${r.week}:${r.sessionIdx}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      planned.push({ week: r.week, idx: r.sessionIdx });
+    }
+    planned.sort((a, b) => (a.week - b.week) || (a.idx - b.idx));
+
+    const sa = SessionActualsSchema.safeParse(this.s.getOptional<unknown>(KEYS.sessionActuals(id)));
+    const actuals: SessionActual[] = (sa.success ? sa.data : []).filter((a) => inWindow(a.week));
+    const sl = SessionLogSchema.safeParse(this.s.getOptional<unknown>(KEYS.sessionLog(id)));
+    const marks: SessionLog = (sl.success ? sl.data : []).filter((m) => inWindow(m.week));
+
+    return { today, fromDate, checkins, adherence: reconcileAdherence(planned, actuals, marks) };
   }
 
   async getCycleShare(id: string): Promise<CycleShare> {

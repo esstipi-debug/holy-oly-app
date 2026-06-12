@@ -23,6 +23,8 @@ import { WeekDetailSheet } from "../../ui/charts/WeekDetailSheet";
 import { PlanCalendar } from "./calendar/PlanCalendar";
 import { SessionsSection } from "./sessions/SessionsSection";
 import { RmSection } from "./rm/RmSection";
+import { DailySection } from "./daily/DailySection";
+import { PrilepinSection } from "./prilepin/PrilepinSection";
 import { AtletaPreview } from "./AtletaPreview";
 import { HomeScreen } from "../atleta/HomeScreen";
 import { LocalMeClient } from "../../data/LocalMeClient";
@@ -248,6 +250,14 @@ export function Drilldown() {
       <SessionsSection key={`ses-${rmsStamp}`} athleteId={athlete.id} hoyWeek={hoyWeek} totalWeeks={maxWeek} />
 
       {plan && <RmSection athleteId={id} plan={plan} today={today} onRmsChange={onRmsChange} />}
+
+      {/* Lazo diario (slice lazo-diario): check-in del atleta + adherencia reconciliada (atleta >
+          coach > none). Plan-independiente — los check-ins se muestran aunque no haya plan. */}
+      <DailySection athleteId={id} />
+
+      {/* Vista Prilepin (preview): el motor genera la semana del lift desde los datos reales —
+          read-only, coach-only (% + zonas), NO reemplaza el plan de recetas. Requiere plan (RM). */}
+      {plan && <PrilepinSection athleteId={id} hoyWeek={hoyWeek} sexo={athlete.sexo} />}
 
       <div style={{ marginTop: 16, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Palmarés · competencias</div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", margin: "8px 0" }}>

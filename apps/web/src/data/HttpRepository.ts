@@ -1,9 +1,9 @@
 import {
   RosterSchema, MonitorSeriesSchema, MedalsSchema, CompsSchema, SessionLogSchema, PlanSchema, CycleContextSchema,
-  SessionViewsSchema, WeekHeatsSchema, PrCandidatesSchema, RmUpdatesSchema,
+  SessionViewsSchema, WeekHeatsSchema, PrCandidatesSchema, RmUpdatesSchema, AthleteDailyViewSchema, PrilepinWeekSchema,
   type Repository, type Atleta, type MonitorSeries, type Medal, type Competencia, type Plan,
   type CycleShare, type CycleContext, type SessionLog, type SessionView, type PrescribedExercise, type WeekHeat,
-  type PrCandidate, type RmLift, type RmUpdate,
+  type PrCandidate, type RmLift, type RmUpdate, type AthleteDailyView, type EngineWeek,
 } from "@holy-oly/core";
 
 interface Parser<T> {
@@ -118,6 +118,9 @@ export class HttpRepository implements Repository {
   async getPlanHeat(id: string): Promise<WeekHeat[]> {
     return this.get(this.athletePath(id, "heat"), WeekHeatsSchema);
   }
+  async getPrilepinWeek(id: string, week: number, lift: RmLift): Promise<EngineWeek | null> {
+    return this.get(`${this.athletePath(id, "prilepin-week")}?week=${week}&lift=${lift}`, PrilepinWeekSchema);
+  }
   async setSession(id: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void> {
     return this.mutate(`${this.athletePath(id, "prescription")}/${week}/${sessionIdx}`, "PUT", exercises);
   }
@@ -131,5 +134,10 @@ export class HttpRepository implements Repository {
   }
   async getRmHistory(id: string): Promise<RmUpdate[]> {
     return this.get(this.athletePath(id, "rm-history"), RmUpdatesSchema);
+  }
+
+  // ── Lazo diario (coach-only en el server): check-ins + adherencia reconciliada. ──
+  async getDaily(id: string): Promise<AthleteDailyView> {
+    return this.get(this.athletePath(id, "daily"), AthleteDailyViewSchema);
   }
 }

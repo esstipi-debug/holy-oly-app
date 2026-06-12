@@ -223,6 +223,40 @@ export const WeekHeatSchema = z.object({
 });
 export const WeekHeatsSchema = z.array(WeekHeatSchema).max(104);
 
+// ── Motor Prilepin preview wire shape (GET /athletes/:id/prilepin-week — COACH-ONLY). El coach
+//    SÍ ve pct/zonas/audits (HR-1: jamás llega a superficie de atleta). `null` = sin datos
+//    honesto (sin RM vigente / compe pasada / semana fuera de rango). Sin RPE en ningún campo. ──
+export const EnginePhaseSchema = z.enum(["accumulation", "intensification", "peak", "taper", "comp_week", "deload"]);
+export const IntensityZoneSchema = z.enum(["70-80", "80-90", "90+"]);
+export const ReadinessBandSchema = z.enum(["green", "amber", "red"]);
+export const EngineSetSchema = z.object({
+  sets: z.number().int().min(1).max(20),
+  reps: z.number().int().min(1).max(50),
+  pct: z.number().min(1).max(100),
+  weightKg: KgSchema,
+  zone: IntensityZoneSchema,
+});
+export const EngineZoneAuditSchema = z.object({
+  zone: IntensityZoneSchema,
+  optimalReps: z.number().int().min(0).max(100),
+  prescribedReps: z.number().int().min(0).max(1000),
+  withinRange: z.boolean(),
+});
+export const EngineWeekSchema = z.object({
+  phase: EnginePhaseSchema,
+  label: z.string().max(60),
+  rationale: z.string().max(300),
+  sets: z.array(EngineSetSchema).max(3), // ≤1 set por zona prescrita (3 zonas)
+  audits: z.array(EngineZoneAuditSchema).max(3),
+  taper: z.object({
+    base: z.number(), acwrFactor: z.number(), readinessFactor: z.number(), final: z.number(),
+  }),
+  inputs: z.object({ acwr: z.number().nullable(), readiness: ReadinessBandSchema.nullable() }),
+  heavySinglesAdvisory: z.boolean(),
+});
+/** El endpoint devuelve el week, o `null` cuando no hay prescripción honesta posible. */
+export const PrilepinWeekSchema = EngineWeekSchema.nullable();
+
 // ── Recorrido wire shape (GET /me/recorrido). Lectura: el server ya acotó al escribir los
 //    actuals → sólo shape + no-negativos (un kg negativo jamás es verdad). Sin RM/RPE/ACWR. ──
 export const RecorridoSemanaSchema = z.object({
@@ -234,6 +268,30 @@ export const RecorridoSemanaSchema = z.object({
 });
 export const MeRecorridoSchema = z.object({
   semanas: z.array(RecorridoSemanaSchema).max(104),
+});
+
+// ── Día a día wire shape (GET /athletes/:id/daily). Lectura coach-only: el server ya acotó al
+//    escribir check-ins/actuals → sólo shape + rangos honestos. SIN RPE, SIN ciclo. ──
+export const AdherenceStatusSchema = z.enum(["done", "partial", "skipped", "planned", "none"]);
+export const AdherenceSourceSchema = z.enum(["athlete", "coach", "none"]);
+export const ReconciledSessionSchema = z.object({
+  week: z.number().int().min(1).max(104),
+  idx: z.number().int().min(0).max(13),
+  status: AdherenceStatusSchema,
+  source: AdherenceSourceSchema,
+});
+/** Check-in crudo del atleta (los 6 ítems 1..5 + peso). Mismo rango que DayLog; jamás RPE. */
+export const DailyCheckinSchema = z.object({
+  date: IsoDateSchema,
+  fatiga: WellnessValueSchema, dolor: WellnessValueSchema, estres: WellnessValueSchema,
+  humor: WellnessValueSchema, motivacion: WellnessValueSchema, sueno: WellnessValueSchema,
+  weight: KgSchema.optional(),
+});
+export const AthleteDailyViewSchema = z.object({
+  today: IsoDateSchema,
+  fromDate: IsoDateSchema,
+  checkins: z.array(DailyCheckinSchema).max(370),       // ventana ≤ ~1 año de check-ins diarios
+  adherence: z.array(ReconciledSessionSchema).max(2000),
 });
 
 // ── SP3 actuals wire shapes (untrusted athlete input → bounded). ──

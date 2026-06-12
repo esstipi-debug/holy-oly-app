@@ -7,7 +7,7 @@ import fastifyStatic from "@fastify/static";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { UserRole } from "@prisma/client";
-import { PlanSchema, MedalSchema, CompsSchema, SessionLogSchema, PrescribedExercisesSchema, UpdateRmsInputSchema } from "@holy-oly/core";
+import { PlanSchema, MedalSchema, CompsSchema, SessionLogSchema, PrescribedExercisesSchema, UpdateRmsInputSchema, RM_LIFTS, type RmLift } from "@holy-oly/core";
 import { prisma } from "./db/client";
 import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
@@ -278,6 +278,28 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   app.get<{ Params: { id: string } }>("/athletes/:id/heat", async (req, reply) => {
     if (!(await guardAthlete(req, reply, req.params.id))) return;
     return repo.getPlanHeat(prisma, req.params.id);
+  });
+
+  // ── Preview del motor Prilepin (COACH-ONLY, mismo guardAthlete). Read-only: genera la semana
+  //    del motor para un lift desde los datos reales del atleta — NO persiste, NO reemplaza la
+  //    prescripción de recetas. El coach SÍ ve pct/zonas (HR-1: jamás superficie de atleta).
+  //    Devuelve el EngineWeek crudo, o `null` cuando no hay prescripción honesta (sin RM, etc.). ──
+  app.get<{ Params: { id: string }; Querystring: { week?: string; lift?: string } }>("/athletes/:id/prilepin-week", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    const week = Number(req.query.week);
+    if (!Number.isInteger(week) || week < 1 || week > 104) return reply.code(400).send({ error: "week required (1..104)" });
+    const lift = req.query.lift;
+    if (lift === undefined || !RM_LIFTS.includes(lift as RmLift)) {
+      return reply.code(400).send({ error: `lift required (${RM_LIFTS.join("|")})` });
+    }
+    return repo.getPrilepinWeek(prisma, req.params.id, week, lift as RmLift);
+  });
+
+  // ── Día a día (slice lazo-diario): el check-in diario del atleta + la adherencia reconciliada.
+  //    Coach-only vía el MISMO guardAthlete (coach + Vínculo activo). El ciclo NO sale por acá. ──
+  app.get<{ Params: { id: string } }>("/athletes/:id/daily", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    return repo.getDailyView(prisma, req.params.id, todayISO());
   });
 
   // ── SP5: RMs a mitad de ciclo (coach-only; el atleta JAMÁS ve RMs — HR-1). ──
