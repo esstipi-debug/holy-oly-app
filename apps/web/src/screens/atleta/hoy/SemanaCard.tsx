@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { SessionView } from "@holy-oly/core";
-import { weekDoneSummary } from "@holy-oly/core";
+import { weekDoneSummary, sessionsByDay } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../../data/meClient";
 
 const doneOf = (s: SessionView) => s.exercises.filter((e) => e.actual?.done).length;
+
+const labelOf = (s: SessionView) => {
+  const day = s.day ?? s.sessionIdx + 1;
+  return s.turno ? `Día ${day} · ${s.turno}` : `Día ${day}`;
+};
 
 export function SemanaCard({ week, client = meClient }: { week: number; client?: MeClient }) {
   const navigate = useNavigate();
@@ -37,23 +42,24 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
             style={{ width: "100%", marginTop: 10 }}
             onClick={() => navigate(`/atleta/entreno/${week}/${next.sessionIdx}`)}
           >
-            Registrar entreno · Día {next.sessionIdx + 1}
+            Registrar entreno · {labelOf(next)}
           </button>
           <div className="ho-card__sub">tocá un día para registrar tu entreno</div>
         </>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 10 }}>
-        {sessions.map((s) => {
+        {sessionsByDay(sessions).flatMap((g) => g.sesiones).map(({ session: s }) => {
           const total = s.exercises.length;
           const done = doneOf(s);
           const state = done === 0 ? "pendiente" : done === total ? "hecho" : "en curso";
           const dot = state === "hecho" ? "var(--wl-accent)" : state === "en curso" ? "var(--wl-muted)" : "color-mix(in srgb,var(--wl-text) 22%,transparent)";
+          const meta = state === "hecho" && s.fecha ? `${done}/${total} · hecho · ${s.fecha}` : `${done}/${total} · ${state}`;
           return (
-            <button key={s.sessionIdx} type="button" aria-label={`Día ${s.sessionIdx + 1}`} onClick={() => navigate(`/atleta/entreno/${week}/${s.sessionIdx}`)}
+            <button key={s.sessionIdx} type="button" aria-label={labelOf(s)} onClick={() => navigate(`/atleta/entreno/${week}/${s.sessionIdx}`)}
               style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "10px 12px", borderRadius: "var(--wl-radius)", border: "1px solid color-mix(in srgb,var(--wl-text) 10%,transparent)", background: "var(--wl-bg)", cursor: "pointer" }}>
               <span style={{ width: 9, height: 9, borderRadius: 99, background: dot, flex: "0 0 auto" }} />
-              <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14, color: "var(--wl-text)" }}>Día {s.sessionIdx + 1}</span>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>{done}/{total} · {state}</span>
+              <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14, color: "var(--wl-text)" }}>{labelOf(s)}</span>
+              <span style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>{meta}</span>
             </button>
           );
         })}

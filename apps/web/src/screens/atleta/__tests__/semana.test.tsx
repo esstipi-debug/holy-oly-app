@@ -79,3 +79,32 @@ test("sin kg movidos → no muestra la línea micro (0 → nada, sin culpa)", as
   await screen.findByText(/Día 1/);
   expect(screen.queryByText(/Esta semana:/)).not.toBeInTheDocument();
 });
+
+// ── Agrupación por día real (D8) + fecha en días hechos (D1) ──────────────────
+const exDone = () => ({
+  movementId: "arranque", sets: 1, reps: 1, movementName: "Arranque",
+  actual: { done: true, movementId: "arranque", movementName: "Arranque", substituted: false, desfasado: false },
+});
+const exPend = () => ({ movementId: "arranque", sets: 1, reps: 1, movementName: "Arranque" });
+
+test("día doble: filas hermanas «Día 1 · AM» / «Día 1 · PM» (D6/D8)", async () => {
+  vi.mocked(me.getMeSessions).mockResolvedValueOnce([
+    { week: 9, sessionIdx: 0, day: 1, turno: "AM", exercises: [exDone()] },
+    { week: 9, sessionIdx: 1, day: 1, turno: "PM", exercises: [exPend()] },
+    { week: 9, sessionIdx: 2, day: 2, exercises: [exPend()] },
+  ] as never);
+  renderCard();
+  expect(await screen.findByText("Día 1 · AM")).toBeInTheDocument();
+  expect(screen.getByText("Día 1 · PM")).toBeInTheDocument();
+  expect(screen.getByText("Día 2")).toBeInTheDocument();
+});
+
+test("día hecho muestra su fecha; CTA usa day/turno del próximo pendiente", async () => {
+  vi.mocked(me.getMeSessions).mockResolvedValueOnce([
+    { week: 9, sessionIdx: 0, fecha: "2026-06-09", exercises: [exDone()] },
+    { week: 9, sessionIdx: 1, exercises: [exPend()] },
+  ] as never);
+  renderCard();
+  expect(await screen.findByText(/hecho · 2026-06-09/)).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /Registrar entreno · Día 2/ })).toBeInTheDocument();
+});
