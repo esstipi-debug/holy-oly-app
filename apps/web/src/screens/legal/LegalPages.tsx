@@ -43,7 +43,7 @@ export function PrivacidadPage() {
       <p><strong>Ubicación de datos:</strong> la infraestructura prevista aloja la base de datos en <strong>Estados Unidos (Oregon)</strong>. Si usás la app desde Argentina u otro país, tus datos pueden transferirse internacionalmente.</p>
       <p><strong>Finalidad:</strong> coordinar macrociclos entre coach y atleta, mostrar progreso y —solo con tu consentimiento— contexto de ciclo redactado para el coach.</p>
       <p><strong>Tus derechos:</strong> podés exportar o eliminar tu cuenta desde la sección Cuenta (cuando la API esté habilitada).</p>
-      <p><strong>Contacto:</strong> privacy@holyoly.dev (placeholder hasta definir entidad legal).</p>
+      <p><strong>Contacto:</strong> esstipi@gmail.com (provisorio hasta registrar el dominio/entidad legal).</p>
     </LegalShell>
   );
 }

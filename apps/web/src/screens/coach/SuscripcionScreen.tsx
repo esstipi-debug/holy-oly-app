@@ -15,7 +15,7 @@ const isManualPayment = (p: BillingPlan, per: BillingPeriod): boolean =>
   !(p.mpCheckoutPeriods ?? ALL_PERIODS).includes(per);
 // Email para coordinar los pagos que no entran a MP (PayPal/transferencia).
 const coordinarPagoHref = (planName: string): string =>
-  `mailto:hola@holyoly.app?subject=${encodeURIComponent(`Pago semestral — ${planName} (PayPal/transferencia)`)}`;
+  `mailto:esstipi@gmail.com?subject=${encodeURIComponent(`Pago semestral — ${planName} (PayPal/transferencia)`)}`;
 
 export function SuscripcionScreen() {
   const { user } = useAuth();
@@ -175,7 +175,7 @@ export function SuscripcionScreen() {
                 <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>desde {formatClp(MULTISEDE.fromClpMonthly)}/mes</span>
               </div>
               <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{MULTISEDE.description}</div>
-              <a href="mailto:hola@holyoly.app?subject=Plan%20Multi-sede" style={{ display: "inline-block", marginTop: 8, fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-accent)", fontWeight: 700 }}>
+              <a href="mailto:esstipi@gmail.com?subject=Plan%20Multi-sede" style={{ display: "inline-block", marginTop: 8, fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-accent)", fontWeight: 700 }}>
                 Contactanos →
               </a>
             </div>
@@ -189,8 +189,8 @@ export function SuscripcionScreen() {
         // D6: suscripción activa → nada de CTA falso que re-dispare checkout. Cambios = contacto.
         <div style={{ marginTop: 16, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", lineHeight: 1.6 }}>
           Para cambios de plan escribinos:{" "}
-          <a href="mailto:hola@holyoly.app?subject=Cambio%20de%20plan" style={{ color: "var(--wl-accent)", fontWeight: 700 }}>
-            hola@holyoly.app
+          <a href="mailto:esstipi@gmail.com?subject=Cambio%20de%20plan" style={{ color: "var(--wl-accent)", fontWeight: 700 }}>
+            esstipi@gmail.com
           </a>
         </div>
       ) : checkoutIsManual ? (

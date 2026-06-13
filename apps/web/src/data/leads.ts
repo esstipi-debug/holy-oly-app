@@ -8,7 +8,7 @@
  */
 export const LEADS_KEY = "ho:leads";
 export const DEMO_LEAD_WHATSAPP = ""; // e.g. "5491122334455" (sin +, sin espacios)
-export const DEMO_LEAD_EMAIL = "";    // e.g. "hola@holyoly.app"
+export const DEMO_LEAD_EMAIL = "esstipi@gmail.com";    // stopgap del owner; cambiar a hola@holyoly.app al registrar el dominio
 
 export interface Lead {
   nombre: string;

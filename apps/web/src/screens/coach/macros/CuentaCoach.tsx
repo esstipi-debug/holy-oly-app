@@ -73,8 +73,8 @@ export function CuentaCoach() {
           <div style={label}>Tus datos</div>
           <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.6 }}>
             ¿Exportar o borrar tu cuenta? Escribinos a{" "}
-            <a href="mailto:hola@holyoly.app?subject=Mis%20datos%20(coach)" style={{ color: "var(--wl-accent)", fontWeight: 700 }}>
-              hola@holyoly.app
+            <a href="mailto:esstipi@gmail.com?subject=Mis%20datos%20(coach)" style={{ color: "var(--wl-accent)", fontWeight: 700 }}>
+              esstipi@gmail.com
             </a>
           </div>
 
