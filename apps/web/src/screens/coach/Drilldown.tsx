@@ -1,40 +1,39 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
 import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type CycleContext, type Macrocycle, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
-import { AcwrChart } from "../../ui/charts/AcwrChart";
-import { LoadChart } from "../../ui/charts/LoadChart";
-import { RecoveryChart } from "../../ui/charts/RecoveryChart";
-import { ImrFaseChart } from "../../ui/charts/ImrFaseChart";
-import { WellnessChart } from "../../ui/charts/WellnessChart";
-import { CompChart } from "../../ui/charts/CompChart";
-import { WeightChart } from "../../ui/charts/WeightChart";
-import { MacroTimeline } from "../../ui/charts/MacroTimeline";
 import { Badge } from "../../ui/Badge";
 import { BackButton } from "../../ui/BackButton";
 import { SegmentedToggle } from "../../ui/SegmentedToggle";
 import { RetryButton } from "../../ui/RetryButton";
 import { Loading } from "../../ui/Loading";
 import { CompSheet } from "./CompSheet";
-import { SessionAdherence } from "./sessions/SessionAdherence";
 import { applyToggle } from "./sessions/sessionLog";
 import { weekSignals } from "../../ui/charts/weekSignals";
 import { WeekDetailSheet } from "../../ui/charts/WeekDetailSheet";
-import { PlanCalendar } from "./calendar/PlanCalendar";
-import { SessionsSection } from "./sessions/SessionsSection";
-import { RmSection } from "./rm/RmSection";
-import { DailySection } from "./daily/DailySection";
-import { PrilepinSection } from "./prilepin/PrilepinSection";
 import { AtletaPreview } from "./AtletaPreview";
 import { HomeScreen } from "../atleta/HomeScreen";
 import { LocalMeClient } from "../../data/LocalMeClient";
 import { API_ENABLED } from "../../data/apiConfig";
+import { ResumenTab } from "./drilldown/ResumenTab";
+import { MonitorTab } from "./drilldown/MonitorTab";
+import { PlanTab } from "./drilldown/PlanTab";
+import { TABS, toTab, type TabKey } from "./drilldown/tabs";
 
 export function Drilldown() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const repo = useRepository();
+  // P1: la tab activa vive en `?tab=` (URL-as-state). Se deriva de la URL en cada render — sin estado
+  // espejo — y se valida con toTab para que valores desconocidos caigan a Resumen sin romper.
+  const [params, setParams] = useSearchParams();
+  const tab = toTab(params.get("tab"));
+  const setTab = (next: TabKey): void => {
+    const p = new URLSearchParams(params);
+    p.set("tab", next);
+    setParams(p, { replace: true }); // replace: el back vuelve al roster, no cicla tabs
+  };
   const [athlete, setAthlete] = useState<Atleta | undefined>();
   const [series, setSeries] = useState<MonitorSeries | undefined>();
   const [comps, setComps] = useState<Competencia[]>([]);
@@ -165,91 +164,69 @@ export function Drilldown() {
         />
       )}
 
-      {asAthlete && (
+      {asAthlete ? (
         <div style={{ marginTop: 14 }}>
           {/* Full athlete Home (greeting · estado · constancia · camino), then the money-shot
               prescription with discs. Both read the same id-scoped client → the coach's edit shows. */}
           <HomeScreen client={previewClient} variant="tap" preview />
           <AtletaPreview athleteId={id} week={hoyWeek} sexo={athlete.sexo} client={previewClient} />
         </div>
-      )}
-
-      {!asAthlete && (<>
-      {series ? (
-        <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
-          {macro && <MacroTimeline macro={macro} hoy={series.weeks} comps={comps} />}
-          <AcwrChart series={series} onPointClick={setSelectedWeek} />
-          <LoadChart series={series} onPointClick={setSelectedWeek} />
-          <RecoveryChart series={series} onPointClick={setSelectedWeek} />
-          {macro && <ImrFaseChart series={series} macro={macro} onPointClick={setSelectedWeek} />}
-          {series.wellness.length > 0 && <WellnessChart series={series} onPointClick={setSelectedWeek} />}
-          {series.compliance && series.compliance.length > 0 && <CompChart series={series} onPointClick={setSelectedWeek} />}
-          {series.bodyweight && series.bodyweight.length > 0 && <WeightChart series={series} onPointClick={setSelectedWeek} />}
-        </div>
       ) : (
-        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", margin: "16px 0" }}>
-          Este atleta aún sin datos de monitoreo. Cuando registre HRV/FC/carga, aparecerán acá.
-        </div>
-      )}
-
-      {cycleCtx && (
-        // Contrato redactado, paleta NEUTRA (jamás la del semáforo — el ciclo no es señal del estado).
-        <div style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>
-          Ciclo · {cycleCtx.share === "full"
-            ? `compartido — contexto lúteo hoy: ${cycleCtx.inLutealNow == null ? "—" : cycleCtx.inLutealNow ? "sí" : "no"}`
-            : "compartido (mínimo)"}
-          {cycleCtx.health === "referral" ? " · derivación sugerida" : ""}
-          {!cycleCtx.reliable && cycleCtx.health !== "referral" ? " · registro irregular" : ""}
-        </div>
-      )}
-
-      {macro && (
-        <PlanCalendar
-          key={`cal-${rmsStamp}`}
-          macro={macro}
-          weeks={maxWeek}
-          startDate={startDate}
-          hoyWeek={hoyWeek}
-          comps={comps}
-          marks={sessionLog}
-          perWeek={perWeek}
-          onWeekClick={setSelectedWeek}
-          loadHeat={loadHeat}
-          loadWeek={loadWeek}
-          sexo={athlete.sexo}
-          today={today}
-        />
-      )}
-
-      {macro && (
-        <div style={{ marginTop: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-            <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Planificación · sesiones</div>
-            <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>tocá: · → ✓ → ✗</span>
+        <>
+          {/* Tira de tabs sticky: el header (identidad) scrollea, las tabs se fijan. Fondo opaco +
+              hairline para que el contenido no traspase; zIndex 10 < BottomNav (20). */}
+          <div style={{ position: "sticky", top: 0, zIndex: 10, margin: "12px -13px 0", padding: "8px 13px", background: "var(--wl-bg)", borderBottom: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+            <div role="group" aria-label="Sección del atleta" style={{ display: "flex", gap: 0, width: "fit-content", background: "var(--wl-surface)", borderRadius: 10, padding: 3, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+              {TABS.map(([key, label]) => {
+                const active = tab === key;
+                return (
+                  <button key={key} type="button" aria-pressed={active} onClick={() => setTab(key)}
+                    style={{ minHeight: 44, padding: "0 18px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, letterSpacing: ".02em", background: active ? "var(--wl-accent)" : "transparent", color: active ? "var(--wl-bg)" : "var(--wl-muted)" }}>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          {sessionError && <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 6 }}>No se pudo guardar la sesión. Reintentá.</div>}
-          <div style={{ marginTop: 8 }}>
-            <SessionAdherence marks={sessionLog} weeks={maxWeek} perWeek={perWeek} onToggle={(w, i) => void onToggleSession(w, i)} />
+
+          <div className="wl-viewfade" style={{ marginTop: 14 }}>
+            {tab === "resumen" && (
+              <ResumenTab athleteId={id} macro={macro} seriesWeeks={series?.weeks} comps={comps} cycleCtx={cycleCtx} />
+            )}
+            {tab === "monitor" && (
+              <MonitorTab series={series} macro={macro} onPointClick={setSelectedWeek} />
+            )}
+            {tab === "plan" && (
+              <PlanTab
+                athleteId={id}
+                macro={macro}
+                plan={plan}
+                maxWeek={maxWeek}
+                startDate={startDate}
+                hoyWeek={hoyWeek}
+                perWeek={perWeek}
+                comps={comps}
+                sessionLog={sessionLog}
+                sessionError={sessionError}
+                today={today}
+                sexo={athlete.sexo}
+                loadHeat={loadHeat}
+                loadWeek={loadWeek}
+                onWeekClick={setSelectedWeek}
+                onToggle={(w, i) => void onToggleSession(w, i)}
+                onRmsChange={onRmsChange}
+                rmsStamp={rmsStamp}
+              />
+            )}
           </div>
-        </div>
+        </>
       )}
-
-      <SessionsSection key={`ses-${rmsStamp}`} athleteId={athlete.id} hoyWeek={hoyWeek} totalWeeks={maxWeek} />
-
-      {plan && <RmSection athleteId={id} plan={plan} today={today} onRmsChange={onRmsChange} />}
-
-      {/* Lazo diario (slice lazo-diario): check-in del atleta + adherencia reconciliada (atleta >
-          coach > none). Plan-independiente — los check-ins se muestran aunque no haya plan. */}
-      <DailySection athleteId={id} />
-
-      {/* Vista Prilepin (preview): el motor genera la semana del lift desde los datos reales —
-          read-only, coach-only (% + zonas), NO reemplaza el plan de recetas. Requiere plan (RM). */}
-      {plan && <PrilepinSection athleteId={id} hoyWeek={hoyWeek} sexo={athlete.sexo} />}
 
       {/* Palmarés/medallas DESACTIVADAS por el owner (2026-06-12). Medal.tsx + MedalSheet.tsx y la
           capa de datos (getMedals/addMedal, seeds) quedan vivas para reactivar. */}
-      </>)}
 
+      {/* Overlays cross-cutting: se abren desde Monitor (charts) Y Plan (calendario), así que viven
+          en el shell, fuera del switch de tabs y del switch asAthlete. */}
       <CompSheet open={compOpen} onClose={() => setCompOpen(false)} comps={comps} startDate={startDate} totalWeeks={maxWeek} onAdd={onAddComp} onRemove={onRemoveComp} />
       {selectedWeek != null && (
         <WeekDetailSheet

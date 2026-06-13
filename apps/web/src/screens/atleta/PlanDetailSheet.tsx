@@ -1,7 +1,10 @@
+import { useState } from "react";
 import type { MePlanView } from "@holy-oly/core";
+import { MACROCYCLES } from "@holy-oly/core";
 import { BottomSheet } from "../../ui/BottomSheet";
 import type { MeClient } from "../../data/meClient";
 import { PlanMapSection } from "./PlanMapSection";
+import { PhaseAtletaDetail } from "./PhaseAtletaDetail";
 import { CicloCarousel } from "./ciclo/CicloCarousel";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
@@ -23,6 +26,9 @@ export function PlanDetailSheet({ plan, open, onClose, client, sexo }: {
 }) {
   const next = [...plan.comps].sort((a, b) => a.week - b.week).find((c) => c.week >= plan.currentWeek) ?? plan.comps[plan.comps.length - 1];
   const faltan = next ? next.week - plan.currentWeek : null;
+  // Macro del catálogo (de `plan.macroId`) para el detalle de fase clickeable; null sin macroId.
+  const macro = plan.macroId ? (MACROCYCLES.find((m) => m.id === plan.macroId) ?? null) : null;
+  const [openPhase, setOpenPhase] = useState<string | null>(null);
 
   return (
     <BottomSheet open={open} onClose={onClose} ariaLabel="Detalle del plan">
@@ -64,21 +70,29 @@ export function PlanDetailSheet({ plan, open, onClose, client, sexo }: {
           const wks = p.to - p.from + 1;
           const now = plan.currentWeek >= p.from && plan.currentWeek <= p.to;
           const hasComp = plan.comps.some((c) => c.week >= p.from && c.week <= p.to);
+          const open = openPhase === p.name;
           return (
             <div key={`m-${p.name}-${p.from}`} className={"ho-plan__meso" + (now ? " now" : "")}>
-              <div className="ho-plan__mesohead">
-                <span className="ho-plan__mesonm">
-                  {p.name}
-                  {hasComp && <span className="ho-plan__flag" aria-label="competencia"> 🚩</span>}
-                  {now && <span className="ho-plan__hoy"> • hoy</span>}
-                </span>
-                <span className="ho-plan__mesowk">sem {p.from}–{p.to} · {wks} sem</span>
-              </div>
-              <div className="ho-plan__mesofocus">{p.focus}</div>
-              <div className="ho-plan__mesometrics">
-                <span><b>{p.imrLo}–{p.imrHi}%</b> de tus marcas</span>
-                <span>volumen <b>{volLabel(p.volRel)}</b></span>
-              </div>
+              <button type="button" className="ho-plan__mesobtn" aria-expanded={open}
+                onClick={() => setOpenPhase((cur) => (cur === p.name ? null : p.name))}>
+                <div className="ho-plan__mesohead">
+                  <span className="ho-plan__mesonm">
+                    {p.name}
+                    {hasComp && <span className="ho-plan__flag" aria-label="competencia"> 🚩</span>}
+                    {now && <span className="ho-plan__hoy"> • hoy</span>}
+                  </span>
+                  <span className="ho-plan__mesowk">sem {p.from}–{p.to} · {wks} sem <span className={"ho-plan__chev" + (open ? " open" : "")} aria-hidden>›</span></span>
+                </div>
+                <div className="ho-plan__mesofocus">{p.focus}</div>
+                <div className="ho-plan__mesometrics">
+                  <span><b>{p.imrLo}–{p.imrHi}%</b> de tus marcas</span>
+                  <span>volumen <b>{volLabel(p.volRel)}</b></span>
+                </div>
+              </button>
+              {open && (
+                <PhaseAtletaDetail phase={p} macro={macro} currentWeek={plan.currentWeek}
+                  {...(client ? { client } : {})} {...(sexo ? { sexo } : {})} />
+              )}
             </div>
           );
         })}

@@ -22,6 +22,7 @@ export function buildMePlanView(
   return {
     athlete,
     plan: {
+      macroId: macro.id,
       macroName: macro.name,
       totalWeeks,
       currentWeek,

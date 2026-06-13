@@ -89,12 +89,17 @@ export function ChartCard({ title, sub, chip, chipState, explain, children }: {
             type="button"
             onClick={() => setOpen(true)}
             aria-label={`Cómo se lee: ${title}`}
+            aria-haspopup="dialog"
+            aria-expanded={open}
             style={{
-              width: 18, height: 18, borderRadius: 9, border: "1px solid var(--wl-muted)",
-              background: "transparent", color: "var(--wl-muted)", fontSize: 11, lineHeight: "15px",
+              // 24×24 = target mínimo de WCAG 2.2 (SC 2.5.8). Glifo en --wl-text para pasar contraste
+              // AA en todos los skins (el aro --wl-muted es decorativo, no texto).
+              width: 24, height: 24, borderRadius: 12, border: "1px solid var(--wl-muted)",
+              background: "transparent", color: "var(--wl-text)", fontSize: 13, lineHeight: 1,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
               padding: 0, cursor: "pointer", fontFamily: "var(--mono)", flex: "0 0 auto",
             }}
-          >i</button>
+          >ⓘ</button>
         </div>
       </div>
       {sub && <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", margin: "3px 0 9px" }}>{sub}</div>}

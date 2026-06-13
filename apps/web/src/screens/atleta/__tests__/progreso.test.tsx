@@ -45,13 +45,22 @@ beforeEach(() => {
   vi.mocked(me.getMePlan).mockResolvedValue(PLAN_NULL);
 });
 
-test("con serie: muestra los 4 gráficos en voz de atleta (sin copy de coach)", async () => {
+test("con serie: pills para las 4 señales + Carga por default, en voz de atleta (sin copy de coach)", async () => {
   vi.mocked(me.getMeSeries).mockResolvedValue(SERIES);
   render(<ProgresoScreen />);
+  // Carga es la señal visible por default…
   expect(await screen.findByText("Tu carga")).toBeInTheDocument();
+  // …y las 4 señales existen como pills
+  expect(screen.getByRole("button", { name: "Carga" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Recuperación" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Bienestar" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Peso" })).toBeInTheDocument();
+  // sólo la señal activa está montada (no las 4 apiladas)
+  expect(screen.queryByText("Tu recuperación")).not.toBeInTheDocument();
+  // al tocar una pill cambia el chart visible
+  fireEvent.click(screen.getByRole("button", { name: "Recuperación" }));
   expect(screen.getByText("Tu recuperación")).toBeInTheDocument();
-  expect(screen.getByText("Tu bienestar")).toBeInTheDocument();
-  expect(screen.getByText("Tu peso")).toBeInTheDocument();
+  expect(screen.queryByText("Tu carga")).not.toBeInTheDocument();
   // coach-voiced title must NOT appear
   expect(screen.queryByText("Carga aguda vs crónica")).not.toBeInTheDocument();
 });
@@ -80,10 +89,11 @@ test("error de red: muestra role=alert, sin gráficos", async () => {
   expect(screen.queryByText("Tu carga")).not.toBeInTheDocument();
 });
 
-test("sin bodyweight: no muestra «Tu peso»", async () => {
+test("sin bodyweight: no hay pill ni gráfico de «Tu peso»", async () => {
   vi.mocked(me.getMeSeries).mockResolvedValue({ ...SERIES, bodyweight: undefined, weightBand: undefined });
   render(<ProgresoScreen />);
   await screen.findByText("Tu carga");
+  expect(screen.queryByRole("button", { name: "Peso" })).not.toBeInTheDocument();
   expect(screen.queryByText("Tu peso")).not.toBeInTheDocument();
 });
 

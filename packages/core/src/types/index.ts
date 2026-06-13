@@ -138,6 +138,9 @@ export interface DayLogResult {
 export interface MePlanView {
   athlete: { nombre: string; iniciales: string; sexo: "M" | "F" };
   plan: {
+    /** Slug del macro del catálogo (p.ej. "ruso-5d"). `buildMePlanView` SIEMPRE lo setea; opcional
+     *  sólo por lenidad de fixtures. Habilita el detalle de fase (catálogo + ADN de escuela) en el cliente. */
+    macroId?: string;
     macroName: string;
     totalWeeks: number;
     currentWeek: number;
