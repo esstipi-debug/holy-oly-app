@@ -26,7 +26,7 @@ export interface HeatMapComp { name: string; day?: number }
  * memo: la grilla (~112 celdas) sólo re-renderiza cuando cambian sus props — los callers
  * estabilizan onSelectDay/phaseIndexFor con useCallback para que el estado ajeno no la toque.
  */
-export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSelectDay, phaseIndexFor, comps, firstDow = 0, cycleMarks }: {
+export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSelectDay, phaseIndexFor, comps, firstDow = 0, cycleMarks, orientation = "vertical" }: {
   heat: WeekHeat[];
   hoy: HeatMapPos | null;
   selected: HeatMapPos | null;
@@ -38,6 +38,9 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
   firstDow?: number;
   /** Ventanas proyectadas del ciclo, key "week-day" — SOLO la vista de la atleta la pasa. */
   cycleMarks?: ReadonlyMap<string, CycleMark>;
+  /** "vertical" (semanas = filas, default) | "horizontal" (semanas = columnas, izq→der). El eje
+   *  (día i = offset i de la semana del macro), el encoding y las aria-labels son idénticos. */
+  orientation?: "vertical" | "horizontal";
 }) {
   const max = maxLifts(heat);
   const heads = dayColumnHeads(firstDow);
@@ -45,8 +48,78 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
   const last = heat.length;
   const isMilestone = (w: number): boolean => w === 1 || w % 4 === 0 || w === last;
 
+  // Una celda (semana, día) — encoding idéntico en los dos ejes: tono=%tope, opacidad=volumen,
+  // celda dorada=compe, anillo HOY, anillo+scale de selección, dot de ciclo. La aria-label NO
+  // depende de la orientación (los tests afirman texto, no posición).
+  const cell = (w: WeekHeat, day: number) => {
+    const d = w.days[day];
+    const comp = comps.get(w.week);
+    const isComp = comp?.day === day;
+    const isHoy = hoy != null && hoy.week === w.week && hoy.day === day;
+    const isSel = selected != null && selected.week === w.week && selected.day === day;
+    const cmark = cycleMarks?.get(`${w.week}-${day}`);
+    const rings = [
+      isSel ? "0 0 0 2px var(--wl-accent)" : "",
+      isHoy ? "inset 0 0 0 1.5px color-mix(in srgb, var(--wl-text) 88%, transparent)" : "",
+    ].filter(Boolean).join(", ");
+    const label = `Semana ${w.week} ${names[day]}`
+      + (d ? "" : " · descanso") + (isHoy ? " · HOY" : "") + (isComp ? ` · competencia ${comp!.name}` : "")
+      + (cmark === "periodo" ? " · período (proy.)" : cmark === "preperiodo" ? " · pre-período (proy.)" : "");
+    return (
+      <button key={`c${w.week}-${day}`} type="button" aria-label={label} className="wl-heatcell"
+        onClick={() => onSelectDay(w.week, day)}
+        style={{ position: "relative", width: 22, height: 22, padding: 2, margin: 0, border: 0, background: "transparent", cursor: "pointer", boxSizing: "border-box" }}>
+        <span className="wl-heatcell__sq" style={{
+          display: "block", width: 18, height: 18, borderRadius: 5, boxSizing: "border-box",
+          border: isComp ? `1.5px solid ${GOLD}` : "none",
+          background: isComp
+            ? "transparent"
+            : d
+              ? heatCellColor(d.topPct, d.lifts, max)
+              : "color-mix(in srgb, var(--wl-text) 5%, transparent)",
+          boxShadow: rings || undefined,
+          transform: isSel ? "scale(1.12)" : undefined,
+        }} />
+        {cmark != null && (
+          <span aria-hidden style={{
+            position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 0,
+            width: CYCLE_DOT, height: CYCLE_DOT, borderRadius: "50%", boxSizing: "border-box",
+            background: cmark === "periodo" ? CYCLE_NEUTRAL : "var(--wl-bg)",
+            border: `2px solid ${CYCLE_NEUTRAL}`,
+            boxShadow: "0 0 0 1.5px var(--wl-bg)",
+          }} />
+        )}
+      </button>
+    );
+  };
+
+  if (orientation === "horizontal") {
+    // Semanas = columnas (izq→der), días = filas. El borde de color de fase pasa a un underline
+    // bajo el header de cada semana → cinta de fases continua a lo largo del macro.
+    return (
+      <div data-orientation="horizontal" style={{ display: "grid", gridTemplateColumns: `22px repeat(${heat.length}, 22px)`, gap: 0, justifyContent: "center", overflowX: "auto" }}>
+        <span />
+        {heat.map((w) => {
+          const comp = comps.get(w.week);
+          const weekIsCompNoDay = comp != null && comp.day == null;
+          return (
+            <span key={`wh${w.week}`} style={{
+              fontFamily: "var(--mono)", fontSize: 8.5, textAlign: "center", lineHeight: "13px", height: 16,
+              color: weekIsCompNoDay ? GOLD : "var(--wl-muted)", whiteSpace: "nowrap",
+              borderBottom: `3px solid ${phaseColor(phaseIndexFor(w.week))}`,
+            }}>{isMilestone(w.week) ? `S${w.week}` : weekIsCompNoDay ? "🚩" : ""}</span>
+          );
+        })}
+        {heads.map((d, day) => [
+          <span key={`dl${day}`} style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", textAlign: "center", lineHeight: "22px" }}>{d}</span>,
+          ...heat.map((w) => cell(w, day)),
+        ])}
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "36px repeat(7, 22px)", gap: 0, justifyContent: "center" }}>
+    <div data-orientation="vertical" style={{ display: "grid", gridTemplateColumns: "36px repeat(7, 22px)", gap: 0, justifyContent: "center" }}>
       <span />
       {heads.map((d, i) => (
         <span key={`h${i}`} style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", textAlign: "center", paddingBottom: 3 }}>{d}</span>
@@ -61,48 +134,7 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
             borderLeft: `3px solid ${phaseColor(phaseIndexFor(w.week))}`, paddingLeft: 4,
             whiteSpace: "nowrap",
           }}>{isMilestone(w.week) ? `S${w.week}` : weekIsCompNoDay ? "🚩" : ""}</span>,
-          ...w.days.map((d, day) => {
-            const isComp = comp?.day === day;
-            const isHoy = hoy != null && hoy.week === w.week && hoy.day === day;
-            const isSel = selected != null && selected.week === w.week && selected.day === day;
-            const cmark = cycleMarks?.get(`${w.week}-${day}`);
-            const rings = [
-              isSel ? "0 0 0 2px var(--wl-accent)" : "",
-              // Anillo HOY derivado del texto del skin (no blanco fijo) — visible en claras y oscuras.
-              isHoy ? "inset 0 0 0 1.5px color-mix(in srgb, var(--wl-text) 88%, transparent)" : "",
-            ].filter(Boolean).join(", ");
-            const label = `Semana ${w.week} ${names[day]}`
-              + (d ? "" : " · descanso") + (isHoy ? " · HOY" : "") + (isComp ? ` · competencia ${comp!.name}` : "")
-              + (cmark === "periodo" ? " · período (proy.)" : cmark === "preperiodo" ? " · pre-período (proy.)" : "");
-            return (
-              <button key={`c${w.week}-${day}`} type="button" aria-label={label} className="wl-heatcell"
-                onClick={() => onSelectDay(w.week, day)}
-                style={{ position: "relative", width: 22, height: 22, padding: 2, margin: 0, border: 0, background: "transparent", cursor: "pointer", boxSizing: "border-box" }}>
-                <span className="wl-heatcell__sq" style={{
-                  display: "block", width: 18, height: 18, borderRadius: 5, boxSizing: "border-box",
-                  border: isComp ? `1.5px solid ${GOLD}` : "none",
-                  background: isComp
-                    ? "transparent"
-                    : d
-                      ? heatCellColor(d.topPct, d.lifts, max)
-                      : "color-mix(in srgb, var(--wl-text) 5%, transparent)",
-                  boxShadow: rings || undefined,
-                  // Realce suave del seleccionado — transform (compositor); la transición vive en CSS.
-                  transform: isSel ? "scale(1.12)" : undefined,
-                }} />
-                {cmark != null && (
-                  // Período = sólido · pre = hueco. Halo del fondo para despegarse del color de la celda.
-                  <span aria-hidden style={{
-                    position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 0,
-                    width: CYCLE_DOT, height: CYCLE_DOT, borderRadius: "50%", boxSizing: "border-box",
-                    background: cmark === "periodo" ? CYCLE_NEUTRAL : "var(--wl-bg)",
-                    border: `2px solid ${CYCLE_NEUTRAL}`,
-                    boxShadow: "0 0 0 1.5px var(--wl-bg)",
-                  }} />
-                )}
-              </button>
-            );
-          }),
+          ...w.days.map((_, day) => cell(w, day)),
         ];
       })}
     </div>

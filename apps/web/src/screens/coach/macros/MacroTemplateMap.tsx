@@ -51,7 +51,7 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
     <div>
       <HeatLegend />
       <div style={{ marginTop: 8 }}>
-        <PlanHeatMap heat={heat} hoy={null} selected={sel} comps={EMPTY_COMPS}
+        <PlanHeatMap heat={heat} hoy={null} selected={sel} comps={EMPTY_COMPS} orientation="horizontal"
           onSelectDay={selectDay} phaseIndexFor={phaseIdx} />
       </div>
       {sel && selPhase && (selCell === null ? (

@@ -37,4 +37,16 @@ describe("PlanHeatMap", () => {
     render(<PlanHeatMap {...baseProps} heat={makeHeat()} />);
     expect(screen.getByRole("button", { name: /^Semana 1 Mié · descanso$/ })).toBeInTheDocument();
   });
+
+  it("por defecto es vertical; con orientation=horizontal cambia el eje y conserva celdas + aria-labels", () => {
+    const { container, rerender } = render(<PlanHeatMap {...baseProps} heat={makeHeat()} />);
+    expect(container.querySelector('[data-orientation="vertical"]')).toBeInTheDocument();
+
+    rerender(<PlanHeatMap {...baseProps} heat={makeHeat()} orientation="horizontal" />);
+    expect(container.querySelector('[data-orientation="horizontal"]')).toBeInTheDocument();
+    // mismo invariante de eje y encoding: HOY y la compe siguen en el aria-label de su celda
+    expect(screen.getByRole("button", { name: /^Semana 1 Jue$/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Semana 2 Lun · HOY/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Semana 2 Sáb.*competencia Nacional/ })).toBeInTheDocument();
+  });
 });

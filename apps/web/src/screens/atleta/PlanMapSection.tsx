@@ -194,7 +194,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
         ) : heat === null ? (
           <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Cargando mapa…</div>
         ) : (
-          <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow}
+          <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal"
             onSelectDay={selectDay} phaseIndexFor={phaseIdx} comps={comps}
             {...(cycleMarks != null ? { cycleMarks } : {})} />
         )}

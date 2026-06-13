@@ -177,7 +177,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
                 ) : heat === null ? (
                   <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>Cargando mapa…</div>
                 ) : (
-                  <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow}
+                  <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal"
                     onSelectDay={selectDay} phaseIndexFor={phaseIndexFor} comps={compMap} />
                 )}
               </div>
