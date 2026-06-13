@@ -5,6 +5,7 @@ import { useRepository } from "../../../data/RepositoryProvider";
 import { STATUS } from "../../../ui/status";
 import { isoDateLabel } from "../../../ui/charts/planDates";
 import { RetryButton } from "../../../ui/RetryButton";
+import { Loading } from "../../../ui/Loading";
 
 /** Glifo + tinte por estado reconciliado (cara coach). `planned`/`none` se ven neutros. */
 const STATUS_GLYPH: Record<AdherenceStatus, string> = { done: "✓", partial: "≈", skipped: "✗", planned: "·", none: "·" };
@@ -93,9 +94,7 @@ export function DailySection({ athleteId }: { athleteId: string }) {
       )}
 
       {loading ? (
-        <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 8 }}>
-          Cargando día a día…
-        </div>
+        <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5, marginTop: 8 }}>Cargando día a día…</Loading>
       ) : !error && view && (
         <>
           {/* Mini-tendencia de check-ins (bienestar 0-100 + peso). Sin check-ins → fallback visible. */}

@@ -10,6 +10,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { barKgForSexo, type SessionView } from "@holy-oly/core";
+import { Loading } from "../../ui/Loading";
 import { LocalMeClient } from "../../data/LocalMeClient";
 import { DiscRow } from "../../ui/Disc";
 import { LeadCaptureButton } from "./LeadCaptureButton";
@@ -48,7 +49,7 @@ export function AtletaPreview({
   const barKg = barKgForSexo(sexo ?? "M");
 
   if (load === "loading") {
-    return <div aria-busy="true" style={{ padding: 20, color: "var(--wl-muted)" }}>Cargando vista del atleta…</div>;
+    return <Loading style={{ padding: 20 }}>Cargando vista del atleta…</Loading>;
   }
   if (load === "error") {
     return <div role="alert" style={{ padding: 20, color: "var(--wl-muted)" }}>No se pudo cargar la vista del atleta.</div>;

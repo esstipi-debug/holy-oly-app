@@ -15,6 +15,7 @@ import { Badge } from "../../ui/Badge";
 import { BackButton } from "../../ui/BackButton";
 import { SegmentedToggle } from "../../ui/SegmentedToggle";
 import { RetryButton } from "../../ui/RetryButton";
+import { Loading } from "../../ui/Loading";
 import { CompSheet } from "./CompSheet";
 import { SessionAdherence } from "./sessions/SessionAdherence";
 import { applyToggle } from "./sessions/sessionLog";
@@ -77,7 +78,7 @@ export function Drilldown() {
     return () => { on = false; };
   }, [repo, id, reload]);
 
-  if (!loaded) return <div aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)" }}>Cargando…</div>;
+  if (!loaded) return <Loading style={{ padding: 24 }}>Cargando…</Loading>;
   if (error) {
     return (
       <div role="alert" style={{ padding: 24, color: "var(--wl-text)" }}>

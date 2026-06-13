@@ -4,6 +4,7 @@ import { CYCLE_LEN_MAX, CYCLE_LEN_MIN, CYCLE_HORIZON_CYCLES } from "@holy-oly/co
 import { meClient, type MeClient } from "../../data/meClient";
 import { RetryButton } from "../../ui/RetryButton";
 import { SegmentedTabs } from "../../ui/SegmentedTabs";
+import { Loading } from "../../ui/Loading";
 
 const SHARE_OPTS: Array<[CycleShare, string, string]> = [
   ["none", "Nada", "El coach no ve nada del ciclo."],
@@ -104,7 +105,7 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
           compartir con tu coach es aparte y siempre va redactado.
         </div>
         {loading ? (
-          <div role="status" aria-busy="true" style={noteStyle}>Cargando…</div>
+          <Loading style={noteStyle}>Cargando…</Loading>
         ) : loadError ? (
           <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>
             No se pudo cargar tu registro.{" "}

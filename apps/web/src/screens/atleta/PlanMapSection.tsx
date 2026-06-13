@@ -7,6 +7,7 @@ import { PlanDayDetail, type DayDetailExercise } from "../../ui/charts/PlanDayDe
 import { dayDateLabel, dayOffsetInWeek, isoRangeLabel, weekdayMonFirst } from "../../ui/charts/planDates";
 import { phaseColor } from "../../ui/charts/phasePalette";
 import { RetryButton } from "../../ui/RetryButton";
+import { Loading } from "../../ui/Loading";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
 
@@ -156,7 +157,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
       </div>
     )
     : selViews === undefined ? (
-      <div role="status" aria-busy="true" style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Cargando día…</div>
+      <Loading style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 11 }}>Cargando día…</Loading>
     )
     : (
       <PlanDayDetail key={`${sel.week}-${sel.day}`} title={title}
@@ -188,7 +189,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
             No se pudo cargar el mapa. {retryLink(() => setHeatError(false))}
           </div>
         ) : heat === null ? (
-          <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Cargando mapa…</div>
+          <Loading style={{ fontFamily: "var(--mono)", fontSize: 11 }}>Cargando mapa…</Loading>
         ) : (
           <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal"
             onSelectDay={selectDay} phaseIndexFor={phaseIdx} comps={comps}

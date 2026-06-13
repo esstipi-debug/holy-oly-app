@@ -12,6 +12,7 @@ import { Check } from "./primitives";
 import type { AtletaOutletCtx } from "./AthleteShell";
 import { useAuthMaybe } from "../../auth/AuthContext";
 import { API_ENABLED } from "../../data/apiConfig";
+import { Loading } from "../../ui/Loading";
 import { OnboardingCard } from "../../onboarding/OnboardingCard";
 import { onboardingKey } from "../../onboarding/onboardingSeen";
 import { ATLETA_STEPS, ONBOARDING_TITLE_ATLETA } from "../../onboarding/steps";
@@ -56,7 +57,7 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
   }, [client]);
 
   if (load === "loading") {
-    return <div aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
+    return <Loading style={{ padding: 24, fontFamily: "var(--mono)" }}>Cargando…</Loading>;
   }
   if (load === "error" || !plan || !daylog) {
     return <div role="alert" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>No se pudo cargar tu inicio. Probá de nuevo más tarde.</div>;

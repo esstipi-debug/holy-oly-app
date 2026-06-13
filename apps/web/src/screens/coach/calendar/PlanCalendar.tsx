@@ -9,6 +9,7 @@ import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../../ui/charts/Pla
 import { PlanDayDetail, type DayEstado, type DayDetailExercise } from "../../../ui/charts/PlanDayDetail";
 import { SegmentedToggle } from "../../../ui/SegmentedToggle";
 import { RetryButton } from "../../../ui/RetryButton";
+import { Loading } from "../../../ui/Loading";
 
 /** Calendario del plan: header plegable + toggle Mapa ↔ Lista (decisión owner 2026-06-10).
  *  Mapa = heat map de intensidad (tono = % tope, opacidad = volumen) con desglose del día
@@ -122,7 +123,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
       </div>
     )
     : selSession === undefined && selViews === undefined ? (
-      <div role="status" aria-busy="true" style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>Cargando día…</div>
+      <Loading style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10.5 }}>Cargando día…</Loading>
     )
     : (
       <PlanDayDetail
@@ -168,7 +169,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
                     <RetryButton onClick={() => setHeatError(false)} fontSize={10.5} />
                   </div>
                 ) : heat === null ? (
-                  <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>Cargando mapa…</div>
+                  <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5 }}>Cargando mapa…</Loading>
                 ) : (
                   <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal"
                     onSelectDay={selectDay} phaseIndexFor={phaseIndexFor} comps={compMap} />

@@ -5,6 +5,7 @@ import { useRepository } from "../../../data/RepositoryProvider";
 import { isoDateLabel } from "../../../ui/charts/planDates";
 import { RM_LABELS, RmEditSheet, type RmSheetMode } from "./RmEditSheet";
 import { RetryButton } from "../../../ui/RetryButton";
+import { Loading } from "../../../ui/Loading";
 
 const STALE_WEEKS = 12; // hint sutil, sin umbral duro (el spec manda mostrar la edad siempre)
 const STALE_HINT = `RM fijado hace ≥${STALE_WEEKS} sem: los % prescritos pierden precisión — re-testeá o confirmá un PR.`;
@@ -81,9 +82,7 @@ export function RmSection({ athleteId, plan, today, onRmsChange }: {
         </div>
       )}
       {loading ? (
-        <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 8 }}>
-          Cargando RMs…
-        </div>
+        <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5, marginTop: 8 }}>Cargando RMs…</Loading>
       ) : (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>

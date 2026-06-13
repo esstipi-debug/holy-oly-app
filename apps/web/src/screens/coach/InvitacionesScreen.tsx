@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as vc from "../../data/vinculoClient";
 import { BackButton } from "../../ui/BackButton";
+import { Loading } from "../../ui/Loading";
 
 const muted = { fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" } as const;
 
@@ -64,7 +65,7 @@ export function InvitacionesScreen() {
 
       {error && <div role="alert" style={{ ...muted, color: "var(--wl-danger)", marginTop: 10 }}>{error}</div>}
       {loading ? (
-        <div aria-busy="true" style={{ ...muted, padding: "16px 0" }}>Cargando…</div>
+        <Loading style={{ ...muted, padding: "16px 0" }}>Cargando…</Loading>
       ) : (
         <>
           <div style={{ ...muted, marginTop: 16 }}>Tu código de invitación</div>

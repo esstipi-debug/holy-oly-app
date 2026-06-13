@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useAuth } from "./AuthContext";
 import type { Role } from "./authClient";
+import { Loading } from "../ui/Loading";
 
 /**
  * Route guard. In standalone (no API) mode it's a pass-through. In API mode it requires a
@@ -12,7 +13,7 @@ export function RequireAuth({ children, role }: { children: ReactNode; role?: Ro
   const { apiEnabled, user, loading } = useAuth();
   if (!apiEnabled) return <>{children}</>;
   if (loading) {
-    return <div aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
+    return <Loading style={{ padding: 24, fontFamily: "var(--mono)" }}>Cargando…</Loading>;
   }
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) return <Navigate to="/" replace />;

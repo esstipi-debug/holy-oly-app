@@ -6,6 +6,7 @@ import { DiscRow } from "../../../ui/Disc";
 import { RM_LABELS } from "../rm/RmEditSheet";
 import { RetryButton } from "../../../ui/RetryButton";
 import { SegmentedToggle } from "../../../ui/SegmentedToggle";
+import { Loading } from "../../../ui/Loading";
 
 /** Etiqueta de zona Prilepin tal cual (es el rango de % — el coach lo entiende). */
 const ZONE_LABEL: Record<EngineWeek["sets"][number]["zone"], string> = {
@@ -88,9 +89,7 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
       )}
 
       {loading ? (
-        <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 8 }}>
-          Generando vista…
-        </div>
+        <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5, marginTop: 8 }}>Generando vista…</Loading>
       ) : !error && (
         week === null ? (
           // Sin datos honesto (sin RM vigente / semana fuera de rango / sin plan).

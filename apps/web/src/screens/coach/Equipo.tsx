@@ -10,6 +10,7 @@ import { LeadCaptureButton } from "./LeadCaptureButton";
 import { API_ENABLED } from "../../data/apiConfig";
 import { resetDemoStorage } from "../../data/resetDemo";
 import { RetryButton } from "../../ui/RetryButton";
+import { Loading } from "../../ui/Loading";
 import { useAuthMaybe } from "../../auth/AuthContext";
 import { OnboardingCard } from "../../onboarding/OnboardingCard";
 import { onboardingKey } from "../../onboarding/onboardingSeen";
@@ -82,7 +83,7 @@ export function Equipo() {
           <RetryButton onClick={() => setReload((r) => r + 1)} />
         </div>
       ) : loading ? (
-        <div aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "16px 0" }}>Cargando plantel…</div>
+        <Loading style={{ fontFamily: "var(--mono)", fontSize: 11, padding: "16px 0" }}>Cargando plantel…</Loading>
       ) : (
         <>
           {!API_ENABLED && <DemoSalesStrip rows={rows} />}

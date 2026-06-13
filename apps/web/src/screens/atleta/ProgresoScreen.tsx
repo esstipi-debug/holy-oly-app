@@ -6,6 +6,7 @@ import { LoadChart } from "../../ui/charts/LoadChart";
 import { RecoveryChart } from "../../ui/charts/RecoveryChart";
 import { WellnessChart } from "../../ui/charts/WellnessChart";
 import { WeightChart } from "../../ui/charts/WeightChart";
+import { Loading } from "../../ui/Loading";
 
 type Load = "loading" | "ready" | "error";
 
@@ -35,7 +36,7 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
   );
 
   if (load === "loading") {
-    return <>{header}<div role="status" aria-busy="true" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando tu progreso…</div></>;
+    return <>{header}<Loading style={{ padding: 24, fontFamily: "var(--mono)" }}>Cargando tu progreso…</Loading></>;
   }
   if (load === "error") {
     return <>{header}<div role="alert" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>No se pudo cargar tu progreso. Probá de nuevo más tarde.</div></>;
