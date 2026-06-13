@@ -7,6 +7,7 @@ import { Titular } from "./hoy/Titular";
 import { ConstanciaCard } from "./hoy/ConstanciaCard";
 import { CaminoCard } from "./hoy/CaminoCard";
 import { SemanaCard } from "./hoy/SemanaCard";
+import { CicloCarousel } from "./ciclo/CicloCarousel";
 import { CheckIn } from "./CheckIn";
 import { Check } from "./primitives";
 import type { AtletaOutletCtx } from "./AthleteShell";
@@ -102,6 +103,8 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
       {plan.plan && !preview && <SemanaCard week={plan.plan.currentWeek} client={client} />}
       <ConstanciaCard streak={daylog.streak} days={daylog.days} today={daylog.today} />
       <CaminoCard plan={plan.plan} client={client} sexo={plan.athlete.sexo} />
+      {/* «Tu ciclo» en la portada — sólo si la atleta registró su ciclo (hideWhenEmpty: no naggea el opt-in). */}
+      <CicloCarousel client={client} hideWhenEmpty />
 
       {checkinOpen && (
         <CheckIn variant={variant} initial={daylog.entry} lastWeight={series?.bodyweight?.at(-1)} onClose={() => setCheckinOpen(false)} onDone={onCheckinDone} />

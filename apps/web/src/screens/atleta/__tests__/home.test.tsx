@@ -13,7 +13,9 @@ vi.mock("../../../data/meClient", () => {
   const putDayLog = vi.fn();
   const getMeSessions = vi.fn().mockResolvedValue([]);
   const putMeSession = vi.fn();
-  const meClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, putMeSession };
+  const getMeCycle = vi.fn().mockResolvedValue({ share: "none", state: "regular" });
+  const putMeCycle = vi.fn();
+  const meClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, putMeSession, getMeCycle, putMeCycle };
   return { ...meClient, meClient };
 });
 import * as me from "../../../data/meClient";

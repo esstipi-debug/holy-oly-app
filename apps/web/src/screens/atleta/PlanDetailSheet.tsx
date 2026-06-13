@@ -2,6 +2,7 @@ import type { MePlanView } from "@holy-oly/core";
 import { BottomSheet } from "../../ui/BottomSheet";
 import type { MeClient } from "../../data/meClient";
 import { PlanMapSection } from "./PlanMapSection";
+import { CicloCarousel } from "./ciclo/CicloCarousel";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
 
@@ -82,6 +83,9 @@ export function PlanDetailSheet({ plan, open, onClose, client, sexo }: {
           );
         })}
       </div>
+
+      {/* «Tu ciclo» — vista propia del ciclo menstrual (carrusel), separada del mapa de competencia. */}
+      {client != null && open && <CicloCarousel client={client} />}
 
       {client != null && open && <PlanMapSection plan={plan} client={client} sexo={sexo} />}
     </BottomSheet>
