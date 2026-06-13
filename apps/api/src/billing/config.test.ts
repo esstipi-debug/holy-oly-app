@@ -74,8 +74,8 @@ describe("billing config guard (assertBillingProdConfig)", () => {
     expect(message).toContain("BILLING_PROVIDER");
     expect(message).toContain("MERCADOPAGO_ACCESS_TOKEN");
     expect(message).toContain("MERCADOPAGO_WEBHOOK_SECRET");
+    expect(message).toContain("MERCADOPAGO_PLAN_COACH_MONTHLY");
     expect(message).toContain("MERCADOPAGO_PLAN_COACH_SEMIANNUAL");
-    expect(message).toContain("MERCADOPAGO_PLAN_BOX_MONTHLY");
     // Points the operator at the plan-generation script.
     expect(message).toContain("mp-setup-plans");
   });
@@ -91,9 +91,9 @@ describe("billing config guard (assertBillingProdConfig)", () => {
   it("still throws in production if a single plan id is missing", () => {
     vi.stubEnv("NODE_ENV", "production");
     stubFullMercadoPagoEnv();
-    vi.stubEnv("MERCADOPAGO_PLAN_ELITE_MONTHLY", ""); // one hole
+    vi.stubEnv("MERCADOPAGO_PLAN_COACH_SEMIANNUAL", ""); // one hole
 
-    expect(() => assertBillingProdConfig()).toThrowError(/MERCADOPAGO_PLAN_ELITE_MONTHLY/);
+    expect(() => assertBillingProdConfig()).toThrowError(/MERCADOPAGO_PLAN_COACH_SEMIANNUAL/);
   });
 
   it("still throws in production if only the webhook secret is missing", () => {

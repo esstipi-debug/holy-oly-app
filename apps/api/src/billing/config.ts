@@ -1,9 +1,7 @@
 import {
   BillingPeriodSchema,
-  CoachPlanIdSchema,
   mercadoPagoPlanEnvKey,
   type BillingPeriod,
-  type CoachPlanId,
 } from "@holy-oly/core";
 import { mercadoPagoConfigured } from "./mercadopago";
 
@@ -33,17 +31,11 @@ export function mockCheckoutAllowed(): boolean {
   return !isProduction();
 }
 
-/** Plan env keys that must be present for MercadoPago: every tier × period (4 × 2 = 8). */
+/** Plan env keys that must be present for MercadoPago: COACH tier × 2 periods (monthly + semiannual). */
 function requiredPlanEnvKeys(): string[] {
-  const planIds = CoachPlanIdSchema.options as readonly CoachPlanId[];
+  // PRO / ELITE / BOX are sold via direct contact — no MP plan id required in prod.
   const periods = BillingPeriodSchema.options as readonly BillingPeriod[];
-  const keys: string[] = [];
-  for (const planId of planIds) {
-    for (const period of periods) {
-      keys.push(mercadoPagoPlanEnvKey(planId, period));
-    }
-  }
-  return keys;
+  return periods.map((period) => mercadoPagoPlanEnvKey("coach", period));
 }
 
 /** Returns the list of missing prod-billing config items (empty = fully configured). */
