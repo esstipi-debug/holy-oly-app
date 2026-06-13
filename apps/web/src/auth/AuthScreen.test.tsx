@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import type { AuthUser } from "./authClient";
 
@@ -24,7 +24,7 @@ vi.mock("./AuthContext", async (importOriginal) => {
   };
 });
 
-import { AuthScreen } from "./AuthScreen";
+import { AuthScreen, authErrorMessage } from "./AuthScreen";
 
 afterEach(() => {
   injected.current = { user: null, loading: false };
@@ -73,5 +73,28 @@ describe("AuthScreen", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ingresar" })).toBeInTheDocument();
     await act(async () => {});
+  });
+
+  // El bug que reportó el owner: registro con contraseña corta → "invalid input" en inglés y sin
+  // pista del requisito. Ahora el mínimo se muestra de entrada en el campo.
+  it("en modo registro muestra el mínimo de contraseña como ayuda", async () => {
+    renderLogin();
+    fireEvent.click(screen.getByRole("button", { name: /Registrate/ }));
+    expect(screen.getByText(/Mínimo 8 caracteres/)).toBeInTheDocument();
+    await act(async () => {});
+  });
+});
+
+describe("authErrorMessage", () => {
+  it("traduce 'weak password' a un mensaje accionable en español", () => {
+    expect(authErrorMessage(new Error("weak password"))).toMatch(/al menos 8 caracteres/);
+  });
+
+  it("traduce 'email already registered' a español", () => {
+    expect(authErrorMessage(new Error("email already registered"))).toMatch(/ya tiene una cuenta/);
+  });
+
+  it("cae a un mensaje genérico cuando el código es desconocido o vacío", () => {
+    expect(authErrorMessage(new Error(""))).toBe("No se pudo completar.");
   });
 });

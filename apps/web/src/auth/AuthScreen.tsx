@@ -12,6 +12,25 @@ const input: CSSProperties = {
 };
 const label: CSSProperties = { fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)", marginTop: 12, display: "block" };
 
+const MIN_PASSWORD = 8;
+
+/** Maps backend auth error codes (stable English) to actionable Spanish copy for the user. */
+export function authErrorMessage(err: unknown): string {
+  const code = err instanceof Error ? err.message : "";
+  switch (code) {
+    case "weak password":
+      return `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres y no puede ser una muy común.`;
+    case "email already registered":
+      return "Ese email ya tiene una cuenta. Probá ingresar.";
+    case "invalid credentials":
+      return "Email o contraseña incorrectos.";
+    case "invalid input":
+      return "Revisá los datos ingresados.";
+    default:
+      return code || "No se pudo completar.";
+  }
+}
+
 export function AuthScreen() {
   const { login, signup, user, loading } = useAuth();
   const navigate = useNavigate();
@@ -43,13 +62,19 @@ export function AuthScreen() {
   async function onSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
     setError(null);
+    // Instant, styled feedback for the most common signup mistake (too-short password) before
+    // hitting the server. The API enforces the same floor as the real security boundary.
+    if (mode === "signup" && password.length < MIN_PASSWORD) {
+      setError(`La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`);
+      return;
+    }
     setBusy(true);
     try {
       if (mode === "login") await login(email, password);
       else await signup(email, password, role, name || undefined, website);
       navigate("/", { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo completar");
+      setError(authErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -89,7 +114,12 @@ export function AuthScreen() {
         <label style={label} htmlFor="auth-email">Email</label>
         <input id="auth-email" style={input} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vos@ejemplo.com" />
         <label style={label} htmlFor="auth-password">Contraseña</label>
-        <input id="auth-password" style={input} type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+        <input id="auth-password" style={input} type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={mode === "signup" ? MIN_PASSWORD : undefined} aria-describedby={mode === "signup" ? "auth-password-hint" : undefined} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+        {mode === "signup" && (
+          <div id="auth-password-hint" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 6 }}>
+            Mínimo {MIN_PASSWORD} caracteres
+          </div>
+        )}
 
         {mode === "signup" && (
           <input

@@ -5,12 +5,20 @@ import { dummyHash, verifyPassword } from "./password";
 describe("SignupSchema password policy (B5)", () => {
   const base = { email: "a@b.com", role: "atleta" as const };
 
-  it("rejects passwords shorter than 12 chars", () => {
-    expect(SignupSchema.safeParse({ ...base, password: "short123abc" }).success).toBe(false); // 11
+  it("rejects passwords shorter than 8 chars", () => {
+    expect(SignupSchema.safeParse({ ...base, password: "short12" }).success).toBe(false); // 7
+  });
+
+  it("accepts an 8-char password (the minimum)", () => {
+    expect(SignupSchema.safeParse({ ...base, password: "x9k2-Lm7" }).success).toBe(true); // 8, not common
   });
 
   it("rejects common passwords even when long enough", () => {
     expect(SignupSchema.safeParse({ ...base, password: "password1234" }).success).toBe(false);
+  });
+
+  it("rejects a common 8-char password (block stays meaningful at the floor)", () => {
+    expect(SignupSchema.safeParse({ ...base, password: "password" }).success).toBe(false); // 8, common
   });
 
   it("accepts a strong 12+ char password", () => {

@@ -33,7 +33,12 @@ export function cookieOpts(expires?: Date) {
 export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post("/auth/signup", { config: { rateLimit: SIGNUP_RATE_LIMIT } }, async (req, reply) => {
     const parsed = SignupSchema.safeParse(req.body);
-    if (!parsed.success) return reply.code(400).send({ error: "invalid input" });
+    if (!parsed.success) {
+      // Password failures get a specific code so the client can show an actionable, localized
+      // message (too short / too common) instead of a generic "invalid input".
+      const weakPassword = parsed.error.issues.some((i) => i.path[0] === "password");
+      return reply.code(400).send({ error: weakPassword ? "weak password" : "invalid input" });
+    }
     const { password, role, name } = parsed.data;
     const email = parsed.data.email.trim().toLowerCase();
     if (parsed.data.website?.trim()) {
