@@ -86,9 +86,26 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     if (!athleteId) return;
     const parsed = PutMeCycleInputSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid cycle" });
-    await repo.putMyCycle(prisma, athleteId, parsed.data);
-    // Audit SIN payload — el módulo audit prohíbe datos de salud en el log (sólo ids+acción+ip).
-    await recordAudit(prisma, { action: "cycle.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: athleteId, ip: req.ip });
+    const { consent, ...data } = parsed.data;
+    let firstConsent = false;
+    try {
+      // PR-L2: la 1ª activación exige el acto de consentimiento informado (§3 opt-in por elección).
+      ({ firstConsent } = await repo.putMyCycle(prisma, athleteId, data, consent === true));
+    } catch (e) {
+      if (e instanceof repo.ConsentRequiredError) return reply.code(400).send({ error: "consent required" });
+      throw e;
+    }
+    // Audit SIN payload de salud (sólo ids+acción+ip). Sólo la activación REAL es cycle.consent.
+    await recordAudit(prisma, { action: firstConsent ? "cycle.consent" : "cycle.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: athleteId, ip: req.ip });
+    return reply.code(200).send({ ok: true });
+  });
+
+  // PR-L2: revocación — la atleta borra su registro entero (dueña del dato); el coach deja de ver contexto.
+  app.delete("/me/cycle", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    await repo.deleteMyCycle(prisma, athleteId);
+    await recordAudit(prisma, { action: "cycle.revoke", actorUserId: req.userId, actorRole: req.role, targetAthleteId: athleteId, ip: req.ip });
     return reply.code(200).send({ ok: true });
   });
 

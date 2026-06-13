@@ -27,7 +27,7 @@ describe("Coach-authorized writes (integration)", () => {
 
     const coach = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `wc-${u}@x.dev`, password: "writes-pass-1", role: "coach", name: "Writes Coach" },
+      payload: { email: `wc-${u}@x.dev`, password: "writes-pass-1", role: "coach", name: "Writes Coach", acceptTerms: true },
     });
     coachH = cookieOf(coach);
     const coachUserId = (coach.json() as { id: string }).id;
@@ -42,7 +42,7 @@ describe("Coach-authorized writes (integration)", () => {
     // A second coach with NO Vínculo to the athlete → must be forbidden.
     const stranger = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `wc2-${u}@x.dev`, password: "writes-pass-2", role: "coach" },
+      payload: { email: `wc2-${u}@x.dev`, password: "writes-pass-2", role: "coach", acceptTerms: true },
     });
     strangerH = cookieOf(stranger);
   });

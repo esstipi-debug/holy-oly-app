@@ -11,7 +11,7 @@ interface AuthValue {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, role: Role, name?: string, website?: string) => Promise<void>;
+  signup: (email: string, password: string, role: Role, name?: string, website?: string, acceptTerms?: boolean) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -35,8 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(await client.me());
   }, []);
 
-  const signup = useCallback(async (email: string, password: string, role: Role, name?: string, website?: string) => {
-    await client.signup(email, password, role, name, website);
+  const signup = useCallback(async (email: string, password: string, role: Role, name?: string, website?: string, acceptTerms?: boolean) => {
+    await client.signup(email, password, role, name, website, acceptTerms);
     setUser(await client.me());
   }, []);
 

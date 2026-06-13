@@ -46,6 +46,7 @@ export function AuthScreen() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [website, setWebsite] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const googleError = searchParams.get("error") === "google";
   // Tras un reset exitoso ResetPasswordScreen navega acá con state.resetOk.
   const resetOk = Boolean((location.state as { resetOk?: boolean } | null)?.resetOk);
@@ -53,7 +54,12 @@ export function AuthScreen() {
   function onGoogle(): void {
     setError(null);
     if (mode === "signup") {
-      googleAuthStart({ intent: "signup", role, name: name || undefined });
+      // PR-L1: parity with the password path — no OAuth signup without legal acceptance.
+      if (!accepted) {
+        setError("Tenés que aceptar los términos y la política de privacidad.");
+        return;
+      }
+      googleAuthStart({ intent: "signup", role, name: name || undefined, accept: true });
     } else {
       googleAuthStart({ intent: "login" });
     }
@@ -68,10 +74,14 @@ export function AuthScreen() {
       setError(`La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`);
       return;
     }
+    if (mode === "signup" && !accepted) {
+      setError("Tenés que aceptar los términos y la política de privacidad.");
+      return;
+    }
     setBusy(true);
     try {
       if (mode === "login") await login(email, password);
-      else await signup(email, password, role, name || undefined, website);
+      else await signup(email, password, role, name || undefined, website, accepted);
       navigate("/", { replace: true });
     } catch (err) {
       setError(authErrorMessage(err));
@@ -153,19 +163,32 @@ export function AuthScreen() {
 
         {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
+        {mode === "signup" && (
+          <label style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 16, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", lineHeight: 1.5, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={(e) => setAccepted(e.target.checked)}
+              style={{ marginTop: 2, accentColor: "var(--wl-accent)", flex: "0 0 auto" }}
+            />
+            <span>Leí y acepto los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.</span>
+          </label>
+        )}
+
         {googleEnabled && (
           <>
-            <button type="button" onClick={onGoogle} style={{ width: "100%", marginTop: 14, padding: 12, borderRadius: 12, cursor: "pointer",
+            <button type="button" onClick={onGoogle} disabled={mode === "signup" && !accepted}
+              style={{ width: "100%", marginTop: 14, padding: 12, borderRadius: 12, cursor: mode === "signup" && !accepted ? "default" : "pointer",
               border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-text)",
-              fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14 }}>
+              fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14, opacity: mode === "signup" && !accepted ? 0.5 : 1 }}>
               Continuar con Google
             </button>
             <div style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", textAlign: "center" }}>o</div>
           </>
         )}
 
-        <button type="submit" disabled={busy} style={{ width: "100%", marginTop: googleEnabled ? 14 : 18, padding: 12, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer",
-          background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, opacity: busy ? 0.6 : 1 }}>
+        <button type="submit" disabled={busy || (mode === "signup" && !accepted)} style={{ width: "100%", marginTop: googleEnabled ? 14 : 18, padding: 12, borderRadius: 12, border: 0, cursor: busy || (mode === "signup" && !accepted) ? "default" : "pointer",
+          background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, opacity: busy || (mode === "signup" && !accepted) ? 0.6 : 1 }}>
           {busy ? "..." : mode === "login" ? "Ingresar" : "Crear cuenta"}
         </button>
 
@@ -173,12 +196,6 @@ export function AuthScreen() {
           style={{ width: "100%", marginTop: 10, padding: 8, border: 0, background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 12, cursor: "pointer" }}>
           {mode === "login" ? "¿No tenés cuenta? Registrate" : "¿Ya tenés cuenta? Ingresá"}
         </button>
-
-        {mode === "signup" && (
-          <p style={{ marginTop: 12, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
-            Al registrarte aceptás los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.
-          </p>
-        )}
       </form>
     </div>
   );

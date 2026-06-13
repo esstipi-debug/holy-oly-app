@@ -44,8 +44,9 @@ describe("API integration — ciclo (slice ciclo-visible)", () => {
     const body = { share: "full", state: "regular", lastPeriodStart: daysAgo(20), cycleLengthDays: 28 };
     expect((await app.inject({ method: "PUT", url: "/me/cycle", headers: mara, payload: body })).statusCode).toBe(200);
 
-    const got = (await app.inject({ method: "GET", url: "/me/cycle", headers: mara })).json() as typeof body;
-    expect(got).toEqual(body);
+    const got = (await app.inject({ method: "GET", url: "/me/cycle", headers: mara })).json() as typeof body & { consented: boolean };
+    expect(got).toMatchObject(body); // el registro vuelve idéntico…
+    expect(got.consented).toBe(true); // …+ la señal de activación (mv viene sembrada consentida)
   });
 
   it("coach: payload EXACTO {share,inLutealNow,health,reliable} con lúteo REAL — jamás fecha/fase", async () => {

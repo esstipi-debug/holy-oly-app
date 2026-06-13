@@ -102,14 +102,20 @@ export const CycleContextSchema = z.object({
 
 // ── Auth + Vínculo wire shapes (Fase 3). The front parses every API response against
 // these instead of casting `unknown` — same boundary discipline as the reads above. ──
-/** La verdad de la atleta (lectura /me) = el input del PUT (mismo shape, acotado). */
+/** La verdad de la atleta (el registro propio del ciclo). */
 export const CycleDataSchema = z.object({
   share: CycleShareSchema,
   state: CycleStateSchema,
   lastPeriodStart: IsoDateSchema.optional(),
   cycleLengthDays: z.number().int().min(21).max(45).optional(),
 });
-export const PutMeCycleInputSchema = CycleDataSchema;
+/** Lo que devuelve GET /me/cycle: el registro + si la atleta YA activó el módulo (consintió).
+ *  `consented:false` → la UI muestra el gate de activación, no el formulario (PR-L2, §3 opt-in). */
+export const MeCycleViewSchema = CycleDataSchema.extend({ consented: z.boolean() });
+export type MeCycleView = z.infer<typeof MeCycleViewSchema>;
+/** Input del PUT: el registro + (en la 1ª activación) el acto de consentimiento informado. El
+ *  server exige `consent:true` la primera vez; luego es opcional (editar libremente). */
+export const PutMeCycleInputSchema = CycleDataSchema.extend({ consent: z.boolean().optional() });
 
 export const RoleSchema = z.enum(["coach", "atleta"]);
 

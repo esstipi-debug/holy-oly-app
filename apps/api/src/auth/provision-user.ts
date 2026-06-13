@@ -1,4 +1,5 @@
 import type { Prisma, PrismaClient, User, UserRole } from "@prisma/client";
+import { LEGAL_TERMS_VERSION, LEGAL_PRIVACY_VERSION } from "@holy-oly/core";
 import { sendEmail, appOrigin } from "../email";
 import { generateOneTimeToken, tokenIdFromRaw } from "./one-time-token";
 
@@ -19,12 +20,21 @@ export async function provisionUserRecords(
   },
 ): Promise<User> {
   const email = opts.email.trim().toLowerCase();
+  // PR-L1: every new account records its legal acceptance (timestamp + server-stamped version).
+  // Provisioning IS the acceptance moment — password signup, Google callback and Google complete
+  // all flow through here, so the trail is universal. Enforcement (reject if not accepted) lives
+  // in the routes; here we only record the truth for accounts that reached this point.
+  const acceptedAt = new Date();
   const u = await tx.user.create({
     data: {
       email,
       passwordHash: opts.passwordHash ?? null,
       role: opts.role,
       emailVerified: opts.emailVerified,
+      termsAcceptedAt: acceptedAt,
+      termsVersion: LEGAL_TERMS_VERSION,
+      privacyAcceptedAt: acceptedAt,
+      privacyVersion: LEGAL_PRIVACY_VERSION,
     },
   });
   if (opts.role === "coach") {

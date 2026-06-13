@@ -3,10 +3,10 @@ import type {
   Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
-  CycleShare, CycleState, CycleData, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
+  CycleShare, CycleState, CycleData, MeCycleView, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
   MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, CYCLE_CONSENT_VERSION } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -101,28 +101,56 @@ export async function getCycle(prisma: PrismaClient, athleteId: string, today: s
   return redactCycle(share, state, luteal);
 }
 
-/** La verdad de la atleta (sólo /me). Sin fila → default honesto "no optó". */
-export async function getMyCycle(prisma: PrismaClient, athleteId: string): Promise<CycleData> {
+/** La verdad de la atleta (sólo /me). Sin fila → default honesto "no optó" + consented=false
+ *  (la UI muestra el gate de activación, PR-L2). `consentedAt != null` ⇒ ya activó el módulo. */
+export async function getMyCycle(prisma: PrismaClient, athleteId: string): Promise<MeCycleView> {
   const c = await prisma.cycleConsent.findUnique({ where: { athleteId } });
-  if (!c) return { share: "none", state: "regular" };
+  if (!c) return { share: "none", state: "regular", consented: false };
   const len = c.cycleLengthDays == null ? NaN : Number(decryptAtRest(c.cycleLengthDays));
   return {
     share: decryptAtRest(c.share) as CycleShare,
     state: decryptAtRest(c.state) as CycleState,
     ...(c.lastPeriodStart == null ? {} : { lastPeriodStart: decryptAtRest(c.lastPeriodStart) }),
     ...(Number.isFinite(len) ? { cycleLengthDays: len } : {}),
+    consented: c.consentedAt != null,
   };
 }
 
-/** Upsert del registro de la atleta — los 4 campos cifrados at-rest (D1). */
-export async function putMyCycle(prisma: PrismaClient, athleteId: string, input: CycleData): Promise<void> {
-  const data = {
+/** Lanzada cuando una atleta sin consentimiento intenta registrar sin el acto de opt-in (§3). */
+export class ConsentRequiredError extends Error {}
+
+/** Upsert del registro de la atleta — los 4 campos cifrados at-rest (D1). La PRIMERA activación
+ *  EXIGE `consent` (opt-in informado, §3); ahí se sella consentedAt + versión vigente. Editar
+ *  después NO re-pide consentimiento ni re-escribe el sello (consentedAt/consentVersion sólo se
+ *  fijan al consentir; no se cifran — metadata de consentimiento, no salud). Transaccional: el
+ *  check de consentimiento y la escritura son atómicos (sin ventana TOCTOU). Devuelve `firstConsent`
+ *  para que el audit distinga la activación (cycle.consent) de una edición (cycle.write). */
+export async function putMyCycle(prisma: PrismaClient, athleteId: string, input: CycleData, consent: boolean): Promise<{ firstConsent: boolean }> {
+  const encrypted = {
     share: encryptAtRest(input.share),
     state: encryptAtRest(input.state),
     lastPeriodStart: input.lastPeriodStart == null ? null : encryptAtRest(input.lastPeriodStart),
     cycleLengthDays: input.cycleLengthDays == null ? null : encryptAtRest(String(input.cycleLengthDays)),
   };
-  await prisma.cycleConsent.upsert({ where: { athleteId }, create: { athleteId, ...data }, update: data });
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.cycleConsent.findUnique({ where: { athleteId } });
+    const alreadyConsented = existing?.consentedAt != null;
+    if (!alreadyConsented && !consent) throw new ConsentRequiredError();
+    if (existing) {
+      // Ya consintió → sólo los datos. Fila sin sello (caso borde) + consent ahora → fijar el sello.
+      const data = alreadyConsented ? encrypted : { ...encrypted, consentedAt: new Date(), consentVersion: CYCLE_CONSENT_VERSION };
+      await tx.cycleConsent.update({ where: { athleteId }, data });
+    } else {
+      await tx.cycleConsent.create({ data: { athleteId, ...encrypted, consentedAt: new Date(), consentVersion: CYCLE_CONSENT_VERSION } });
+    }
+    return { firstConsent: !alreadyConsented };
+  });
+}
+
+/** Revocación: la atleta borra su registro entero (es dueña del dato). El coach deja de ver
+ *  contexto de inmediato (sin fila → /athletes/:id/cycle rinde 404). */
+export async function deleteMyCycle(prisma: PrismaClient, athleteId: string): Promise<void> {
+  await prisma.cycleConsent.deleteMany({ where: { athleteId } });
 }
 
 // ── Writes (Fase 4). Inverse of the reads above; mirror LocalRepository's semantics so the

@@ -1,7 +1,7 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { hash } from "@node-rs/argon2";
 import type { MacrocycleLevel, MonitorSeries, RM } from "@holy-oly/core";
-import { MACROCYCLES, ALL_RECIPES, instantiatePrescription } from "@holy-oly/core";
+import { MACROCYCLES, ALL_RECIPES, instantiatePrescription, CYCLE_CONSENT_VERSION } from "@holy-oly/core";
 import { seriesToRows } from "../src/db/mapping";
 import { loadSeedConfig } from "./seed-guard";
 import { encryptAtRest } from "../src/crypto-at-rest";
@@ -330,6 +330,9 @@ async function main(): Promise<void> {
         athleteId: a.id,
         share: encryptAtRest(a.id === "mv" ? "full" : "min"),
         state: encryptAtRest("regular"),
+        // PR-L2: las atletas demo ya consintieron (activadas) → la app muestra el registro, no el gate.
+        consentedAt: new Date(),
+        consentVersion: CYCLE_CONSENT_VERSION,
         // Slice ciclo-visible: Mara con registro (día ~20 de 28 → lútea hoy, demo visible).
         ...(a.id === "mv"
           ? {
@@ -364,6 +367,8 @@ async function main(): Promise<void> {
         athleteId: a.id,
         share: encryptAtRest(i % 7 === 0 ? "full" : "min"),
         state: encryptAtRest(i % 11 === 0 ? "irregular" : "regular"),
+        consentedAt: new Date(),
+        consentVersion: CYCLE_CONSENT_VERSION,
       },
     });
   }

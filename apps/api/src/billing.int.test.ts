@@ -25,7 +25,7 @@ describe("billing (E3–E5 mock)", () => {
     const coach = await app.inject({
       method: "POST",
       url: "/auth/signup",
-      payload: { email: `bill-${u}@x.dev`, password: "billing-pass-1", role: "coach" },
+      payload: { email: `bill-${u}@x.dev`, password: "billing-pass-1", role: "coach", acceptTerms: true },
     });
     coachH = cookieOf(coach as unknown as InjectRes);
     const coachUserId = (coach.json() as { id: string }).id;

@@ -32,7 +32,7 @@ describe("session lifecycle (B3/B4)", () => {
     const res = (await app.inject({
       method: "POST",
       url: "/auth/signup",
-      payload: { email: email(), password: PW, role: "coach" },
+      payload: { email: email(), password: PW, role: "coach", acceptTerms: true },
     })) as unknown as Res;
     expect(res.statusCode).toBe(201);
     return res;
@@ -57,7 +57,7 @@ describe("session lifecycle (B3/B4)", () => {
     process.env.SINGLE_SESSION_LOGIN = "true";
     try {
       const e = email();
-      await app.inject({ method: "POST", url: "/auth/signup", payload: { email: e, password: PW, role: "coach" } });
+      await app.inject({ method: "POST", url: "/auth/signup", payload: { email: e, password: PW, role: "coach", acceptTerms: true } });
       const c1 = cookieHdr((await app.inject({ method: "POST", url: "/auth/login", payload: { email: e, password: PW } })) as unknown as Res);
       const c2 = cookieHdr((await app.inject({ method: "POST", url: "/auth/login", payload: { email: e, password: PW } })) as unknown as Res);
       expect((await app.inject({ method: "GET", url: "/auth/me", headers: { cookie: c2 } })).statusCode).toBe(200);

@@ -45,7 +45,7 @@ describe("athlete data export + account deletion (D3/D4)", () => {
     const su = await app.inject({
       method: "POST",
       url: "/auth/signup",
-      payload: { email, password: "delete-me-12345", role: "atleta" },
+      payload: { email, password: "delete-me-12345", role: "atleta", acceptTerms: true },
     });
     expect(su.statusCode).toBe(201);
     const cookie = sess(su as unknown as Res);

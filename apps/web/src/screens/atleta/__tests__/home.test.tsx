@@ -93,8 +93,9 @@ test("usa el cliente inyectado, no el módulo global (rinde sin AthleteShell)", 
     getMeHeat: vi.fn().mockResolvedValue([]),
     getMeRecorrido: vi.fn().mockResolvedValue({ semanas: [] }),
     putMeSession: vi.fn(),
-    getMeCycle: vi.fn().mockResolvedValue({ share: "none", state: "regular" }),
+    getMeCycle: vi.fn().mockResolvedValue({ share: "none", state: "regular", consented: false }),
     putMeCycle: vi.fn(),
+    deleteMeCycle: vi.fn(),
   };
   // No <AthleteShell>/<Outlet> wrapper — proves HomeScreen tolerates a missing Outlet context.
   render(<MemoryRouter><HomeScreen client={fake} preview /></MemoryRouter>);

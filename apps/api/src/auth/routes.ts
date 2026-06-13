@@ -44,6 +44,10 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     if (parsed.data.website?.trim()) {
       return reply.code(400).send({ error: "invalid input" });
     }
+    // PR-L1: no account without explicit legal acceptance (the version is stamped server-side).
+    if (parsed.data.acceptTerms !== true) {
+      return reply.code(400).send({ error: "must accept terms" });
+    }
 
     if (await prisma.user.findUnique({ where: { email } })) {
       return reply.code(409).send({ error: "email already registered" });

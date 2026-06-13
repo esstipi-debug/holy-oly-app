@@ -8,7 +8,7 @@
  * setSessionActuals) verbatim in semantics, keeping the two athlete clients swappable.
  */
 import type {
-  Atleta, CycleData, MePlanView, MeRecorrido, MonitorSeries, Plan, PrescriptionRow, RecorridoSemana,
+  Atleta, CycleData, MeCycleView, MePlanView, MeRecorrido, MonitorSeries, Plan, PrescriptionRow, RecorridoSemana,
   DayLog, DayLogView, DayLogResult, DayLogInput,
   SessionView, SessionActual, WeekHeat, SessionRegistro, PutMeSessionInput,
 } from "@holy-oly/core";
@@ -208,11 +208,13 @@ export class LocalMeClient implements MeClient {
     throw new Error("El borrado está disponible sólo con cuenta real (la demo no tiene cuenta).");
   }
 
-  /** Registro propio del ciclo. Mirrors repo.getMyCycle (sin fila → default honesto "no optó"). */
-  async getMeCycle(): Promise<CycleData> {
+  /** Registro propio del ciclo + si la atleta ya activó (consintió). Mirror de repo.getMyCycle:
+   *  sin flag de consentimiento → consented=false (la UI muestra el gate de activación, §3). */
+  async getMeCycle(): Promise<MeCycleView> {
+    const consented = this.s.getOptional<unknown>(KEYS.cycleConsented(this.id)) === true;
     const share = CycleShareSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleShare(this.id)));
     const state = CycleStateSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleState(this.id)));
-    if (!share.success) return { share: "none", state: "regular" };
+    if (!share.success) return { share: "none", state: "regular", consented };
     const start = this.s.getOptional<unknown>(KEYS.cycleStart(this.id));
     const len = Number(this.s.getOptional<unknown>(KEYS.cycleLen(this.id)));
     return {
@@ -220,17 +222,29 @@ export class LocalMeClient implements MeClient {
       state: state.success ? state.data : "regular",
       ...(typeof start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(start) ? { lastPeriodStart: start } : {}),
       ...(Number.isInteger(len) && len >= 21 && len <= 45 ? { cycleLengthDays: len } : {}),
+      consented,
     };
   }
 
-  /** Upsert del registro (mirrors repo.putMyCycle; el "cifrado" no aplica en local — es SU storage). */
-  async putMeCycle(input: CycleData): Promise<void> {
+  /** Upsert del registro (mirrors repo.putMyCycle; el "cifrado" no aplica en local — es SU storage).
+   *  `consent:true` marca el opt-in (1ª activación). El enforcement legal autoritativo está en el API. */
+  async putMeCycle(input: CycleData, consent?: boolean): Promise<void> {
     const parsed = PutMeCycleInputSchema.parse(input); // mirror del 400-on-invalid del API
+    if (consent === true) this.s.set(KEYS.cycleConsented(this.id), true);
     this.s.set(KEYS.cycleShare(this.id), parsed.share);
     this.s.set(KEYS.cycleState(this.id), parsed.state);
     if (parsed.lastPeriodStart != null) this.s.set(KEYS.cycleStart(this.id), parsed.lastPeriodStart);
     else this.s.remove(KEYS.cycleStart(this.id));
     if (parsed.cycleLengthDays != null) this.s.set(KEYS.cycleLen(this.id), parsed.cycleLengthDays);
     else this.s.remove(KEYS.cycleLen(this.id));
+  }
+
+  /** Revocación: borra el registro propio del ciclo (dueña del dato), incl. el opt-in. */
+  async deleteMeCycle(): Promise<void> {
+    this.s.remove(KEYS.cycleShare(this.id));
+    this.s.remove(KEYS.cycleState(this.id));
+    this.s.remove(KEYS.cycleStart(this.id));
+    this.s.remove(KEYS.cycleLen(this.id));
+    this.s.remove(KEYS.cycleConsented(this.id));
   }
 }

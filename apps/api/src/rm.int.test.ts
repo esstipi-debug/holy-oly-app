@@ -112,7 +112,7 @@ describe("API integration — RMs (SP5: updateRms / historial / PRs)", () => {
       payload: { updates: [{ lift: "arranque", kg: 90 }], reason: "manual" } })).statusCode).toBe(401);
 
     const c2 = await app.inject({ method: "POST", url: "/auth/signup",
-      payload: { email: `c2-rm-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "C2" } });
+      payload: { email: `c2-rm-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "C2", acceptTerms: true } });
     expect((await app.inject({ method: "GET", url: "/athletes/mv/rm-history", headers: sess(c2) })).statusCode).toBe(403);
     expect((await app.inject({ method: "PUT", url: "/athletes/mv/rms", headers: sess(c2),
       payload: { updates: [{ lift: "arranque", kg: 90 }], reason: "manual" } })).statusCode).toBe(403);

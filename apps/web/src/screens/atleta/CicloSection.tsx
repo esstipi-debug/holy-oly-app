@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import type { CycleData, CycleShare, CycleState } from "@holy-oly/core";
 import { CYCLE_LEN_MAX, CYCLE_LEN_MIN, CYCLE_HORIZON_CYCLES } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
@@ -29,12 +30,14 @@ const pastHorizon = (startIso: string, lenDays: number): boolean => {
   return Number.isFinite(days) && days >= CYCLE_HORIZON_CYCLES * lenDays;
 };
 
-/** Sección «Ciclo» de Cuenta (slice ciclo-visible). Opt-in POR ELECCIÓN — existe para toda
- *  cuenta de atleta, sin asumir género. El registro es de la atleta; compartir es hacia el
- *  coach y SIEMPRE redactado (el copy de cada nivel dice exactamente qué ve). Paleta neutra. */
+/** Sección «Ciclo» de Cuenta (slice ciclo-visible + PR-L2). Opt-in POR ELECCIÓN: el módulo arranca
+ *  INVISIBLE (sólo un gate de activación con consentimiento informado) y nunca se asume por género.
+ *  Recién tras consentir aparece el registro. Compartir con el coach es aparte y SIEMPRE redactado.
+ *  Paleta neutra (jamás semáforo verde/amarillo/rojo del estado del ciclo). */
 export function CicloSection({ client = meClient }: { client?: MeClient }) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [consented, setConsented] = useState(false);
   const [share, setShare] = useState<CycleShare>("none");
   const [state, setState] = useState<CycleState>("regular");
   const [start, setStart] = useState("");
@@ -42,6 +45,12 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [saved, setSaved] = useState(false);
+  // Gate de activación (PR-L2): reconocimiento informado + estado de la activación / revocación.
+  const [ack, setAck] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [activateError, setActivateError] = useState(false);
+  const [revoking, setRevoking] = useState(false);
+  const [revokeError, setRevokeError] = useState(false);
 
   const mountedRef = useRef(true);
   useEffect(() => {
@@ -53,6 +62,7 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
     try {
       const c = await client.getMeCycle();
       if (!mountedRef.current) return;
+      setConsented(c.consented);
       setShare(c.share);
       setState(c.state);
       setStart(c.lastPeriodStart ?? "");
@@ -67,6 +77,40 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
   useEffect(() => { void load(); }, [load]);
 
   const canSave = !saving && validLen(len);
+
+  async function activate(): Promise<void> {
+    if (!ack || activating) return;
+    setActivating(true);
+    setActivateError(false);
+    try {
+      // Opt-in con defaults (share "none" → nada se comparte aún); recién después configura.
+      await client.putMeCycle({ share, state }, true);
+      if (!mountedRef.current) return;
+      await load();
+    } catch {
+      if (mountedRef.current) setActivateError(true);
+    } finally {
+      if (mountedRef.current) setActivating(false);
+    }
+  }
+
+  async function revoke(): Promise<void> {
+    if (revoking) return;
+    setRevoking(true);
+    setRevokeError(false);
+    try {
+      await client.deleteMeCycle();
+      if (!mountedRef.current) return;
+      setAck(false);
+      setShare("none");
+      setState("regular");
+      setStart("");
+      setLen("");
+      await load();
+    } catch {
+      if (mountedRef.current) { setRevokeError(true); setRevoking(false); }
+    }
+  }
 
   async function save(): Promise<void> {
     if (!canSave) return;
@@ -100,10 +144,6 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
     <div className="ho-acct__group">
       <div className="ho-acct__label">Ciclo · registro opcional</div>
       <div className="ho-card">
-        <div className="ho-acct__rowsub">
-          Tu ciclo es tuyo. Registrarlo proyecta sus ventanas sobre TU calendario del plan;
-          compartir con tu coach es aparte y siempre va redactado.
-        </div>
         {loading ? (
           <Loading style={noteStyle}>Cargando…</Loading>
         ) : loadError ? (
@@ -111,8 +151,42 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
             No se pudo cargar tu registro.{" "}
             <RetryButton onClick={() => { setLoading(true); void load(); }} fontSize={10.5} />
           </div>
-        ) : (
+        ) : !consented ? (
+          // ── Gate de activación (PR-L2): el módulo no existe para la atleta hasta que opta. ──
           <>
+            <div className="ho-acct__rowsub">
+              Tu ciclo es tuyo. Si lo activás, proyectás sus ventanas sobre TU calendario del plan y
+              podés —si querés— compartir con tu coach un contexto siempre redactado. No es un
+              semáforo ni cambia tu plan: sólo te da contexto.
+            </div>
+            <label style={{ ...noteStyle, display: "flex", gap: 8, alignItems: "flex-start", marginTop: 12, cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={ack}
+                onChange={(e) => setAck(e.target.checked)}
+                style={{ marginTop: 1, accentColor: "var(--wl-text)", flex: "0 0 auto" }}
+              />
+              <span>
+                Entiendo que esto no reemplaza el consejo de un profesional de la salud. Más detalle en la{" "}
+                <Link to="/privacidad" style={{ color: "inherit" }}>política de privacidad</Link>.
+              </span>
+            </label>
+            {activateError && (
+              <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>No se pudo activar. Reintentá.</div>
+            )}
+            <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 12 }}
+              disabled={!ack || activating} onClick={() => void activate()}>
+              {activating ? "Activando…" : "Activar registro"}
+            </button>
+          </>
+        ) : (
+          // ── Registro (tras consentir): compartir + estado + fechas + revocar. ──
+          <>
+            <div className="ho-acct__rowsub">
+              Tu ciclo es tuyo. Registrarlo proyecta sus ventanas sobre TU calendario del plan;
+              compartir con tu coach es aparte y siempre va redactado.
+            </div>
+
             <div style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Compartir con el coach</div>
             <SegmentedTabs
               ariaLabel="Compartir con el coach"
@@ -170,6 +244,15 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
               disabled={!canSave} onClick={() => void save()}>
               {saving ? "Guardando…" : saved ? "Guardado ✓" : "Guardar"}
             </button>
+
+            <button type="button" className="wl-btn wl-btn--ghost" style={{ width: "100%", marginTop: 10 }}
+              disabled={revoking} onClick={() => void revoke()}>
+              {revoking ? "Desactivando…" : "Desactivar registro del ciclo"}
+            </button>
+            {revokeError && (
+              <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>No se pudo desactivar. Reintentá.</div>
+            )}
+            <div style={noteStyle}>Desactivar borra tu registro del ciclo y tu coach deja de ver cualquier contexto.</div>
           </>
         )}
       </div>

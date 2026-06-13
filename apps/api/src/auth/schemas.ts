@@ -25,6 +25,9 @@ export const SignupSchema = z.object({
   password: passwordField,
   role: z.enum(["coach", "atleta"]),
   name: z.string().min(1).max(120).optional(),
+  // PR-L1: the user must explicitly accept Terms + Privacy. The route enforces `=== true`; the
+  // accepted VERSION is stamped server-side (core constants), never read from the client.
+  acceptTerms: z.boolean().optional(),
   // E1 honeypot — bots fill hidden fields; humans leave empty.
   website: z.string().max(200).optional(),
 });
@@ -50,6 +53,8 @@ export const LoginSchema = z.object({
 export const GoogleCompleteSchema = z.object({
   role: z.enum(["coach", "atleta"]),
   name: z.string().min(1).max(120).optional(),
+  // PR-L1: OAuth signup must also accept Terms + Privacy (informed-consent parity with password).
+  acceptTerms: z.boolean().optional(),
 });
 
 // Exact 12-char format (A6): rejects malformed input before the DB lookup, so a wrong-format

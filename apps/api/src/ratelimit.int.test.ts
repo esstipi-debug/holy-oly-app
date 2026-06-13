@@ -21,7 +21,7 @@ describe("rate limiting (integration)", () => {
     const su = await app.inject({
       method: "POST",
       url: "/auth/signup",
-      payload: { email, password: "correct-horse-battery-staple", role: "atleta" },
+      payload: { email, password: "correct-horse-battery-staple", role: "atleta", acceptTerms: true },
     });
     expect(su.statusCode).toBe(201);
 

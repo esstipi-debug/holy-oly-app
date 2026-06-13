@@ -1,5 +1,6 @@
 export * from "./types";
 export * from "./schemas";
+export * from "./legal";
 export * from "./data/macrocycles";
 export * from "./data/movements";
 export * from "./logic/discs";

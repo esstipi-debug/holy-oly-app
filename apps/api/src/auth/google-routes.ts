@@ -28,6 +28,9 @@ interface OAuthCtxPayload {
   intent: "login" | "signup";
   role?: UserRole;
   name?: string;
+  // PR-L1: legal acceptance is carried in the SIGNED context (not trusted from the callback query),
+  // so the auto-provision branch can verify it server-side — not just rely on the frontend gate.
+  acceptTerms?: boolean;
   exp: number;
 }
 
@@ -54,18 +57,23 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
   app.get("/auth/google/start", async (req, reply) => {
     if (!googleConfigured()) return reply.code(503).send({ error: "google login not configured" });
 
-    const q = req.query as { intent?: string; role?: string; name?: string };
+    const q = req.query as { intent?: string; role?: string; name?: string; accept?: string };
     const intent = q.intent === "signup" ? "signup" : "login";
     let role: UserRole | undefined;
     if (q.role === "coach" || q.role === "atleta") role = q.role;
     const name = typeof q.name === "string" && q.name.trim() ? q.name.trim().slice(0, 120) : undefined;
+    const acceptTerms = q.accept === "1" || q.accept === "true";
 
     if (intent === "signup" && !role) {
       return reply.code(400).send({ error: "role required for signup" });
     }
+    // PR-L1: a signup must carry explicit legal acceptance — even via OAuth (parity with password).
+    if (intent === "signup" && !acceptTerms) {
+      return reply.code(400).send({ error: "must accept terms" });
+    }
 
     const nonce = randomBytes(24).toString("hex");
-    const ctx: OAuthCtxPayload = { nonce, intent, role, name, exp: ctxExpiry() };
+    const ctx: OAuthCtxPayload = { nonce, intent, role, name, acceptTerms, exp: ctxExpiry() };
     const signed = signCookiePayload(ctx, oauthStateSecret());
     reply.setCookie(OAUTH_CTX_COOKIE, signed, oauthCookieOpts(OAUTH_COOKIE_MAX_AGE_SEC));
 
@@ -130,7 +138,9 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
       return reply.redirect(webRedirect("/"));
     }
 
-    const role = ctx.intent === "signup" ? ctx.role : undefined;
+    // Auto-provision only when the SIGNED context proves legal acceptance (PR-L1). Without it we
+    // fall through to the pending → /login/google-complete flow, where the checkbox is enforced.
+    const role = ctx.intent === "signup" && ctx.acceptTerms === true ? ctx.role : undefined;
     if (role) {
       const emailVerified = role !== "coach" || profile.emailVerified;
       let user;
@@ -178,6 +188,10 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
 
     const parsed = GoogleCompleteSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid input" });
+    // PR-L1: OAuth signup must explicitly accept Terms + Privacy, same as password signup.
+    if (parsed.data.acceptTerms !== true) {
+      return reply.code(400).send({ error: "must accept terms" });
+    }
 
     const rawPending = req.cookies?.[OAUTH_PENDING_COOKIE];
     const pending = rawPending ? verifyCookiePayload<OAuthPendingPayload>(rawPending, oauthStateSecret()) : null;

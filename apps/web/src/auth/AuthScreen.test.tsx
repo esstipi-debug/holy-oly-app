@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import type { AuthUser } from "./authClient";
 
@@ -12,22 +12,31 @@ vi.mock("./authClient", async (importOriginal) => {
 
 // W8: useAuth inyectable (patrón de home.onboarding.test.tsx). AuthScreen sólo lee user/loading
 // en render; login/signup recién se usan al enviar el form — acá no se envía.
+type SignupFn = (email: string, password: string, role: string, name?: string, website?: string, acceptTerms?: boolean) => Promise<void>;
+const noopSignup: SignupFn = async () => {};
 const injected = vi.hoisted(() => ({
-  current: { user: null as AuthUser | null, loading: false },
+  current: { user: null as AuthUser | null, loading: false, signup: (async () => {}) as SignupFn },
 }));
 vi.mock("./AuthContext", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./AuthContext")>();
   const noop = async (): Promise<void> => {};
   return {
     ...actual,
-    useAuth: () => ({ apiEnabled: true, ...injected.current, login: noop, signup: noop, logout: noop }),
+    useAuth: () => ({
+      apiEnabled: true,
+      user: injected.current.user,
+      loading: injected.current.loading,
+      login: noop,
+      signup: injected.current.signup,
+      logout: noop,
+    }),
   };
 });
 
 import { AuthScreen, authErrorMessage } from "./AuthScreen";
 
 afterEach(() => {
-  injected.current = { user: null, loading: false };
+  injected.current = { user: null, loading: false, signup: noopSignup };
 });
 
 function renderLogin(entry: string | { pathname: string; state: unknown } = "/login") {
@@ -48,6 +57,7 @@ describe("AuthScreen", () => {
     injected.current = {
       user: { id: "u1", role: "coach", coachId: "c1", athleteId: null },
       loading: false,
+      signup: noopSignup,
     };
     renderLogin();
     expect(await screen.findByText("LANDING")).toBeInTheDocument();
@@ -81,6 +91,32 @@ describe("AuthScreen", () => {
     renderLogin();
     fireEvent.click(screen.getByRole("button", { name: /Registrate/ }));
     expect(screen.getByText(/Mínimo 8 caracteres/)).toBeInTheDocument();
+    await act(async () => {});
+  });
+
+  // PR-L1: no se puede crear cuenta sin aceptar explícitamente Términos + Privacidad.
+  it("en modo registro 'Crear cuenta' está deshabilitada hasta aceptar términos", async () => {
+    renderLogin();
+    fireEvent.click(screen.getByRole("button", { name: /Registrate/ }));
+    const submit = screen.getByRole("button", { name: "Crear cuenta" });
+    expect(submit).toBeDisabled();
+    fireEvent.click(screen.getByRole("checkbox", { name: /acepto/i }));
+    expect(submit).toBeEnabled();
+    await act(async () => {});
+  });
+
+  it("al registrarse, signup recibe acceptTerms = true", async () => {
+    const spy = vi.fn(async () => {});
+    injected.current.signup = spy as unknown as SignupFn;
+    renderLogin();
+    fireEvent.click(screen.getByRole("button", { name: /Registrate/ }));
+    fireEvent.change(screen.getByPlaceholderText("vos@ejemplo.com"), { target: { value: "a@b.com" } });
+    fireEvent.change(screen.getByPlaceholderText("••••••••"), { target: { value: "lawful-pass-9" } });
+    fireEvent.click(screen.getByRole("checkbox", { name: /acepto/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" }));
+    await waitFor(() => expect(spy).toHaveBeenCalled());
+    // signup(email, password, role, name?, website?, acceptTerms) — la aceptación es el último arg.
+    expect(spy).toHaveBeenCalledWith("a@b.com", "lawful-pass-9", "coach", undefined, "", true);
     await act(async () => {});
   });
 });

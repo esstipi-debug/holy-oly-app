@@ -23,7 +23,7 @@ describe("password reset (B6)", () => {
     await app.inject({
       method: "POST",
       url: "/auth/signup",
-      payload: { email, password: PW1, role: "atleta", name: "Reset User" },
+      payload: { email, password: PW1, role: "atleta", name: "Reset User", acceptTerms: true },
     });
   });
 

@@ -25,8 +25,9 @@ function stubClient(): MeClient {
     getMeHeat: async () => [],
     getMeRecorrido: async () => ({ semanas: [] }),
     putMeSession: async () => {},
-    getMeCycle: async () => ({ share: "none" as const, state: "regular" as const }),
+    getMeCycle: async () => ({ share: "none" as const, state: "regular" as const, consented: false }),
     putMeCycle: async () => {},
+    deleteMeCycle: async () => {},
   };
 }
 

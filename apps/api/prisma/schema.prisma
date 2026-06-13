@@ -68,6 +68,12 @@ model User {
   role         UserRole
   emailVerified Boolean  @default(false)
   createdAt    DateTime  @default(now())
+  // Legal acceptance trail (PR-L1): timestamp + document version the account accepted at signup.
+  // The server stamps the version (core constants) — never trusts a client-sent version.
+  termsAcceptedAt   DateTime?
+  termsVersion      String?
+  privacyAcceptedAt DateTime?
+  privacyVersion    String?
   sessions     Session[]
   coach        Coach?
   athlete      Athlete?
@@ -347,6 +353,11 @@ model CycleConsent {
   /// Slice ciclo-visible: registro de la atleta — cifrados at-rest igual que share/state.
   lastPeriodStart String?
   cycleLengthDays String?
+  /// PR-L2: acto de consentimiento informado (opt-in explícito). `consentedAt == null` → la
+  /// atleta aún no activó el módulo (la UI muestra el gate de activación, no el registro).
+  /// No se cifran: son metadata de consentimiento (no dato de salud) y deben poder auditarse.
+  consentedAt    DateTime?
+  consentVersion String?
 }
 
 /// What the athlete actually lifted, per prescribed exercise (SP3). Self-written (requireAthlete).

@@ -11,6 +11,8 @@ export const KEYS = {
   // Slice ciclo-visible: registro de la atleta (los MISMOS keys que lee el coach-side local).
   cycleStart: (id: string) => `ho:cycleStart:${id}`,
   cycleLen: (id: string) => `ho:cycleLen:${id}`,
+  // PR-L2: acto de consentimiento informado (opt-in explícito). Presente ⇒ la atleta activó el módulo.
+  cycleConsented: (id: string) => `ho:cycleConsented:${id}`,
   prescription: (id: string) => `holyoly:prescription:${id}`,
   // Athlete-self stores (offline `LocalMeClient`, mirroring the API's DayLog / SessionActual tables).
   dayLog: (id: string) => `ho:daylog:${id}`,

@@ -4,8 +4,8 @@
  * resolves the athlete from the session, never from a path/body, so there is no cross-athlete read.
  */
 import {
-  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, CycleDataSchema, MeRecorridoSchema,
-  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type PutMeSessionInput,
+  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, MeCycleViewSchema, MeRecorridoSchema,
+  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type MeCycleView, type PutMeSessionInput,
 } from "@holy-oly/core";
 import { FechaOcupadaError } from "./fechaError";
 
@@ -108,19 +108,26 @@ export async function deleteMyAccount(): Promise<void> {
   if (!res.ok) await fail(res);
 }
 
-/** El registro propio del ciclo — la verdad de la atleta (el coach jamás recibe este shape). */
-export async function getMeCycle(): Promise<CycleData> {
+/** El registro propio del ciclo + si la atleta ya activó (consintió). El coach jamás recibe este shape. */
+export async function getMeCycle(): Promise<MeCycleView> {
   const res = await fetch(`${BASE}/me/cycle`, { credentials: "include" });
   if (!res.ok) return fail(res);
-  return CycleDataSchema.parse(await res.json());
+  return MeCycleViewSchema.parse(await res.json());
 }
 
-export async function putMeCycle(input: CycleData): Promise<void> {
+/** `consent:true` sólo en la 1ª activación (acto de opt-in informado, PR-L2). Después es opcional. */
+export async function putMeCycle(input: CycleData, consent?: boolean): Promise<void> {
   const res = await fetch(`${BASE}/me/cycle`, {
     method: "PUT",
     credentials: "include",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify({ ...input, ...(consent === true ? { consent: true } : {}) }),
   });
+  if (!res.ok) await fail(res);
+}
+
+/** Revocación: borra el registro propio del ciclo (dueña del dato). */
+export async function deleteMeCycle(): Promise<void> {
+  const res = await fetch(`${BASE}/me/cycle`, { method: "DELETE", credentials: "include" });
   if (!res.ok) await fail(res);
 }

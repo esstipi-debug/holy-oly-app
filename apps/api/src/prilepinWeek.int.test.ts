@@ -80,7 +80,7 @@ describe("API integration — preview Prilepin (cableado coach-only)", () => {
   it("coach-only: atleta → 401, coach sin Vínculo → 403", async () => {
     const aLogin = await app.inject({ method: "POST", url: "/auth/login", payload: { email: "atleta@holyoly.dev", password: "holyoly-demo" } });
     expect((await app.inject({ method: "GET", url: "/athletes/mv/prilepin-week?week=1&lift=arranque", headers: sessionHeader(aLogin) })).statusCode).toBe(401);
-    const c2 = await app.inject({ method: "POST", url: "/auth/signup", payload: { email: `c2-pw-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "C2" } });
+    const c2 = await app.inject({ method: "POST", url: "/auth/signup", payload: { email: `c2-pw-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "C2", acceptTerms: true } });
     expect((await app.inject({ method: "GET", url: "/athletes/mv/prilepin-week?week=1&lift=arranque", headers: sessionHeader(c2) })).statusCode).toBe(403);
   });
 });

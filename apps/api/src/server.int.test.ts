@@ -67,7 +67,7 @@ describe("API integration (auth + coach-scoped reads)", () => {
   it("a different coach (no Vinculo to Mara) gets 403 — tenant isolation", async () => {
     const signup = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `coach2-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "Coach Dos" },
+      payload: { email: `coach2-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "Coach Dos", acceptTerms: true },
     });
     expect(signup.statusCode).toBe(201);
     const headers = sessionHeader(signup);

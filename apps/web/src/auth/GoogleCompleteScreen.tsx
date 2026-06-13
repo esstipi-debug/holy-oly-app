@@ -17,13 +17,18 @@ export function GoogleCompleteScreen() {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [accepted, setAccepted] = useState(false);
 
   async function onSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
     setError(null);
+    if (!accepted) {
+      setError("Tenés que aceptar los términos y la política de privacidad.");
+      return;
+    }
     setBusy(true);
     try {
-      await completeGoogleSignup(role, name || undefined);
+      await completeGoogleSignup(role, name || undefined, accepted);
       // navigate (no window.location.replace): bajo el hash-routing del demo file:// la URL
       // absoluta "/" apuntaría al filesystem.
       navigate("/", { replace: true });
@@ -59,10 +64,20 @@ export function GoogleCompleteScreen() {
         <label style={label}>Nombre</label>
         <input style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" />
 
+        <label style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 16, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", lineHeight: 1.5, cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={(e) => setAccepted(e.target.checked)}
+            style={{ marginTop: 2, accentColor: "var(--wl-accent)", flex: "0 0 auto" }}
+          />
+          <span>Leí y acepto los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.</span>
+        </label>
+
         {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
-        <button type="submit" disabled={busy} style={{ width: "100%", marginTop: 18, padding: 12, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer",
-          background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, opacity: busy ? 0.6 : 1 }}>
+        <button type="submit" disabled={busy || !accepted} style={{ width: "100%", marginTop: 18, padding: 12, borderRadius: 12, border: 0, cursor: busy || !accepted ? "default" : "pointer",
+          background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, opacity: busy || !accepted ? 0.6 : 1 }}>
           {busy ? "..." : "Continuar"}
         </button>
 

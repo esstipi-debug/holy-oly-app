@@ -52,7 +52,7 @@ describe("API integration — plan heat (calendario mapa)", () => {
 
   it("coach sin Vínculo → 403 (cross-coach, criterio del spec)", async () => {
     const c2 = await app.inject({ method: "POST", url: "/auth/signup",
-      payload: { email: `c2-heat-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "C2" } });
+      payload: { email: `c2-heat-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "C2", acceptTerms: true } });
     expect((await app.inject({ method: "GET", url: "/athletes/mv/heat", headers: sessionHeader(c2) })).statusCode).toBe(403);
   });
 

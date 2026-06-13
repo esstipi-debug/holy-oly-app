@@ -88,7 +88,7 @@ describe("API integration — día a día (lazo diario atleta→coach)", () => {
     expect((await app.inject({ method: "GET", url: "/athletes/mv/daily", headers: sess(aLogin) })).statusCode).toBe(401);
     // segundo coach sin Vínculo a mv → 403 (aislamiento de tenant)
     const c2 = await app.inject({ method: "POST", url: "/auth/signup",
-      payload: { email: `c2-daily-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "C2" } });
+      payload: { email: `c2-daily-${Date.now()}@x.dev`, password: "another-pass-1", role: "coach", name: "C2", acceptTerms: true } });
     expect((await app.inject({ method: "GET", url: "/athletes/mv/daily", headers: sess(c2) })).statusCode).toBe(403);
   });
 });

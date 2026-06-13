@@ -3,7 +3,7 @@
  * (`httpMeClient`) when the app talks to a backend, or to `LocalMeClient` (localStorage, demo
  * athlete Kevin) when standalone — the exact mirror of how `RepositoryProvider` picks Http vs Local.
  */
-import type { CycleData, MePlanView, MeRecorrido, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, WeekHeat, PutMeSessionInput } from "@holy-oly/core";
+import type { CycleData, MeCycleView, MePlanView, MeRecorrido, MonitorSeries, DayLogView, DayLogResult, DayLogInput, SessionView, WeekHeat, PutMeSessionInput } from "@holy-oly/core";
 import { API_ENABLED } from "./apiConfig";
 import * as http from "./httpMeClient";
 import { LocalMeClient } from "./LocalMeClient";
@@ -40,11 +40,14 @@ export function getMeRecorrido(): Promise<MeRecorrido> {
 export function putMeSession(week: number, idx: number, input: PutMeSessionInput): Promise<void> {
   return API_ENABLED ? http.putMeSession(week, idx, input) : local().putMeSession(week, idx, input);
 }
-export function getMeCycle(): Promise<CycleData> {
+export function getMeCycle(): Promise<MeCycleView> {
   return API_ENABLED ? http.getMeCycle() : local().getMeCycle();
 }
-export function putMeCycle(input: CycleData): Promise<void> {
-  return API_ENABLED ? http.putMeCycle(input) : local().putMeCycle(input);
+export function putMeCycle(input: CycleData, consent?: boolean): Promise<void> {
+  return API_ENABLED ? http.putMeCycle(input, consent) : local().putMeCycle(input, consent);
+}
+export function deleteMeCycle(): Promise<void> {
+  return API_ENABLED ? http.deleteMeCycle() : local().deleteMeCycle();
 }
 
 // ── Cuenta (D3/D4, W5) — scope CUENTA, no vista: a propósito FUERA de la interface `MeClient`
@@ -72,10 +75,13 @@ export interface MeClient {
   /** Recorrido del macro: lo HECHO acumulado por semana (kg propios — jamás RM/RPE/ACWR). */
   getMeRecorrido(): Promise<MeRecorrido>;
   putMeSession(week: number, idx: number, input: PutMeSessionInput): Promise<void>;
-  /** Registro propio del ciclo (slice ciclo-visible) — la verdad de la atleta, jamás del coach. */
-  getMeCycle(): Promise<CycleData>;
-  putMeCycle(input: CycleData): Promise<void>;
+  /** Registro propio del ciclo (slice ciclo-visible) — la verdad de la atleta, jamás del coach.
+   *  `getMeCycle` incluye `consented` (¿activó el módulo?); `putMeCycle` con `consent:true` en la
+   *  1ª activación (PR-L2); `deleteMeCycle` revoca (borra el registro). */
+  getMeCycle(): Promise<MeCycleView>;
+  putMeCycle(input: CycleData, consent?: boolean): Promise<void>;
+  deleteMeCycle(): Promise<void>;
 }
 
 /** The module singleton as a `MeClient` object — the default client for the athlete screens. */
-export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, getMeHeat, getMeRecorrido, putMeSession, getMeCycle, putMeCycle };
+export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, getMeHeat, getMeRecorrido, putMeSession, getMeCycle, putMeCycle, deleteMeCycle };

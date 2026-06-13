@@ -19,7 +19,7 @@ describe("Vínculo invite flow (integration)", () => {
     const u = Date.now();
     const coach = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `c-${u}@x.dev`, password: "coach-pass-1", role: "coach", name: "Coach Flow" },
+      payload: { email: `c-${u}@x.dev`, password: "coach-pass-1", role: "coach", name: "Coach Flow", acceptTerms: true },
     });
     expect(coach.statusCode).toBe(201);
     const coachH = cookieOf(coach);
@@ -31,7 +31,7 @@ describe("Vínculo invite flow (integration)", () => {
 
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `a-${u}@x.dev`, password: "athlete-pwd-01", role: "atleta", name: "Atleta Flow" },
+      payload: { email: `a-${u}@x.dev`, password: "athlete-pwd-01", role: "atleta", name: "Atleta Flow", acceptTerms: true },
     });
     expect(ath.statusCode).toBe(201);
     const athH = cookieOf(ath);
@@ -57,7 +57,7 @@ describe("Vínculo invite flow (integration)", () => {
     const u = Date.now();
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `a2-${u}@x.dev`, password: "athlete-pwd-02", role: "atleta" },
+      payload: { email: `a2-${u}@x.dev`, password: "athlete-pwd-02", role: "atleta", acceptTerms: true },
     });
     // 12-char, valid alphabet, just not a real code → passes schema, fails the DB lookup.
     const accept = await app.inject({ method: "POST", url: "/vinculos/accept", headers: cookieOf(ath), payload: { code: "ZZZZ23456789" } });
@@ -68,7 +68,7 @@ describe("Vínculo invite flow (integration)", () => {
     const u = Date.now();
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `a3-${u}@x.dev`, password: "athlete-pwd-03", role: "atleta" },
+      payload: { email: `a3-${u}@x.dev`, password: "athlete-pwd-03", role: "atleta", acceptTerms: true },
     });
     // 8 chars (old format) → rejected by the exact-length schema before any DB lookup.
     const accept = await app.inject({ method: "POST", url: "/vinculos/accept", headers: cookieOf(ath), payload: { code: "ABCD1234" } });
@@ -79,7 +79,7 @@ describe("Vínculo invite flow (integration)", () => {
     const u = Date.now();
     const c2 = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `c2-${u}@x.dev`, password: "coach-pass-2", role: "coach" },
+      payload: { email: `c2-${u}@x.dev`, password: "coach-pass-2", role: "coach", acceptTerms: true },
     });
     const res = await app.inject({ method: "POST", url: "/vinculos/does-not-exist/confirm", headers: cookieOf(c2) });
     expect(res.statusCode).toBe(404);
@@ -96,7 +96,7 @@ describe("Vínculo invite flow (integration)", () => {
     const u = Date.now();
     const coach = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `c-mv-${u}@x.dev`, password: "coach-pass-mv", role: "coach", name: "Coach Vínculo" },
+      payload: { email: `c-mv-${u}@x.dev`, password: "coach-pass-mv", role: "coach", name: "Coach Vínculo", acceptTerms: true },
     });
     const coachH = cookieOf(coach);
     const rot = await app.inject({ method: "POST", url: "/invite/rotate", headers: coachH });
@@ -104,7 +104,7 @@ describe("Vínculo invite flow (integration)", () => {
 
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `a-mv-${u}@x.dev`, password: "athlete-pwd-mv", role: "atleta", name: "Atleta Vínculo" },
+      payload: { email: `a-mv-${u}@x.dev`, password: "athlete-pwd-mv", role: "atleta", name: "Atleta Vínculo", acceptTerms: true },
     });
     const athH = cookieOf(ath);
 
@@ -134,7 +134,7 @@ describe("Vínculo invite flow (integration)", () => {
     const u = Date.now();
     const coachA = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `ca-${u}@x.dev`, password: "coach-pass-pa", role: "coach", name: "Coach A" },
+      payload: { email: `ca-${u}@x.dev`, password: "coach-pass-pa", role: "coach", name: "Coach A", acceptTerms: true },
     });
     const coachAH = cookieOf(coachA);
     const rotA = await app.inject({ method: "POST", url: "/invite/rotate", headers: coachAH });
@@ -142,14 +142,14 @@ describe("Vínculo invite flow (integration)", () => {
 
     const coachB = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `cb-${u}@x.dev`, password: "coach-pass-pb", role: "coach", name: "Coach B" },
+      payload: { email: `cb-${u}@x.dev`, password: "coach-pass-pb", role: "coach", name: "Coach B", acceptTerms: true },
     });
     const rotB = await app.inject({ method: "POST", url: "/invite/rotate", headers: cookieOf(coachB) });
     const codeB = (rotB.json() as { inviteCode: string }).inviteCode;
 
     const ath = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `a-pr-${u}@x.dev`, password: "athlete-pwd-pr", role: "atleta", name: "Atleta Prio" },
+      payload: { email: `a-pr-${u}@x.dev`, password: "athlete-pwd-pr", role: "atleta", name: "Atleta Prio", acceptTerms: true },
     });
     const athH = cookieOf(ath);
 
@@ -174,7 +174,7 @@ describe("Vínculo invite flow (integration)", () => {
     const u = Date.now();
     const coach = await app.inject({
       method: "POST", url: "/auth/signup",
-      payload: { email: `c-mv2-${u}@x.dev`, password: "coach-pass-mv2", role: "coach" },
+      payload: { email: `c-mv2-${u}@x.dev`, password: "coach-pass-mv2", role: "coach", acceptTerms: true },
     });
     const asCoach = await app.inject({ method: "GET", url: "/me/vinculo", headers: cookieOf(coach) });
     expect(asCoach.statusCode).toBe(401);

@@ -34,6 +34,8 @@ export class LocalRepository implements Repository {
       this.s.set(KEYS.cycleState(a.id), cyc.state);
       if (cyc.lastPeriodStart != null) this.s.set(KEYS.cycleStart(a.id), cyc.lastPeriodStart);
       if (cyc.cycleLengthDays != null) this.s.set(KEYS.cycleLen(a.id), cyc.cycleLengthDays);
+      // PR-L2: los atletas demo arrancan ya "activados" (la demo muestra el registro, no el gate).
+      this.s.set(KEYS.cycleConsented(a.id), true);
     }
     // Athlete-demo seed: an assigned plan (+ its instantiated prescription) and a year of check-ins,
     // so the offline athlete app (LocalMeClient) opens fully populated. startDate anchors today to
