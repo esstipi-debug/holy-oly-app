@@ -176,17 +176,7 @@ export function Drilldown() {
           {/* Tira de tabs sticky: el header (identidad) scrollea, las tabs se fijan. Fondo opaco +
               hairline para que el contenido no traspase; zIndex 10 < BottomNav (20). */}
           <div style={{ position: "sticky", top: 0, zIndex: 10, margin: "12px -13px 0", padding: "8px 13px", background: "var(--wl-bg)", borderBottom: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-            <div role="group" aria-label="Sección del atleta" style={{ display: "flex", gap: 0, width: "fit-content", background: "var(--wl-surface)", borderRadius: 10, padding: 3, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-              {TABS.map(([key, label]) => {
-                const active = tab === key;
-                return (
-                  <button key={key} type="button" aria-pressed={active} onClick={() => setTab(key)}
-                    style={{ minHeight: 44, padding: "0 18px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, letterSpacing: ".02em", background: active ? "var(--wl-accent)" : "transparent", color: active ? "var(--wl-bg)" : "var(--wl-muted)" }}>
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+            <SegmentedToggle ariaLabel="Sección del atleta" options={TABS} value={tab} onChange={setTab} size="lg" />
           </div>
 
           <div className="wl-viewfade" style={{ marginTop: 14 }}>
