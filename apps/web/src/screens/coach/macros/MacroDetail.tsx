@@ -6,6 +6,9 @@ import { BackButton } from "../../../ui/BackButton";
 import { Toast } from "../../../ui/Toast";
 import { MacroPeriodization } from "../../../ui/charts/MacroPeriodization";
 import { LoadMeters } from "./LoadMeters";
+import { MacroComposition } from "./MacroComposition";
+import { MacroTypicalWeek } from "./MacroTypicalWeek";
+import { hasTypicalWeek } from "./composition";
 import { MacroTemplateMap } from "./MacroTemplateMap";
 import { AssignSheet, type AssignComp } from "./AssignSheet";
 import { levelLabel } from "./macroFilter";
@@ -105,6 +108,20 @@ export function MacroDetail() {
               </p>
             )}
           </div>
+        </>
+      )}
+
+      {dna != null && (
+        <>
+          <div style={sec}>Composición · movimientos firma</div>
+          <MacroComposition dna={dna} />
+        </>
+      )}
+
+      {hasTypicalWeek(macro) && (
+        <>
+          <div style={sec}>Semana tipo · sesión por sesión</div>
+          <MacroTypicalWeek macro={macro} />
         </>
       )}
 
