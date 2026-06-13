@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { MonitorSeries } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
 import { RecorridoCard } from "./RecorridoCard";
@@ -13,10 +13,14 @@ type Load = "loading" | "ready" | "error";
  * "Mi progreso" (A2) — the athlete's own trends vs their own normal. Reuses the chart components
  * with ATHLETE copy (2nd person, no ACWR) and no `onPointClick` (the coach week-detail/triage drill
  * stays coach-side). Never RPE. Honest empty state when there's no monitoring data yet.
+ *
+ * P3: una señal visible a la vez detrás de pills (Carga | Recuperación | Bienestar | Peso), en vez de
+ * 4 ChartCards apilados. HR-2 intacto: cada chart visible trae su propio "ⓘ"→explica vía ChartCard.
  */
 export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}) {
   const [series, setSeries] = useState<MonitorSeries | undefined>(undefined);
   const [load, setLoad] = useState<Load>("loading");
+  const [active, setActive] = useState<string>("carga");
 
   useEffect(() => {
     let on = true;
@@ -59,10 +63,12 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
 
   const hasWeight = (series.bodyweight?.length ?? 0) > 0;
 
-  return (
-    <>
-      {header}
-      <div style={{ display: "grid", gap: 12 }}>
+  // Una señal por pill. Carga va primera y SIEMPRE presente → la key activa nunca queda colgada.
+  // Peso es condicional (igual que el card de antes): sin bodyweight, no hay pill Peso.
+  const pills: { key: string; label: string; render: () => ReactNode }[] = [
+    {
+      key: "carga", label: "Carga",
+      render: () => (
         <LoadChart
           series={series}
           title="Tu carga"
@@ -73,6 +79,11 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
             lectura: "Picos muy por encima de tu tendencia, varias semanas seguidas, son señal de cuidar el descanso.",
           }}
         />
+      ),
+    },
+    {
+      key: "recuperacion", label: "Recuperación",
+      render: () => (
         <RecoveryChart
           series={series}
           title="Tu recuperación"
@@ -83,6 +94,11 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
             lectura: "Mientras te mantenés en tu banda normal, vas bien. HRV cayendo o FC reposo subiendo varias semanas = momento de aflojar.",
           }}
         />
+      ),
+    },
+    {
+      key: "bienestar", label: "Bienestar",
+      render: () => (
         <WellnessChart
           series={series}
           title="Tu bienestar"
@@ -93,18 +109,48 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
             lectura: "Se lee contra tu propia normal (la banda); cada ítem, contra su tendencia.",
           }}
         />
-        {hasWeight && (
-          <WeightChart
-            series={series}
-            title="Tu peso"
-            sub="vs la banda de tu categoría"
-            explain={{
-              forma: "Tu peso corporal por semana vs la banda de tu categoría.",
-              sirve: "Seguir si estás en el peso de tu categoría de cara a la competencia.",
-              lectura: "La banda son los límites de tu categoría; el punto va verde dentro, rojo fuera.",
-            }}
-          />
-        )}
+      ),
+    },
+    ...(hasWeight
+      ? [{
+          key: "peso", label: "Peso",
+          render: () => (
+            <WeightChart
+              series={series}
+              title="Tu peso"
+              sub="vs la banda de tu categoría"
+              explain={{
+                forma: "Tu peso corporal por semana vs la banda de tu categoría.",
+                sirve: "Seguir si estás en el peso de tu categoría de cara a la competencia.",
+                lectura: "La banda son los límites de tu categoría; el punto va verde dentro, rojo fuera.",
+              }}
+            />
+          ),
+        }]
+      : []),
+  ];
+  // Guarda: si la pill activa desaparece (p. ej. dejó de haber bodyweight), volvemos a Carga.
+  const current = pills.find((p) => p.key === active) ?? pills[0]!;
+
+  return (
+    <>
+      {header}
+      <div className="ho-seg" role="group" aria-label="Señal a ver" style={{ marginBottom: 12 }}>
+        {pills.map((p) => (
+          <button
+            key={p.key}
+            type="button"
+            aria-pressed={active === p.key}
+            className={active === p.key ? "on" : ""}
+            onClick={() => setActive(p.key)}
+            style={{ minHeight: 44 }}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+      {current.render()}
+      <div style={{ marginTop: 12 }}>
         <RecorridoCard client={client} />
       </div>
     </>

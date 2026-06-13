@@ -7,21 +7,34 @@ import { MemStorage } from "../../../test-utils/MemStorage";
 import type { Atleta } from "@holy-oly/core";
 import { Drilldown } from "../Drilldown";
 
-function renderAt(id: string) {
+afterEach(() => localStorage.clear());
+
+function renderAt(id: string, search = "") {
   const repo = new LocalRepository(new MemStorage());
   return render(
     <RepositoryProvider repo={repo}>
-      <MemoryRouter initialEntries={[`/coach/a/${id}`]}>
+      <MemoryRouter initialEntries={[`/coach/a/${id}${search}`]}>
         <Routes><Route path="/coach/a/:id" element={<Drilldown />} /></Routes>
       </MemoryRouter>
     </RepositoryProvider>,
   );
 }
 
-test("shows the athlete header and monitor charts — palmarés/medallas desactivadas (Mara)", async () => {
+test("por default abre Resumen: chip de ciclo visible, Monitor y Plan ocultos (Mara)", async () => {
+  renderAt("mv");
+  await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
+  expect(screen.getByText(/Ciclo · compartido/)).toBeInTheDocument();        // Resumen
+  expect(screen.queryByText("ACWR")).not.toBeInTheDocument();                 // Monitor oculto
+  expect(screen.queryByText("📅 Calendario del plan")).not.toBeInTheDocument(); // Plan oculto
+});
+
+test("tab Monitor: header persistente + charts (palmarés/medallas desactivadas, Mara)", async () => {
   const { container } = renderAt("mv");
   await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
-  expect(screen.getByText("ACWR")).toBeInTheDocument();
+  // los charts viven en Monitor, no en el Resumen por default
+  expect(screen.queryByText("ACWR")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Monitor" }));
+  expect(await screen.findByText("ACWR")).toBeInTheDocument();
   expect(screen.getByText(/Recuperación/)).toBeInTheDocument();
   expect(screen.getByText("IMR vs fase")).toBeInTheDocument();
   expect(screen.getByText("Bienestar")).toBeInTheDocument();
@@ -31,6 +44,26 @@ test("shows the athlete header and monitor charts — palmarés/medallas desacti
   expect(screen.queryByText(/Palmar/)).toBeNull();
   expect(screen.queryByText("Nacional Absoluto")).toBeNull();
   expect(container.querySelectorAll("svg").length).toBeGreaterThan(3);
+});
+
+test("tab Plan: muestra el calendario del plan, no los charts", async () => {
+  renderAt("mv");
+  await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
+  fireEvent.click(screen.getByRole("button", { name: "Plan" }));
+  expect(await screen.findByText("📅 Calendario del plan")).toBeInTheDocument();
+  expect(screen.queryByText("ACWR")).not.toBeInTheDocument();
+});
+
+test("deep-link ?tab=monitor abre Monitor directo", async () => {
+  renderAt("mv", "?tab=monitor");
+  expect(await screen.findByText("ACWR")).toBeInTheDocument();
+});
+
+test("?tab= inválido cae a Resumen (sin romper)", async () => {
+  renderAt("mv", "?tab=palmares");
+  await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
+  expect(screen.getByText(/Ciclo · compartido/)).toBeInTheDocument();
+  expect(screen.queryByText("ACWR")).not.toBeInTheDocument();
 });
 
 test("el botón 'volver' lleva de vuelta a Atletas (/coach)", async () => {
@@ -53,12 +86,14 @@ test("el botón 'volver' lleva de vuelta a Atletas (/coach)", async () => {
 test("'ver como atleta' (demo) swaps the coach body for the athlete preview, and back", async () => {
   renderAt("mv");
   await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
-  expect(screen.getByText("ACWR")).toBeInTheDocument(); // coach body present
+  // ir a Monitor para tener los charts del coach a la vista (?tab=monitor queda en la URL)
+  fireEvent.click(screen.getByRole("button", { name: "Monitor" }));
+  expect(await screen.findByText("ACWR")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Atleta" }));
   await waitFor(() => expect(screen.getByTestId("atleta-preview")).toBeInTheDocument());
   expect(screen.queryByText("ACWR")).not.toBeInTheDocument(); // coach charts swapped out
   fireEvent.click(screen.getByRole("button", { name: "Coach" }));
-  await waitFor(() => expect(screen.getByText("ACWR")).toBeInTheDocument()); // back to coach
+  await waitFor(() => expect(screen.getByText("ACWR")).toBeInTheDocument()); // vuelve a Monitor
 });
 
 test("'ver como atleta' muestra la Home COMPLETA del atleta (saludo) + la sesión con discos", async () => {
@@ -81,12 +116,11 @@ test("'ver como atleta' muestra la Home COMPLETA del atleta (saludo) + la sesió
   expect(screen.getByTestId("atleta-preview")).toBeInTheDocument();
 });
 
-afterEach(() => localStorage.clear());
-
-test("no-data athlete (Tomás) shows an empty state, not charts", async () => {
+test("no-data athlete (Tomás): el tab Monitor muestra un empty state, no charts", async () => {
   renderAt("tl");
   await waitFor(() => expect(screen.getByText("Tomás L.")).toBeInTheDocument());
-  expect(screen.getByText(/sin datos de monitoreo/i)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Monitor" }));
+  expect(await screen.findByText(/sin datos de monitoreo/i)).toBeInTheDocument();
 });
 
 test("ciclo: chip redactado con lúteo REAL (Mara, share full) y CERO fuga de fase/ventanas en el coach", async () => {
