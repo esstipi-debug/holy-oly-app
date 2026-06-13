@@ -78,12 +78,12 @@ export function PlanDayDetail({ title, sub, phaseName, phaseTint, focus, estado,
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5, color: "var(--wl-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ex.name}</div>
                   <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 1 }}>
-                    {ex.sets}×{ex.reps}{ex.pct != null ? ` @ ${ex.pct}%` : ""}
+                    {ex.sets}×{ex.reps}
                   </div>
                 </div>
                 <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
                   <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 14, color: "var(--wl-text)", fontVariantNumeric: "tabular-nums" }}>
-                    {ex.kg != null ? `${ex.kg} kg` : "—"}
+                    {ex.kg != null ? `${ex.kg} kg` : ex.pct == null ? "—" : null}{ex.pct != null && <span style={{ fontSize: ex.kg != null ? 10 : 14, color: "var(--wl-accent)", fontWeight: 700, marginLeft: ex.kg != null ? 4 : 0 }}>{ex.pct}%</span>}
                   </span>
                   {ex.kg != null && <DiscRow kg={ex.kg} barKg={barKg} />}
                 </div>

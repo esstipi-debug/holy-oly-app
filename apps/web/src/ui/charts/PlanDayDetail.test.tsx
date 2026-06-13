@@ -19,9 +19,27 @@ describe("PlanDayDetail", () => {
     expect(screen.getByText("Transformación")).toBeInTheDocument();
     expect(screen.getByText(/fuerza · pulls pesados/)).toBeInTheDocument();
     expect(screen.getByText("72 kg")).toBeInTheDocument();
-    expect(screen.getByText(/5×2 @ 82%/)).toBeInTheDocument();
     // DiscRow renders IWF discs as SVGs: 72 kg con barra 15 → discos presentes
     expect(container.querySelectorAll("svg").length).toBeGreaterThan(0);
+  });
+
+  it("% aparece junto al kg, no con las series/reps", () => {
+    render(
+      <PlanDayDetail {...base}
+        exercises={[{ name: "Arranque", sets: 5, reps: 2, pct: 82, kg: 72 }]} />,
+    );
+    expect(screen.getByText(/82%/)).toBeInTheDocument();
+    // El pct NO va en la línea de series — "5×2" sin "@"
+    expect(screen.queryByText(/5×2.*82%|82%.*5×2/)).toBeNull();
+  });
+
+  it("% aparece aunque NO haya kg (template del coach: la intensidad es el % puro)", () => {
+    render(
+      <PlanDayDetail {...base}
+        exercises={[{ name: "Arranque", sets: 5, reps: 3, pct: 92 }]} />,
+    );
+    // sin atleta no hay kg → el % es la única intensidad y DEBE verse (no «—» a secas)
+    expect(screen.getByText(/92%/)).toBeInTheDocument();
   });
 
   it("sin kg → «—» y SIN discos (jamás un 0 inventado)", () => {

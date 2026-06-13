@@ -5,14 +5,14 @@ import { MacroTemplateMap } from "./MacroTemplateMap";
 const ruso = MACROCYCLES.find((m) => m.id === "ruso-5d")!;
 const cubano = MACROCYCLES.find((m) => m.id === "cubano-int-5d")!;
 
-test("macro con receta: pinta el mapa y el tap muestra la sesión (ejercicios con %, sin kg)", () => {
+test("macro con receta: el tap muestra la sesión con su % de intensidad por ejercicio (sin kg ni discos)", () => {
   const { container } = render(<MacroTemplateMap macro={ruso} />);
   const lunes1 = screen.getByRole("button", { name: /^Semana 1 Lun$/ });
   fireEvent.click(lunes1);
   expect(screen.getByText(/Semana 1 · sesión 1/)).toBeInTheDocument();
   expect(screen.getByText(/Objetivo:/)).toBeInTheDocument();
-  // sin atleta no hay RMs → kg honesto «—» y CERO discos
-  expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+  // sin atleta no hay RMs → el kg no se inventa, pero el % SÍ se ve (es la intensidad) y CERO discos
+  expect(screen.getAllByText(/%/).length).toBeGreaterThanOrEqual(2);
   expect(container.querySelectorAll("svg").length).toBe(0);
   expect(screen.getByText(/se derivan de los RMs/)).toBeInTheDocument();
 });
