@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="_mockup/holy-oly-disc.svg" alt="Holy Oly — disco 25 kg" width="140" height="140" />
+  <img src="_mockup/holy-oly-disc.png" alt="Holy Oly — disco 25 kg" width="220" />
 </p>
 
 <h1 align="center">Holy Oly</h1>
