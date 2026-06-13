@@ -92,6 +92,20 @@ Valores **verificados contra `packages/core/src/logic/`**. Si el código cambió
 - Fechas ISO `YYYY-MM-DD` parseadas a **UTC-midnight** (day-diff timezone-estable). `schedule.ts:9`. *Se ve como:* `new Date(str)` local, o derivar "HOY"/semana actual del **largo de la serie** en vez de `startDate` + fecha.
 - *Por qué:* la estructura (adherencia, picos, countdown) sólo es exacta si el tiempo es real. El futuro **calendario** (coach+atleta) se revisa contra esta regla.
 
+### §Registro con fecha (spec 2026-06-12)
+- Todo registro de sesión lleva **fecha real del entreno** (`SessionRegistro`): default hoy,
+  jamás futura, backdating libre. La fecha la declara la atleta; `doneAt` por-ejercicio es
+  copia estampada en la misma transacción (procedencia de PRs estable ante ediciones — el
+  `week` ancla la elegibilidad del PR, no la fecha).
+- **Máx. 1 entreno por fecha** por atleta (server, 409). Excepción única: turnos AM/PM del
+  mismo día de receta de la MISMA semana (pueden compartir fecha, no están obligados).
+- El layout día/turno es ADN de la receta (`dayLayoutFor`), NO se persiste ni se edita por
+  atleta. `sessionsByDay()` es el ÚNICO agrupador — jamás re-derivar «sesión i = día i» a mano.
+- Fecha fuera del rango calendario de la semana del plan → aviso suave, JAMÁS bloqueo.
+- **Día doble (AM/PM):** cuenta como UN día. Cuando se construya el ACWR/monitor dinámico,
+  los dos turnos del día deben agregarse como una sola jornada (no doble-contar) — hoy el
+  ACWR es estático del seed y no se ve afectado. El calentamiento sigue fuera del monitor.
+
 ---
 
 ## §2c · Contenido programático — escuelas, scores y complejos (2026-06-11)

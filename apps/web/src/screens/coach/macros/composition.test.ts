@@ -66,10 +66,10 @@ describe("intensitySignature", () => {
 });
 
 describe("typicalWeek", () => {
-  it("Búlgaro: 6 sesiones, cada ejercicio con nombre y % (daily max ≥ 90%)", () => {
+  it("Búlgaro: 9 sesiones (bi-diario: 6 días, 3 dobles AM/PM), cada ejercicio con nombre y % (daily max ≥ 90%)", () => {
     const sessions = typicalWeek(bulgaroMacro, "dailymax");
     expect(sessions).not.toBeNull();
-    expect(sessions!).toHaveLength(6);
+    expect(sessions!).toHaveLength(9);
     const allEx = sessions!.flatMap((s) => s.exercises);
     expect(allEx.length).toBeGreaterThan(0);
     expect(allEx.every((e) => e.name.length > 0)).toBe(true);
@@ -78,7 +78,7 @@ describe("typicalWeek", () => {
 
   it("las sesiones vienen ordenadas por día (sessionIdx) y sus ejercicios por orden", () => {
     const sessions = typicalWeek(bulgaroMacro, "dailymax")!;
-    expect(sessions.map((s) => s.day)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(sessions.map((s) => s.day)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
   });
 
   it("fase inexistente → null (sin-dato honesto)", () => {

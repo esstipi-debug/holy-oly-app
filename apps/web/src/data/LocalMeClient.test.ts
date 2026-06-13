@@ -4,6 +4,7 @@ import { MemStorage } from "../test-utils/MemStorage";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
 import { LocalMeClient } from "./LocalMeClient";
+import { FechaOcupadaError } from "./fechaError";
 
 const TODAY = "2026-06-06";
 const ID = "kv";
@@ -90,9 +91,9 @@ describe("LocalMeClient", () => {
     expect(before[0]!.exercises[0]!.targetKg).toBe(69); // round(70% × 98)
     expect(before[0]!.exercises[0]!.actual).toBeUndefined();
 
-    await me(store).putMeSession(10, 0, [
+    await me(store).putMeSession(10, 0, { actuals: [
       { order: 0, movementId: "arranque", done: true, sets: [{ kg: 70, reps: 3, done: true }, { kg: 74, reps: 2, done: true }] },
-    ]);
+    ] });
     const after = await me(store).getMeSessions(10);
     expect(after[0]!.exercises[0]!.actual?.done).toBe(true);
     expect(after[0]!.exercises[0]!.actual?.kg).toBe(74); // top set
@@ -106,9 +107,9 @@ describe("LocalMeClient", () => {
 
   it("getMeRecorrido acumula LO HECHO real por semana (espejo del demo, jamás datos inventados)", async () => {
     seed(store);
-    await me(store).putMeSession(10, 0, [
+    await me(store).putMeSession(10, 0, { actuals: [
       { order: 0, movementId: "arranque", done: true, sets: [{ kg: 70, reps: 3, done: true }, { kg: 74, reps: 2, done: true }] },
-    ]);
+    ] });
     const r = await me(store).getMeRecorrido();
     expect(r.semanas).toHaveLength(16); // ruso-5d: todas las semanas del macro
     const w10 = r.semanas[9]!;
@@ -141,5 +142,47 @@ describe("LocalMeClient", () => {
     const sessions = await me(store).getMeSessions(10); // plan intact → sessions, but actual dropped
     expect(sessions).toHaveLength(1);
     expect(sessions[0]!.exercises[0]!.actual).toBeUndefined();
+  });
+
+  it("regla 1×fecha en local (D1): segunda sesión el mismo día → FechaOcupadaError; otra fecha → ok", async () => {
+    seed(store);
+    const c = me(store);
+    // sesión 0 de semana 10 queda registrada en TODAY (2026-06-06)
+    await c.putMeSession(10, 0, { actuals: [{ order: 0, movementId: "arranque", done: true, kg: 60 }] });
+    const views0 = await c.getMeSessions(10);
+    expect(views0[0]!.fecha).toBe(TODAY);
+    // sesión 10+0 también expone la fecha al editarse a sí misma (D12 — self-edit, no conflicto)
+    await c.putMeSession(10, 0, { actuals: [{ order: 0, movementId: "arranque", done: true, kg: 62 }] });
+    // nueva sesión en OTRA semana con el MISMO día → conflicto D1
+    await expect(c.putMeSession(9, 0, { actuals: [{ order: 0, movementId: "arranque", done: true, kg: 55 }] }))
+      .rejects.toBeInstanceOf(FechaOcupadaError);
+    // nueva sesión en OTRA semana con OTRA fecha → ok
+    await c.putMeSession(9, 0, { fecha: "2026-06-05", actuals: [{ order: 0, movementId: "arranque", done: true, kg: 55 }] });
+    // confirmar que la semana 10 sesión 0 aún tiene su fecha original
+    const views10 = await c.getMeSessions(10);
+    expect(views10[0]!.fecha).toBe(TODAY);
+  });
+
+  it("actuals:[] libera la fecha en local (D11)", async () => {
+    // Seed con dos sesiones en la semana 10 para poder verificar via getMeSessions
+    const s = new JsonStore(store);
+    s.set(KEYS.roster, ROSTER);
+    s.set(KEYS.plan(ID), PLAN);
+    const RX2: PrescriptionRow[] = [
+      { week: 10, sessionIdx: 0, order: 0, movementId: "arranque", sets: 5, reps: 3, pct: 70 },
+      { week: 10, sessionIdx: 1, order: 0, movementId: "sentadilla", sets: 5, reps: 5, pct: 75 },
+    ];
+    s.set(KEYS.prescription(ID), RX2);
+    const c = me(store);
+    // registrar sesión 0 en hoy
+    await c.putMeSession(10, 0, { actuals: [{ order: 0, movementId: "arranque", done: true, kg: 60 }] });
+    // borrar la sesión 0 (actuals vacíos libera el registro de fecha)
+    await c.putMeSession(10, 0, { actuals: [] });
+    // ahora sesión 1 puede tomar hoy (no hay conflicto porque la 0 ya no tiene registro de fecha)
+    await c.putMeSession(10, 1, { actuals: [{ order: 0, movementId: "sentadilla", done: true, kg: 70 }] });
+    const views = await c.getMeSessions(10);
+    expect(views.find((v) => v.sessionIdx === 1)?.fecha).toBe(TODAY);
+    // sesión 0 no tiene fecha (fue borrada)
+    expect(views.find((v) => v.sessionIdx === 0)?.fecha).toBeUndefined();
   });
 });

@@ -93,8 +93,19 @@ describe("generateRecipe (D10 — determinístico, dentro de techos)", () => {
       expect(recipe, m.id).toBeDefined();
       expect(recipe.macroId).toBe(m.id);
       expect(recipe.phases.map((p) => p.phaseKey)).toEqual(m.phaseProfile.map((p) => p.key));
+      const n = sessionsPerWeekFor(m); // DÍAS de entreno por semana (D6: ≠ sesiones si hay dobles)
+      const biDiario = dnaForFamily(m.family)!.sessionsPerDay === 2;
       for (const ph of recipe.phases) {
-        expect(ph.sessions.length).toBe(sessionsPerWeekFor(m));
+        if (biDiario) {
+          // bi-diario: los DÍAS siguen siendo n; las sesiones son exactamente n + ceil(n/2)
+          // (días impares = ceil(n/2) tienen doble sesión; días pares = floor(n/2) tienen simple).
+          const exactSessions = n + Math.ceil(n / 2);
+          expect(new Set(ph.sessions.map((s) => s.day)).size, m.id).toBe(n);
+          expect(ph.sessions.length, m.id).toBeGreaterThanOrEqual(n);
+          expect(ph.sessions.length, m.id).toBe(exactSessions);
+        } else {
+          expect(ph.sessions.length).toBe(n);
+        }
         for (const s of ph.sessions) expect(s.exercises.length).toBeGreaterThan(0);
       }
     }
@@ -243,3 +254,126 @@ const MOVEMENT_BASES_BY_ID = new Map(MOVEMENT_BASES.map((b) => [b.id, b]));
 
 // usado por los tests de arriba sin depender del generador completo
 void phaseForWeek;
+
+describe("generateRecipe bi-diario (D6/D7 — Búlgaro AM/PM, spec 2026-06-12)", () => {
+  const bulgaro = () => generateRecipe(dnaForFamily("Búlgaro")!, macro("bulgaro-6d"))!;
+
+  it("emite day/turno: días impares dobles (AM/PM), pares simples", () => {
+    for (const phase of bulgaro().phases) {
+      for (let day = 1; day <= 6; day++) {
+        const daySessions = phase.sessions.filter((s) => s.day === day);
+        if (day % 2 === 1) {
+          // días impares → exactamente dos sesiones AM/PM
+          expect(daySessions.map((s) => s.turno), `día ${day} debe ser AM/PM`).toEqual(["AM", "PM"]);
+        } else {
+          // días pares → exactamente una sesión sin turno
+          expect(daySessions, `día ${day} debe tener una sola sesión`).toHaveLength(1);
+          expect(daySessions[0]!.turno, `día ${day} no debe tener turno`).toBeUndefined();
+        }
+      }
+    }
+  });
+
+  it("AM arranque-céntrico / PM envión-céntrico (Abadjiev): el primer clásico difiere por turno", () => {
+    for (const phase of bulgaro().phases) {
+      const am = phase.sessions.find((s) => s.day === 1 && s.turno === "AM")!;
+      const pm = phase.sessions.find((s) => s.day === 1 && s.turno === "PM")!;
+      // el slot olímpico del AM viene del arquetipo focus=arranque y el del PM de focus=envion
+      const amOly = am.exercises[0]!.movementId;
+      const pmOly = pm.exercises[0]!.movementId;
+      expect(amOly).not.toBe(pmOly);
+      expect(getMovement(amOly)!.rmRef).toBe("arranque");
+      expect(getMovement(pmOly)!.rmRef).toBe("envion");
+    }
+  });
+
+  it("TODA sesión emitida lleva day ≥ 1 (bi-diario completo, sin huecos)", () => {
+    for (const phase of bulgaro().phases) {
+      for (const s of phase.sessions) expect(s.day).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("guard D7: la suma SNC de los turnos de un día jamás excede el techo diario (1.5×)", () => {
+    const dna = dnaForFamily("Búlgaro")!;
+    const m = macro("bulgaro-6d");
+    bulgaro().phases.forEach((phase, phaseIdx) => {
+      const macroPhase = m.phaseProfile[phaseIdx]!;
+      const role = phaseRole(macroPhase);
+      const byDay = new Map<number, number>();
+      for (const s of phase.sessions) {
+        const snc = s.exercises.reduce((acc, ex) => acc + loadsOf(ex).snc, 0);
+        byDay.set(s.day!, (byDay.get(s.day!) ?? 0) + snc);
+      }
+      for (const total of byDay.values()) {
+        expect(total).toBeLessThanOrEqual(Math.round(dna.sncBudget[role] * 1.5));
+      }
+    });
+  });
+
+  it("guard D7 (degradación honesta): si AM+PM no caben en el techo diario, el día queda SIMPLE con el AM", () => {
+    // DNA sintética espejo del búlgaro pero con presupuesto chico: AM arranque(9)+sentadilla(7)=16,
+    // PM c&j(10)+sentadilla(7)=17 → 33 > round(20×1.5)=30 → todo día impar degrada a sesión única.
+    const dnaDegrade: SchoolDNA = {
+      family: "Búlgaro",
+      character: "fixture sintética: el día doble NO cabe en el techo diario",
+      repertoire: {
+        olimpico: [{ id: "arranque", weight: 1 }, { id: "cargada-envion", weight: 1 }],
+        rodilla: [{ id: "sentadilla", weight: 1 }],
+      },
+      forbidden: [],
+      archetypes: {
+        peaking: [
+          { key: "A", slots: ["olimpico", "rodilla"], focus: "arranque" },
+          { key: "B", slots: ["olimpico", "rodilla"], focus: "envion" },
+        ],
+      },
+      sessionsPerDay: 2,
+      tecnicosMax: 3,
+      sncBudget: { base: 20, fuerza: 20, intensidad: 20, peaking: 20, descarga: 20 },
+      dosage: { mainBias: "high", setsBias: 0, singlesPhases: ["peaking"] },
+      sources: ["fixture"],
+    };
+    const m = { ...macro("bulgaro-6d"), id: "fixture-bidiario-degrade" };
+    const r = generateRecipe(dnaDegrade, m)!;
+    for (const ph of r.phases) {
+      expect(ph.sessions).toHaveLength(6); // 6 días, TODOS simples (degradación honesta)
+      for (const s of ph.sessions) expect(s.turno).toBeUndefined();
+      expect(ph.sessions.map((s) => s.day)).toEqual([1, 2, 3, 4, 5, 6]);
+      // el día impar degradado conserva el AM (arranque-céntrico)
+      const dia1 = ph.sessions.find((s) => s.day === 1)!;
+      expect(getMovement(dia1.exercises[0]!.movementId)!.baseId).toBe("arranque");
+    }
+  });
+
+  it("balance semanal de lifts (curaduría): |arranque - envión| ≤ 1 en el Búlgaro", () => {
+    for (const phase of bulgaro().phases) {
+      let arranqueCount = 0;
+      let envionCount = 0;
+      for (const s of phase.sessions) {
+        const firstEx = s.exercises[0];
+        if (!firstEx) continue;
+        const mv = getMovement(firstEx.movementId);
+        if (!mv) continue;
+        if (mv.rmRef === "arranque") arranqueCount++;
+        if (mv.rmRef === "envion") envionCount++;
+      }
+      expect(
+        Math.abs(arranqueCount - envionCount),
+        `${phase.phaseKey}: arranque=${arranqueCount} envión=${envionCount} — diferencia debe ser ≤ 1`,
+      ).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("las escuelas mono-diarias NO cambian: ninguna emite day/turno", () => {
+    // muestra de macros generados de familias ≠ Búlgaro (ids verificados contra el catálogo)
+    const ids = ["cubano-novicio-2d", "usa-school", "hibrido-block"];
+    for (const id of ids) {
+      const m = macro(id);
+      const r = generateRecipe(dnaForFamily(m.family)!, m);
+      if (!r) continue; // receta curada → null
+      for (const p of r.phases) for (const s of p.sessions) {
+        expect(s.day, `${id} no debe emitir day`).toBeUndefined();
+      }
+    }
+  });
+});

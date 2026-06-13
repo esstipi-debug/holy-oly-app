@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import type { FastifyInstance } from "fastify";
 import type { AthleteDailyView } from "@holy-oly/core";
 import { buildServer } from "./server";
@@ -18,6 +18,14 @@ describe("API integration — día a día (lazo diario atleta→coach)", () => {
   let app: FastifyInstance;
   beforeAll(async () => { app = buildServer(); await app.ready(); });
   afterAll(async () => { await app.close(); await prisma.$disconnect(); });
+  // DB compartida entre los archivos int (fileParallelism:false): cada test parte de una adherencia
+  // LIMPIA para mv, así un actual/registro sembrado por otro archivo (p.ej. actuals.int / registro.int)
+  // no se filtra acá. (re-asignar plan NO resetea adherencia a propósito — el re-anclaje la conserva.)
+  beforeEach(async () => {
+    await prisma.sessionActual.deleteMany({ where: { athleteId: "mv" } });
+    await prisma.sessionMark.deleteMany({ where: { athleteId: "mv" } });
+    await prisma.sessionRegistro.deleteMany({ where: { athleteId: "mv" } });
+  });
 
   const login = (email: string) => app.inject({ method: "POST", url: "/auth/login", payload: { email, password: "holyoly-demo" } });
   const assignRuso = (headers: { cookie: string }) =>
@@ -52,7 +60,7 @@ describe("API integration — día a día (lazo diario atleta→coach)", () => {
     // …pero el atleta registra esa misma sesión como NO hecha (todas las series sin hacer).
     const athlete = sess(await login("mara@holyoly.dev"));
     expect((await app.inject({ method: "PUT", url: "/me/session/1/0", headers: athlete,
-      payload: [{ order: 0, movementId: "arranque", done: false }] })).statusCode).toBe(200);
+      payload: { actuals: [{ order: 0, movementId: "arranque", done: false }] } })).statusCode).toBe(200);
 
     const res = await app.inject({ method: "GET", url: "/athletes/mv/daily", headers: coach });
     const view = res.json() as AthleteDailyView;

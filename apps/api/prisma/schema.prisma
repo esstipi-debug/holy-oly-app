@@ -198,8 +198,9 @@ model Athlete {
   cycle        CycleConsent?
   dayLogs      DayLog[]
   prescription PrescribedExercise[]
-  actuals      SessionActual[]
-  rmUpdates    RmUpdate[]
+  actuals          SessionActual[]
+  rmUpdates        RmUpdate[]
+  sessionRegistros SessionRegistro[]
 }
 
 /// The multi-tenancy join: a coach sees an athlete only via an `activo` Vinculo.
@@ -251,6 +252,21 @@ model SessionMark {
 
   @@unique([athleteId, week, idx])
   @@index([athleteId])
+}
+
+/// Fecha REAL del entreno por sesión registrada (spec 2026-06-12 D1/D3). Fuente de verdad;
+/// SessionActual.doneAt es copia estampada en la misma transacción (jamás divergen). La regla
+/// 1×fecha NO es unique de DB (la excepción AM/PM la rompe): vive en setSessionActuals.
+model SessionRegistro {
+  id         String  @id @default(uuid())
+  athleteId  String
+  athlete    Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  week       Int
+  sessionIdx Int
+  fecha      String
+
+  @@unique([athleteId, week, sessionIdx])
+  @@index([athleteId, fecha])
 }
 
 /// One row per athlete-week. `recovery` is computed via core.recoverySeries on write.

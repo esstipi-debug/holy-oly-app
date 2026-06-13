@@ -2,15 +2,34 @@ import { DiscRow } from "../../../ui/Disc";
 
 export interface ResumenRow { movementName: string; sets: number; reps: number; kg?: number; pct?: number; }
 
-/**
- * Entrada del Entreno guiado: la lista del día + "▶ Iniciar entrenamiento". Estética «Pulse» del
- * handoff sobre nuestros tokens — cards redondeadas, puntos por serie (preview), y SIEMPRE kg +
- * discos (regla intocable del atleta). El % va junto al kg, jamás con las series.
- */
-export function ResumenDia({ rows, barKg, onStart }: { rows: ResumenRow[]; barKg: number; onStart: () => void }) {
+/** Entrada del Entreno guiado: la lista del día + "▶ Iniciar entrenamiento". `fecha`/`onFechaTap`
+ *  (spec 2026-06-12 D12) muestran «Entreno del … ▾» tocable para reabrir el selector de fecha.
+ *  SIEMPRE kg + discos; el % va junto al kg, jamás con las series (regla intocable del atleta). */
+export function ResumenDia({
+  rows,
+  barKg,
+  fecha,
+  onFechaTap,
+  onStart,
+}: {
+  rows: ResumenRow[];
+  barKg: number;
+  fecha?: string;
+  onFechaTap?: () => void;
+  onStart: () => void;
+}) {
   const setDot = { width: 5, height: 14, borderRadius: 3, background: "color-mix(in srgb,var(--wl-text) 15%,transparent)" };
   return (
     <div>
+      {fecha && onFechaTap && (
+        <button
+          type="button"
+          onClick={onFechaTap}
+          style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "0 0 10px", display: "block" }}
+        >
+          Entreno del {fecha} <span aria-hidden>▾</span>
+        </button>
+      )}
       <button type="button" className="wl-btn wl-btn--primary" onClick={onStart} style={{ width: "100%" }}>▶ Iniciar entrenamiento</button>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
         {rows.map((r, i) => (

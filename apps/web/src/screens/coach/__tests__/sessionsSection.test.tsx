@@ -187,6 +187,60 @@ test("V3: un ejercicio simple NO muestra análisis de complejo", async () => {
   expect(screen.queryByLabelText(/análisis del complejo/i)).not.toBeInTheDocument();
 });
 
+test("D13: muestra day·turno y 'registrado el X' cuando el view los trae", async () => {
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    {
+      week: 1,
+      sessionIdx: 0,
+      day: 1,
+      turno: "AM" as const,
+      fecha: "2026-06-12",
+      exercises: [
+        {
+          movementId: "arranque",
+          sets: 5,
+          reps: 3,
+          pct: 70,
+          movementName: "Arranque",
+          targetKg: 70,
+        },
+      ],
+    },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  await screen.findByText(/Arranque/);
+  expect(screen.getByText(/Día 1 · AM/)).toBeInTheDocument();
+  expect(screen.getByText(/registrado el 2026-06-12/)).toBeInTheDocument();
+});
+
+test("D13: legacy sin day/turno/fecha → Día N sin turno ni 'registrado el'", async () => {
+  const repo = await repoWithPlan();
+  vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([
+    {
+      week: 1,
+      sessionIdx: 2,
+      exercises: [
+        {
+          movementId: "arranque",
+          sets: 5,
+          reps: 3,
+          pct: 70,
+          movementName: "Arranque",
+          targetKg: 70,
+        },
+      ],
+    },
+  ]);
+  render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
+  await screen.findByText(/Arranque/);
+  // sessionIdx=2 → fallback a "Día 3"
+  expect(screen.getByText("Día 3")).toBeInTheDocument();
+  expect(screen.queryByText(/· AM/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/· PM/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/registrado el/)).not.toBeInTheDocument();
+});
+
 test("D1: muestra nota del atleta cuando actual.note está presente", async () => {
   const repo = await repoWithPlan();
   vi.spyOn(repo, "getPrescriptionWeek").mockResolvedValue([

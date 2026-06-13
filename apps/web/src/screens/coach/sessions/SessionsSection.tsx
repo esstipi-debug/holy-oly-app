@@ -84,7 +84,12 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
         sessions.map((s) => (
           <div key={s.sessionIdx} style={card}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: "var(--wl-text)" }}>Día {s.sessionIdx + 1}</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 0 }}>
+                <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: "var(--wl-text)" }}>Día {s.day ?? s.sessionIdx + 1}{s.turno ? ` · ${s.turno}` : ""}</span>
+                {s.fecha && (
+                  <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginLeft: 8 }}>registrado el {s.fecha}</span>
+                )}
+              </div>
               <button type="button" aria-label={`editar sesión día ${s.sessionIdx + 1}`} onClick={() => setEditing(s)} style={{ border: 0, background: "transparent", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11 }}>editar ›</button>
             </div>
             {s.exercises.map((e, i) => {

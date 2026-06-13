@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { SessionRegistro } from "./types";
 
 /**
  * Runtime validation schemas for the domain entities. Single source of truth for
@@ -52,7 +53,7 @@ export const MedalSchema = z.object({
 });
 export const MedalsSchema = z.array(MedalSchema);
 
-const IsoDateSchema = z
+export const IsoDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "fecha ISO YYYY-MM-DD")
   // El regex acepta "2026-99-99"; el parser ISO la rechaza (NaN) → fecha de calendario real o nada.
@@ -315,6 +316,22 @@ export const ExerciseActualInputSchema = z.object({
 export const SessionActualsInputSchema = z.array(ExerciseActualInputSchema).max(15);
 export type ExerciseActualInput = z.infer<typeof ExerciseActualInputSchema>;
 
+/** Envelope del PUT /me/session (spec 2026-06-12 D4): fecha del entreno + actuals. Sin
+ *  retrocompat con el array pelado (pre-launch, cliente y server se despliegan juntos). */
+export const PutMeSessionInputSchema = z.object({
+  fecha: IsoDateSchema.optional(),
+  actuals: SessionActualsInputSchema,
+});
+export type PutMeSessionInput = z.infer<typeof PutMeSessionInputSchema>;
+
+export const SessionRegistroSchema: z.ZodType<SessionRegistro> = z.object({
+  week: z.number().int().min(1).max(104),
+  sessionIdx: z.number().int().min(0).max(13),
+  fecha: IsoDateSchema,
+});
+/** Array listo para el read-side local (espejo del SessionActualsSchema). */
+export const SessionRegistrosSchema = z.array(SessionRegistroSchema);
+
 // The actual rides the prescribed-exercise view (no `order` — positional). Extend the view schema.
 // Read-side (lo que el server ya validó al escribir) → sin bounds; el INPUT (ExerciseActualInputSchema) es el que acota.
 export const ExerciseActualSchema = z.object({
@@ -363,6 +380,9 @@ export const SessionViewSchema = z.object({
   week: z.number().int().min(1).max(104),
   sessionIdx: z.number().int().min(0).max(13),
   exercises: z.array(PrescribedExerciseViewSchema).max(15),
+  day: z.number().int().optional(),
+  turno: z.enum(["AM", "PM"]).optional(),
+  fecha: z.string().optional(), // read-side: el server ya validó al escribir (patrón de la casa)
 });
 export const SessionViewsSchema = z.array(SessionViewSchema).max(14);
 

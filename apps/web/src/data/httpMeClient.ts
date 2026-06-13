@@ -5,8 +5,9 @@
  */
 import {
   MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, CycleDataSchema, MeRecorridoSchema,
-  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type ExerciseActualInput, type WeekHeat, type CycleData,
+  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type PutMeSessionInput,
 } from "@holy-oly/core";
+import { FechaOcupadaError } from "./fechaError";
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -71,14 +72,24 @@ export async function getMeRecorrido(): Promise<MeRecorrido> {
   return MeRecorridoSchema.parse(await res.json());
 }
 
-/** Record (replace) the athlete's actuals for one session. */
-export async function putMeSession(week: number, idx: number, actuals: ExerciseActualInput[]): Promise<void> {
+/** Record (replace) the athlete's actuals for one session. Throws FechaOcupadaError on 409 (D1). */
+export async function putMeSession(week: number, idx: number, input: PutMeSessionInput): Promise<void> {
   const res = await fetch(`${BASE}/me/session/${week}/${idx}`, {
     method: "PUT",
     credentials: "include",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(actuals),
+    body: JSON.stringify(input),
   });
+  if (res.status === 409) {
+    const body = (await res.json().catch(() => null)) as { conflicto?: { week: number; sessionIdx: number; fecha: string } } | null;
+    const c = body?.conflicto;
+    if (c && typeof c.week === "number" && typeof c.sessionIdx === "number" && typeof c.fecha === "string") {
+      throw new FechaOcupadaError(c);
+    }
+    // 409 con cuerpo inesperado (proxy raro) → cae al manejo de error genérico
+    await fail(res);
+    return;
+  }
   if (!res.ok) await fail(res);
 }
 

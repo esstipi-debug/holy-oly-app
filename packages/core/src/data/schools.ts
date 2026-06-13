@@ -32,7 +32,7 @@ export const SCHOOL_DNA: SchoolDNA[] = [
         { key: "B", slots: ["olimpico", "rodilla"], focus: "envion" },
       ],
     },
-    sessionsPerDay: 1, // el bi-diario real (AM arranque / PM envión) llega con la UI AM/PM (D14)
+    sessionsPerDay: 2, // bi-diario REAL (AM arranque / PM envión) — D14 saldado (spec 2026-06-12)
     tecnicosMax: 3,
     // claves no-peaking exigidas por Record<PhaseRole, number>: el búlgaro no tiene fases
     // de otro rol en el catálogo — valores espejo del peaking por si un macro futuro las usa.

@@ -48,3 +48,21 @@ describe("maxLifts", () => {
     expect(maxLifts(planHeat([], 2))).toBe(0);
   });
 });
+
+describe("planHeat day-aware (D8: dos turnos agregan en la celda del día)", () => {
+  it("rows con day explícito caen en days[day-1]; AM+PM suman lifts y topPct = máx", () => {
+    const rows = [
+      { week: 1, sessionIdx: 0, sets: 5, reps: 2, pct: 90, day: 1 },  // AM
+      { week: 1, sessionIdx: 1, sets: 4, reps: 1, pct: 95, day: 1 },  // PM, mismo día
+      { week: 1, sessionIdx: 2, sets: 3, reps: 3, pct: 80, day: 2 },
+    ];
+    const heat = planHeat(rows, 1);
+    expect(heat[0]!.days[0]).toEqual({ lifts: 14, topPct: 95 });
+    expect(heat[0]!.days[1]).toEqual({ lifts: 9, topPct: 80 });
+    expect(heat[0]!.days[2]).toBeNull();
+  });
+  it("sin day → legacy: days[sessionIdx] (cero regresión)", () => {
+    const heat = planHeat([{ week: 1, sessionIdx: 3, sets: 2, reps: 2, pct: 70 }], 1);
+    expect(heat[0]!.days[3]).toEqual({ lifts: 4, topPct: 70 });
+  });
+});
