@@ -11,7 +11,7 @@ const CL = (n: number): string => n.toLocaleString("es-CL");
 type LoadState = "loading" | "ready" | "error";
 
 /** A4 · pantalla de victoria tras guardar un entreno. Re-lee la sesión guardada y muestra
- *  tonelaje del día, serie más pesada (discos oficiales), cumplimiento y posición en el macro.
+ *  tonelaje del día, cumplimiento y posición en el macro.
  *  Titular adaptativo: 0 ejercicios hechos → «Sesión registrada» sin tarjetas de carga. */
 export function VictoriaScreen() {
   const { week: weekP, idx: idxP } = useParams();

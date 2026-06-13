@@ -26,7 +26,7 @@ export function CaminoCard({ plan, client, sexo }: { plan: MePlanView["plan"]; c
   return (
     <div className="ho-card">
       <div className="ho-card__head"><span className="ho-card__t">Camino a la competencia</span><span className="ho-card__end" style={{ color: "var(--wl-muted)" }}>lo fija tu coach</span></div>
-      <div className="ho-card__sub" style={{ marginTop: 4 }}>pista del macro · cada barra = una semana · 🚩 = competencia</div>
+      <div className="ho-card__sub" style={{ marginTop: 4 }}>pista del macro · cada barra = una semana · contorno dorado = competencia</div>
       {next && faltan != null ? (
         <div className="ho-count">
           <b>{Math.max(0, faltan)}</b>
