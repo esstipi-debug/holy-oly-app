@@ -29,6 +29,7 @@ describe("buildMePlanView", () => {
     expect(view.plan!.currentWeek).toBe(12);
     expect(view.plan!.currentPhase).not.toBe("");
     expect(view.plan!.startDate).toBe(startDate); // el atleta ve las fechas reales de SU plan
+    expect(view.plan!.macroId).toBe("ruso-5d"); // habilita el detalle de fase (catálogo + ADN de escuela)
     expect(view.plan!.phases.length).toBeGreaterThan(0);
     expect(view.plan!.comps).toEqual([{ name: "Nacional", week: 16 }]);
   });

@@ -6,6 +6,7 @@ import { PlanDetailSheet } from "../PlanDetailSheet";
 type PlanView = NonNullable<MePlanView["plan"]>;
 
 const PLAN: PlanView = {
+  macroId: "ruso-5d",
   macroName: "Ruso 5D",
   totalWeeks: 16,
   currentWeek: 11,
@@ -51,6 +52,35 @@ test("muestra el corredor de intensidad y la 🚩 en la meso con comp", () => {
 test("NO muestra RPE en ninguna parte (regla intocable del atleta)", () => {
   const { container } = render(<PlanDetailSheet plan={PLAN} open onClose={noop} />);
   expect(container.textContent ?? "").not.toMatch(/rpe/i);
+});
+
+test("las cards de fase son botones; al tap expanden el detalle de la fase (acordeón)", () => {
+  render(<PlanDetailSheet plan={PLAN} open onClose={noop} />);
+  const hip = screen.getByRole("button", { name: /Hipertrofia/, expanded: false });
+  fireEvent.click(hip);
+  expect(screen.getByRole("button", { name: /Hipertrofia/, expanded: true })).toBeInTheDocument();
+  // re-encuadre del ADN de la escuela (ruso) — superficie atleta, no el tablero del coach
+  expect(screen.getByText("Sobre esta fase")).toBeInTheDocument();
+  expect(screen.getByText("Qué vas a trabajar")).toBeInTheDocument();
+  // toggle: el mismo tap cierra
+  fireEvent.click(hip);
+  expect(screen.queryByText("Sobre esta fase")).not.toBeInTheDocument();
+});
+
+test("una sola fase abierta a la vez (abrir otra cierra la anterior)", () => {
+  render(<PlanDetailSheet plan={PLAN} open onClose={noop} />);
+  fireEvent.click(screen.getByRole("button", { name: /Hipertrofia/ }));
+  expect(screen.getByText(/qué significa 65–72% de tus marcas/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: /Peaking/ }));
+  expect(screen.getByText(/qué significa 92–102% de tus marcas/)).toBeInTheDocument();
+  expect(screen.queryByText(/qué significa 65–72% de tus marcas/)).not.toBeInTheDocument();
+});
+
+test("el detalle de fase expandido tampoco muestra RPE", () => {
+  const { container } = render(<PlanDetailSheet plan={PLAN} open onClose={noop} client={stubClient()} sexo="F" />);
+  fireEvent.click(screen.getByRole("button", { name: /Fuerza \/ Potencia/ }));
+  // \b: token RPE real, no el ruido de concatenación de textContent ("posterior"+"Peso" → "rPe").
+  expect(container.textContent ?? "").not.toMatch(/\brpe\b/i);
 });
 
 function stubClient(): MeClient {
