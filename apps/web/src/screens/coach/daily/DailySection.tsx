@@ -4,6 +4,7 @@ import { wellnessScore, WELLNESS_ITEMS } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { STATUS } from "../../../ui/status";
 import { isoDateLabel } from "../../../ui/charts/planDates";
+import { RetryButton } from "../../../ui/RetryButton";
 
 /** Glifo + tinte por estado reconciliado (cara coach). `planned`/`none` se ven neutros. */
 const STATUS_GLYPH: Record<AdherenceStatus, string> = { done: "✓", partial: "≈", skipped: "✗", planned: "·", none: "·" };
@@ -87,10 +88,7 @@ export function DailySection({ athleteId }: { athleteId: string }) {
       {error && (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 8 }}>
           No se pudo cargar el día a día.{" "}
-          <button type="button" onClick={() => void load()}
-            style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 10.5, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-            Reintentar
-          </button>
+          <RetryButton onClick={() => void load()} fontSize={10.5} />
         </div>
       )}
 

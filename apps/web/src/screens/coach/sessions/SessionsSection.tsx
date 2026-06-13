@@ -4,6 +4,7 @@ import { kgDeviation } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { SessionEditor } from "./SessionEditor";
 import { ComplexAnalysis } from "./ComplexAnalysis";
+import { RetryButton } from "../../../ui/RetryButton";
 
 const sec: CSSProperties = { fontFamily: "var(--wl-display)", fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--wl-muted)", margin: "22px 0 10px" };
 const card: CSSProperties = { background: "var(--wl-surface)", borderRadius: "var(--wl-radius)", padding: "10px 12px", marginTop: 8 };
@@ -73,10 +74,7 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
       {error ? (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
           No se pudieron cargar las sesiones.{" "}
-          <button type="button" onClick={refresh}
-            style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-            Reintentar
-          </button>
+          <RetryButton onClick={refresh} />
         </div>
       ) : sessions === null ? (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Cargando…</div>

@@ -7,6 +7,8 @@ import { markFor } from "../sessions/sessionLog";
 import { phaseColor } from "../../../ui/charts/phasePalette";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../../ui/charts/PlanHeatMap";
 import { PlanDayDetail, type DayEstado, type DayDetailExercise } from "../../../ui/charts/PlanDayDetail";
+import { SegmentedToggle } from "../../../ui/SegmentedToggle";
+import { RetryButton } from "../../../ui/RetryButton";
 
 /** Calendario del plan: header plegable + toggle Mapa ↔ Lista (decisión owner 2026-06-10).
  *  Mapa = heat map de intensidad (tono = % tope, opacidad = volumen) con desglose del día
@@ -116,10 +118,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
     : dayError ? (
       <div role="alert" style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
         No se pudo cargar el día.{" "}
-        <button type="button" onClick={() => setDayError(false)}
-          style={{ background: "none", border: "none", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 10.5, padding: 0, textDecoration: "underline" }}>
-          Reintentar
-        </button>
+        <RetryButton onClick={() => setDayError(false)} fontSize={10.5} />
       </div>
     )
     : selSession === undefined && selViews === undefined ? (
@@ -150,17 +149,14 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
 
       {open && (
         <div id="plan-cal-body">
-          <div role="group" aria-label="Vista del calendario" style={{ display: "flex", gap: 0, marginTop: 8, width: "fit-content", background: "var(--wl-surface)", borderRadius: 10, padding: 3, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-            {([["mapa", "Mapa"], ["lista", "Lista"]] as const).map(([key, label]) => {
-              const active = view === key;
-              return (
-                <button key={key} type="button" aria-pressed={active} onClick={() => setView(key)}
-                  style={{ minHeight: 34, padding: "0 16px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, letterSpacing: ".02em", background: active ? "var(--wl-accent)" : "transparent", color: active ? "var(--wl-bg)" : "var(--wl-muted)" }}>
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+          <SegmentedToggle
+            ariaLabel="Vista del calendario"
+            options={[["mapa", "Mapa"], ["lista", "Lista"]] as const}
+            value={view}
+            onChange={setView}
+            size="sm"
+            style={{ marginTop: 8 }}
+          />
 
           {view === "mapa" && (
             <div className="wl-viewfade" style={{ marginTop: 8 }}>
@@ -169,10 +165,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
                 {heatError ? (
                   <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
                     No se pudo cargar el mapa.{" "}
-                    <button type="button" onClick={() => setHeatError(false)}
-                      style={{ background: "none", border: "none", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 10.5, padding: 0, textDecoration: "underline" }}>
-                      Reintentar
-                    </button>
+                    <RetryButton onClick={() => setHeatError(false)} fontSize={10.5} />
                   </div>
                 ) : heat === null ? (
                   <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>Cargando mapa…</div>

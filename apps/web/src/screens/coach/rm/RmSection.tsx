@@ -4,6 +4,7 @@ import { RM_LIFTS, rmVigencia } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { isoDateLabel } from "../../../ui/charts/planDates";
 import { RM_LABELS, RmEditSheet, type RmSheetMode } from "./RmEditSheet";
+import { RetryButton } from "../../../ui/RetryButton";
 
 const STALE_WEEKS = 12; // hint sutil, sin umbral duro (el spec manda mostrar la edad siempre)
 const STALE_HINT = `RM fijado hace ≥${STALE_WEEKS} sem: los % prescritos pierden precisión — re-testeá o confirmá un PR.`;
@@ -76,10 +77,7 @@ export function RmSection({ athleteId, plan, today, onRmsChange }: {
       {error && (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 8 }}>
           No se pudieron cargar los PRs/historial.{" "}
-          <button type="button" onClick={() => void load()}
-            style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 10.5, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-            Reintentar
-          </button>
+          <RetryButton onClick={() => void load()} fontSize={10.5} />
         </div>
       )}
       {loading ? (

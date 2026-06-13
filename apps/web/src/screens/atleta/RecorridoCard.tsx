@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { MePlanView, MeRecorrido } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
+import { RetryButton } from "../../ui/RetryButton";
 
 const CL = (n: number): string => n.toLocaleString("es-CL");
 
@@ -46,13 +47,7 @@ export function RecorridoCard({ client = meClient }: { client?: MeClient } = {})
         <div className="ho-card__head"><span className="ho-card__t">Tu recorrido</span></div>
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8 }}>
           No se pudo cargar tu recorrido.{" "}
-          <button
-            type="button"
-            onClick={() => setStamp((s) => s + 1)}
-            style={{ background: "none", border: "none", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11, padding: 0, textDecoration: "underline" }}
-          >
-            Reintentar
-          </button>
+          <RetryButton onClick={() => setStamp((s) => s + 1)} />
         </div>
       </div>
     );

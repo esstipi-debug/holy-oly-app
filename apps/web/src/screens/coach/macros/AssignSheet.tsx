@@ -2,6 +2,8 @@ import { useState, type CSSProperties } from "react";
 import type { Atleta, Macrocycle, Plan } from "@holy-oly/core";
 import { anchorPlanToComp } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
+import { RetryButton } from "../../../ui/RetryButton";
+import { SegmentedToggle } from "../../../ui/SegmentedToggle";
 
 const label: CSSProperties = {
   fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase",
@@ -103,10 +105,7 @@ export function AssignSheet({
           <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
             No se pudo cargar tu plantel.{" "}
             {onRetryRoster && (
-              <button type="button" onClick={onRetryRoster}
-                style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-                Reintentar
-              </button>
+              <RetryButton onClick={onRetryRoster} />
             )}
           </div>
         ) : athletes.length === 0 ? (
@@ -131,17 +130,14 @@ export function AssignSheet({
       </div>
 
       <label style={label}>Anclar por</label>
-      <div role="group" aria-label="Anclar por" style={{ display: "flex", gap: 0, marginTop: 6, width: "fit-content", background: "var(--wl-surface)", borderRadius: 10, padding: 3, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-        {([["competencia", "Competencia"], ["inicio", "Fecha de inicio"]] as const).map(([key, lbl]) => {
-          const on = mode === key;
-          return (
-            <button key={key} type="button" aria-pressed={on} onClick={() => setMode(key)}
-              style={{ minHeight: 34, padding: "0 14px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, background: on ? "var(--wl-accent)" : "transparent", color: on ? "var(--wl-bg)" : "var(--wl-muted)" }}>
-              {lbl}
-            </button>
-          );
-        })}
-      </div>
+      <SegmentedToggle
+        ariaLabel="Anclar por"
+        options={[["competencia", "Competencia"], ["inicio", "Fecha de inicio"]] as const}
+        value={mode}
+        onChange={setMode}
+        size="sm"
+        style={{ marginTop: 6 }}
+      />
 
       {mode === "competencia" ? (
         <>

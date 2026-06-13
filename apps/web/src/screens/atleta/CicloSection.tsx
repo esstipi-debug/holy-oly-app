@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { CycleData, CycleShare, CycleState } from "@holy-oly/core";
 import { CYCLE_LEN_MAX, CYCLE_LEN_MIN, CYCLE_HORIZON_CYCLES } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
+import { RetryButton } from "../../ui/RetryButton";
+import { SegmentedTabs } from "../../ui/SegmentedTabs";
 
 const SHARE_OPTS: Array<[CycleShare, string, string]> = [
   ["none", "Nada", "El coach no ve nada del ciclo."],
@@ -106,27 +108,28 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
         ) : loadError ? (
           <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>
             No se pudo cargar tu registro.{" "}
-            <button type="button" onClick={() => { setLoading(true); void load(); }}
-              style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 10.5, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-              Reintentar
-            </button>
+            <RetryButton onClick={() => { setLoading(true); void load(); }} fontSize={10.5} />
           </div>
         ) : (
           <>
             <div style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Compartir con el coach</div>
-            <div className="ho-seg" style={{ marginTop: 6 }}>
-              {SHARE_OPTS.map(([v, label]) => (
-                <button key={v} type="button" aria-pressed={share === v} className={share === v ? "on" : ""} onClick={() => { setShare(v); setSaved(false); }}>{label}</button>
-              ))}
-            </div>
+            <SegmentedTabs
+              ariaLabel="Compartir con el coach"
+              options={SHARE_OPTS.map((o) => [o[0], o[1]] as const)}
+              value={share}
+              onChange={(v) => { setShare(v); setSaved(false); }}
+              style={{ marginTop: 6 }}
+            />
             <div style={noteStyle}>{SHARE_OPTS.find(([v]) => v === share)![2]}</div>
 
             <div style={{ marginTop: 12, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Mi ciclo</div>
-            <div className="ho-seg" style={{ marginTop: 6 }}>
-              {STATE_OPTS.map(([v, label]) => (
-                <button key={v} type="button" aria-pressed={state === v} className={state === v ? "on" : ""} onClick={() => { setState(v); setSaved(false); }}>{label}</button>
-              ))}
-            </div>
+            <SegmentedTabs
+              ariaLabel="Mi ciclo"
+              options={STATE_OPTS}
+              value={state}
+              onChange={(v) => { setState(v); setSaved(false); }}
+              style={{ marginTop: 6 }}
+            />
             {state === "unreliable" && (
               <div style={noteStyle}>Con ciclo irregular no proyectamos ventanas (sería precisión falsa). El registro igual aporta contexto.</div>
             )}

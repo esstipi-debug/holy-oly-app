@@ -6,6 +6,8 @@ import * as vc from "../../data/vinculoClient";
 import { exportMe, deleteMyAccount } from "../../data/meClient";
 import { useAtletaCtx } from "./AthleteShell";
 import { CicloSection } from "./CicloSection";
+import { RetryButton } from "../../ui/RetryButton";
+import { SegmentedTabs } from "../../ui/SegmentedTabs";
 
 const HO_SKINS: Array<{ id: string; nm: string; sw: [string, string, string] }> = [
   { id: "neon", nm: "Neon PR", sw: ["#07070f", "#c8ff2d", "#1fe7ff"] },
@@ -84,10 +86,7 @@ function VincularSection() {
         <div className="ho-card">
           <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
             No se pudo cargar tu vínculo.{" "}
-            <button type="button" onClick={() => setReload((r) => r + 1)}
-              style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-              Reintentar
-            </button>
+            <RetryButton onClick={() => setReload((r) => r + 1)} />
           </div>
         </div>
       ) : estado === "activo" ? (
@@ -236,11 +235,12 @@ export function CuentaMin() {
 
       <div className="ho-acct__group">
         <div className="ho-acct__label">Check-in · interacción</div>
-        <div className="ho-seg">
-          {([["tap", "Toque"], ["dial", "Dial"]] as const).map(([v, l]) => (
-            <button key={v} className={variant === v ? "on" : ""} onClick={() => setVariant(v)}>{l}</button>
-          ))}
-        </div>
+        <SegmentedTabs
+          ariaLabel="Check-in · interacción"
+          options={[["tap", "Toque"], ["dial", "Dial"]] as const}
+          value={variant}
+          onChange={setVariant}
+        />
       </div>
 
       <div className="ho-acct__group">

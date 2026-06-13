@@ -6,6 +6,7 @@ import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../ui/charts/PlanHe
 import { PlanDayDetail, type DayDetailExercise } from "../../ui/charts/PlanDayDetail";
 import { dayDateLabel, dayOffsetInWeek, isoRangeLabel, weekdayMonFirst } from "../../ui/charts/planDates";
 import { phaseColor } from "../../ui/charts/phasePalette";
+import { RetryButton } from "../../ui/RetryButton";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
 
@@ -142,12 +143,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
   const den = selViews && selViews.length > 0 ? selViews.length : heatCount;
   const barKg = barKgForSexo(sexo ?? "M");
 
-  const retryLink = (onClick: () => void) => (
-    <button type="button" onClick={onClick}
-      style={{ background: "none", border: "none", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11, padding: 0, textDecoration: "underline" }}>
-      Reintentar
-    </button>
-  );
+  const retryLink = (onClick: () => void) => <RetryButton onClick={onClick} />;
 
   const panel = sel === null || selPhase === undefined ? null : selCell === null
     ? (

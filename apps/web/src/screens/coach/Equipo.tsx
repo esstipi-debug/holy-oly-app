@@ -9,6 +9,7 @@ import { DemoTourCard } from "./atletas/DemoTourCard";
 import { LeadCaptureButton } from "./LeadCaptureButton";
 import { API_ENABLED } from "../../data/apiConfig";
 import { resetDemoStorage } from "../../data/resetDemo";
+import { RetryButton } from "../../ui/RetryButton";
 import { useAuthMaybe } from "../../auth/AuthContext";
 import { OnboardingCard } from "../../onboarding/OnboardingCard";
 import { onboardingKey } from "../../onboarding/onboardingSeen";
@@ -78,10 +79,7 @@ export function Equipo() {
       {error ? (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)", padding: "16px 0" }}>
           No se pudo cargar el plantel.{" "}
-          <button type="button" onClick={() => setReload((r) => r + 1)}
-            style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-            Reintentar
-          </button>
+          <RetryButton onClick={() => setReload((r) => r + 1)} />
         </div>
       ) : loading ? (
         <div aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "16px 0" }}>Cargando plantel…</div>

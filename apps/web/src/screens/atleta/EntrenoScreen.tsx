@@ -5,6 +5,7 @@ import { getMovement, barKgForSexo } from "@holy-oly/core";
 import * as me from "../../data/meClient";
 import { BackButton } from "../../ui/BackButton";
 import { SubstituteSheet } from "../../ui/SubstituteSheet";
+import { RetryButton } from "../../ui/RetryButton";
 import { ResumenDia } from "./entreno/ResumenDia";
 import { SessionAccordion, type PlayerRow } from "./entreno/SessionAccordion";
 import type { SetRow } from "./entreno/WorkSetsSection";
@@ -89,10 +90,7 @@ export function EntrenoScreen() {
       {loadError ? (
         <div role="alert" style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
           No se pudo cargar la sesión.{" "}
-          <button type="button" onClick={() => setReload((r) => r + 1)}
-            style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-            Reintentar
-          </button>
+          <RetryButton onClick={() => setReload((r) => r + 1)} />
         </div>
       ) : rows.length === 0 ? (
         <div style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>No hay sesión para este día.</div>

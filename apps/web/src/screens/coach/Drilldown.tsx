@@ -13,6 +13,8 @@ import { WeightChart } from "../../ui/charts/WeightChart";
 import { MacroTimeline } from "../../ui/charts/MacroTimeline";
 import { Badge } from "../../ui/Badge";
 import { BackButton } from "../../ui/BackButton";
+import { SegmentedToggle } from "../../ui/SegmentedToggle";
+import { RetryButton } from "../../ui/RetryButton";
 import { CompSheet } from "./CompSheet";
 import { SessionAdherence } from "./sessions/SessionAdherence";
 import { applyToggle } from "./sessions/sessionLog";
@@ -80,10 +82,7 @@ export function Drilldown() {
     return (
       <div role="alert" style={{ padding: 24, color: "var(--wl-text)" }}>
         No se pudo cargar el atleta.{" "}
-        <button type="button" onClick={() => setReload((r) => r + 1)}
-          style={{ border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 12, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-          Reintentar
-        </button>
+        <RetryButton onClick={() => setReload((r) => r + 1)} fontSize={12} />
       </div>
     );
   }
@@ -155,17 +154,14 @@ export function Drilldown() {
       </div>
 
       {!API_ENABLED && (
-        <div role="group" aria-label="Ver como" style={{ display: "flex", gap: 0, marginTop: 12, width: "fit-content", background: "var(--wl-surface)", borderRadius: 10, padding: 3, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-          {([["coach", "Coach"], ["atleta", "Atleta"]] as const).map(([key, label]) => {
-            const active = (key === "atleta") === asAthlete;
-            return (
-              <button key={key} type="button" aria-pressed={active} onClick={() => setAsAthlete(key === "atleta")}
-                style={{ minHeight: 44, padding: "0 18px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, letterSpacing: ".02em", background: active ? "var(--wl-accent)" : "transparent", color: active ? "var(--wl-bg)" : "var(--wl-muted)" }}>
-                {label}
-              </button>
-            );
-          })}
-        </div>
+        <SegmentedToggle
+          ariaLabel="Ver como"
+          options={[["coach", "Coach"], ["atleta", "Atleta"]] as const}
+          value={asAthlete ? "atleta" : "coach"}
+          onChange={(v) => setAsAthlete(v === "atleta")}
+          size="lg"
+          style={{ marginTop: 12 }}
+        />
       )}
 
       {asAthlete && (
