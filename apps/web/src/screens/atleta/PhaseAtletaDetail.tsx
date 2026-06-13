@@ -105,7 +105,8 @@ export function PhaseAtletaDetail({ phase, macro, client, sexo, currentWeek }: {
                       </div>
                       <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
                         <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 13.5, color: "var(--wl-text)", fontVariantNumeric: "tabular-nums" }}>
-                          {e.targetKg != null ? `${e.targetKg} kg` : e.pct == null ? "—" : <span style={{ color: "var(--wl-accent)", fontWeight: 700 }}>{e.pct}%</span>}
+                          {e.targetKg != null ? `${e.targetKg} kg` : e.pct == null ? "—" : null}
+                          {e.pct != null && <span style={{ fontSize: e.targetKg != null ? 10 : 13.5, color: "var(--wl-accent)", fontWeight: 700, marginLeft: e.targetKg != null ? 4 : 0 }}>{e.pct}%</span>}
                         </span>
                         {e.targetKg != null && <DiscRow kg={e.targetKg} barKg={barKg} />}
                       </div>
