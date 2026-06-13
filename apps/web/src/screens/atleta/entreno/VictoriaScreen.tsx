@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { MePlanView, SessionView, WeekDoneSummary } from "@holy-oly/core";
-import { barKgForSexo, sessionTonnage, warmupTonnage, heaviestSet, completion, weekDoneSummary } from "@holy-oly/core";
+import { sessionTonnage, warmupTonnage, completion, weekDoneSummary } from "@holy-oly/core";
 import * as me from "../../../data/meClient";
-import { DiscRow } from "../../../ui/Disc";
 import { CaminoCard } from "../hoy/CaminoCard";
+import { ProgressRing } from "../../../ui/ProgressRing";
 
 const CL = (n: number): string => n.toLocaleString("es-CL");
 
@@ -53,7 +53,6 @@ export function VictoriaScreen() {
   }
 
   const exercises = session.exercises;
-  const barKg = barKgForSexo(plan.athlete.sexo);
   const comp = completion(exercises);
   const didWork = comp.done > 0;
   const tonnage = sessionTonnage(exercises);
@@ -61,12 +60,9 @@ export function VictoriaScreen() {
   // de la rampa prescrita — visible y separado del trabajo; jamás entra al monitor.
   const warmKg = warmupTonnage(exercises);
   const totalKg = tonnage + warmKg;
-  const heaviest = heaviestSet(exercises);
   const title = didWork ? "Sesión completada" : "Sesión registrada";
   const dayMoves = exercises.slice(0, 2).map((e) => e.actual?.movementName ?? e.movementName).join(" + ");
   const fecha = new Date().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" });
-
-  const muteFill = "color-mix(in srgb, var(--wl-text) 12%, transparent)";
 
   return (
     <div>
@@ -101,36 +97,13 @@ export function VictoriaScreen() {
         </div>
       )}
 
-      {/* serie más pesada + discos oficiales */}
-      {didWork && heaviest && (
-        <div className="ho-card">
-          <div className="ho-card__head"><span className="ho-card__t">Tu serie más pesada hoy</span></div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, marginTop: 4 }}>
-            <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 18, color: "var(--wl-text)" }}>{heaviest.movementName}</span>
-            <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 24, color: "var(--wl-text)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{heaviest.kg}<span style={{ fontSize: 13, color: "var(--wl-muted)" }}> kg</span></span>
-          </div>
-          <div style={{ marginTop: 12 }}><DiscRow kg={heaviest.kg} barKg={barKg} /></div>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 10 }}>Discos IWF por lado · aproximan al kg</div>
-        </div>
-      )}
-
-      {/* cumplimiento */}
+      {/* cumplimiento — anillos de progreso (dirección Pulse del handoff, sobre nuestros tokens) */}
       <div className="ho-card">
         <div className="ho-card__head"><span className="ho-card__t">Cumplimiento</span></div>
-        <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 20, color: "var(--wl-text)" }}>{comp.done}/{comp.total}</div>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>ejercicios completados</div>
-            <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
-              {Array.from({ length: comp.total }).map((_, i) => (
-                <div key={i} style={{ height: 5, flex: 1, borderRadius: 2, background: i < comp.done ? "var(--ok)" : muteFill }} />
-              ))}
-            </div>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: 20, color: "var(--wl-text)" }}>{idx + 1} / {sessionsCount}</div>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>sesión de la semana</div>
-          </div>
+        <div style={{ display: "flex", gap: 24, marginTop: 12, justifyContent: "center", alignItems: "center" }}>
+          <ProgressRing frac={comp.total > 0 ? comp.done / comp.total : 0} big={`${comp.done}/${comp.total}`} small="ejercicios" />
+          <ProgressRing frac={sessionsCount > 0 ? (idx + 1) / sessionsCount : 0}
+            color="color-mix(in srgb, var(--wl-text) 50%, transparent)" big={`${idx + 1}/${sessionsCount}`} small="sesión" />
         </div>
       </div>
 

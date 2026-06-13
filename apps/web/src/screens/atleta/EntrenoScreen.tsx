@@ -6,7 +6,7 @@ import * as me from "../../data/meClient";
 import { BackButton } from "../../ui/BackButton";
 import { SubstituteSheet } from "../../ui/SubstituteSheet";
 import { ResumenDia } from "./entreno/ResumenDia";
-import { SessionPlayer, type PlayerRow } from "./entreno/SessionPlayer";
+import { SessionAccordion, type PlayerRow } from "./entreno/SessionAccordion";
 import type { SetRow } from "./entreno/WorkSetsSection";
 
 export function EntrenoScreen() {
@@ -99,22 +99,19 @@ export function EntrenoScreen() {
       ) : !started ? (
         <div style={{ marginTop: 12 }}>
           <ResumenDia
-            rows={rows.map((r) => ({ movementName: r.movementName, sets: r.sets, reps: r.reps, kg: r.series[0]?.kg ?? r.targetKg }))}
+            rows={rows.map((r) => ({ movementName: r.movementName, sets: r.sets, reps: r.reps, kg: r.series[0]?.kg ?? r.targetKg, pct: r.pct }))}
             barKg={barKg}
             onStart={() => { setCur(0); setStarted(true); }}
           />
         </div>
       ) : (
         <div style={{ marginTop: 12 }}>
-          <SessionPlayer
-            row={rows[cur]!} index={cur} total={rows.length} barKg={barKg} busy={busy}
+          <SessionAccordion
+            rows={rows} open={cur} onOpen={setCur} barKg={barKg} busy={busy}
             onPatchSet={patchSet}
             onSubstitute={() => setSubOpen(true)}
             onMovementNotDone={movementNotDone}
-            onPrev={() => setCur((c) => Math.max(0, c - 1))}
-            onNext={() => setCur((c) => Math.min(rows.length - 1, c + 1))}
             onFinish={() => void save()}
-            onExit={() => setStarted(false)}
           />
           {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
         </div>

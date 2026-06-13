@@ -48,13 +48,13 @@ async function start() {
   fireEvent.click(await screen.findByRole("button", { name: /iniciar entrenamiento/i }));
 }
 
-test("entrada: resumen con iniciar; tras iniciar entra al reproductor", async () => {
+test("entrada: resumen con iniciar; tras iniciar entra al acordeón con chips por serie + calentamiento", async () => {
   renderEntreno();
   expect(await screen.findByRole("button", { name: /iniciar entrenamiento/i })).toBeInTheDocument();
   expect(screen.getByText("Arranque")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: /iniciar entrenamiento/i }));
-  expect(screen.getByText("Movimiento 1/1")).toBeInTheDocument();
-  expect(screen.getByText("Serie 1/3")).toBeInTheDocument();
+  // la card abierta muestra las series como chips tocables (nacen hechas) + el calentamiento
+  expect(screen.getByRole("button", { name: /serie 1 · hecha/i })).toBeInTheDocument();
   expect(screen.getByText(/Calentamiento/)).toBeInTheDocument();
 });
 
@@ -71,6 +71,7 @@ test("guardar sin modificar → sets de 3 series done@target, top-level done:tru
 
 test("modificar la serie 2 (kg=60) → guardar → sólo esa serie cambia (independiente)", async () => {
   await start();
+  fireEvent.click(screen.getByRole("button", { name: /ajustar kg\/reps/i }));
   fireEvent.click(screen.getByRole("button", { name: /modificar serie 2/i }));
   fireEvent.change(screen.getByLabelText(/kg serie 2/i), { target: { value: "60" } });
   fireEvent.click(screen.getByRole("button", { name: /listo serie 2/i }));
@@ -120,6 +121,7 @@ test("sustituir → kg de las series se limpia → cargar kg en serie 1 → guar
   fireEvent.click(screen.getByRole("button", { name: /cambiar movimiento de Arranque/i }));
   // simplerVariants("arranque")[0] = "arranque.colgado.bajo" → "Arranque desde colgado (bajo)"
   fireEvent.click(await screen.findByRole("button", { name: /Arranque desde colgado \(bajo\)/i }));
+  fireEvent.click(screen.getByRole("button", { name: /ajustar kg\/reps/i }));
   fireEvent.click(screen.getByRole("button", { name: /modificar serie 1/i }));
   fireEvent.change(screen.getByLabelText(/kg serie 1/i), { target: { value: "50" } });
   fireEvent.click(screen.getByRole("button", { name: /listo serie 1/i }));

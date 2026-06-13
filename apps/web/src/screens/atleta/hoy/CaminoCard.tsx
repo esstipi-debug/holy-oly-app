@@ -2,27 +2,7 @@ import { useState } from "react";
 import type { MePlanView } from "@holy-oly/core";
 import type { MeClient } from "../../../data/meClient";
 import { PlanDetailSheet } from "../PlanDetailSheet";
-
-type PlanView = NonNullable<MePlanView["plan"]>;
-
-function MacroRibbon({ plan }: { plan: PlanView }) {
-  return (
-    <div style={{ display: "flex", gap: 3, marginTop: 4 }}>
-      {plan.phases.map((p) => {
-        const wks = p.to - p.from + 1;
-        const fill = Math.round(Math.max(0, Math.min(100, ((p.imr - 60) / 45) * 78 + 16)));
-        const now = plan.currentWeek >= p.from && plan.currentWeek <= p.to;
-        const hasComp = plan.comps.some((c) => c.week >= p.from && c.week <= p.to);
-        return (
-          <div key={`${p.name}-${p.from}`} className={"ho-ribbon__seg" + (now ? " now" : "")} style={{ flex: wks, "--fill": `${fill}%` } as React.CSSProperties}>
-            <div className="ho-ribbon__nm">{p.name}{hasComp ? " 🚩" : ""}{now ? " • hoy" : ""}</div>
-            <div className="ho-ribbon__wk">sem {p.from}–{p.to}</div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+import { PhaseTrack } from "./PhaseTrack";
 
 /** Countdown a la próxima comp + cinta de fases. Empty (no plan) → honest empty variant. */
 export function CaminoCard({ plan, client, sexo }: { plan: MePlanView["plan"]; client?: MeClient; sexo?: "M" | "F" }) {
@@ -46,14 +26,14 @@ export function CaminoCard({ plan, client, sexo }: { plan: MePlanView["plan"]; c
   return (
     <div className="ho-card">
       <div className="ho-card__head"><span className="ho-card__t">Camino a la competencia</span><span className="ho-card__end" style={{ color: "var(--wl-muted)" }}>lo fija tu coach</span></div>
-      <div className="ho-card__sub" style={{ marginTop: 4 }}>cinta de fases del macro · 🚩 = competencia</div>
+      <div className="ho-card__sub" style={{ marginTop: 4 }}>pista del macro · cada barra = una semana · 🚩 = competencia</div>
       {next && faltan != null ? (
         <div className="ho-count">
           <b>{Math.max(0, faltan)}</b>
           <span>{faltan === 0 ? <>{next.name} es <b>esta semana</b></> : faltan < 0 ? <>{next.name} <b>ya pasó</b></> : <>semanas para <b>{next.name}</b><br />semana {next.week} de {plan.totalWeeks}</>}</span>
         </div>
       ) : null}
-      <MacroRibbon plan={plan} />
+      <PhaseTrack plan={plan} />
       <button type="button" className="ho-plan__trigger" onClick={() => setOpen(true)}>
         Ver detalle del plan <span aria-hidden>›</span>
       </button>
