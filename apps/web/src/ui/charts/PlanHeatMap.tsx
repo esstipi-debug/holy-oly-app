@@ -15,9 +15,10 @@ export interface HeatMapPos { week: number; day: number }
 export interface HeatMapComp { name: string; day?: number }
 
 /**
- * Mapa de calor del plan: filas = semanas del macro, columnas = días de la semana del MACRO
- * (col i = día i; las semanas se anclan al weekday del startDate, así que los headers ROTAN
- * con `firstDow` — columna, fecha y marcadores comparten un solo eje). Encoding mixto: tono =
+ * Mapa de calor del plan: filas = semanas del macro, columnas = días de la semana (eje SIEMPRE
+ * Lunes-first, legibilidad estándar). El dato sigue siendo la semana del macro anclada al weekday
+ * del startDate, pero cada celda se ubica en su weekday de calendario vía `dayOrder` — columna,
+ * fecha y marcadores comparten el offset; sólo cambia el ORDEN visual de las filas. Encoding mixto: tono =
  * % tope del día, opacidad = volumen relativo. Presentacional puro. Compe con fecha = celda
  * dorada; sólo semana = etiqueta dorada. HOY = anillo interior (color del texto). Hit area de cada celda
  * = el pitch completo de la grilla (22px); el cuadrado visible mide 18 (compacto por diseño —
@@ -43,8 +44,13 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
   orientation?: "vertical" | "horizontal";
 }) {
   const max = maxLifts(heat);
-  const heads = dayColumnHeads(firstDow);
+  // Eje de días SIEMPRE Lunes-first (pedido del owner). Cada posición visual `vp` mapea a su offset
+  // real de la semana del macro vía `dayOrder` → HOY/compe/ciclo/intensidad (indexados por offset)
+  // caen en la celda correcta; sólo cambia el orden de las filas. `names` sigue rotado por firstDow
+  // porque se indexa por offset (offset→weekday real para las aria-labels).
+  const heads = dayColumnHeads(0);
   const names = dayColumnNames(firstDow);
+  const dayOrder = Array.from({ length: 7 }, (_, vp) => (((vp - firstDow) % 7) + 7) % 7);
   const last = heat.length;
   const isMilestone = (w: number): boolean => w === 1 || w % 4 === 0 || w === last;
 
@@ -110,9 +116,9 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
             }}>{isMilestone(w.week) ? `S${w.week}` : weekIsCompNoDay ? "🚩" : ""}</span>
           );
         })}
-        {heads.map((d, day) => [
-          <span key={`dl${day}`} style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", textAlign: "center", lineHeight: "22px" }}>{d}</span>,
-          ...heat.map((w) => cell(w, day)),
+        {heads.map((d, vp) => [
+          <span key={`dl${vp}`} style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", textAlign: "center", lineHeight: "22px" }}>{d}</span>,
+          ...heat.map((w) => cell(w, dayOrder[vp]!)),
         ])}
       </div>
     );
@@ -134,7 +140,7 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
             borderLeft: `3px solid ${phaseColor(phaseIndexFor(w.week))}`, paddingLeft: 4,
             whiteSpace: "nowrap",
           }}>{isMilestone(w.week) ? `S${w.week}` : weekIsCompNoDay ? "🚩" : ""}</span>,
-          ...w.days.map((_, day) => cell(w, day)),
+          ...dayOrder.map((off) => cell(w, off)),
         ];
       })}
     </div>

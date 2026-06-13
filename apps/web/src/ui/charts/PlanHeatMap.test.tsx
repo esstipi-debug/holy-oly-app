@@ -49,4 +49,19 @@ describe("PlanHeatMap", () => {
     expect(screen.getByRole("button", { name: /Semana 2 Lun · HOY/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Semana 2 Sáb.*competencia Nacional/ })).toBeInTheDocument();
   });
+
+  it("eje de días SIEMPRE Lunes-first, aunque el plan arranque a mitad de semana (firstDow≠0)", () => {
+    // startDate miércoles → firstDow=2. Antes las filas rotaban (X,J,V,S,D,L,M); ahora L-first fijo.
+    const { container } = render(
+      <PlanHeatMap {...baseProps} heat={makeHeat()} orientation="horizontal" firstDow={2} />,
+    );
+    const labels = Array.from(container.querySelectorAll("span"))
+      .map((s) => s.textContent)
+      .filter((t): t is string => !!t && /^[LMXJVSD]$/.test(t));
+    expect(labels).toEqual(["L", "M", "X", "J", "V", "S", "D"]);
+    // Los marcadores siguen en su weekday REAL vía offset: HOY (offset 0) = miércoles para un plan
+    // que arranca el miércoles; la compe (offset 5) = lunes. Sólo cambió el ORDEN de las filas.
+    expect(screen.getByRole("button", { name: /Semana 2 Mié · HOY/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Semana 2 Lun.*competencia Nacional/ })).toBeInTheDocument();
+  });
 });
