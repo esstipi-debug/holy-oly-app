@@ -101,6 +101,8 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
       ({ firstConsent } = await repo.putMyCycle(prisma, athleteId, data, consent === true));
     } catch (e) {
       if (e instanceof repo.ConsentRequiredError) return reply.code(400).send({ error: "consent required" });
+      // Ciclo female-only (owner 2026-06-14): un atleta no-femenino no puede registrar (403).
+      if (e instanceof repo.CycleNotEligibleError) return reply.code(403).send({ error: "cycle not available" });
       throw e;
     }
     // Audit SIN payload de salud (sólo ids+acción+ip). Sólo la activación REAL es cycle.consent.

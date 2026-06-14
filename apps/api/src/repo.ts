@@ -134,6 +134,10 @@ export async function getMyCycle(prisma: PrismaClient, athleteId: string): Promi
 /** Lanzada cuando una atleta sin consentimiento intenta registrar sin el acto de opt-in (§3). */
 export class ConsentRequiredError extends Error {}
 
+/** Ciclo female-only (owner 2026-06-14): un atleta no-femenino no puede registrar ciclo. Defensa
+ *  en profundidad — la UI ya oculta el módulo (gate `sexo==="F"`), pero el server tampoco lo escribe. */
+export class CycleNotEligibleError extends Error {}
+
 /** Upsert del registro de la atleta — los 4 campos cifrados at-rest (D1). La PRIMERA activación
  *  EXIGE `consent` (opt-in informado, §3); ahí se sella consentedAt + versión vigente. Editar
  *  después NO re-pide consentimiento ni re-escribe el sello (consentedAt/consentVersion sólo se
@@ -141,6 +145,9 @@ export class ConsentRequiredError extends Error {}
  *  check de consentimiento y la escritura son atómicos (sin ventana TOCTOU). Devuelve `firstConsent`
  *  para que el audit distinga la activación (cycle.consent) de una edición (cycle.write). */
 export async function putMyCycle(prisma: PrismaClient, athleteId: string, input: CycleData, consent: boolean): Promise<{ firstConsent: boolean }> {
+  // Female-only (owner 2026-06-14): defensa en profundidad además del gate de la UI.
+  const a = await prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } });
+  if (narrowSexo(a?.sexo ?? "M") !== "F") throw new CycleNotEligibleError();
   const encrypted = {
     share: encryptAtRest(input.share),
     state: encryptAtRest(input.state),
