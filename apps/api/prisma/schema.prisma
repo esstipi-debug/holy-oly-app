@@ -192,6 +192,7 @@ model Athlete {
   macroId      String?
   compite      Boolean       @default(false)
   sexo         String        @default("M")
+  weightKg     Float?        // peso corporal declarado en el onboarding (opcional)
   weightBandLo Float?
   weightBandHi Float?
   createdAt    DateTime      @default(now())

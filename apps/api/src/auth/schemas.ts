@@ -20,6 +20,11 @@ const passwordField = z
   .max(200)
   .refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), "password is too common");
 
+// Onboarding del atleta (2026-06-14): sexo gatea el ciclo (female-only) y la barra (15/20 kg);
+// el peso corporal es opcional. El sexo es obligatorio para atletas (lo exige la ruta).
+const SexoSchema = z.enum(["M", "F"]);
+const WeightKgSchema = z.number().min(20).max(300);
+
 export const SignupSchema = z.object({
   email: z.string().email(),
   password: passwordField,
@@ -28,6 +33,9 @@ export const SignupSchema = z.object({
   // PR-L1: the user must explicitly accept Terms + Privacy. The route enforces `=== true`; the
   // accepted VERSION is stamped server-side (core constants), never read from the client.
   acceptTerms: z.boolean().optional(),
+  // Onboarding del atleta: sexo (obligatorio para atleta, lo valida la ruta) + peso corporal opcional.
+  sexo: SexoSchema.optional(),
+  weightKg: WeightKgSchema.optional(),
   // E1 honeypot — bots fill hidden fields; humans leave empty.
   website: z.string().max(200).optional(),
 });
@@ -55,6 +63,9 @@ export const GoogleCompleteSchema = z.object({
   name: z.string().min(1).max(120).optional(),
   // PR-L1: OAuth signup must also accept Terms + Privacy (informed-consent parity with password).
   acceptTerms: z.boolean().optional(),
+  // Mismo onboarding del atleta que el signup con contraseña.
+  sexo: SexoSchema.optional(),
+  weightKg: WeightKgSchema.optional(),
 });
 
 // Exact 12-char format (A6): rejects malformed input before the DB lookup, so a wrong-format
