@@ -1,12 +1,15 @@
 import { describe, it, expect } from "vitest";
-import type { MacroRecipe, PhaseRole, PrescribedExercise } from "../types";
+import type { MacroRecipe, PhaseRole, PrescribedExercise, RM } from "../types";
 import { ALL_RECIPES, recipeFor } from "./recipesAll";
 import { MACRO_RECIPES } from "./recipes";
 import { MACROCYCLES } from "./macrocycles";
+import { COMPLEXES } from "./complexes";
 import { SCHOOL_DNA, dnaForFamily } from "./schools";
 import { phaseRole } from "../logic/recipeGen";
 import { getMovement } from "../logic/movements";
 import { isComplexId, getComplex } from "../logic/complexes";
+import { instantiatePrescription, buildSessionViews } from "../logic/prescription";
+import { PrescribedExerciseSchema, SessionViewsSchema } from "../schemas";
 
 const CLASSIC_BASES = new Set(["arranque", "cargada", "envion", "cargada-envion"]);
 const macro = (id: string) => MACROCYCLES.find((m) => m.id === id)!;
@@ -265,6 +268,34 @@ describe("sanidad de dosis (HIGH-2/HIGH-3 Carnicero — kg que un humano levanta
       const r = recipe(m.id);
       for (const ph of r.phases) for (const s of ph.sessions) for (const ex of s.exercises)
         if (ex.notes?.includes("EMOM")) expect(ex.pct!, `${m.id}/${ph.phaseKey}`).toBeLessThan(85);
+    }
+  });
+});
+
+describe("contrato receta ↔ schema de lectura (regresión: complejos con '+' rompían la prescripción)", () => {
+  // Bug 2026-06-14 (atleta "pipo", cubano-int-5d): la sem 1 trae cx.arranque-colgado+arranque y
+  // cx.tiron-cargada+cargada. El '+' no estaba en MovementIdSchema → SessionViewsSchema.parse reventaba
+  // dentro de HttpRepository (el server serializa el 200 bien; el CLIENTE rechazaba la respuesta) →
+  // "No se pudieron cargar las sesiones" en el Plan del coach Y /me/sessions del atleta (sin acceso).
+  // Los tests de integración de la API no pasan por HttpRepository, así que el mismatch quedó latente.
+  const RMS: RM = { arranque: 70, envion: 95, sentadilla: 120, frente: 110 };
+
+  it("PrescribedExerciseSchema acepta TODOS los ids de complejo del catálogo (el '+' es válido)", () => {
+    for (const c of COMPLEXES) {
+      expect(() => PrescribedExerciseSchema.parse({ movementId: c.id, sets: 5, reps: 1, pct: 70 }), c.id).not.toThrow();
+    }
+  });
+
+  it("toda semana de TODO macro pasa SessionViewsSchema (lo que el cliente valida sobre el 200 del server)", () => {
+    for (const m of MACROCYCLES) {
+      const totalWeeks = m.phaseProfile[m.phaseProfile.length - 1]!.weeks[1];
+      const rows = instantiatePrescription(ALL_RECIPES, m, totalWeeks);
+      for (let week = 1; week <= totalWeeks; week++) {
+        const views = buildSessionViews(rows.filter((r) => r.week === week), RMS, 20);
+        // el server (Fastify, sin response schema) serializa con JSON.stringify; el cliente parsea ESO.
+        const wire = JSON.parse(JSON.stringify(views));
+        expect(() => SessionViewsSchema.parse(wire), `${m.id} sem ${week}`).not.toThrow();
+      }
     }
   });
 });
