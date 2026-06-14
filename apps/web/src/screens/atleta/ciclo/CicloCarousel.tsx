@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import type { CycleData } from "@holy-oly/core";
+import type { MeCycleView } from "@holy-oly/core";
 import type { MeClient } from "../../../data/meClient";
 import { buildCycleView } from "./cycleView";
 import { CycleTimeline } from "./CycleTimeline";
@@ -27,7 +27,7 @@ const fmtName: CSSProperties = { fontFamily: "var(--mono)", fontSize: 10, color:
  * mensaje honesto). Paleta NEUTRA, jamás semáforo; es contexto, nunca una alerta ni un logro.
  */
 export function CicloCarousel({ client, today = new Date().toISOString().slice(0, 10), hideWhenEmpty = false }: { client: MeClient; today?: string; hideWhenEmpty?: boolean }) {
-  const [cycle, setCycle] = useState<CycleData | null>(null);
+  const [cycle, setCycle] = useState<MeCycleView | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [idx, setIdx] = useState(0);
 
@@ -43,6 +43,8 @@ export function CicloCarousel({ client, today = new Date().toISOString().slice(0
   // hideWhenEmpty (Home): mientras carga o si no hay ciclo proyectable, no rendira nada — el opt-in
   // vive en Cuenta y no se naggea en la portada. En «Detalle del plan» (sin el flag) sí avisa.
   if (!loaded) return hideWhenEmpty ? null : <div role="status" style={{ ...muted, marginTop: 16 }}>Cargando…</div>;
+  // Female-only (owner 2026-06-14): un hombre nunca ve «Tu ciclo». Error de carga (cycle=null) → tampoco.
+  if (cycle?.sexo !== "F") return null;
 
   const view = cycle ? buildCycleView(cycle, today) : null;
   if (view == null && hideWhenEmpty) return null;

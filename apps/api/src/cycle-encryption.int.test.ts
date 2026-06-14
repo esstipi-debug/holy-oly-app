@@ -51,7 +51,7 @@ describe("cycle encryption at rest (D1)", () => {
       expect(raw!.lastPeriodStart).not.toContain("2026-06-01");
       expect(raw!.cycleLengthDays!.startsWith("enc:")).toBe(true);
       // Roundtrip descifrado para la dueña (+ consented: ya activó al registrar con consent).
-      expect(await getMyCycle(prisma, id)).toEqual({ share: "full", state: "regular", lastPeriodStart: "2026-06-01", cycleLengthDays: 28, consented: true });
+      expect(await getMyCycle(prisma, id)).toEqual({ sexo: "M", share: "full", state: "regular", lastPeriodStart: "2026-06-01", cycleLengthDays: 28, consented: true });
       // Y el coach con "full" recibe el lúteo computado desde el dato cifrado (día 9 < 14 → false).
       expect(await getCycle(prisma, id, "2026-06-10")).toEqual({ share: "full", inLutealNow: false, health: "ok", reliable: true });
     } finally {

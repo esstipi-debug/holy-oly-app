@@ -1,6 +1,7 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { LocalMeClient } from "../../../data/LocalMeClient";
+import type { MeClient } from "../../../data/meClient";
 import { MemStorage } from "../../../test-utils/MemStorage";
 import { CicloSection } from "../CicloSection";
 
@@ -26,6 +27,13 @@ async function setupConsented() {
   renderCiclo(client);
   return client;
 }
+
+test("female-only (owner 2026-06-14): un atleta hombre no ve la sección del ciclo (ni el gate)", async () => {
+  const male = { getMeCycle: async () => ({ sexo: "M", consented: false, share: "none", state: "regular" }) } as unknown as MeClient;
+  const { container } = render(<MemoryRouter><CicloSection client={male} /></MemoryRouter>);
+  await new Promise((r) => setTimeout(r, 0));
+  expect(container.textContent).toBe("");
+});
 
 test("PR-L2 opt-in: sin activar muestra el gate de consentimiento, NO el formulario", async () => {
   setup();

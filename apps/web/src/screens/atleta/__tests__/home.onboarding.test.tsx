@@ -28,7 +28,7 @@ function stubClient(): MeClient {
     putMeSession: async () => {},
     anularMeSession: async () => {},
     desanularMeSession: async () => {},
-    getMeCycle: async () => ({ share: "none" as const, state: "regular" as const, consented: false }),
+    getMeCycle: async () => ({ sexo: "M" as const, share: "none" as const, state: "regular" as const, consented: false }),
     putMeCycle: async () => {},
     deleteMeCycle: async () => {},
   };
