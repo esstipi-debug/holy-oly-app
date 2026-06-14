@@ -21,6 +21,27 @@ const prisma = new PrismaClient();
 const DEMO_IDS = ["mv", "ds", "lr", "sm", "ap", "kv"] as const;
 const DEMO_COACH_EMAIL = "coach@holyoly.dev"; // el coach1 del seed (dueño de mv/ds/lr/sm/ap/np)
 
+interface PlanInput { macroId: string; currentWeek: number; rms: RM; comps: { name: string; week: number }[] }
+interface HistoryCfg { adherences: number[]; rmStep: number }
+
+/**
+ * Atletas LEGACY del seed VIEJO de prod: el coach demo de prod tiene a Tomás/Bruno/Caro en su plantel
+ * (antes del split coach1/coach2), sin plan → la alerta "Falta RM" los marcaba. NO van en el seed
+ * canónico actual (donde bg/cf/tl son de coach2 / el no-data exemplar), por eso viven SOLO acá:
+ * limpian prod sin cambiar el demo local. Si no existen en la DB destino, se omiten.
+ */
+const LEGACY_PLAN_INPUTS: Record<string, PlanInput> = {
+  bg: { macroId: "hibrido-5d", currentWeek: 8, rms: { arranque: 80, envion: 102, sentadilla: 145, frente: 115 }, comps: [{ name: "Regional", week: 12 }] },
+  cf: { macroId: "colombiano-5d", currentWeek: 7, rms: { arranque: 58, envion: 75, sentadilla: 100, frente: 80 }, comps: [{ name: "Apertura", week: 12 }] },
+  tl: { macroId: "usa-principiante", currentWeek: 6, rms: { arranque: 45, envion: 58, sentadilla: 78, frente: 60 }, comps: [] },
+};
+const LEGACY_HISTORY_CFG: Record<string, HistoryCfg> = {
+  bg: { adherences: [82, 84, 84], rmStep: 3 },
+  cf: { adherences: [88, 90, 89], rmStep: 3 },
+  tl: { adherences: [80, 82], rmStep: 2 },
+};
+const SEXO_BY_ID: Record<string, "M" | "F"> = { mv: "F", ds: "M", lr: "F", sm: "F", ap: "F", kv: "M", bg: "M", cf: "F", tl: "M" };
+
 const DAY_MS = 86_400_000;
 const isoDaysAgo = (n: number): string => new Date(Date.now() - n * DAY_MS).toISOString().slice(0, 10);
 
@@ -30,9 +51,7 @@ function totalWeeksOf(macroId: string): number {
 }
 
 /** Limpia (scoped) y reconstruye plan + prescripción de un atleta demo. */
-async function rebuildPlan(athleteId: string): Promise<void> {
-  const input = DEMO_PLAN_INPUTS[athleteId];
-  if (!input) return;
+async function rebuildPlan(athleteId: string, input: PlanInput): Promise<void> {
   const macro = MACROCYCLES.find((m) => m.id === input.macroId);
   if (!macro) return;
   const totalWeeks = totalWeeksOf(input.macroId);
@@ -83,33 +102,43 @@ async function main(): Promise<void> {
     throw new Error(`Coach demo (${DEMO_COACH_EMAIL}) no encontrado — abortando para no tocar una DB equivocada.`);
   }
 
-  const sexoById: Record<string, "M" | "F"> = { mv: "F", ds: "M", lr: "F", sm: "F", ap: "F", kv: "M" };
+  // Demo canónico (mv/ds/lr/sm/ap/kv) + legacy de prod (bg/cf/tl). Mismo tratamiento; los que no
+  // existan en la DB destino se omiten (p.ej. los legacy NO están en el demo local → no se tocan).
+  const entries: Array<{ id: string; input: PlanInput; cfg: HistoryCfg }> = [
+    ...DEMO_IDS.flatMap((id) => {
+      const input = DEMO_PLAN_INPUTS[id];
+      const cfg = DEMO_HISTORY_CFG[id];
+      return input && cfg ? [{ id, input, cfg }] : [];
+    }),
+    ...Object.keys(LEGACY_PLAN_INPUTS).flatMap((id) => {
+      const input = LEGACY_PLAN_INPUTS[id];
+      const cfg = LEGACY_HISTORY_CFG[id];
+      return input && cfg ? [{ id, input, cfg }] : [];
+    }),
+  ];
+
   let touched = 0;
-  for (const id of DEMO_IDS) {
+  for (const { id, input, cfg } of entries) {
     const athlete = await prisma.athlete.findUnique({ where: { id } });
     if (!athlete) {
-      console.log(`· ${id}: no existe en esta DB — se omite (sólo enriquecemos atletas demo ya sembrados).`);
+      console.log(`· ${id}: no existe en esta DB — se omite (sólo enriquecemos atletas ya sembrados).`);
       continue;
     }
-    await rebuildPlan(id);
-    const input = DEMO_PLAN_INPUTS[id];
-    const cfg = DEMO_HISTORY_CFG[id];
-    if (input && cfg) {
-      await seedAthleteHistory(
-        prisma,
-        id,
-        { macroId: input.macroId, startDate: isoDaysAgo((input.currentWeek - 1) * 7), startWeek: 1, rms: input.rms as RM, currentWeek: input.currentWeek },
-        sexoById[id] ?? "M",
-        cfg,
-      );
-    }
+    await rebuildPlan(id, input);
+    await seedAthleteHistory(
+      prisma,
+      id,
+      { macroId: input.macroId, startDate: isoDaysAgo((input.currentWeek - 1) * 7), startWeek: 1, rms: input.rms, currentWeek: input.currentWeek },
+      SEXO_BY_ID[id] ?? "M",
+      cfg,
+    );
     touched++;
-    console.log(`✓ ${id}: plan + prescripción + historial (${cfg?.adherences.length ?? 0} ciclos) + entrenos`);
+    console.log(`✓ ${id}: plan + prescripción + historial (${cfg.adherences.length} ciclos) + entrenos`);
   }
 
   await ensureNahuel(coachId);
   console.log(`✓ np (Nahuel P.): atleta sin RM vinculado al coach demo (dispara la alerta del Plantel)`);
-  console.log(`\nEnriquecimiento demo completo: ${touched}/${DEMO_IDS.length} atletas + Nahuel. NADA fuera del demo fue tocado.`);
+  console.log(`\nEnriquecimiento demo completo: ${touched} atletas + Nahuel. NADA fuera del demo fue tocado.`);
 }
 
 main()
