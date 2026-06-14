@@ -23,7 +23,38 @@ const APPLY = process.argv.includes("--apply");
 const ATHLETES = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const TARGETS = ATHLETES.length > 0 ? ATHLETES : ["mv", "kv"];
 
-interface DropTarget { week: number; sessionIdx: number; fecha: string; estado: string; reason: string }
+interface Reg { week: number; sessionIdx: number; fecha: string; estado: string }
+interface DropTarget extends Reg { reason: string }
+
+/** Las violaciones de UNA semana contra el set `weekRegs` ACTUAL (no transitivo). */
+function weekViolations(weekRegs: Reg[], allIdxs: number[], dayOf: (i: number) => number): DropTarget[] {
+  const drops: DropTarget[] = [];
+  const resolved = new Set(weekRegs.map((r) => r.sessionIdx));
+  const days = [...new Set(allIdxs.map(dayOf))].sort((a, b) => a - b);
+  // Secuencia: primer día NO totalmente resuelto → cutoff; sesión resuelta más allá = violación.
+  let cutoff = Infinity;
+  for (const d of days) {
+    if (!allIdxs.filter((i) => dayOf(i) === d).every((i) => resolved.has(i))) { cutoff = d; break; }
+  }
+  for (const r of weekRegs) {
+    if (dayOf(r.sessionIdx) > cutoff) drops.push({ ...r, reason: `día ${dayOf(r.sessionIdx)} resuelto con el día ${cutoff} sin terminar` });
+  }
+  // 1×fecha: registros NO anulados, misma fecha, distinto día → conservar el día menor.
+  const dropped = new Set(drops.map((d) => d.sessionIdx));
+  const byFecha = new Map<string, Reg[]>();
+  for (const r of weekRegs) {
+    if (dropped.has(r.sessionIdx) || r.estado === "anulado") continue;
+    (byFecha.get(r.fecha) ?? byFecha.set(r.fecha, []).get(r.fecha)!).push(r);
+  }
+  for (const [fecha, rs] of byFecha) {
+    if (new Set(rs.map((r) => dayOf(r.sessionIdx))).size <= 1) continue; // mismo día (AM/PM) → permitido
+    const minDay = Math.min(...rs.map((r) => dayOf(r.sessionIdx)));
+    for (const r of rs) {
+      if (dayOf(r.sessionIdx) > minDay) drops.push({ ...r, reason: `fecha ${fecha} compartida por días distintos (1×fecha)` });
+    }
+  }
+  return drops;
+}
 
 async function analyzeAthlete(athleteId: string): Promise<DropTarget[]> {
   const plan = await prisma.plan.findUnique({ where: { athleteId } });
@@ -31,63 +62,33 @@ async function analyzeAthlete(athleteId: string): Promise<DropTarget[]> {
   if (registros.length === 0) return [];
   const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
   const pres = await prisma.prescribedExercise.findMany({ where: { athleteId }, select: { week: true, sessionIdx: true } });
-
-  // dayOf por semana (layout de la receta; sin layout → día = idx+1).
   const dayOfFor = (week: number) => {
     const layout = macro ? dayLayoutFor(macro, week) : null;
     return (idx: number): number => layout?.[idx]?.day ?? idx + 1;
   };
-  // Todos los sessionIdx prescriptos por semana.
   const idxsByWeek = new Map<number, Set<number>>();
-  for (const p of pres) {
-    if (!idxsByWeek.has(p.week)) idxsByWeek.set(p.week, new Set());
-    idxsByWeek.get(p.week)!.add(p.sessionIdx);
+  for (const p of pres) (idxsByWeek.get(p.week) ?? idxsByWeek.set(p.week, new Set()).get(p.week)!).add(p.sessionIdx);
+
+  // Fixpoint en memoria: borrar un día puede dejar el siguiente "adelantado" → iterar hasta estable.
+  let live: Reg[] = registros.map((r) => ({ week: r.week, sessionIdx: r.sessionIdx, fecha: r.fecha, estado: r.estado }));
+  const weeks = [...new Set(live.map((r) => r.week))].sort((a, b) => a - b);
+  const all: DropTarget[] = [];
+  for (let iter = 0; iter < 100; iter++) {
+    let any = false;
+    for (const week of weeks) {
+      const dayOf = dayOfFor(week);
+      const weekRegs = live.filter((r) => r.week === week);
+      const allIdxs = [...(idxsByWeek.get(week) ?? new Set(weekRegs.map((r) => r.sessionIdx)))];
+      const drops = weekViolations(weekRegs, allIdxs, dayOf);
+      if (drops.length === 0) continue;
+      any = true;
+      const ds = new Set(drops.map((d) => d.sessionIdx));
+      all.push(...drops);
+      live = live.filter((r) => !(r.week === week && ds.has(r.sessionIdx)));
+    }
+    if (!any) break;
   }
-
-  const drops: DropTarget[] = [];
-  const weeks = [...new Set(registros.map((r) => r.week))].sort((a, b) => a - b);
-  for (const week of weeks) {
-    const dayOf = dayOfFor(week);
-    const weekRegs = registros.filter((r) => r.week === week);
-    const resolved = new Set(weekRegs.map((r) => r.sessionIdx));
-    // allIdxs: prescripción si existe; si no, los propios registros (defensivo).
-    const allIdxs = [...(idxsByWeek.get(week) ?? new Set(weekRegs.map((r) => r.sessionIdx)))];
-    const days = [...new Set(allIdxs.map(dayOf))].sort((a, b) => a - b);
-
-    // Primer día NO totalmente resuelto (alguna de sus sesiones sin registro) → cutoff.
-    let cutoff = Infinity;
-    for (const d of days) {
-      const dayIdxs = allIdxs.filter((i) => dayOf(i) === d);
-      const fullyResolved = dayIdxs.every((i) => resolved.has(i));
-      if (!fullyResolved) { cutoff = d; break; }
-    }
-    // Violación de secuencia: sesión resuelta en un día POSTERIOR al cutoff.
-    for (const r of weekRegs) {
-      if (dayOf(r.sessionIdx) > cutoff) {
-        drops.push({ week, sessionIdx: r.sessionIdx, fecha: r.fecha, estado: r.estado, reason: `día ${dayOf(r.sessionIdx)} resuelto con el día ${cutoff} sin terminar` });
-      }
-    }
-
-    // Violación 1×fecha: dos registros NO anulados, misma fecha, distinto día → conservar el día menor.
-    const kept = weekRegs.filter((r) => !drops.some((d) => d.week === week && d.sessionIdx === r.sessionIdx));
-    const byFecha = new Map<string, typeof kept>();
-    for (const r of kept) {
-      if (r.estado === "anulado") continue;
-      if (!byFecha.has(r.fecha)) byFecha.set(r.fecha, []);
-      byFecha.get(r.fecha)!.push(r);
-    }
-    for (const [fecha, rs] of byFecha) {
-      const dias = new Set(rs.map((r) => dayOf(r.sessionIdx)));
-      if (dias.size <= 1) continue; // mismo día (AM/PM) → permitido
-      const minDay = Math.min(...rs.map((r) => dayOf(r.sessionIdx)));
-      for (const r of rs) {
-        if (dayOf(r.sessionIdx) > minDay) {
-          drops.push({ week, sessionIdx: r.sessionIdx, fecha, estado: r.estado, reason: `fecha ${fecha} compartida por días distintos (1×fecha)` });
-        }
-      }
-    }
-  }
-  return drops;
+  return all.sort((a, b) => a.week - b.week || a.sessionIdx - b.sessionIdx);
 }
 
 async function main(): Promise<void> {
