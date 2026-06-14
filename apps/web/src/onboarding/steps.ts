@@ -1,20 +1,25 @@
 /**
  * First-time onboarding copy, separated from the card render so the wording can change
  * without touching the component. Contract: a short title + a list of 4 short steps per role.
+ *
+ * Since Fase i18n these export i18n KEYS (namespace `auth`), not literal strings — the same
+ * symbol names the callers (HomeScreen / Equipo) already pass through to `<OnboardingCard>`,
+ * which resolves them with its own `t()`. A literal string passed in dev still renders verbatim
+ * (i18next returns the key on a miss), so the card stays a drop-in for ad-hoc copy.
  */
-export const ONBOARDING_TITLE_COACH = "Bienvenido — así te movés acá";
-export const ONBOARDING_TITLE_ATLETA = "Bienvenido — así te movés acá";
+export const ONBOARDING_TITLE_COACH = "auth:onboarding.title";
+export const ONBOARDING_TITLE_ATLETA = "auth:onboarding.title";
 
 export const COACH_STEPS: readonly string[] = [
-  "Este es tu Plantel: cada atleta y su estado de readiness (verde / ámbar / rojo).",
-  "Tocá un atleta para ver su detalle: carga, recuperación y progreso del año.",
-  "En Macros elegís un macrociclo y se lo asignás a un atleta.",
-  "En Invitaciones compartís tu código para que tus atletas se vinculen.",
+  "auth:onboarding.coach.0",
+  "auth:onboarding.coach.1",
+  "auth:onboarding.coach.2",
+  "auth:onboarding.coach.3",
 ];
 
 export const ATLETA_STEPS: readonly string[] = [
-  "Esto es Hoy: tu check-in de bienestar y tu plan del día.",
-  "Tocá «Iniciar entrenamiento» y registrás serie por serie; los discos te muestran cómo cargar la barra.",
-  "En Mi progreso seguís tu evolución.",
-  "En Cuenta están tus datos y tu coach vinculado.",
+  "auth:onboarding.atleta.0",
+  "auth:onboarding.atleta.1",
+  "auth:onboarding.atleta.2",
+  "auth:onboarding.atleta.3",
 ];

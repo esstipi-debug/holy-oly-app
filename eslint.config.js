@@ -42,6 +42,8 @@ export default tseslint.config(
       "apps/web/src/ui/RetryButton.tsx",
       "apps/web/src/i18n/LanguageToggle.tsx",
       "apps/web/src/i18n/MovementLangToggle.tsx",
+      "apps/web/src/auth/**/*.tsx",
+      "apps/web/src/onboarding/**/*.tsx",
     ],
     plugins: { i18next },
     rules: {

@@ -1,6 +1,8 @@
 import { useState, type CSSProperties, type FormEvent } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import { resetPassword } from "./authClient";
+import { MIN_PASSWORD } from "./AuthScreen";
 
 const input: CSSProperties = {
   width: "100%", boxSizing: "border-box", marginTop: 6, padding: "10px 12px", borderRadius: 10,
@@ -9,6 +11,7 @@ const input: CSSProperties = {
 };
 
 export function ResetPasswordScreen() {
+  const { t } = useTranslation("auth");
   const [params] = useSearchParams();
   const token = params.get("token") ?? "";
   const navigate = useNavigate();
@@ -25,7 +28,7 @@ export function ResetPasswordScreen() {
       // state.resetOk → AuthScreen muestra "Contraseña actualizada — ingresá de nuevo."
       navigate("/login", { replace: true, state: { resetOk: true } });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo restablecer");
+      setError(err instanceof Error ? err.message : t("reset.submitFailed"));
     } finally {
       setBusy(false);
     }
@@ -35,7 +38,11 @@ export function ResetPasswordScreen() {
     return (
       <div style={{ minHeight: "100vh", background: "var(--wl-bg)", display: "grid", placeItems: "center", padding: 16 }}>
         <p style={{ color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontSize: 14 }}>
-          Enlace inválido. <Link to="/login/forgot" style={{ color: "var(--wl-accent)" }}>Pedí uno nuevo</Link>.
+          <Trans
+            t={t}
+            i18nKey="reset.invalidLink"
+            components={{ 0: <Link to="/login/forgot" style={{ color: "var(--wl-accent)" }} /> }}
+          />
         </p>
       </div>
     );
@@ -44,12 +51,12 @@ export function ResetPasswordScreen() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--wl-bg)", display: "grid", placeItems: "center", padding: 16 }}>
       <form onSubmit={onSubmit} style={{ width: "100%", maxWidth: 360, background: "var(--wl-surface)", borderRadius: 18, padding: 20 }}>
-        <h1 style={{ margin: 0, fontFamily: "var(--wl-display)", fontSize: 20, color: "var(--wl-text)" }}>Nueva contraseña</h1>
-        <label style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 12, display: "block" }}>Contraseña (mín. 8)</label>
-        <input style={input} type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+        <h1 style={{ margin: 0, fontFamily: "var(--wl-display)", fontSize: 20, color: "var(--wl-text)" }}>{t("reset.title")}</h1>
+        <label style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 12, display: "block" }}>{t("reset.passwordLabel", { count: MIN_PASSWORD })}</label>
+        <input style={input} type="password" required minLength={MIN_PASSWORD} value={password} onChange={(e) => setPassword(e.target.value)} />
         {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontSize: 12 }}>{error}</div>}
         <button type="submit" disabled={busy} style={{ width: "100%", marginTop: 16, padding: 12, borderRadius: 12, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
-          {busy ? "..." : "Guardar"}
+          {busy ? "..." : t("common:save")}
         </button>
       </form>
     </div>

@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
+import i18n from "../i18n";
 import type { AuthUser } from "./authClient";
+
+// authErrorMessage now takes the auth `t`; test-setup preloads "auth" in es-419 (neutral "tú").
+const t = i18n.getFixedT("es-419", "auth");
 
 // googleAuthEnabled hace fetch real (GET /auth/google/config) → mock parcial: deshabilitado.
 // El CTA de Google no es el sujeto de estos tests.
@@ -61,7 +65,7 @@ describe("AuthScreen", () => {
     };
     renderLogin();
     expect(await screen.findByText("LANDING")).toBeInTheDocument();
-    expect(screen.queryByPlaceholderText("vos@ejemplo.com")).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("tu@ejemplo.com")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ingresar" })).not.toBeInTheDocument();
     // flush del effect de googleAuthEnabled (queda colgando un microtask del mock async)
     await act(async () => {});
@@ -74,7 +78,7 @@ describe("AuthScreen", () => {
     const status = screen.getByRole("status");
     expect(status).toHaveTextContent("Contraseña actualizada");
     // el form sigue ahí (la confirmación no reemplaza el login)
-    expect(screen.getByPlaceholderText("vos@ejemplo.com")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("tu@ejemplo.com")).toBeInTheDocument();
     await act(async () => {});
   });
 
@@ -89,7 +93,7 @@ describe("AuthScreen", () => {
   // pista del requisito. Ahora el mínimo se muestra de entrada en el campo.
   it("en modo registro muestra el mínimo de contraseña como ayuda", async () => {
     renderLogin();
-    fireEvent.click(screen.getByRole("button", { name: /Registrate/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Regístrate/ }));
     expect(screen.getByText(/Mínimo 8 caracteres/)).toBeInTheDocument();
     await act(async () => {});
   });
@@ -97,7 +101,7 @@ describe("AuthScreen", () => {
   // PR-L1: no se puede crear cuenta sin aceptar explícitamente Términos + Privacidad.
   it("en modo registro 'Crear cuenta' está deshabilitada hasta aceptar términos", async () => {
     renderLogin();
-    fireEvent.click(screen.getByRole("button", { name: /Registrate/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Regístrate/ }));
     const submit = screen.getByRole("button", { name: "Crear cuenta" });
     expect(submit).toBeDisabled();
     fireEvent.click(screen.getByRole("checkbox", { name: /acepto/i }));
@@ -109,8 +113,8 @@ describe("AuthScreen", () => {
     const spy = vi.fn(async () => {});
     injected.current.signup = spy as unknown as SignupFn;
     renderLogin();
-    fireEvent.click(screen.getByRole("button", { name: /Registrate/ }));
-    fireEvent.change(screen.getByPlaceholderText("vos@ejemplo.com"), { target: { value: "a@b.com" } });
+    fireEvent.click(screen.getByRole("button", { name: /Regístrate/ }));
+    fireEvent.change(screen.getByPlaceholderText("tu@ejemplo.com"), { target: { value: "a@b.com" } });
     fireEvent.change(screen.getByPlaceholderText("••••••••"), { target: { value: "lawful-pass-9" } });
     fireEvent.click(screen.getByRole("checkbox", { name: /acepto/i }));
     fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" }));
@@ -123,14 +127,14 @@ describe("AuthScreen", () => {
 
 describe("authErrorMessage", () => {
   it("traduce 'weak password' a un mensaje accionable en español", () => {
-    expect(authErrorMessage(new Error("weak password"))).toMatch(/al menos 8 caracteres/);
+    expect(authErrorMessage(t, new Error("weak password"))).toMatch(/al menos 8 caracteres/);
   });
 
   it("traduce 'email already registered' a español", () => {
-    expect(authErrorMessage(new Error("email already registered"))).toMatch(/ya tiene una cuenta/);
+    expect(authErrorMessage(t, new Error("email already registered"))).toMatch(/ya tiene una cuenta/);
   });
 
   it("cae a un mensaje genérico cuando el código es desconocido o vacío", () => {
-    expect(authErrorMessage(new Error(""))).toBe("No se pudo completar.");
+    expect(authErrorMessage(t, new Error(""))).toBe("No se pudo completar.");
   });
 });

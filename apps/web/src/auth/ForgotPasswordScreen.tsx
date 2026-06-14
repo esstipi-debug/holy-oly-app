@@ -1,5 +1,6 @@
 import { useState, type CSSProperties, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { forgotPassword } from "./authClient";
 
 const input: CSSProperties = {
@@ -9,6 +10,7 @@ const input: CSSProperties = {
 };
 
 export function ForgotPasswordScreen() {
+  const { t } = useTranslation("auth");
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -22,7 +24,7 @@ export function ForgotPasswordScreen() {
       await forgotPassword(email);
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo enviar");
+      setError(err instanceof Error ? err.message : t("forgot.sendFailed"));
     } finally {
       setBusy(false);
     }
@@ -31,23 +33,23 @@ export function ForgotPasswordScreen() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--wl-bg)", display: "grid", placeItems: "center", padding: 16 }}>
       <form onSubmit={onSubmit} style={{ width: "100%", maxWidth: 360, background: "var(--wl-surface)", borderRadius: 18, padding: 20, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-        <h1 style={{ margin: 0, fontFamily: "var(--wl-display)", fontSize: 20 }}>Recuperar contraseña</h1>
+        <h1 style={{ margin: 0, fontFamily: "var(--wl-display)", fontSize: 20 }}>{t("forgot.title")}</h1>
         <p style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8 }}>
-          Si el email existe, te enviamos un enlace (revisá también spam).
+          {t("forgot.intro")}
         </p>
         {!sent ? (
           <>
-            <label style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 12, display: "block" }}>Email</label>
+            <label style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 12, display: "block" }}>{t("fields.email")}</label>
             <input style={input} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
             {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
             <button type="submit" disabled={busy} style={{ width: "100%", marginTop: 16, padding: 12, borderRadius: 12, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontWeight: 800, cursor: busy ? "default" : "pointer" }}>
-              {busy ? "..." : "Enviar enlace"}
+              {busy ? "..." : t("forgot.submit")}
             </button>
           </>
         ) : (
-          <p style={{ marginTop: 16, color: "var(--wl-text)" }}>Listo. Si el email está registrado, vas a recibir instrucciones en breve.</p>
+          <p style={{ marginTop: 16, color: "var(--wl-text)" }}>{t("forgot.done")}</p>
         )}
-        <Link to="/login" style={{ display: "block", marginTop: 14, fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>Volver al login</Link>
+        <Link to="/login" style={{ display: "block", marginTop: 14, fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>{t("common:backToLogin")}</Link>
       </form>
     </div>
   );

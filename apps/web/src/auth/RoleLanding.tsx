@@ -7,7 +7,7 @@ export function RoleLanding() {
   const { apiEnabled, user, loading } = useAuth();
   if (!apiEnabled) return <Navigate to="/coach" replace />;
   if (loading) {
-    return <Loading style={{ padding: 24, fontFamily: "var(--mono)" }}>Cargando…</Loading>;
+    return <Loading style={{ padding: 24, fontFamily: "var(--mono)" }} />;
   }
   if (!user) return <Navigate to="/login" replace />;
   return <Navigate to={user.role === "coach" ? "/coach" : "/atleta"} replace />;

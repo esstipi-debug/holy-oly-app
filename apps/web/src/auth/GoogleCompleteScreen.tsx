@@ -1,5 +1,6 @@
 import { useState, type CSSProperties, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import type { Role } from "./authClient";
 import { completeGoogleSignup } from "./authClient";
 import { HolyOlyIcon } from "../ui/HolyOlyIcon";
@@ -12,6 +13,7 @@ const input: CSSProperties = {
 const label: CSSProperties = { fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)", marginTop: 12, display: "block" };
 
 export function GoogleCompleteScreen() {
+  const { t } = useTranslation("auth");
   const navigate = useNavigate();
   const [role, setRole] = useState<Role>("coach");
   const [name, setName] = useState("");
@@ -23,7 +25,7 @@ export function GoogleCompleteScreen() {
     e.preventDefault();
     setError(null);
     if (!accepted) {
-      setError("Tenés que aceptar los términos y la política de privacidad.");
+      setError(t("mustAcceptTerms"));
       return;
     }
     setBusy(true);
@@ -33,7 +35,7 @@ export function GoogleCompleteScreen() {
       // absoluta "/" apuntaría al filesystem.
       navigate("/", { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo completar");
+      setError(err instanceof Error ? err.message : t("errors.fallback"));
     } finally {
       setBusy(false);
     }
@@ -45,24 +47,24 @@ export function GoogleCompleteScreen() {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 6 }}>
           <HolyOlyIcon size={72} />
           <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", textAlign: "center" }}>
-            Google conectó tu cuenta. Elegí cómo usar Holy Oly.
+            {t("google.connected")}
           </div>
         </div>
 
-        <label style={label}>Soy</label>
-        <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+        <label style={label}>{t("fields.roleLabel")}</label>
+        <div role="group" aria-label={t("fields.roleGroupLabel")} style={{ display: "flex", gap: 8, marginTop: 6 }}>
           {(["coach", "atleta"] as const).map((r) => (
             <button type="button" key={r} onClick={() => setRole(r)}
               style={{ flex: 1, padding: "8px", borderRadius: 10, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700,
                 border: `1px solid ${role === r ? "var(--wl-accent)" : "color-mix(in srgb,var(--wl-text) 16%,transparent)"}`,
                 background: role === r ? "color-mix(in srgb,var(--wl-accent) 16%,transparent)" : "transparent", color: "var(--wl-text)" }}>
-              {r === "coach" ? "Coach" : "Atleta"}
+              {r === "coach" ? t("fields.roleCoach") : t("fields.roleAtleta")}
             </button>
           ))}
         </div>
 
-        <label style={label}>Nombre</label>
-        <input style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" />
+        <label style={label}>{t("fields.name")}</label>
+        <input style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("fields.namePlaceholder")} />
 
         <label style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 16, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", lineHeight: 1.5, cursor: "pointer" }}>
           <input
@@ -71,18 +73,24 @@ export function GoogleCompleteScreen() {
             onChange={(e) => setAccepted(e.target.checked)}
             style={{ marginTop: 2, accentColor: "var(--wl-accent)", flex: "0 0 auto" }}
           />
-          <span>Leí y acepto los <Link to="/terminos">términos</Link> y la <Link to="/privacidad">política de privacidad</Link>.</span>
+          <span>
+            <Trans
+              t={t}
+              i18nKey="acceptTerms"
+              components={{ 0: <Link to="/terminos" />, 1: <Link to="/privacidad" /> }}
+            />
+          </span>
         </label>
 
         {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
         <button type="submit" disabled={busy || !accepted} style={{ width: "100%", marginTop: 18, padding: 12, borderRadius: 12, border: 0, cursor: busy || !accepted ? "default" : "pointer",
           background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, opacity: busy || !accepted ? 0.6 : 1 }}>
-          {busy ? "..." : "Continuar"}
+          {busy ? "..." : t("google.complete")}
         </button>
 
         <Link to="/login" style={{ display: "block", marginTop: 12, textAlign: "center", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
-          Volver al login
+          {t("common:backToLogin")}
         </Link>
       </form>
     </div>

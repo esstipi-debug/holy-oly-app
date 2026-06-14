@@ -13,7 +13,7 @@ export function RequireAuth({ children, role }: { children: ReactNode; role?: Ro
   const { apiEnabled, user, loading } = useAuth();
   if (!apiEnabled) return <>{children}</>;
   if (loading) {
-    return <Loading style={{ padding: 24, fontFamily: "var(--mono)" }}>Cargando…</Loading>;
+    return <Loading style={{ padding: 24, fontFamily: "var(--mono)" }} />;
   }
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) return <Navigate to="/" replace />;
