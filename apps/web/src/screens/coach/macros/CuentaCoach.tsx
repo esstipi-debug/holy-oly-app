@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../auth/AuthContext";
 import { VerifyEmailBanner } from "../../../ui/VerifyEmailBanner";
 import { LanguageToggle } from "../../../i18n/LanguageToggle";
+import { MovementLangToggle } from "../../../i18n/MovementLangToggle";
 
 const page: CSSProperties = {
   padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)",
@@ -97,8 +98,10 @@ export function CuentaCoach() {
       )}
 
       <div style={label}>{t("language")}</div>
-
       <LanguageToggle style={{ marginTop: 8 }} />
+
+      <div style={label}>{t("movementNames")}</div>
+      <MovementLangToggle style={{ marginTop: 8 }} />
 
       <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 16, lineHeight: 1.5 }}>
         <Link to="/privacidad" style={{ color: "inherit" }}>Privacidad</Link>

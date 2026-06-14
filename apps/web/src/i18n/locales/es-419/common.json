@@ -12,6 +12,7 @@
   "cancel": "Cancelar",
   "confirm": "Confirmar",
   "language": "Idioma",
+  "movementNames": "Nombres de movimientos",
   "errorLoad": "No se pudo cargar.",
   "errorSave": "No se pudo guardar.",
   "tryAgain": "Inténtalo de nuevo."

@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { RetryButton } from "../../ui/RetryButton";
 import { SegmentedTabs } from "../../ui/SegmentedTabs";
 import { LanguageToggle } from "../../i18n/LanguageToggle";
+import { MovementLangToggle } from "../../i18n/MovementLangToggle";
 
 const HO_SKINS: Array<{ id: string; nm: string; sw: [string, string, string] }> = [
   { id: "neon", nm: "Neon PR", sw: ["#07070f", "#c8ff2d", "#1fe7ff"] },
@@ -276,6 +277,13 @@ export function CuentaMin() {
           {t("language")}
         </div>
         <LanguageToggle />
+      </div>
+
+      <div className="ho-acct__group" style={{ marginTop: 12 }}>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 8 }}>
+          {t("movementNames")}
+        </div>
+        <MovementLangToggle />
       </div>
 
       <div style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", margin: "22px 0 4px", lineHeight: 1.5 }}>
