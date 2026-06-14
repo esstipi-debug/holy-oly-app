@@ -11,8 +11,8 @@ import { MacroTimeline } from "./charts/MacroTimeline";
 import { MacroPeriodization } from "./charts/MacroPeriodization";
 import { MACROCYCLES } from "@holy-oly/core";
 
-type Skin = "plates" | "neon" | "chalk" | "premium" | "neonlight";
-const SKINS: Skin[] = ["plates", "neon", "chalk", "premium", "neonlight"];
+type Skin = "plates" | "neon" | "chalk" | "premium" | "neonlight" | "bloomnight";
+const SKINS: Skin[] = ["plates", "neon", "chalk", "premium", "neonlight", "bloomnight"];
 
 const LABEL: React.CSSProperties = {
   fontFamily: "var(--mono, monospace)",

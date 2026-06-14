@@ -6,6 +6,7 @@
      · chalk     → raw brutalist, concrete + chalk, hard shadows
      · premium   → refined dark glass, soft springs, gold/teal
      · neonlight → Neon Bloom, light sister of neon
+     · bloomnight→ Neon Bloom · Noche, dark sister of Neon Bloom
      · legend    → coach: metal/oro/holo, "modo leyenda"
    Components read tokens; signature treatments live per-theme.
    ============================================================ */
@@ -442,6 +443,86 @@
 .wl--neonlight .wls{
   background:radial-gradient(120% 90% at 0% 0%, #fff2fa 0%, #fde4f1 55%, #f4e6ff 100%);
 }
+
+/* ============================================================
+   5b · NEON BLOOM · NOCHE — dark sister of Neon Bloom
+   Same electric fuchsia/violet identity, on a dark plum/aubergine
+   canvas with coloured halos. (Ported from the 0110 design handoff.)
+   ============================================================ */
+.wl--bloomnight{
+  --wl-bg:#150a16;            /* aubergine casi negro */
+  --wl-surface:#211127;
+  --wl-surface-2:#2b1633;
+  --wl-text:#ffe9f6;          /* blanco rosado */
+  --wl-muted:#b483ad;         /* malva */
+  --wl-accent:#ff3ba6;        /* fucsia (identidad Bloom, +brillo para fondo oscuro) */
+  --wl-accent-2:#a06bff;      /* violeta eléctrico */
+  --wl-danger:#ff5d7e;        /* coral-rosa — Fin */
+  --wl-gold:#ff9d3d;          /* coral-ámbar — intensidad */
+  --wl-display:'Chakra Petch', sans-serif;
+  --wl-body:'Chakra Petch', sans-serif;
+  --wl-radius:7px;
+}
+.wl--bloomnight .wls{
+  background:radial-gradient(120% 90% at 0% 0%, #25132b 0%, #190d1b 55%, #120914 100%);
+}
+/* Tratamientos firma de Bloom · Noche — paridad con neonlight pero sobre lienzo OSCURO
+   (las otras 5 skins definen cada una su .wl-btn; sin esto los botones del atleta salen sin estilo). */
+.wl--bloomnight .wls__name{ text-transform:uppercase; }
+.wl--bloomnight .wls__time{ color:var(--wl-accent); text-shadow:0 0 16px rgba(255,59,166,.45); }
+.wl--bloomnight .wls__coach{ background:var(--wl-surface); border:1px solid rgba(255,59,166,.28); box-shadow:0 6px 18px rgba(0,0,0,.4); }
+.wl--bloomnight .wls__coach strong{ color:var(--wl-accent); }
+.wl--bloomnight .wls__list{ background:var(--wl-surface); border:1px solid rgba(255,59,166,.14); box-shadow:0 8px 24px rgba(0,0,0,.45); }
+.wl--bloomnight .wls__row + .wls__row{ border-top:1px solid rgba(255,233,246,.08); }
+.wl--bloomnight .wl-seg__bar{ background:rgba(255,233,246,.1); }
+.wl--bloomnight .wl-btn{
+  font-weight:700; text-transform:uppercase; letter-spacing:.1em; font-size:16px;
+  padding:14px 26px; border-radius:var(--wl-radius); color:var(--wl-accent);
+  background:var(--wl-surface); border:1.5px solid var(--wl-accent);
+  box-shadow:0 0 0 4px rgba(255,59,166,.1), 0 6px 18px rgba(255,59,166,.28);
+  transition:transform .1s var(--ease-out), box-shadow .2s, background .2s, color .2s;
+}
+.wl--bloomnight .wl-btn:hover{ background:var(--wl-accent); color:#1a0a16; box-shadow:0 0 0 4px rgba(255,59,166,.2), 0 10px 28px rgba(255,59,166,.5); }
+.wl--bloomnight .wl-btn--primary{
+  color:#fff; background:linear-gradient(135deg,#ff62ab,#a06bff); border-color:transparent;
+  box-shadow:0 8px 26px rgba(255,59,166,.45), 0 0 0 4px rgba(160,107,255,.14);
+  animation:bloomPulse 2.4s ease-in-out infinite;
+}
+.wl--bloomnight .wl-btn--ghost{ color:var(--wl-accent-2); border-color:rgba(160,107,255,.5); background:transparent; box-shadow:0 4px 14px rgba(160,107,255,.2); }
+.wl--bloomnight .wl-btn--ghost:hover{ background:var(--wl-accent-2); color:#160a1a; box-shadow:0 8px 22px rgba(160,107,255,.45); }
+.wl--bloomnight .wl-btn.is-pressed, .wl--bloomnight .wl-btn:active{ transform:scale(.94); }
+.wl--bloomnight .wl-back{
+  width:52px; height:52px; border-radius:50%; color:var(--wl-accent-2);
+  background:var(--wl-surface); border:1.5px solid rgba(160,107,255,.55);
+  box-shadow:0 6px 18px rgba(160,107,255,.35), 0 0 0 4px rgba(160,107,255,.1);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .1s var(--ease-out), box-shadow .2s;
+}
+.wl--bloomnight .wl-back:active{ transform:scale(.9); box-shadow:0 8px 26px rgba(160,107,255,.55); }
+.wl--bloomnight .wl-skip{
+  font-weight:600; text-transform:uppercase; letter-spacing:.08em; font-size:12px;
+  padding:11px 16px; border-radius:7px; color:var(--wl-accent-2);
+  background:var(--wl-surface); border:1px solid rgba(160,107,255,.45);
+  display:inline-flex; align-items:center; gap:8px;
+  box-shadow:0 3px 10px rgba(160,107,255,.2); transition:transform .1s, box-shadow .2s, background .2s, color .2s;
+}
+.wl--bloomnight .wl-skip:hover{ background:var(--wl-accent-2); color:#160a1a; box-shadow:0 6px 16px rgba(160,107,255,.4); }
+.wl--bloomnight .wl-skip:active{ transform:scale(.95); }
+.wl--bloomnight .wl-badge{ font-family:var(--wl-display); font-weight:700; font-size:13px; letter-spacing:.08em; padding:5px 11px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; text-transform:uppercase; }
+.wl--bloomnight .wl-badge--intensity{ color:var(--wl-gold); background:linear-gradient(135deg,#3a1530,#241026); box-shadow:0 4px 14px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,157,61,.3); }
+.wl--bloomnight .wl-badge--progress{ color:var(--wl-accent); background:var(--wl-surface); border:1px solid rgba(255,59,166,.45); box-shadow:0 3px 10px rgba(255,59,166,.2); }
+.wl--bloomnight .wl-badge--scheme{ color:var(--wl-accent-2); background:transparent; padding:0; font-size:19px; text-shadow:0 0 14px rgba(160,107,255,.45); }
+.wl--bloomnight .wl-badge--target{ color:var(--wl-accent-2); background:rgba(160,107,255,.14); border:1px solid rgba(160,107,255,.4); box-shadow:0 3px 12px rgba(160,107,255,.18); padding:8px 13px; text-transform:none; }
+.wl--bloomnight .wl-radio{
+  width:28px; height:28px; border-radius:50%; flex:0 0 auto;
+  background:var(--wl-surface); border:2px solid rgba(255,59,166,.4); transition:all .2s var(--ease-spring);
+}
+.wl--bloomnight .wl-radio.is-on{ border-color:transparent; background:linear-gradient(135deg,#ff62ab,#ff3ba6); box-shadow:0 4px 16px rgba(255,59,166,.55); color:#fff; }
+.wl--bloomnight .wl-field{ background:var(--wl-surface); border:1px solid rgba(255,59,166,.26); border-radius:9px; box-shadow:0 4px 14px rgba(0,0,0,.35); padding:14px 16px; }
+.wl--bloomnight .wl-field:focus-within{ border-color:var(--wl-accent); box-shadow:0 0 0 3px rgba(255,59,166,.2), 0 4px 14px rgba(255,59,166,.22); }
+.wl--bloomnight .wl-step{ background:rgba(255,59,166,.14); border:1px solid rgba(255,59,166,.4); color:var(--wl-accent); border-radius:7px; box-shadow:0 2px 8px rgba(255,59,166,.16); }
+.wl--bloomnight .wl-seg__bar.is-on{ background:linear-gradient(90deg,#ff62ab,#a06bff); box-shadow:0 0 12px rgba(255,59,166,.55); }
+
 .wl--neonlight .wls__name{ text-transform:uppercase; }
 .wl--neonlight .wls__time{ color:var(--wl-accent); text-shadow:0 0 16px rgba(255,46,154,.35); }
 .wl--neonlight .wls__coach{ background:#fff; border:1px solid rgba(255,46,154,.25); box-shadow:0 6px 18px rgba(255,46,154,.12); }
