@@ -262,10 +262,12 @@ export class LocalMeClient implements MeClient {
     const consented = this.s.getOptional<unknown>(KEYS.cycleConsented(this.id)) === true;
     const share = CycleShareSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleShare(this.id)));
     const state = CycleStateSchema.safeParse(this.s.getOptional<unknown>(KEYS.cycleState(this.id)));
-    if (!share.success) return { share: "none", state: "regular", consented };
+    // Demo offline: la atleta es femenina para que el ciclo (female-only, owner 2026-06-14) se vea.
+    if (!share.success) return { sexo: "F", share: "none", state: "regular", consented };
     const start = this.s.getOptional<unknown>(KEYS.cycleStart(this.id));
     const len = Number(this.s.getOptional<unknown>(KEYS.cycleLen(this.id)));
     return {
+      sexo: "F",
       share: share.data,
       state: state.success ? state.data : "regular",
       ...(typeof start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(start) ? { lastPeriodStart: start } : {}),

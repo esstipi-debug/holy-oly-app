@@ -111,8 +111,11 @@ export const CycleDataSchema = z.object({
   cycleLengthDays: z.number().int().min(21).max(45).optional(),
 });
 /** Lo que devuelve GET /me/cycle: el registro + si la atleta YA activó el módulo (consintió).
- *  `consented:false` → la UI muestra el gate de activación, no el formulario (PR-L2, §3 opt-in). */
-export const MeCycleViewSchema = CycleDataSchema.extend({ consented: z.boolean() });
+ *  `consented:false` → la UI muestra el gate de activación, no el formulario (PR-L2, §3 opt-in).
+ *  `sexo`: el ciclo es female-only (decisión del owner 2026-06-14 — un hombre JAMÁS ve la opción).
+ *  Viaja en el view para que TODA superficie del atleta (Cuenta/carrusel/mapa) gatee igual; es el
+ *  dato propio de la atleta (sólo /me), nunca llega al coach. */
+export const MeCycleViewSchema = CycleDataSchema.extend({ consented: z.boolean(), sexo: z.enum(["M", "F"]) });
 export type MeCycleView = z.infer<typeof MeCycleViewSchema>;
 /** Input del PUT: el registro + (en la 1ª activación) el acto de consentimiento informado. El
  *  server exige `consent:true` la primera vez; luego es opcional (editar libremente). */

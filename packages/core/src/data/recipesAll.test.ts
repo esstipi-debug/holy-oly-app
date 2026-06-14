@@ -9,7 +9,7 @@ import { phaseRole } from "../logic/recipeGen";
 import { getMovement } from "../logic/movements";
 import { isComplexId, getComplex } from "../logic/complexes";
 import { instantiatePrescription, buildSessionViews } from "../logic/prescription";
-import { PrescribedExerciseSchema, SessionViewsSchema } from "../schemas";
+import { PrescribedExerciseSchema, SessionViewsSchema, ExerciseActualInputSchema } from "../schemas";
 
 const CLASSIC_BASES = new Set(["arranque", "cargada", "envion", "cargada-envion"]);
 const macro = (id: string) => MACROCYCLES.find((m) => m.id === id)!;
@@ -283,6 +283,14 @@ describe("contrato receta ↔ schema de lectura (regresión: complejos con '+' r
   it("PrescribedExerciseSchema acepta TODOS los ids de complejo del catálogo (el '+' es válido)", () => {
     for (const c of COMPLEXES) {
       expect(() => PrescribedExerciseSchema.parse({ movementId: c.id, sets: 5, reps: 1, pct: 70 }), c.id).not.toThrow();
+    }
+  });
+
+  // El MISMO MovementIdSchema gatea el body de COMPLETAR ENTRENO (PUT /me/session): sin el '+' el
+  // atleta recibía 400 "invalid actuals" al guardar una sesión con complejos (bug pipo 2026-06-14).
+  it("ExerciseActualInputSchema (completar entreno) acepta ids de complejo — el atleta puede guardar", () => {
+    for (const c of COMPLEXES) {
+      expect(() => ExerciseActualInputSchema.parse({ order: 0, movementId: c.id, done: true }), c.id).not.toThrow();
     }
   });
 

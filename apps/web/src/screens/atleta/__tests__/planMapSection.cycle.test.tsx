@@ -33,7 +33,7 @@ function client(cycle: CycleData): MeClient {
     putMeSession: async () => {},
     anularMeSession: async () => {},
     desanularMeSession: async () => {},
-    getMeCycle: async () => ({ ...cycle, consented: true }),
+    getMeCycle: async () => ({ sexo: "F" as const, ...cycle, consented: true }),
     putMeCycle: async () => {},
     deleteMeCycle: async () => {},
   };

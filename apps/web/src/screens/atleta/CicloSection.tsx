@@ -37,6 +37,8 @@ const pastHorizon = (startIso: string, lenDays: number): boolean => {
 export function CicloSection({ client = meClient }: { client?: MeClient }) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  // Female-only (owner 2026-06-14): un hombre JAMÁS ve la sección del ciclo. null = aún cargando.
+  const [sexo, setSexo] = useState<"M" | "F" | null>(null);
   const [consented, setConsented] = useState(false);
   const [share, setShare] = useState<CycleShare>("none");
   const [state, setState] = useState<CycleState>("regular");
@@ -62,6 +64,7 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
     try {
       const c = await client.getMeCycle();
       if (!mountedRef.current) return;
+      setSexo(c.sexo);
       setConsented(c.consented);
       setShare(c.share);
       setState(c.state);
@@ -75,6 +78,10 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
     }
   }, [client]);
   useEffect(() => { void load(); }, [load]);
+
+  // El ciclo es female-only: mientras carga (sexo=null) o si no es femenina, la sección no existe
+  // para la atleta — un hombre nunca ve siquiera el gate de activación (owner 2026-06-14).
+  if (sexo !== "F") return null;
 
   const canSave = !saving && validLen(len);
 

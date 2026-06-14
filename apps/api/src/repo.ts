@@ -114,10 +114,14 @@ export async function getCycle(prisma: PrismaClient, athleteId: string, today: s
 /** La verdad de la atleta (sólo /me). Sin fila → default honesto "no optó" + consented=false
  *  (la UI muestra el gate de activación, PR-L2). `consentedAt != null` ⇒ ya activó el módulo. */
 export async function getMyCycle(prisma: PrismaClient, athleteId: string): Promise<MeCycleView> {
+  // El ciclo es female-only (owner 2026-06-14): el `sexo` viaja para que la UI gatee toda superficie.
+  const a = await prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } });
+  const sexo = narrowSexo(a?.sexo ?? "M");
   const c = await prisma.cycleConsent.findUnique({ where: { athleteId } });
-  if (!c) return { share: "none", state: "regular", consented: false };
+  if (!c) return { sexo, share: "none", state: "regular", consented: false };
   const len = c.cycleLengthDays == null ? NaN : Number(decryptAtRest(c.cycleLengthDays));
   return {
+    sexo,
     share: decryptAtRest(c.share) as CycleShare,
     state: decryptAtRest(c.state) as CycleState,
     ...(c.lastPeriodStart == null ? {} : { lastPeriodStart: decryptAtRest(c.lastPeriodStart) }),

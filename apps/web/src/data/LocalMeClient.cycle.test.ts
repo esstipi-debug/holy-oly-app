@@ -8,7 +8,7 @@ const daysAgo = (n: number): string => new Date(Date.now() - n * 86_400_000).toI
 describe("LocalMeClient — ciclo (slice ciclo-visible)", () => {
   it("default honesto sin registro: share none, sin consentir (gate)", async () => {
     const me = new LocalMeClient("x9", new MemStorage());
-    expect(await me.getMeCycle()).toEqual({ share: "none", state: "regular", consented: false });
+    expect(await me.getMeCycle()).toEqual({ sexo: "F", share: "none", state: "regular", consented: false });
   });
 
   it("roundtrip put/get tras consentir + borrar campos al omitirlos", async () => {
@@ -16,9 +16,9 @@ describe("LocalMeClient — ciclo (slice ciclo-visible)", () => {
     const me = new LocalMeClient("x9", store);
     const data = { share: "full" as const, state: "regular" as const, lastPeriodStart: daysAgo(10), cycleLengthDays: 28 };
     await me.putMeCycle(data, true); // 1ª activación → opt-in
-    expect(await me.getMeCycle()).toEqual({ ...data, consented: true });
+    expect(await me.getMeCycle()).toEqual({ sexo: "F", ...data, consented: true });
     await me.putMeCycle({ share: "min", state: "regular" }); // editar, ya consentido
-    expect(await me.getMeCycle()).toEqual({ share: "min", state: "regular", consented: true });
+    expect(await me.getMeCycle()).toEqual({ sexo: "F", share: "min", state: "regular", consented: true });
   });
 
   it("input inválido rechaza (mirror del 400 del API)", async () => {
@@ -31,7 +31,7 @@ describe("LocalMeClient — ciclo (slice ciclo-visible)", () => {
     const me = new LocalMeClient("x9", store);
     await me.putMeCycle({ share: "full", state: "regular" }, true);
     await me.deleteMeCycle();
-    expect(await me.getMeCycle()).toEqual({ share: "none", state: "regular", consented: false });
+    expect(await me.getMeCycle()).toEqual({ sexo: "F", share: "none", state: "regular", consented: false });
   });
 
   it("el chip del coach (LocalRepository) computa el lúteo REAL desde el seed de Mara", async () => {

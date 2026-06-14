@@ -1,11 +1,13 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import type { CycleData } from "@holy-oly/core";
+import type { MeCycleView } from "@holy-oly/core";
 import type { MeClient } from "../../../data/meClient";
 import { CicloCarousel } from "./CicloCarousel";
 
 const TODAY = "2026-06-12";
-const mara: CycleData = { share: "full", state: "regular", lastPeriodStart: "2026-05-23", cycleLengthDays: 28 };
-const stub = (cycle: CycleData): MeClient => ({ getMeCycle: async () => cycle }) as unknown as MeClient;
+const mara: MeCycleView = { sexo: "F", consented: true, share: "full", state: "regular", lastPeriodStart: "2026-05-23", cycleLengthDays: 28 };
+// El ciclo es female-only (owner 2026-06-14): por defecto la stub es femenina; los tests de hombre pasan sexo:"M".
+const stub = (cycle: Partial<MeCycleView>): MeClient =>
+  ({ getMeCycle: async () => ({ sexo: "F", consented: true, share: "none", state: "regular", ...cycle }) }) as unknown as MeClient;
 
 test("grafica el ciclo de Mara: encabezado «Tu ciclo», fase lútea, y cambia de formato", async () => {
   render(<CicloCarousel client={stub(mara)} today={TODAY} />);
@@ -42,4 +44,11 @@ test("paleta NEUTRA: jamás usa tokens de estado (semáforo)", async () => {
   const { container } = render(<CicloCarousel client={stub(mara)} today={TODAY} />);
   await screen.findByText("Tu ciclo");
   expect(container.innerHTML).not.toMatch(/--ok\b|--warn|--alert|wl-danger|--gold/);
+});
+
+test("female-only (owner 2026-06-14): un atleta hombre NUNCA ve «Tu ciclo», ni con datos cargados", async () => {
+  const { container } = render(<CicloCarousel client={stub({ ...mara, sexo: "M" })} today={TODAY} />);
+  await new Promise((r) => setTimeout(r, 0));
+  expect(screen.queryByText("Tu ciclo")).not.toBeInTheDocument();
+  expect(container.textContent).toBe("");
 });

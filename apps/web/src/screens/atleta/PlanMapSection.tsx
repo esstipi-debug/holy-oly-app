@@ -33,10 +33,12 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
   // Falla en silencio (sin overlay) — el registro tiene su propio error en Cuenta.
   const [cycle, setCycle] = useState<CycleData | null>(null);
   useEffect(() => {
+    // El overlay del ciclo es female-only (owner 2026-06-14): para un hombre ni se carga ni se proyecta.
+    if (sexo !== "F") return;
     let on = true;
     client.getMeCycle().then((c) => { if (on) setCycle(c); }, () => {});
     return () => { on = false; };
-  }, [client]);
+  }, [client, sexo]);
 
   const firstDow = plan.startDate ? weekdayMonFirst(plan.startDate) : 0;
   const hoyPos = useMemo<HeatMapPos | null>(() => {
