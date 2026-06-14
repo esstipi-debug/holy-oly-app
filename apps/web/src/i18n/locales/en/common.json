@@ -1,0 +1,18 @@
+{
+  "loading": "Loading…",
+  "retry": "Retry",
+  "back": "Back",
+  "backToHome": "Back to home",
+  "backToLogin": "Back to login",
+  "close": "Close",
+  "logout": "Log out",
+  "save": "Save",
+  "saving": "Saving…",
+  "saved": "Saved ✓",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "language": "Language",
+  "errorLoad": "Couldn’t load.",
+  "errorSave": "Couldn’t save.",
+  "tryAgain": "Try again."
+}

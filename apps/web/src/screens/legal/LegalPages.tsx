@@ -1,32 +1,33 @@
 import { LEGAL_PRIVACY_VERSION, LEGAL_TERMS_VERSION, LEGAL_EFFECTIVE_DATE } from "@holy-oly/core";
 import { LegalShell } from "./legalUi";
-import { useLegalLocale } from "./useLegalLocale";
+import { useLegalLang } from "../../i18n/useLocale";
 import { PrivacyContent } from "./privacyContent";
 import { PrivacyContentEn } from "./privacyContent.en";
 import { TermsContent } from "./termsContent";
 import { TermsContentEn } from "./termsContent.en";
 
 /**
- * Política de Privacidad (grado GDPR/UK-GDPR + CCPA/CPRA + AR/CL/BR). Bilingüe: el idioma arranca
- * automático según el navegador y se cambia con el toggle ES/EN del shell (recuerda la elección).
+ * Política de Privacidad (grado GDPR/UK-GDPR + CCPA/CPRA + AR/CL/BR). Bilingüe: el idioma sigue al
+ * LOCALE GLOBAL de la app (arranca automático según el navegador y se cambia con el toggle global,
+ * que recuerda la elección). La prosa larga vive en `privacyContent[.en].tsx`.
  */
 export function PrivacidadPage() {
-  const [lang, setLang] = useLegalLocale();
-  const title = lang === "en" ? "Privacy Policy" : "Política de Privacidad";
+  const legalLang = useLegalLang();
+  const title = legalLang === "en" ? "Privacy Policy" : "Política de Privacidad";
   return (
-    <LegalShell lang={lang} setLang={setLang} title={title} version={LEGAL_PRIVACY_VERSION} effectiveDate={LEGAL_EFFECTIVE_DATE}>
-      {lang === "en" ? <PrivacyContentEn /> : <PrivacyContent />}
+    <LegalShell title={title} version={LEGAL_PRIVACY_VERSION} effectiveDate={LEGAL_EFFECTIVE_DATE}>
+      {legalLang === "en" ? <PrivacyContentEn /> : <PrivacyContent />}
     </LegalShell>
   );
 }
 
-/** Términos y Condiciones. Bilingüe (ver PrivacidadPage). */
+/** Términos y Condiciones. Bilingüe, sigue el locale global (ver PrivacidadPage). */
 export function TerminosPage() {
-  const [lang, setLang] = useLegalLocale();
-  const title = lang === "en" ? "Terms of Service" : "Términos y Condiciones";
+  const legalLang = useLegalLang();
+  const title = legalLang === "en" ? "Terms of Service" : "Términos y Condiciones";
   return (
-    <LegalShell lang={lang} setLang={setLang} title={title} version={LEGAL_TERMS_VERSION} effectiveDate={LEGAL_EFFECTIVE_DATE}>
-      {lang === "en" ? <TermsContentEn /> : <TermsContent />}
+    <LegalShell title={title} version={LEGAL_TERMS_VERSION} effectiveDate={LEGAL_EFFECTIVE_DATE}>
+      {legalLang === "en" ? <TermsContentEn /> : <TermsContent />}
     </LegalShell>
   );
 }

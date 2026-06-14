@@ -6,8 +6,10 @@ import * as vc from "../../data/vinculoClient";
 import { exportMe, deleteMyAccount } from "../../data/meClient";
 import { useAtletaCtx } from "./AthleteShell";
 import { CicloSection } from "./CicloSection";
+import { useTranslation } from "react-i18next";
 import { RetryButton } from "../../ui/RetryButton";
 import { SegmentedTabs } from "../../ui/SegmentedTabs";
+import { LanguageToggle } from "../../i18n/LanguageToggle";
 
 const HO_SKINS: Array<{ id: string; nm: string; sw: [string, string, string] }> = [
   { id: "neon", nm: "Neon PR", sw: ["#07070f", "#c8ff2d", "#1fe7ff"] },
@@ -210,6 +212,7 @@ function TusDatosSection() {
 export function CuentaMin() {
   const { apiEnabled, user, logout } = useAuth();
   const { skin, setSkin, variant, setVariant } = useAtletaCtx();
+  const { t } = useTranslation();
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
   function onLogout(): void {
@@ -267,6 +270,13 @@ export function CuentaMin() {
           )}
         </div>
       )}
+
+      <div className="ho-acct__group" style={{ marginTop: 18 }}>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 8 }}>
+          {t("language")}
+        </div>
+        <LanguageToggle />
+      </div>
 
       <div style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", margin: "22px 0 4px", lineHeight: 1.5 }}>
         <Link to="/privacidad" style={{ color: "inherit" }}>Privacidad</Link>

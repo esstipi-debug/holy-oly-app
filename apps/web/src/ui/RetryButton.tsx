@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 /**
  * Enlace «Reintentar» compartido — el botón-link subrayado que acompaña a los estados de error
  * (patrón D5: `role="alert"` + mensaje + Reintentar). Antes vivía inline y duplicado en ~14
@@ -9,6 +11,7 @@ export function RetryButton({ onClick, fontSize = 11 }: {
   /** Calza con el font-size del bloque de error que lo envuelve (10.5 / 11 / 12). */
   fontSize?: number;
 }) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
@@ -24,7 +27,7 @@ export function RetryButton({ onClick, fontSize = 11 }: {
         padding: 0,
       }}
     >
-      Reintentar
+      {t("retry")}
     </button>
   );
 }

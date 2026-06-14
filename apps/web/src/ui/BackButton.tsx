@@ -1,21 +1,24 @@
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Botón «volver» compartido — el cuadrado 34px del drill-down del coach, ahora único para
  * todas las superficies (Drilldown, MacroDetail, Invitaciones, Suscripción). El hit-area
  * táctil llega a 44px vía padding transparente; el margen negativo lo cancela en el layout,
- * así el cuadrado visible queda exactamente donde estaba el botón de 34px.
+ * así el cuadrado visible queda exactamente donde estaba el botón de 34px. Sin `ariaLabel`
+ * explícito se usa la clave i18n `common:back`.
  */
-export function BackButton({ onClick, ariaLabel = "Volver", style }: {
+export function BackButton({ onClick, ariaLabel, style }: {
   onClick: () => void;
   ariaLabel?: string;
   /** Ajustes de layout del caller (p.ej. marginBottom); se mergea sobre el margen -5 base. */
   style?: CSSProperties;
 }) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? t("back")}
       onClick={onClick}
       style={{
         width: 44, height: 44, padding: 5, margin: -5, border: 0, background: "transparent",

@@ -1,7 +1,9 @@
 import { useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../auth/AuthContext";
 import { VerifyEmailBanner } from "../../../ui/VerifyEmailBanner";
+import { LanguageToggle } from "../../../i18n/LanguageToggle";
 
 const page: CSSProperties = {
   padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)",
@@ -27,6 +29,7 @@ const label: CSSProperties = {
  *  contacto honesto (D6: endpoints de export/borrado del coach aún no existen — pendiente documentado). */
 export function CuentaCoach() {
   const { apiEnabled, user, logout } = useAuth();
+  const { t } = useTranslation();
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
   function onLogout(): void {
@@ -92,6 +95,10 @@ export function CuentaCoach() {
           )}
         </>
       )}
+
+      <div style={label}>{t("language")}</div>
+
+      <LanguageToggle style={{ marginTop: 8 }} />
 
       <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 16, lineHeight: 1.5 }}>
         <Link to="/privacidad" style={{ color: "inherit" }}>Privacidad</Link>

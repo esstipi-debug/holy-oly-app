@@ -1,0 +1,18 @@
+{
+  "loading": "Cargando…",
+  "retry": "Reintentar",
+  "back": "Volver",
+  "backToHome": "Volver al inicio",
+  "backToLogin": "Volver al login",
+  "close": "Cerrar",
+  "logout": "Cerrar sesión",
+  "save": "Guardar",
+  "saving": "Guardando…",
+  "saved": "Guardado ✓",
+  "cancel": "Cancelar",
+  "confirm": "Confirmar",
+  "language": "Idioma",
+  "errorLoad": "No se pudo cargar.",
+  "errorSave": "No se pudo guardar.",
+  "tryAgain": "Inténtalo de nuevo."
+}

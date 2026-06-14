@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { SegmentedTabs } from "../../ui/SegmentedTabs";
-import type { Lang } from "./useLegalLocale";
+import { useLegalLang } from "../../i18n/useLocale";
+import { LanguageToggle } from "../../i18n/LanguageToggle";
 
 /**
  * Presentación compartida de los documentos legales (Privacidad / Términos). El CONTENIDO vive en
@@ -130,15 +130,16 @@ const CHROME = {
 
 /** Marco del documento: volver + selector de idioma + título + metadatos + cuerpo. El idioma
  *  arranca automático (navegador) y se puede cambiar con el toggle ES/EN, que recuerda la elección. */
-export function LegalShell({ lang, setLang, title, version, effectiveDate, children }: { lang: Lang; setLang: (l: Lang) => void; title: string; version: string; effectiveDate: string; children: ReactNode }) {
+export function LegalShell({ title, version, effectiveDate, children }: { title: string; version: string; effectiveDate: string; children: ReactNode }) {
   const navigate = useNavigate();
+  const legalLang = useLegalLang();
   // Volver = de dónde viniste (legal se linkea desde login, Cuenta coach y Cuenta atleta);
   // sin historial (deep-link) → a la raíz, que despacha por rol.
   const onBack = (): void => {
     if (window.history.length > 1) navigate(-1);
     else navigate("/");
   };
-  const t = CHROME[lang];
+  const t = CHROME[legalLang];
   return (
     <div style={page}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
@@ -147,12 +148,7 @@ export function LegalShell({ lang, setLang, title, version, effectiveDate, child
           {t.back}
         </button>
         <div style={{ width: 116, flex: "0 0 auto" }}>
-          <SegmentedTabs
-            ariaLabel="Idioma / Language"
-            options={[["es", "ES"], ["en", "EN"]] as const}
-            value={lang}
-            onChange={setLang}
-          />
+          <LanguageToggle />
         </div>
       </div>
       <h1 style={{ fontSize: 26, fontWeight: 800, margin: "12px 0 4px", letterSpacing: "-.01em" }}>{title}</h1>
