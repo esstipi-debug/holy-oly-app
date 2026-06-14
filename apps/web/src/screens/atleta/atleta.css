@@ -13,7 +13,7 @@
 .ho-hobar__logo { width: 30px; height: 30px; flex: 0 0 auto; }
 .ho-hobar__brand { display: flex; flex-direction: column; line-height: 1; }
 .ho-hobar__name { font-family: var(--wl-display); font-weight: 800; font-size: 16px; letter-spacing: .05em; color: var(--wl-text); }
-.wl--neon .ho-hobar__name, .wl--neonlight .ho-hobar__name, .wl--chalk .ho-hobar__name { text-transform: uppercase; }
+.wl--neon .ho-hobar__name, .wl--neonlight .ho-hobar__name, .wl--bloomnight .ho-hobar__name, .wl--chalk .ho-hobar__name { text-transform: uppercase; }
 .ho-hobar__motto { font-family: var(--mono); font-size: 8.5px; letter-spacing: .07em; color: var(--wl-accent); margin-top: 4px; }
 .ho-hobar__spacer { flex: 1; }
 .ho-hobar__avatar {
@@ -27,7 +27,7 @@
 /* greeting */
 .ho-greet { margin: 6px 2px 12px; }
 .ho-greet__h { font-family: var(--wl-display); font-weight: 800; font-size: 22px; color: var(--wl-text); line-height: 1; }
-.wl--neon .ho-greet__h, .wl--neonlight .ho-greet__h, .wl--chalk .ho-greet__h { text-transform: uppercase; }
+.wl--neon .ho-greet__h, .wl--neonlight .ho-greet__h, .wl--bloomnight .ho-greet__h, .wl--chalk .ho-greet__h { text-transform: uppercase; }
 .ho-greet__s { font-family: var(--mono); font-size: 10.5px; color: var(--wl-muted); margin-top: 7px; letter-spacing: .02em; }
 
 /* generic card */
@@ -164,7 +164,7 @@
 .ho-ci__body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: hidden; }
 .ho-ci__card { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 18px 24px 28px; max-width: 460px; margin: 0 auto; width: 100%; }
 .ho-ci__q { font-family: var(--wl-display); font-weight: 800; font-size: 26px; line-height: 1.1; color: var(--wl-text); text-align: center; }
-.wl--neon .ho-ci__q, .wl--neonlight .ho-ci__q, .wl--chalk .ho-ci__q { text-transform: uppercase; }
+.wl--neon .ho-ci__q, .wl--neonlight .ho-ci__q, .wl--bloomnight .ho-ci__q, .wl--chalk .ho-ci__q { text-transform: uppercase; }
 .ho-ci__item { font-family: var(--mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--wl-accent); text-align: center; margin-bottom: 14px; }
 
 /* faces — variante A (tap): fila de 5 */

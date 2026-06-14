@@ -15,6 +15,7 @@ import { MovementLangToggle } from "../../i18n/MovementLangToggle";
 const HO_SKINS: Array<{ id: string; nm: string; sw: [string, string, string] }> = [
   { id: "neon", nm: "Neon PR", sw: ["#07070f", "#c8ff2d", "#1fe7ff"] },
   { id: "neonlight", nm: "Neon Bloom", sw: ["#fdeef6", "#ff2e9a", "#8a5cff"] },
+  { id: "bloomnight", nm: "Neon Bloom · Noche", sw: ["#150a16", "#ff3ba6", "#a06bff"] },
   { id: "plates", nm: "Plates", sw: ["#15171a", "#e23b2e", "#2274d4"] },
   { id: "premium", nm: "Premium", sw: ["#0d1016", "#e9b365", "#37d6b8"] },
   { id: "chalk", nm: "Chalk", sw: ["#e7e3d8", "#ff5400", "#2b59ff"] },
