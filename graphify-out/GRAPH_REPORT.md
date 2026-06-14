@@ -1,16 +1,16 @@
-# Graph Report - heuristic-roentgen-4d83e0  (2026-06-12)
+# Graph Report - elated-golick-ce26be  (2026-06-13)
 
 ## Corpus Check
-- 499 files · ~381,068 words
+- 560 files · ~430,218 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3240 nodes · 5950 edges · 207 communities (200 shown, 7 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.8)
+- 3564 nodes · 6678 edges · 216 communities (212 shown, 4 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0de78cbf`
+- Built from commit: `09a9f1ef`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -207,67 +207,75 @@
 - [[_COMMUNITY_Community 204|Community 204]]
 - [[_COMMUNITY_Community 205|Community 205]]
 - [[_COMMUNITY_Community 206|Community 206]]
+- [[_COMMUNITY_Community 207|Community 207]]
+- [[_COMMUNITY_Community 208|Community 208]]
+- [[_COMMUNITY_Community 209|Community 209]]
+- [[_COMMUNITY_Community 210|Community 210]]
+- [[_COMMUNITY_Community 211|Community 211]]
+- [[_COMMUNITY_Community 212|Community 212]]
+- [[_COMMUNITY_Community 213|Community 213]]
+- [[_COMMUNITY_Community 214|Community 214]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `MonitorSeries` - 49 edges
+1. `MonitorSeries` - 50 edges
 2. `LocalRepository` - 46 edges
-3. `getMovement()` - 42 edges
-4. `HttpRepository` - 32 edges
-5. `MACROCYCLES` - 32 edges
-6. `prisma` - 29 edges
-7. `MemStorage` - 28 edges
-8. `SessionView` - 28 edges
-9. `LocalMeClient` - 27 edges
-10. `buildServer()` - 25 edges
+3. `getMovement()` - 41 edges
+4. `MACROCYCLES` - 36 edges
+5. `prisma` - 32 edges
+6. `HttpRepository` - 32 edges
+7. `SessionView` - 31 edges
+8. `LocalMeClient` - 29 edges
+9. `buildServer()` - 28 edges
+10. `MemStorage` - 28 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `CalendarHeatmap()` --calls--> `calendarWeeks()`  [EXTRACTED]
-  apps/web/src/screens/atleta/hoy/ConstanciaCard.tsx → packages/core/src/logic/schedule.ts
+- `instantiateForPlan()` --calls--> `instantiatePrescription()`  [EXTRACTED]
+  apps/api/src/repo.ts → packages/core/src/logic/prescription.ts
+- `FechaSheet()` --calls--> `fueraDeSemana()`  [INFERRED]
+  apps/web/src/screens/atleta/entreno/FechaSheet.tsx → packages/core/src/logic/registro.ts
 - `toDraft()` --calls--> `getMovement()`  [EXTRACTED]
   apps/web/src/screens/coach/sessions/SessionEditor.tsx → packages/core/src/logic/movements.ts
 - `swapMovement()` --calls--> `getMovement()`  [EXTRACTED]
   apps/web/src/screens/coach/sessions/SessionEditor.tsx → packages/core/src/logic/movements.ts
 - `withRec()` --calls--> `recoverySeries()`  [EXTRACTED]
   apps/api/prisma/seed-demo-data.ts → packages/core/src/logic/monitor.ts
-- `SeedAthlete` --references--> `MacrocycleLevel`  [EXTRACTED]
-  apps/api/prisma/seed.ts → packages/core/src/types/index.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (207 total, 7 thin omitted)
+## Communities (216 total, 4 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (37): AthleteShell(), AtletaOutletCtx, NAV, CheckIn(), FaceDial(), GOOD_WORD, Item, Load (+29 more)
+Cohesion: 0.09
+Nodes (25): AthleteShell(), AtletaOutletCtx, NAV, CheckIn(), FaceDial(), GOOD_WORD, Item, CheckinVariant (+17 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.07
-Nodes (24): prisma, InjectRes, RMS, Res, InjectRes, InjectRes, RMS, TODAY (+16 more)
+Cohesion: 0.06
+Nodes (32): prisma, globalSetup(), InjectRes, RMS, Res, InjectRes, Res, InjectRes (+24 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.06
-Nodes (51): withRec(), MonitorWeekInput, seriesToRows(), full, minimal, withRec(), WellnessItemInput, recoverySeries() (+43 more)
+Nodes (49): withRec(), MonitorWeekInput, seriesToRows(), full, minimal, withRec(), WellnessItemInput, recoverySeries() (+41 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
-Nodes (55): requireCoachWrite(), assertBillingProdConfig(), billingProvider(), isProduction(), missingBillingProdConfig(), mockCheckoutAllowed(), requiredPlanEnvKeys(), stubFullMercadoPagoEnv() (+47 more)
+Nodes (57): requireCoachWrite(), requireCoach(), assertBillingProdConfig(), billingProvider(), isProduction(), missingBillingProdConfig(), mockCheckoutAllowed(), requiredPlanEnvKeys() (+49 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.11
-Nodes (31): isoAt(), ms(), PlanMapSection(), PlanView, PlanCalendar(), PHASE_RAMP, phaseColor(), dayColumnHeads() (+23 more)
+Nodes (29): isoAt(), ms(), PlanMapSection(), PlanView, PlanCalendar(), PHASE_RAMP, phaseColor(), dayColumnHeads() (+21 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.13
-Nodes (20): AcwrChart(), ChartCard(), linePath(), WeekTapZones(), CompChart(), ImrFaseChart(), Mini(), MiniProps (+12 more)
+Cohesion: 0.12
+Nodes (31): Load, AcwrChart(), ChartCard(), Explain, linePath(), weekLabels(), WeekTapZones(), CompChart() (+23 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.05
 Nodes (43): dependencies, fastify, @fastify/cookie, @fastify/cors, @fastify/helmet, @fastify/rate-limit, @fastify/static, @holy-oly/core (+35 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.14
-Nodes (16): label, LoadMeters(), METER, value, best, card, desc, MacroCard() (+8 more)
+Cohesion: 0.21
+Nodes (10): best, card, desc, MacroCard(), meta, pk, tag, title (+2 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.05
@@ -275,83 +283,87 @@ Nodes (41): 0. Mapa de las 5 specs y sus dependencias, 1.1 Resumen técnico, 1.2
 
 ### Community 9 - "Community 9"
 Cohesion: 0.05
-Nodes (39): §0 · Misión + las dos reglas duras, §1 · Las dos personas (lentes obligatorios), 1RM, discos y verdad del kg, §2 · Ciencia del deporte (halterofilia), §2b · Verdad anclada a fecha, §2c · Contenido programático — escuelas, scores y complejos (2026-06-11), §3 · Privacidad y ética — el ciclo menstrual (la zona más sensible), §4 · Viz-first detallado (charts móviles) (+31 more)
+Nodes (40): §0 · Misión + las dos reglas duras, §1 · Las dos personas (lentes obligatorios), 1RM, discos y verdad del kg, §2 · Ciencia del deporte (halterofilia), §2b · Verdad anclada a fecha, §2c · Contenido programático — escuelas, scores y complejos (2026-06-11), §3 · Privacidad y ética — el ciclo menstrual (la zona más sensible), §4 · Viz-first detallado (charts móviles) (+32 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.05
 Nodes (36): App del atleta (bienestar) — A1: shell + Hoy + check-in · Implementation Plan, `apps/api` (persistence + endpoints), `apps/web` (client + screens), docs (already present in this worktree), Execution Handoff, File Structure, `packages/core` (pure logic, types, schemas), Phase A — Core (pure logic + types + schemas) (+28 more)
 
 ### Community 11 - "Community 11"
-Cohesion: 0.05
-Nodes (40): AdherenceSourceSchema, AdherenceStatusSchema, AtletaSchema, CompetenciaSchema, DailyCheckinSchema, DayHeatSchema, DayLogSchema, EnginePhaseSchema (+32 more)
+Cohesion: 0.04
+Nodes (60): HttpError, Parser, AdherenceSourceSchema, AdherenceStatusSchema, AthleteDailyViewSchema, AtletaSchema, CompetenciaSchema, CompsSchema (+52 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.12
-Nodes (23): apiOrigin(), buildGoogleAuthUrl(), exchangeGoogleCode(), googleConfigured(), GoogleProfile, googleRedirectUri(), oauthCookieOpts(), oauthStateSecret() (+15 more)
+Cohesion: 0.16
+Nodes (18): apiOrigin(), buildGoogleAuthUrl(), exchangeGoogleCode(), googleConfigured(), GoogleProfile, googleRedirectUri(), oauthCookieOpts(), oauthStateSecret() (+10 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.09
 Nodes (28): athleteWeekView(), CLASSIC_LIFTS, generateWeek(), PHASE_PROFILE, phasePlan(), PRILEPIN, RATIONALE, REPS_PER_SET_CLASSIC (+20 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.08
-Nodes (33): dnaForFamily(), allowedAtPeaking(), archetypesFor(), BISAGRA_PCT, BISAGRA_REPS, CLASSIC_BASES, EMPUJE_PCT, EMPUJE_REPS (+25 more)
+Cohesion: 0.10
+Nodes (38): baseIdOf(), baseIdsOf(), getComplex(), isComplexId(), getMovement(), resolveTargetKg(), allowedAtPeaking(), applyPrilepinSessionClamp() (+30 more)
 
 ### Community 15 - "Community 15"
-Cohesion: 0.08
-Nodes (18): rowsToSeries(), DayLogRow, getComps(), getDayLogView(), getMePlanView(), getPlan(), getPlanHeat(), getPrCandidates() (+10 more)
+Cohesion: 0.07
+Nodes (23): rowsToSeries(), mergeActuals(), ConsentRequiredError, DayLogRow, FechaOcupadaError, getComps(), getDayLogView(), getMePlanView() (+15 more)
 
 ### Community 16 - "Community 16"
-Cohesion: 0.12
-Nodes (16): HomeScreen(), AtletaMiniCard(), row, AtletasHero(), hero, DemoSalesStrip(), useAuthMaybe(), Equipo() (+8 more)
+Cohesion: 0.14
+Nodes (14): AtletaMiniCard(), row, AtletasHero(), hero, DemoSalesStrip(), MiniProps, onResetDemo(), getRosterRows() (+6 more)
 
 ### Community 17 - "Community 17"
-Cohesion: 0.14
-Nodes (12): PlanDetailSheet(), PlanView, MeClient, CaminoCard(), PlanView, PLAN, renderHome(), stubClient() (+4 more)
+Cohesion: 0.16
+Nodes (10): PlanDetailSheet(), PlanView, CaminoCard(), PhaseTrack(), PlanView, PLAN, PLAN, PLAN (+2 more)
 
 ### Community 18 - "Community 18"
-Cohesion: 0.26
-Nodes (10): CL(), LoadState, VictoriaScreen(), completion(), heaviestSet(), sessionTonnage(), setTonnage(), warmupTonnage() (+2 more)
+Cohesion: 0.21
+Nodes (11): CL(), LoadState, VictoriaScreen(), completion(), heaviestSet(), sessionTonnage(), setTonnage(), warmupTonnage() (+3 more)
 
 ### Community 19 - "Community 19"
-Cohesion: 0.09
-Nodes (34): MOVEMENT_BASES, BASE_BY_ID, buildMovements(), BY_ID, canonicalVariant(), computeComplexity(), computeLoads(), FLAG_LABEL (+26 more)
+Cohesion: 0.11
+Nodes (26): MOVEMENT_BASES, BASE_BY_ID, buildMovements(), BY_ID, canonicalVariant(), computeComplexity(), computeLoads(), FLAG_LABEL (+18 more)
 
 ### Community 20 - "Community 20"
-Cohesion: 0.10
-Nodes (24): isoDateLabel(), DailySection(), SOURCE_LABEL, STATUS_GLYPH, STATUS_LABEL, STATUS_TINT, PLAN, TODAY (+16 more)
+Cohesion: 0.06
+Nodes (38): CicloSection(), pastHorizon(), SHARE_OPTS, STATE_OPTS, validLen(), CL(), Load, RecorridoCard() (+30 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.07
-Nodes (26): MOVEMENTS, norm(), searchMovements(), simplerVariants(), substitutesOf(), item, MovementPicker(), Draft (+18 more)
+Cohesion: 0.09
+Nodes (20): MOVEMENTS, substitutesOf(), item, MovementPicker(), Draft, mini, num, SessionEditor() (+12 more)
 
 ### Community 22 - "Community 22"
-Cohesion: 0.13
-Nodes (35): COMPLEXES, baseIdOf(), baseIdsOf(), BY_ID, complexComplexity(), complexLoads(), complexPctCeiling(), complexTotalReps() (+27 more)
+Cohesion: 0.16
+Nodes (18): COMPLEXES, BY_ID, complexComplexity(), complexLoads(), complexPctCeiling(), complexTotalReps(), complexWeakRmKg(), complexWeakRmRef() (+10 more)
 
 ### Community 23 - "Community 23"
 Cohesion: 0.07
 Nodes (28): dependencies, @holy-oly/core, react, react-dom, react-router-dom, devDependencies, autoprefixer, jsdom (+20 more)
 
 ### Community 24 - "Community 24"
-Cohesion: 0.12
-Nodes (22): clearLoginFailures(), Entry, isAccountLocked(), lockoutStoreSize(), recordLoginFailure(), resetLockoutStore(), store, ACCEPT_RATE_LIMIT (+14 more)
+Cohesion: 0.10
+Nodes (26): clearLoginFailures(), Entry, isAccountLocked(), lockoutStoreSize(), recordLoginFailure(), resetLockoutStore(), store, ACCEPT_RATE_LIMIT (+18 more)
 
 ### Community 25 - "Community 25"
 Cohesion: 0.07
 Nodes (27): 0. Qué cambió respecto a la v1 (el valor de la auditoría), 1.1 Postura (baselines reconciliados), 1.2 Lo que YA está bien — **verificado en código** (no reimplementar), 1.3 Brechas principales (re-priorizadas), 1. Resumen ejecutivo, 2. Principios de diseño (invariantes), 3. Roadmap de mejoras (oleadas re-priorizadas), 4. Matriz de riesgos (inherente vs residual) (+19 more)
 
 ### Community 26 - "Community 26"
-Cohesion: 0.14
-Nodes (17): GLYPH, signals, TINT, WeekDetailSheet(), WeekSignal, count, GLYPH, row (+9 more)
+Cohesion: 0.10
+Nodes (22): MES, ms(), PlanWeekRow, planWeeks(), weekRangeLabel(), GLYPH, signals, TINT (+14 more)
+
+### Community 27 - "Community 27"
+Cohesion: 0.12
+Nodes (10): HttpRepository, cycleDayOf(), cycleMarkFor(), isoAt(), lutealNow(), ms(), nextCycleWindow(), redactCycle() (+2 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.08
 Nodes (25): Decisions needing the human (do not block M3; confirm before this drives a real athlete), Design decisions (resolved with engineering judgment), Equipo screen — `apps/web/src/screens/coach`, File Structure, Holy Oly — M3 · Equipo (coach triage) · Implementation Plan, Layer A — `packages/core`, Layer B — `apps/web/src/data` (LocalRepository), Milestone 3 — Equipo (coach triage) (+17 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.20
-Nodes (18): fin(), row(), s, weekSignals(), acwrState(), acwrStateSafe(), imrBandForWeek(), imrBandState() (+10 more)
+Cohesion: 0.19
+Nodes (20): fin(), row(), s, weekSignals(), acwrState(), acwrStateSafe(), chronic(), imrBandForWeek() (+12 more)
 
 ### Community 30 - "Community 30"
 Cohesion: 0.08
@@ -366,12 +378,12 @@ Cohesion: 0.08
 Nodes (23): 10. Decomposición tentativa (para `writing-plans`), 11. A confirmar con El Carnicero (no bloquean el spec), 1. Objetivo, 2. Decisiones de diseño (cerradas en el brainstorming), 3. Alcance, 4.1 Invariantes (anclados al rulebook de dominio — NO negociables), 4.2 Primitivo: `warmupSets`, 4.3 Orquestador: `warmupForExercise` (+15 more)
 
 ### Community 33 - "Community 33"
-Cohesion: 0.13
-Nodes (19): MACROCYCLE_FAMILIES, MACROCYCLES, phaseForWeek(), MACRO_RECIPES, ALL_RECIPES, BY_MACRO, recipeFor(), CLASSIC_BASES (+11 more)
+Cohesion: 0.11
+Nodes (25): MACROCYCLE_FAMILIES, MACROCYCLES, phaseForWeek(), MACRO_RECIPES, ALL_RECIPES, BY_MACRO, CLASSIC_BASES, macro() (+17 more)
 
 ### Community 34 - "Community 34"
-Cohesion: 0.22
-Nodes (13): deleteMyAccount(), exportMe(), getDayLog(), getMeCycle(), getMeHeat(), getMePlan(), getMeRecorrido(), getMeSeries() (+5 more)
+Cohesion: 0.21
+Nodes (14): deleteMeCycle(), deleteMyAccount(), exportMe(), getDayLog(), getMeCycle(), getMeHeat(), getMePlan(), getMeRecorrido() (+6 more)
 
 ### Community 35 - "Community 35"
 Cohesion: 0.09
@@ -406,16 +418,16 @@ Cohesion: 0.16
 Nodes (21): API_DIR, APP_PORT, HERE, isNodePid(), killZombieApi(), LOCK_FILE, log(), LOG_FILE (+13 more)
 
 ### Community 43 - "Community 43"
-Cohesion: 0.15
-Nodes (15): authPost(), completeGoogleSignup(), forgotPassword(), login(), logout(), resendVerificationEmail(), resetPassword(), signup() (+7 more)
+Cohesion: 0.16
+Nodes (14): authPost(), completeGoogleSignup(), forgotPassword(), login(), logout(), resendVerificationEmail(), resetPassword(), signup() (+6 more)
 
 ### Community 44 - "Community 44"
-Cohesion: 0.15
-Nodes (11): requireAthlete(), requireCoach(), billingRoutes(), meRoutes(), AuditInput, recordAudit(), MedalSchema, PutMeCycleInputSchema (+3 more)
+Cohesion: 0.20
+Nodes (8): requireAthlete(), meRoutes(), ExerciseActualInputSchema, ExerciseActualSchema, PutMeCycleInputSchema, PutMeSessionInputSchema, SessionActualsInputSchema, SessionRegistroSchema
 
 ### Community 45 - "Community 45"
-Cohesion: 0.10
-Nodes (14): DemoTourCard(), STEPS, isTourSeen(), markTourSeen(), KEYS, PLAN, medal, plan (+6 more)
+Cohesion: 0.04
+Nodes (37): PLAN, TODAY, KEYS, PLAN, ROSTER, RX, SERIES, PLAN (+29 more)
 
 ### Community 46 - "Community 46"
 Cohesion: 0.13
@@ -430,28 +442,28 @@ Cohesion: 0.10
 Nodes (20): File Structure, Holy Oly — Foundation + Coach Slice · Implementation Plan (M1–M2), Milestone 1 — Monorepo + `packages/core`, Milestone 2 — Design system (`apps/web`), Next plan (M3–M5), Self-review notes, Task 10: Port theme tokens (`wl-themes` → `theme.css`), Task 11: Primitive components (+12 more)
 
 ### Community 49 - "Community 49"
-Cohesion: 0.15
-Nodes (9): App(), routes, isHashRouting(), VerifyEmailScreen(), page, PrivacidadPage(), TerminosPage(), AppError() (+1 more)
+Cohesion: 0.18
+Nodes (7): App(), routes, isHashRouting(), ForgotPasswordScreen(), VerifyEmailScreen(), AppError(), NotFound()
 
 ### Community 50 - "Community 50"
-Cohesion: 0.16
-Nodes (16): deleteMyAccount(), exportMe(), fail(), getDayLog(), getMeCycle(), getMeHeat(), getMePlan(), getMeRecorrido() (+8 more)
+Cohesion: 0.15
+Nodes (18): deleteMeCycle(), deleteMyAccount(), exportMe(), fail(), getDayLog(), getMeCycle(), getMeHeat(), getMePlan() (+10 more)
 
 ### Community 51 - "Community 51"
 Cohesion: 0.15
 Nodes (17): acceptCode(), confirmVinculo(), denyVinculo(), getInvite(), getMyVinculo(), jsonOrThrow(), listVinculos(), MeVinculo (+9 more)
 
 ### Community 52 - "Community 52"
-Cohesion: 0.18
-Nodes (12): chip, mmss(), PlayerRow, SessionPlayer(), WarmupSection(), chip, num, SetRow (+4 more)
+Cohesion: 0.16
+Nodes (13): chip, label, PlayerRow, SessionAccordion(), SetChips(), WarmupSection(), chip, num (+5 more)
 
 ### Community 53 - "Community 53"
 Cohesion: 0.18
 Nodes (14): createSession(), generateSessionToken(), invalidateSessionsByUserId(), invalidateSessionToken(), purgeExpiredSessions(), sessionIdFromToken(), ttlMs(), ValidatedSession (+6 more)
 
 ### Community 54 - "Community 54"
-Cohesion: 0.35
-Nodes (6): MacroTimeline(), xw(), yint(), yvol(), isTaperWeek(), volumeCurve()
+Cohesion: 0.24
+Nodes (9): MacroTimeline(), xw(), yint(), yvol(), Props, ResumenTab(), isTaperWeek(), volumeCurve() (+1 more)
 
 ### Community 55 - "Community 55"
 Cohesion: 0.11
@@ -466,44 +478,44 @@ Cohesion: 0.19
 Nodes (14): GoogleCompleteScreen(), input, label, HolyOlyIcon(), Props, arcBottom(), arcTop(), CFG (+6 more)
 
 ### Community 58 - "Community 58"
-Cohesion: 0.16
-Nodes (19): googleEmailConfigured(), GoogleSmtpConfig, OutboundMessage, readConfig(), resetGoogleTransport(), sendViaGoogle(), ENV, MailArg (+11 more)
+Cohesion: 0.13
+Nodes (23): profileName(), provisionUserRecords(), sendCoachVerificationEmail(), Tx, googleEmailConfigured(), GoogleSmtpConfig, OutboundMessage, readConfig() (+15 more)
 
 ### Community 59 - "Community 59"
 Cohesion: 0.11
 Nodes (17): 1. Objetivo y alcance, 2. Ubicación y boot, 3.1 Login (UI) → roster visible, 3.2 Cross-coach 403, 3.3 Ciclo sin leak, 3.4 Headers de seguridad, 3. Escenarios (`security.spec.ts`), 4. Gotcha: HSTS no se asegura acá (+9 more)
 
 ### Community 60 - "Community 60"
-Cohesion: 0.16
-Nodes (10): Badge(), Button(), Chip(), LABEL, SECTION_STYLE, Skin, SKINS, BTN (+2 more)
+Cohesion: 0.15
+Nodes (10): Button(), Card(), Chip(), LABEL, SECTION_STYLE, Skin, SKINS, BTN (+2 more)
 
 ### Community 61 - "Community 61"
-Cohesion: 0.21
-Nodes (11): billingCheckout(), BillingPeriod, BillingPlan, billingPlans(), billingStatus, CoachPlanId, mockActivate(), throwIfNotOk() (+3 more)
+Cohesion: 0.16
+Nodes (15): billingCheckout(), BillingPeriod, BillingPlan, billingPlans(), billingStatus, CoachPlanId, mockActivate(), throwIfNotOk() (+7 more)
 
 ### Community 62 - "Community 62"
-Cohesion: 0.20
-Nodes (7): LocalMeClient, mergeActuals(), barKgForSexo(), buildSessionViews(), getMeRecorrido(), getPrescriptionWeek(), CycleData
+Cohesion: 0.21
+Nodes (3): LocalMeClient, MeCycleView, MeRecorrido
 
 ### Community 63 - "Community 63"
 Cohesion: 0.12
 Nodes (16): 10. Riesgos, 11. Slices siguientes (fuera de este spec), 1. Contexto y objetivo, 2. IA del coach acordada (contexto, no todo es de este slice), 3. Alcance, 4.1 Navegación (cáscara), 4.2 Datos, 4. Arquitectura (+8 more)
 
 ### Community 64 - "Community 64"
-Cohesion: 0.14
-Nodes (15): useAtletaCtx(), CuentaMin(), HO_SKINS, TusDatosSection(), VincularSection(), AuthUser, Role, AuthCtx (+7 more)
+Cohesion: 0.15
+Nodes (14): useAtletaCtx(), CuentaMin(), HO_SKINS, TusDatosSection(), VincularSection(), AuthUser, Role, AuthCtx (+6 more)
 
 ### Community 65 - "Community 65"
-Cohesion: 0.29
-Nodes (4): DayLog, DayLogInput, DayLogResult, DayLogView
+Cohesion: 0.14
+Nodes (12): FechaOcupadaError, CycleShareSchema, CycleStateSchema, DayLogsSchema, PrescriptionRowsSchema, SessionActualsSchema, SessionRegistrosSchema, DayLog (+4 more)
 
 ### Community 66 - "Community 66"
 Cohesion: 0.13
-Nodes (5): PLAN, ROSTER, RX, SERIES, JsonStore
+Nodes (25): PrivacidadPage(), TerminosPage(), Bullets(), CHROME, Contact(), Defs(), h2, h3 (+17 more)
 
 ### Community 67 - "Community 67"
-Cohesion: 0.12
-Nodes (20): clampInt(), makeDayLogYear(), MARA_BASE, ROSTER_META, RosterMeta, SEED_COMPS, SEED_CYCLE, SEED_MEDALS (+12 more)
+Cohesion: 0.09
+Nodes (20): HomeScreen(), Load, useAuthMaybe(), Equipo(), MeClient, COPY, ST, Titular() (+12 more)
 
 ### Community 68 - "Community 68"
 Cohesion: 0.13
@@ -535,19 +547,19 @@ Nodes (14): dependencies, zod, devDependencies, vitest, exports, main, name, scr
 
 ### Community 75 - "Community 75"
 Cohesion: 0.13
-Nodes (14): chipRow, eyebrow, filterLabel, grid, MacroCatalog(), page, search, title (+6 more)
+Nodes (15): chipRow, eyebrow, filterLabel, grid, MacroCatalog(), page, search, title (+7 more)
 
 ### Community 76 - "Community 76"
-Cohesion: 0.08
-Nodes (20): HttpError, Parser, LocalRepository, FailingRepo, AthleteDailyViewSchema, CompsSchema, CycleContextSchema, MedalsSchema (+12 more)
+Cohesion: 0.09
+Nodes (14): ctx, initsSeen, roster, series, LocalRepository, medal, PrilepinPreviewArgs, FailingRepo (+6 more)
 
 ### Community 77 - "Community 77"
 Cohesion: 0.13
 Nodes (14): 1. El producto en una línea, 2. Dos superficies (personas distintas), 3. Qué diseñar ahora (alcance de este brief), 4. Sistema visual (la marca) — "Neon Bloom", 5. Vocabulario de componentes (reusá el lenguaje), 6. Reglas de dominio que CONDICIONAN lo visual (no son opcionales), 7. Referencias en el repo (público), 8. Constraints técnicos (para que el handoff a código sea directo) (+6 more)
 
 ### Community 78 - "Community 78"
-Cohesion: 0.22
-Nodes (8): ResumenDia(), ResumenRow, Disc, DISC_COLORS, DISCS, perSide(), ROWS, DiscRow()
+Cohesion: 0.16
+Nodes (12): ResumenDia(), ResumenRow, barKgForSexo(), Disc, DISC_COLORS, DISCS, perSide(), ROWS (+4 more)
 
 ### Community 79 - "Community 79"
 Cohesion: 0.13
@@ -566,8 +578,8 @@ Cohesion: 0.13
 Nodes (14): Archivos tocados, Arquitectura, Atleta — `apps/web/src/screens/atleta/HomeScreen.tsx`, Coach — `apps/web/src/screens/coach/Equipo.tsx`, Decisiones tomadas en brainstorming, Estado vacío / bordes, Integración (dónde se monta), Objetivo (+6 more)
 
 ### Community 83 - "Community 83"
-Cohesion: 0.33
-Nodes (6): EntrenoScreen(), ExerciseActualInput, PLAN_FIXTURE, renderEntreno(), SESSION_FIXTURE, start()
+Cohesion: 0.11
+Nodes (18): EntrenoScreen(), AthletePreviewClient, AtletaPreview(), Load, SESSION, ExerciseActualInput, PutMeSessionInput, AYER (+10 more)
 
 ### Community 84 - "Community 84"
 Cohesion: 0.14
@@ -602,8 +614,8 @@ Cohesion: 0.14
 Nodes (13): 0. Estado actual (qué YA está hecho), 1. 🔴 DECISIÓN BLOQUEANTE: proveedor de pago (antes de E3–E5), 2. E3–E5 · Cobro / suscripción (Fase 5 — la pieza grande, NO construida), 3. B0 + B6 · Email + recuperación de cuenta / verificación, 4. E1 · Política de registro + anti-bot (decisión de producto), 5. E8 · Privacidad / legal (datos de salud en US, LatAm), 6. Hosting / infra (A4a) — "respaldo": Railway primaria + Render standby, 7. E6 · E2E de seguridad en CI (opcional, no bloqueante) (+5 more)
 
 ### Community 92 - "Community 92"
-Cohesion: 0.11
-Nodes (9): RepoContext, RepositoryProvider(), MacroDetail(), PLAN, TODAY, Repository, FailingRepo, FailingRepo (+1 more)
+Cohesion: 0.10
+Nodes (26): PhaseAtletaDetail(), PhaseLite, retryStyle, whyStyle, dnaForFamily(), programmableName(), displayName(), excludedNames() (+18 more)
 
 ### Community 93 - "Community 93"
 Cohesion: 0.21
@@ -626,20 +638,20 @@ Cohesion: 0.15
 Nodes (12): compilerOptions, declaration, esModuleInterop, isolatedModules, lib, module, moduleResolution, noUncheckedIndexedAccess (+4 more)
 
 ### Community 98 - "Community 98"
-Cohesion: 0.16
-Nodes (13): reconcileAdherence(), buildDailyView(), dailyFromDate(), DailyLogRow, DailyPrescriptionRow, DailyViewInput, totalWeeksOf(), defaultStartDate() (+5 more)
+Cohesion: 0.25
+Nodes (9): reconcileAdherence(), buildDailyView(), dailyFromDate(), DailyLogRow, DailyPrescriptionRow, DailyViewInput, totalWeeksOf(), getDailyView() (+1 more)
 
 ### Community 99 - "Community 99"
 Cohesion: 0.20
 Nodes (8): input, label, MedalSheet(), METALS, Medal(), Metal, METALS, RIBBON_COLS
 
 ### Community 100 - "Community 100"
-Cohesion: 0.36
-Nodes (6): ms(), prCandidates(), rmVigencia(), base, RMS, RmVigencia
+Cohesion: 0.09
+Nodes (25): at(), ms(), prCandidates(), rmVigencia(), base, RMS, AdherenceSource, AdherenceStatus (+17 more)
 
 ### Community 101 - "Community 101"
-Cohesion: 0.19
-Nodes (12): Load, Explain, weekLabels(), LoadChart(), WeightChart(), WellnessChart(), chronic(), weightBandState() (+4 more)
+Cohesion: 0.07
+Nodes (27): Cambios de esta revisión vs. el plan original, Criterios de aceptación globales, Estado actual (baseline VERIFICADO 2026-06-13), Estimación (revisada — alcance real), Fase 0 — Decisiones owner y contenido (1–3 días calendario, paralelo a dev), Fase 1 — Aceptación legal en signup + contenido versionado (PR-L1), Fase 2 — Consentimiento explícito del ciclo (PR-L2), Fase 3 — Complementos y go-live legal (PR-L3, ~1–2 días) (+19 more)
 
 ### Community 102 - "Community 102"
 Cohesion: 0.17
@@ -678,8 +690,8 @@ Cohesion: 0.17
 Nodes (11): 1. El contrato: qué entra y qué sale, 2. La tabla de Prilepin (el motor interno), 3.1 Mapeo de semanas restantes → secuencia de fases, 3. La regla central: qué % de Prilepin se usa según las semanas que faltan, 4.1 Ola continua sin competencia (weeksToComp === null), 4. La función que genera la prescripción (todo junto), 5. Ejemplo de salida concreta (snatch, e1RM 100kg), 6. Cómo se conecta con las otras specs (+3 more)
 
 ### Community 111 - "Community 111"
-Cohesion: 0.20
-Nodes (9): ProgresoScreen(), CL(), Load, RecorridoCard(), PLAN_NULL, PLAN_W2, RECORRIDO, SERIES (+1 more)
+Cohesion: 0.33
+Nodes (5): ProgresoScreen(), PLAN_NULL, PLAN_W2, RECORRIDO, SERIES
 
 ### Community 112 - "Community 112"
 Cohesion: 0.29
@@ -742,8 +754,8 @@ Cohesion: 0.18
 Nodes (10): 1. Qué es / qué no es, 2. Contrato, 3. Configuración (constantes nombradas, ajustables acá y en ningún otro lado), 4. `phasePlan(weeksToComp)` — el countdown FIJADO AL ANCLAR (D13), 5. `wavePhase(waveWeek)` — ola continua de 6 semanas, 6. `generateWeek` — los 4 pasos, 7. Decisiones de esta spec (las que corrigen o superan al bundle — no re-litigar sin causa), 8. Criterios de aceptación (TDD — los 9 del bundle, adaptados, + los de la casa) (+2 more)
 
 ### Community 127 - "Community 127"
-Cohesion: 0.29
-Nodes (4): CYCLE_OK, HEAT, PLAN, PlanView
+Cohesion: 0.17
+Nodes (6): base, CYCLE_OK, HEAT, PLAN, PlanView, WeekHeat
 
 ### Community 128 - "Community 128"
 Cohesion: 0.24
@@ -790,32 +802,32 @@ Cohesion: 0.20
 Nodes (9): 0. Estado en una línea, 1. Qué está hecho y en prod, 2. ✅ Para GO-LIVE de cobro (acción del owner, ~15 min), 3. Resto del go-live (owner / no-código), 4. Mejoras de negocio pendientes (código, post-precio-final), 5. GOTCHAS (no romper), 6. Comandos, 7. Prompt para la próxima sesión (+1 more)
 
 ### Community 139 - "Community 139"
-Cohesion: 0.27
-Nodes (6): CicloSection(), pastHorizon(), SHARE_OPTS, STATE_OPTS, validLen(), CycleState
+Cohesion: 0.11
+Nodes (18): arrow, card, CicloCarousel(), dot, dots, empty, fmtName, FORMATS (+10 more)
 
 ### Community 140 - "Community 140"
-Cohesion: 0.25
-Nodes (6): googleAuthEnabled(), googleAuthStart(), AuthScreen(), input, label, injected
+Cohesion: 0.20
+Nodes (8): googleAuthEnabled(), googleAuthStart(), authErrorMessage(), AuthScreen(), input, label, injected, SignupFn
 
 ### Community 141 - "Community 141"
-Cohesion: 0.14
-Nodes (11): base, MES, ms(), PlanWeekRow, planWeeks(), weekRangeLabel(), ctx, initsSeen (+3 more)
+Cohesion: 0.18
+Nodes (15): recipeFor(), buildSessionViews(), dayLayoutFor(), instantiatePrescription(), sessionTemplateFor(), MACRO_RECIPES_FIXTURE, RMS, RMS (+7 more)
 
 ### Community 142 - "Community 142"
-Cohesion: 0.26
-Nodes (14): CompSheet(), input, label, Drilldown(), anchorPlanToComp(), calendarWeeks(), CompAnchor, computeStreak() (+6 more)
+Cohesion: 0.21
+Nodes (17): CompSheet(), input, label, Drilldown(), buildMePlanView(), ATH, anchorPlanToComp(), calendarWeeks() (+9 more)
 
 ### Community 143 - "Community 143"
 Cohesion: 0.22
 Nodes (8): 0. Roles, 1. Detectar, 2. Contener, 3. Erradicar / rotar secretos, 4. Evaluar alcance, 5. Notificar, 6. Post-mortem, Runbook de respuesta a incidentes — Holy Oly (E7)
 
 ### Community 144 - "Community 144"
-Cohesion: 0.24
-Nodes (7): API_DIR, DATA_DIR, globalSetup(), HERE, WEB_DIST, globalTeardown(), handle
+Cohesion: 0.28
+Nodes (6): API_DIR, DATA_DIR, HERE, WEB_DIST, globalTeardown(), handle
 
 ### Community 145 - "Community 145"
-Cohesion: 0.20
-Nodes (13): getBase(), sessionTemplateFor(), MACRO_RECIPES_FIXTURE, RMS, RMS, dedupeAndGuard(), FRACTIONS, rampSet() (+5 more)
+Cohesion: 0.44
+Nodes (7): getBase(), dedupeAndGuard(), FRACTIONS, rampSet(), RMS, warmupForExercise(), warmupSets()
 
 ### Community 146 - "Community 146"
 Cohesion: 0.22
@@ -842,20 +854,20 @@ Cohesion: 0.25
 Nodes (7): El tercer lente: 🏛️ Escuela (contenido programático — recetas, ADN, movimientos), Formato de salida (en español), Los dos lentes base (aplicá AMBOS a cada cambio; el tercero, abajo, cuando toque contenido programático), Límites, Proceso, Reglas que más mirás (el detalle, en el rulebook), Tu vara de "correcto"
 
 ### Community 152 - "Community 152"
-Cohesion: 0.26
-Nodes (11): at(), acwr(), buildPrilepinInput(), PrilepinPreviewArgs, prilepinPreviewWeek(), recentACWR(), recentReadinessBand(), RMS (+3 more)
+Cohesion: 0.32
+Nodes (9): acwr(), buildPrilepinInput(), prilepinPreviewWeek(), recentACWR(), recentReadinessBand(), RMS, readiness(), readinessBand() (+1 more)
 
 ### Community 153 - "Community 153"
-Cohesion: 0.25
-Nodes (6): Candidate, HistRow, InjectRes, PLAN, RMS, TODAY
+Cohesion: 0.12
+Nodes (16): Registro con fecha + regla 1×fecha + doble sesión AM/PM — Implementation Plan, Self-review del plan (hecho al escribirlo), Task 10: EntrenoScreen — fecha en el flujo (upfront en conflicto, retry en 409, «Entreno del … ▾»), Task 11: SemanaCard agrupada por día con fechas y turnos, Task 12: Victoria + coach (SessionsSection) con day/turno/fecha, Task 13: Seeds — kv pasa a `bulgaro-6d` (día doble visible a ojo), Task 14: Suite completa + rulebook + reviews obligatorias (D14), Task 1: Tipos core + schemas zod (SessionRegistro, envelope del PUT, SessionView extendida) (+8 more)
 
 ### Community 154 - "Community 154"
 Cohesion: 0.25
 Nodes (7): 1. Problema / objetivo, 2. Decisiones, 3. Cambios por chart, 4. Verificación, 5. Fuera de scope, 6. Próximo paso, Charts Fase 2 — polish visual por chart · Design doc
 
 ### Community 156 - "Community 156"
-Cohesion: 0.21
-Nodes (10): kgDeviation(), summarizeSets(), rows, views, actual(), PLAN, sessions(), ExerciseActual (+2 more)
+Cohesion: 0.43
+Nodes (5): kgDeviation(), summarizeSets(), rows, views, SetActual
 
 ### Community 157 - "Community 157"
 Cohesion: 0.48
@@ -893,6 +905,10 @@ Nodes (4): HERE, MIME, ROOT, server
 Cohesion: 0.53
 Nodes (3): HeatRow, maxLifts(), planHeat()
 
+### Community 166 - "Community 166"
+Cohesion: 0.19
+Nodes (5): labelOf(), SemanaCard(), DayGroup, DaySession, sessionsByDay()
+
 ### Community 167 - "Community 167"
 Cohesion: 0.60
 Nodes (5): assert(), get(), main(), post(), sessionCookie()
@@ -927,7 +943,7 @@ Nodes (4): coach(), InjectRes, RMS, sessionHeader()
 
 ### Community 175 - "Community 175"
 Cohesion: 0.40
-Nodes (4): Datos, Deploy (Render · sitio estático), Holy Oly, Ver el prototipo
+Nodes (4): Arranque rápido, Documentación, Monorepo, Por qué existe
 
 ### Community 176 - "Community 176"
 Cohesion: 0.40
@@ -950,8 +966,8 @@ Cohesion: 0.30
 Nodes (8): inputStyle, labelStyle, LeadCaptureButton(), Lead, mailtoUrl(), readLeads(), saveLead(), whatsappUrl()
 
 ### Community 199 - "Community 199"
-Cohesion: 0.35
-Nodes (8): cycleDayOf(), cycleMarkFor(), CycleWindow, isoAt(), lutealNow(), ms(), nextCycleWindow(), redactCycle()
+Cohesion: 0.21
+Nodes (16): isoRangeLabel(), CyclePhaseCard(), angleOf(), arc(), CycleRing(), polar(), CycleTimeline(), strong (+8 more)
 
 ### Community 200 - "Community 200"
 Cohesion: 0.33
@@ -962,40 +978,76 @@ Cohesion: 0.25
 Nodes (7): 1. Decisión (NO re-litigar), 2. Qué hace HOY el motor (hallazgo de la investigación), 3. Regla de modulación elegida (la que se redacta), 4. Surface (coach-only, read-only), 5. DIFERIDO (NO en este slice), 6. Tests, readiness → modulación (visible en el preview Prilepin) — spec corta
 
 ### Community 202 - "Community 202"
-Cohesion: 0.38
-Nodes (4): AthletePreviewClient, AtletaPreview(), Load, SESSION
+Cohesion: 0.13
+Nodes (14): card, chipActive, chipBase, chipIdle, chipRow, dayHead, doseCol, exName (+6 more)
 
 ### Community 203 - "Community 203"
-Cohesion: 0.50
-Nodes (4): InjectRes, login(), RMS, sessionHeader()
+Cohesion: 0.17
+Nodes (11): 10. Fuera de alcance, 1. Problema (reportado por el owner probando como Mara), 2. Decisiones (cerradas con el owner — no re-litigar), 3. Modelo de datos, 4. API, 5. Core, 6. Web, 7. Migración y seeds (+3 more)
 
 ### Community 204 - "Community 204"
-Cohesion: 0.50
-Nodes (3): DayLogInputSchema, DayLogViewSchema, MePlanViewSchema
+Cohesion: 0.17
+Nodes (11): Decisiones (cerradas con el owner), Diseño, P1 — Tabs del Drilldown, P2 — ChartCard (pulido), P3 — Progreso (pills), P4 — diferido, Plan de tests, Problema (+3 more)
 
 ### Community 205 - "Community 205"
+Cohesion: 0.35
+Nodes (7): addDaysISO(), DayOf, fechaConflict(), fueraDeSemana(), validateFechaEntreno(), weekRange(), SessionRegistro
+
+### Community 206 - "Community 206"
+Cohesion: 0.20
+Nodes (7): ANTEAYER, AYER, HOY, InjectRes, MANANA, NOW, RMS
+
+### Community 207 - "Community 207"
+Cohesion: 0.39
+Nodes (8): arcBottom(), arcTop(), CFG, defs(), face(), holyOlyIconSvg(), PAL, pt()
+
+### Community 208 - "Community 208"
+Cohesion: 0.31
+Nodes (5): OPTS, OPTS, SegmentedTabs(), SegmentedOption, SegmentedToggle()
+
+### Community 209 - "Community 209"
 Cohesion: 0.50
-Nodes (3): PrCandidateSchema, RmUpdateSchema, UpdateRmsInputSchema
+Nodes (4): DemoTourCard(), STEPS, isTourSeen(), markTourSeen()
+
+### Community 210 - "Community 210"
+Cohesion: 0.29
+Nodes (6): coach(), EngineSet, EngineWeek, InjectRes, RMS, sessionHeader()
+
+### Community 211 - "Community 211"
+Cohesion: 0.38
+Nodes (4): addDays(), FechaSheet(), mono, base
+
+### Community 212 - "Community 212"
+Cohesion: 0.38
+Nodes (5): label, LoadMeters(), METER, value, deriveRecovery()
+
+### Community 213 - "Community 213"
+Cohesion: 0.40
+Nodes (4): actual(), PLAN, sessions(), ExerciseActual
+
+### Community 214 - "Community 214"
+Cohesion: 0.40
+Nodes (4): Antes de correrlo (una vez), Correrlo, Go-live a Render, Qué hace / qué NO hace
 
 ## Knowledge Gaps
-- **1508 isolated node(s):** `ASSETS`, `HERE`, `API_DIR`, `WEB_DIST`, `DATA_DIR` (+1503 more)
+- **1651 isolated node(s):** `ASSETS`, `HERE`, `API_DIR`, `WEB_DIST`, `DATA_DIR` (+1646 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `MonitorSeries` connect `Community 101` to `Community 0`, `Community 66`, `Community 67`, `Community 34`, `Community 5`, `Community 2`, `Community 76`, `Community 141`, `Community 45`, `Community 15`, `Community 111`, `Community 50`, `Community 19`, `Community 20`, `Community 152`, `Community 27`, `Community 92`, `Community 29`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
-- **Why does `RmLift` connect `Community 76` to `Community 67`, `Community 100`, `Community 44`, `Community 13`, `Community 15`, `Community 19`, `Community 20`, `Community 152`, `Community 27`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `MonitorSeries` connect `Community 5` to `Community 65`, `Community 34`, `Community 67`, `Community 2`, `Community 100`, `Community 11`, `Community 76`, `Community 45`, `Community 15`, `Community 16`, `Community 111`, `Community 50`, `Community 152`, `Community 27`, `Community 29`, `Community 62`?**
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
 - **Why does `globalTeardown()` connect `Community 144` to `Community 1`?**
   _High betweenness centrality (0.006) - this node is a cross-community bridge._
+- **Why does `SessionView` connect `Community 83` to `Community 4`, `Community 11`, `Community 141`, `Community 15`, `Community 17`, `Community 18`, `Community 20`, `Community 27`, `Community 156`, `Community 34`, `Community 166`, `Community 45`, `Community 50`, `Community 62`, `Community 65`, `Community 76`, `Community 213`, `Community 92`, `Community 100`, `Community 127`?**
+  _High betweenness centrality (0.004) - this node is a cross-community bridge._
 - **What connects `ASSETS`, `HERE`, `API_DIR` to the rest of the system?**
-  _1508 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1651 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05273937532002048 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08888888888888889 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.07053140096618357 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06041986687147977 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.061952074810052604 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06453634085213032 - nodes in this community are weakly interconnected._
