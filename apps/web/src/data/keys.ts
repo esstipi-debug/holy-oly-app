@@ -23,4 +23,6 @@ export const KEYS = {
   rmUpdates: (id: string) => `ho:rmupdates:${id}`,
   // Historial de macrociclos cerrados (slice macro-history), espejo de la tabla MacroHistory del API.
   macroHistory: (id: string) => `ho:macrohistory:${id}`,
+  // Competencias compartidas del coach (slice 2026-06-14): catálogo del coach (demo offline).
+  competitions: "ho:competitions",
 } as const;

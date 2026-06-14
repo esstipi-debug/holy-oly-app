@@ -5,8 +5,9 @@ import type {
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
   CycleShare, CycleState, CycleData, MeCycleView, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
   MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf, MacroHistoryView, MacroHistoryRow,
+  Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryView, CompetitionEntryInput,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -708,4 +709,148 @@ export async function deleteAthleteAccount(prisma: PrismaClient, athleteId: stri
     prisma.athlete.delete({ where: { id: athleteId } }),
     prisma.user.delete({ where: { id: userId } }),
   ]);
+}
+
+// ── Competencias compartidas del coach (slice competencias 2026-06-14). El coach crea una compe
+//    UNA vez y acopla atletas con rol; "pico" sincroniza la fila Competencia por-atleta (alimenta
+//    el peaking existente vía competenciaForPico), "paso" no toca el plan. Todo coach-scoped; el
+//    caller (routes) ya autorizó coach + vínculo activo de cada atleta. ──
+
+/** startDate del plan + total de semanas del macro de un atleta (para anclar el pico). 0 sin plan/macro. */
+async function planAnchor(prisma: PrismaClient, athleteId: string): Promise<{ startDate?: string; totalWeeks: number }> {
+  const plan = await prisma.plan.findUnique({ where: { athleteId }, select: { macroId: true, startDate: true } });
+  if (!plan) return { totalWeeks: 0 };
+  const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
+  const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+  return { startDate: plan.startDate ?? undefined, totalWeeks };
+}
+
+/** Sincroniza la fila Competencia por-atleta de un acople "pico" (reusa el peaking). Borra la
+ *  linkeada por competitionId y, si el atleta tiene plan anclado, la recrea con la semana derivada
+ *  (competenciaForPico). Sin startDate/macro → queda sin fila (sin anclar hasta asignar macro). */
+async function syncPicoCompetencia(
+  prisma: PrismaClient, athleteId: string, competitionId: string, comp: { name: string; date: string },
+): Promise<void> {
+  const { startDate, totalWeeks } = await planAnchor(prisma, athleteId);
+  const row = competenciaForPico(comp, startDate, totalWeeks);
+  await prisma.competencia.deleteMany({ where: { athleteId, competitionId } });
+  if (row) {
+    await prisma.competencia.create({
+      data: { athleteId, competitionId, name: row.name, week: row.week, date: row.date ?? null },
+    });
+  }
+}
+
+/** Catálogo de competencias del coach, con el conteo de acoplados por rol. Próximas/pasadas las
+ *  ordena el cliente; acá orden por fecha asc. */
+export async function getCompetitions(prisma: PrismaClient, coachId: string): Promise<CompetitionListItem[]> {
+  const comps = await prisma.competition.findMany({
+    where: { coachId },
+    orderBy: { date: "asc" },
+    include: { entries: { select: { role: true } } },
+  });
+  return comps.map((c) => ({
+    id: c.id,
+    name: c.name,
+    date: c.date,
+    place: c.place ?? undefined,
+    athleteCount: c.entries.length,
+    picoCount: c.entries.filter((e) => e.role === "pico").length,
+    pasoCount: c.entries.filter((e) => e.role === "paso").length,
+  }));
+}
+
+/** Detalle de una compe del coach + atletas acoplados (pico primero, luego por nombre). `peakWeek`
+ *  derivado del plan para los "pico"; `result` presente sólo si ya se cargó (Fase 2). undefined si
+ *  la compe no existe o no es del coach (el caller lo traduce a 404). */
+export async function getCompetition(prisma: PrismaClient, coachId: string, id: string): Promise<CompetitionDetailView | undefined> {
+  const c = await prisma.competition.findUnique({
+    where: { id },
+    include: { entries: { include: { athlete: { select: { nombre: true, iniciales: true } } } } },
+  });
+  if (!c || c.coachId !== coachId) return undefined;
+  const entries: CompetitionEntryView[] = [];
+  for (const e of c.entries) {
+    let peakWeek: number | undefined;
+    if (e.role === "pico") {
+      const { startDate, totalWeeks } = await planAnchor(prisma, e.athleteId);
+      peakWeek = competenciaForPico({ name: c.name, date: c.date }, startDate, totalWeeks)?.week;
+    }
+    const result =
+      e.medal != null
+        ? { medal: e.medal, cat: e.cat ?? "", sn: e.sn ?? 0, cj: e.cj ?? 0, place: e.place ?? "" }
+        : undefined;
+    entries.push({
+      athleteId: e.athleteId,
+      nombre: e.athlete.nombre,
+      iniciales: e.athlete.iniciales,
+      role: e.role,
+      ...(peakWeek != null ? { peakWeek } : {}),
+      ...(result ? { result } : {}),
+    });
+  }
+  entries.sort((a, b) => (a.role === b.role ? a.nombre.localeCompare(b.nombre) : a.role === "pico" ? -1 : 1));
+  return { id: c.id, name: c.name, date: c.date, place: c.place ?? undefined, entries };
+}
+
+/** Crea una compe del coach. Devuelve la fila creada (el cliente la valida con CompetitionSchema). */
+export async function createCompetition(prisma: PrismaClient, coachId: string, input: CompetitionInput): Promise<Competition> {
+  const c = await prisma.competition.create({
+    data: { coachId, name: input.name, date: input.date, place: input.place ?? null },
+  });
+  return { id: c.id, name: c.name, date: c.date, place: c.place ?? undefined };
+}
+
+/** Edita la compe; re-sincroniza las filas Competencia "pico" linkeadas (la fecha/nombre pudo
+ *  cambiar → la semana del pico se recalcula). false si no existe o no es del coach. */
+export async function updateCompetition(prisma: PrismaClient, coachId: string, id: string, input: CompetitionInput): Promise<boolean> {
+  const c = await prisma.competition.findUnique({ where: { id }, include: { entries: { where: { role: "pico" }, select: { athleteId: true } } } });
+  if (!c || c.coachId !== coachId) return false;
+  await prisma.competition.update({ where: { id }, data: { name: input.name, date: input.date, place: input.place ?? null } });
+  for (const e of c.entries) {
+    await syncPicoCompetencia(prisma, e.athleteId, id, { name: input.name, date: input.date });
+  }
+  return true;
+}
+
+/** Borra la compe (cascade borra las entries) + limpia las filas Competencia "pico" linkeadas
+ *  (desancla el pico de cada atleta). false si no existe o no es del coach. */
+export async function deleteCompetition(prisma: PrismaClient, coachId: string, id: string): Promise<boolean> {
+  const c = await prisma.competition.findUnique({ where: { id }, select: { coachId: true } });
+  if (!c || c.coachId !== coachId) return false;
+  await prisma.$transaction([
+    prisma.competencia.deleteMany({ where: { competitionId: id } }),
+    prisma.competition.delete({ where: { id } }),
+  ]);
+  return true;
+}
+
+/** Acopla atletas (en lote) con rol. Upsert por (competitionId, athleteId) → re-acoplar cambia el
+ *  rol. Sincroniza la fila Competencia "pico" o la borra ("paso"). El caller ya validó coach +
+ *  vínculo activo de cada atleta. false si la compe no existe o no es del coach. */
+export async function acoplarAtletas(prisma: PrismaClient, coachId: string, competitionId: string, entries: CompetitionEntryInput[]): Promise<boolean> {
+  const c = await prisma.competition.findUnique({ where: { id: competitionId }, select: { coachId: true, name: true, date: true } });
+  if (!c || c.coachId !== coachId) return false;
+  for (const e of entries) {
+    await prisma.competitionEntry.upsert({
+      where: { competitionId_athleteId: { competitionId, athleteId: e.athleteId } },
+      create: { competitionId, athleteId: e.athleteId, role: e.role },
+      update: { role: e.role },
+    });
+    if (e.role === "pico") await syncPicoCompetencia(prisma, e.athleteId, competitionId, { name: c.name, date: c.date });
+    else await prisma.competencia.deleteMany({ where: { athleteId: e.athleteId, competitionId } });
+  }
+  return true;
+}
+
+/** Desacopla un atleta: borra la entry + la fila Competencia linkeada (desancla el pico). false si
+ *  la compe no existe o no es del coach. */
+export async function desacoplarAtleta(prisma: PrismaClient, coachId: string, competitionId: string, athleteId: string): Promise<boolean> {
+  const c = await prisma.competition.findUnique({ where: { id: competitionId }, select: { coachId: true } });
+  if (!c || c.coachId !== coachId) return false;
+  await prisma.$transaction([
+    prisma.competencia.deleteMany({ where: { athleteId, competitionId } }),
+    prisma.competitionEntry.deleteMany({ where: { competitionId, athleteId } }),
+  ]);
+  return true;
 }

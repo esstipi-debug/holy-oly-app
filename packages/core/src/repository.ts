@@ -2,6 +2,7 @@ import type {
   Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleContext, SessionLog, SessionView, PrescribedExercise, WeekHeat,
   PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek, MacroHistoryView,
+  Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryInput,
 } from "./types";
 
 export interface Repository {
@@ -52,4 +53,21 @@ export interface Repository {
   /** Historial de macrociclos cerrados (slice macro-history): ciclos más reciente primero +
    *  adherencia % derivada. {entries:[], cyclesDone:0, avgAdherencePct:0} sin historial. */
   getMacroHistory(id: string): Promise<MacroHistoryView>;
+
+  // ── Competencias compartidas del coach (slice 2026-06-14). El coach crea una compe UNA vez y
+  //    acopla atletas con rol (pico ancla el macro / paso no toca el plan). Coach-scoped. ──
+  /** Catálogo de competencias del coach (con conteo de acoplados por rol). */
+  getCompetitions(): Promise<CompetitionListItem[]>;
+  /** Detalle de una compe + atletas acoplados. undefined si no existe / no es del coach. */
+  getCompetition(id: string): Promise<CompetitionDetailView | undefined>;
+  /** Crea una compe; devuelve la fila creada (con su id). */
+  createCompetition(input: CompetitionInput): Promise<Competition>;
+  /** Edita nombre/fecha/lugar; re-sincroniza el pico de los acoplados. */
+  updateCompetition(id: string, input: CompetitionInput): Promise<void>;
+  /** Borra la compe (y limpia el anclaje de los acoplados). */
+  deleteCompetition(id: string): Promise<void>;
+  /** Acopla atletas en lote (upsert por atleta → re-acoplar cambia el rol). */
+  acoplarAtletas(id: string, entries: CompetitionEntryInput[]): Promise<void>;
+  /** Desacopla un atleta (borra su acople y desancla su pico). */
+  desacoplarAtleta(id: string, athleteId: string): Promise<void>;
 }

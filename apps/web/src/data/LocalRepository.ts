@@ -2,6 +2,7 @@ import type {
   Repository, Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleState, CycleContext, SessionLog, SessionView, PrescribedExercise, PrescriptionRow, WeekHeat,
   PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek, MacroHistoryView,
+  Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryView, CompetitionEntryInput, CompResult, CompRole,
 } from "@holy-oly/core";
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
@@ -9,10 +10,16 @@ import {
   PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema, DayLogsSchema, MacroHistoryViewSchema,
   MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
   prCandidates, RM_LIFTS, lutealNow, redactCycle, buildDailyView, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, planNeedsRm,
+  competenciaForPico,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
 import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE, SEED_MEDALS, SEED_COMPS, SEED_VERSION, SEED_PLAN_INPUTS, makeDayLogYear, makeMacroHistory } from "./seeds";
+
+/** Acople persistido en el demo offline (espejo de CompetitionEntry del API). */
+interface StoredEntry { athleteId: string; role: CompRole; result?: CompResult }
+/** Competencia compartida persistida en localStorage (demo offline; el coach es implícito). */
+interface StoredCompetition { id: string; name: string; date: string; place?: string; entries: StoredEntry[] }
 
 export class LocalRepository implements Repository {
   private s: JsonStore;
@@ -226,5 +233,73 @@ export class LocalRepository implements Repository {
   async getMacroHistory(id: string): Promise<MacroHistoryView> {
     const r = MacroHistoryViewSchema.safeParse(this.s.getOptional<unknown>(KEYS.macroHistory(id)));
     return r.success ? r.data : { entries: [], cyclesDone: 0, avgAdherencePct: 0 };
+  }
+
+  // ── Competencias compartidas del coach (slice 2026-06-14). Demo offline: persiste en
+  //    localStorage; el pico NO re-sincroniza la fila Competencia del atleta (eso vive en el
+  //    backend real). El detalle deriva peakWeek del plan, igual que el API. ──
+  private storedComps(): StoredCompetition[] {
+    const v = this.s.getOptional<unknown>(KEYS.competitions);
+    return Array.isArray(v) ? (v as StoredCompetition[]) : [];
+  }
+  async getCompetitions(): Promise<CompetitionListItem[]> {
+    return this.storedComps().map((c) => ({
+      id: c.id, name: c.name, date: c.date, place: c.place,
+      athleteCount: c.entries.length,
+      picoCount: c.entries.filter((e) => e.role === "pico").length,
+      pasoCount: c.entries.filter((e) => e.role === "paso").length,
+    }));
+  }
+  async getCompetition(id: string): Promise<CompetitionDetailView | undefined> {
+    const c = this.storedComps().find((x) => x.id === id);
+    if (!c) return undefined;
+    const roster = await this.getRoster();
+    const entries: CompetitionEntryView[] = [];
+    for (const e of c.entries) {
+      const a = roster.find((r) => r.id === e.athleteId);
+      let peakWeek: number | undefined;
+      if (e.role === "pico") {
+        const plan = await this.getPlan(e.athleteId);
+        const macro = MACROCYCLES.find((m) => m.id === plan?.macroId);
+        const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+        peakWeek = competenciaForPico({ name: c.name, date: c.date }, plan?.startDate, totalWeeks)?.week;
+      }
+      entries.push({
+        athleteId: e.athleteId,
+        nombre: a?.nombre ?? e.athleteId,
+        iniciales: a?.iniciales ?? "?",
+        role: e.role,
+        ...(peakWeek != null ? { peakWeek } : {}),
+        ...(e.result ? { result: e.result } : {}),
+      });
+    }
+    entries.sort((a, b) => (a.role === b.role ? a.nombre.localeCompare(b.nombre) : a.role === "pico" ? -1 : 1));
+    return { id: c.id, name: c.name, date: c.date, place: c.place, entries };
+  }
+  async createCompetition(input: CompetitionInput): Promise<Competition> {
+    const c: StoredCompetition = { id: crypto.randomUUID(), name: input.name, date: input.date, place: input.place, entries: [] };
+    this.s.set(KEYS.competitions, [...this.storedComps(), c]);
+    return { id: c.id, name: c.name, date: c.date, place: c.place };
+  }
+  async updateCompetition(id: string, input: CompetitionInput): Promise<void> {
+    this.s.set(KEYS.competitions, this.storedComps().map((c) => (c.id === id ? { ...c, name: input.name, date: input.date, place: input.place } : c)));
+  }
+  async deleteCompetition(id: string): Promise<void> {
+    this.s.set(KEYS.competitions, this.storedComps().filter((c) => c.id !== id));
+  }
+  async acoplarAtletas(id: string, entries: CompetitionEntryInput[]): Promise<void> {
+    this.s.set(KEYS.competitions, this.storedComps().map((c) => {
+      if (c.id !== id) return c;
+      const next = [...c.entries];
+      for (const e of entries) {
+        const i = next.findIndex((x) => x.athleteId === e.athleteId);
+        if (i >= 0) next[i] = { ...next[i]!, role: e.role };
+        else next.push({ athleteId: e.athleteId, role: e.role });
+      }
+      return { ...c, entries: next };
+    }));
+  }
+  async desacoplarAtleta(id: string, athleteId: string): Promise<void> {
+    this.s.set(KEYS.competitions, this.storedComps().map((c) => (c.id === id ? { ...c, entries: c.entries.filter((e) => e.athleteId !== athleteId) } : c)));
   }
 }
