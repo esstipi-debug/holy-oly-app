@@ -1,7 +1,9 @@
 import { type MonitorSeries } from "@holy-oly/core";
+import { useTranslation } from "react-i18next";
 import { ChartCard, linePath, WeekTapZones, type Explain } from "./chartkit";
 
 export function WellnessChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
+  const { t } = useTranslation("charts");
   const wsc = series.wellness;
   const items = series.wellnessItems ?? {};
   const weeks = series.weeks;
@@ -26,13 +28,13 @@ export function WellnessChart({ series, onPointClick, title, sub, explain }: { s
 
   return (
     <ChartCard
-      title={title ?? "Bienestar"}
-      sub={sub ?? "puntaje 0–100 vs tu normal · ítems"}
+      title={title ?? t("wellness.title")}
+      sub={sub ?? t("wellness.sub")}
       chip={lastWsc != null ? String(lastWsc) : undefined}
       explain={explain ?? {
-        forma: "Score de bienestar (0–100) + 6 ítems del cuestionario (fatiga, dolor, estrés, humor, motivación, sueño) como tendencias.",
-        sirve: "Contexto subjetivo que complementa las señales fisiológicas.",
-        lectura: "El score se lee contra tu propia normal (banda media±desvío); cada ítem vs su tendencia.",
+        forma: t("wellness.forma"),
+        sirve: t("wellness.sirve"),
+        lectura: t("wellness.lectura"),
       }}
     >
       {/* Score area + line chart */}

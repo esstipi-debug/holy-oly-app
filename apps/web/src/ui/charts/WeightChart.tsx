@@ -1,8 +1,10 @@
 import { weightBandState, type MonitorSeries } from "@holy-oly/core";
+import { useTranslation } from "react-i18next";
 import { ChartCard, linePath, WeekTapZones, type Explain } from "./chartkit";
 import { STATUS } from "../status";
 
 export function WeightChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
+  const { t } = useTranslation("charts");
   const wt = series.bodyweight ?? [];
   const band = series.weightBand;
   const weeks = series.weeks;
@@ -22,13 +24,13 @@ export function WeightChart({ series, onPointClick, title, sub, explain }: { ser
 
   return (
     <ChartCard
-      title={title ?? "Peso vs categoría"}
-      sub={sub ?? "banda objetivo de categoría"}
-      chip={lastWt != null ? lastWt + " kg" : undefined}
+      title={title ?? t("weight.title")}
+      sub={sub ?? t("weight.sub")}
+      chip={lastWt != null ? t("weight.chip", { value: lastWt }) : undefined}
       explain={explain ?? {
-        forma: "Peso corporal por semana vs la banda de la categoría objetivo.",
-        sirve: "Seguir si el atleta da el peso de su categoría de cara a la competencia.",
-        lectura: "Banda = límites de categoría; el punto va verde dentro, rojo fuera, neutro si no hay categoría asignada.",
+        forma: t("weight.forma"),
+        sirve: t("weight.sirve"),
+        lectura: t("weight.lectura"),
       }}
     >
       <svg viewBox={`0 0 300 ${H}`} width="100%" height={H}>

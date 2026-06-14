@@ -15,5 +15,24 @@
   "movementNames": "Movement names",
   "errorLoad": "Couldn’t load.",
   "errorSave": "Couldn’t save.",
-  "tryAgain": "Try again."
+  "tryAgain": "Try again.",
+  "medalGold": "Gold",
+  "medalSilver": "Silver",
+  "medalBronze": "Bronze",
+  "verifyEmail": {
+    "title": "Verify your email",
+    "defaultSub": "Without verification you can’t confirm athletes in the roster.",
+    "sending": "Sending…",
+    "sent": "Sent ✓ — check spam",
+    "resend": "Resend email",
+    "error": "Couldn’t resend the email. Try again."
+  },
+  "substitute": {
+    "title": "Swap movement",
+    "current": "Current: {name}",
+    "lowerComplexity": "Lower complexity",
+    "noSimpler": "No simpler variants.",
+    "substituteWith": "Substitute with",
+    "noSubstitutes": "No suggested substitutes."
+  }
 }

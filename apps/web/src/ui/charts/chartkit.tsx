@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../Card";
 import { Badge } from "../Badge";
 import { BottomSheet } from "../BottomSheet";
@@ -52,10 +53,11 @@ export function WeekTapZones({ weeks, x, top, bot, onPick }: {
 
 /** El panel de detalle (tap) con las 3 preguntas de HR-2: cómo se forma / para qué sirve / contra qué se lee. */
 function ChartExplainSheet({ title, explain }: { title: string; explain: Explain }) {
+  const { t } = useTranslation("charts");
   const rows: [string, string][] = [
-    ["Cómo se forma", explain.forma],
-    ["Para qué sirve", explain.sirve],
-    ["Contra qué se lee", explain.lectura],
+    [t("explain.forma"), explain.forma],
+    [t("explain.sirve"), explain.sirve],
+    [t("explain.lectura"), explain.lectura],
   ];
   return (
     <div>
@@ -74,6 +76,7 @@ function ChartExplainSheet({ title, explain }: { title: string; explain: Explain
 export function ChartCard({ title, sub, chip, chipState, explain, children }: {
   title: string; sub?: string; chip?: string; chipState?: CellState; explain: Explain; children: ReactNode;
 }) {
+  const { t } = useTranslation("charts");
   const [open, setOpen] = useState(false);
   return (
     <Card>
@@ -88,7 +91,7 @@ export function ChartCard({ title, sub, chip, chipState, explain, children }: {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            aria-label={`Cómo se lee: ${title}`}
+            aria-label={t("howToRead", { title })}
             aria-haspopup="dialog"
             aria-expanded={open}
             style={{
@@ -104,7 +107,7 @@ export function ChartCard({ title, sub, chip, chipState, explain, children }: {
       </div>
       {sub && <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", margin: "3px 0 9px" }}>{sub}</div>}
       {children}
-      <BottomSheet open={open} onClose={() => setOpen(false)} ariaLabel={title || "Detalle"}>
+      <BottomSheet open={open} onClose={() => setOpen(false)} ariaLabel={title || t("detailFallback")}>
         <ChartExplainSheet title={title} explain={explain} />
       </BottomSheet>
     </Card>

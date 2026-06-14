@@ -1,4 +1,5 @@
 import { recoverySeries, recoveryState, type CellState, type MonitorSeries } from "@holy-oly/core";
+import { useTranslation } from "react-i18next";
 import { ChartCard, linePath, WeekTapZones, type Explain } from "./chartkit";
 import { STATUS } from "../status";
 
@@ -60,24 +61,25 @@ function Mini({ arr, base, label, pad, pointState, onPick }: MiniProps) {
 }
 
 export function RecoveryChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
+  const { t } = useTranslation("charts");
   const rec = recoverySeries(series);
   const lastRec = rec.at(-1) ?? NaN;
   const st = recoveryState(lastRec);
 
   return (
     <ChartCard
-      title={title ?? "Recuperación"}
-      sub={sub ?? "HRV ↓ y FC reposo ↑ sostenidos = alerta"}
+      title={title ?? t("recovery.title")}
+      sub={sub ?? t("recovery.sub")}
       chip={lastRec != null && !Number.isNaN(lastRec) ? String(lastRec) : undefined}
       chipState={recoveryState(lastRec)}
       explain={explain ?? {
-        forma: "HRV y FC en reposo (RHR) por semana, comparadas contra el baseline propio del atleta.",
-        sirve: "Leer la recuperación: HRV cayendo o RHR subiendo sostenidos sugieren fatiga.",
-        lectura: "Banda alrededor del baseline; fuera de banda (HRV↓ / RHR↑) = vigilar.",
+        forma: t("recovery.forma"),
+        sirve: t("recovery.sirve"),
+        lectura: t("recovery.lectura"),
       }}
     >
-      <Mini arr={series.hrv} base={series.hrvBase} label="HRV (ms)" pad={5} pointState={st} onPick={onPointClick} />
-      <Mini arr={series.rhr} base={series.rhrBase} label="FC reposo (lpm)" pad={3} pointState={st} onPick={onPointClick} />
+      <Mini arr={series.hrv} base={series.hrvBase} label={t("recovery.hrvLabel")} pad={5} pointState={st} onPick={onPointClick} />
+      <Mini arr={series.rhr} base={series.rhrBase} label={t("recovery.rhrLabel")} pad={3} pointState={st} onPick={onPointClick} />
     </ChartCard>
   );
 }

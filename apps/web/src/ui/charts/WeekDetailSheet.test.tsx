@@ -3,8 +3,8 @@ import { WeekDetailSheet } from "./WeekDetailSheet";
 import type { WeekSignal } from "./weekSignals";
 
 const signals: WeekSignal[] = [
-  { label: "ACWR", value: "1.42", hasData: true, state: "alert" },
-  { label: "Peso", value: "—", hasData: false },
+  { key: "acwr", label: "ACWR", value: "1.42", hasData: true, state: "alert" },
+  { key: "weight", label: "Peso", value: "—", hasData: false },
 ];
 
 test("WeekDetailSheet: muestra semana, fecha, señales y 'sin dato'", () => {
@@ -18,7 +18,7 @@ test("WeekDetailSheet: muestra semana, fecha, señales y 'sin dato'", () => {
 });
 
 test("WeekDetailSheet: una señal en banda (estado ok) va en Badge, no número pelado", () => {
-  const sig: WeekSignal[] = [{ label: "ACWR", value: "1.05", hasData: true, state: "ok" }];
+  const sig: WeekSignal[] = [{ key: "acwr", label: "ACWR", value: "1.05", hasData: true, state: "ok" }];
   render(<WeekDetailSheet open week={1} dateISO="2026-03-09" isTaper={false} signals={sig}
     perWeek={0} marks={[]} onToggle={() => {}} onClose={() => {}} />);
   // El Badge envuelve el valor con un pill (border-radius 99); el número pelado no lo tendría.

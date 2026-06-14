@@ -15,5 +15,24 @@
   "movementNames": "Nombres de movimientos",
   "errorLoad": "No se pudo cargar.",
   "errorSave": "No se pudo guardar.",
-  "tryAgain": "Inténtalo de nuevo."
+  "tryAgain": "Inténtalo de nuevo.",
+  "medalGold": "Oro",
+  "medalSilver": "Plata",
+  "medalBronze": "Bronce",
+  "verifyEmail": {
+    "title": "Verifica tu email",
+    "defaultSub": "Sin verificación no puedes confirmar atletas en el roster.",
+    "sending": "Enviando…",
+    "sent": "Enviado ✓ — revisa spam",
+    "resend": "Reenviar email",
+    "error": "No se pudo reenviar el email. Prueba de nuevo."
+  },
+  "substitute": {
+    "title": "Cambiar movimiento",
+    "current": "Actual: {name}",
+    "lowerComplexity": "Bajar complejidad",
+    "noSimpler": "Sin variantes más simples.",
+    "substituteWith": "Sustituir por",
+    "noSubstitutes": "Sin sustitutos sugeridos."
+  }
 }

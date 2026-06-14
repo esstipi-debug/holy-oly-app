@@ -1,4 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import type { Macrocycle, MacrocyclePhase } from "@holy-oly/core";
 
 /**
@@ -38,7 +40,7 @@ const H = padT + iH + gap + vH + labH; // 169
 const LO = 55, HI = 110, span = W - padL - padR;
 const vBase = padT + iH + gap + vH;
 
-function PeriodizationChart({ macro }: { macro: Macrocycle }) {
+function PeriodizationChart({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }) {
   const phases = macro.phaseProfile;
   const tot = phases.at(-1)?.weeks[1] ?? 1;
   const Lx = (w: number) => padL + ((w - 1) / tot) * span;
@@ -107,7 +109,7 @@ function PeriodizationChart({ macro }: { macro: Macrocycle }) {
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img"
-      aria-label={`Periodización ${macro.name} · ${tot} semanas`}>
+      aria-label={t("periodization.aria", { name: macro.name, count: tot })}>
       {grid}
       {corridor}
       <path d={mid} style={{ fill: "none", stroke: "var(--wl-accent)", strokeWidth: 2.6 }}
@@ -119,13 +121,13 @@ function PeriodizationChart({ macro }: { macro: Macrocycle }) {
         stroke="color-mix(in srgb,var(--wl-text) 14%,transparent)" strokeWidth={1} />
       {weekLabels}
       <text x={W - padR} y={padT - 4} textAnchor="end" fontSize={7}
-        letterSpacing=".1em" style={{ fill: "var(--wl-muted)", fontFamily: "var(--wl-display)" }}>%1RM · SEMANAS</text>
+        letterSpacing=".1em" style={{ fill: "var(--wl-muted)", fontFamily: "var(--wl-display)" }}>{t("periodization.axisLabel")}</text>
     </svg>
   );
 }
 
 // ---- 2. phase ribbon (ports phaseRibbon) ----
-function PhaseRibbon({ macro }: { macro: Macrocycle }) {
+function PhaseRibbon({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }) {
   return (
     <div style={{ display: "flex", gap: 4 }}>
       {macro.phaseProfile.map((p) => {
@@ -152,11 +154,11 @@ function PhaseRibbon({ macro }: { macro: Macrocycle }) {
             <span style={{
               position: "relative", zIndex: 1, display: "block", marginTop: 3,
               fontFamily: "var(--mono)", fontSize: 8.5, color: "var(--wl-muted)",
-            }}>sem {weekRange(p)} · {wks} sem</span>
+            }}>{t("periodization.ribbonWeeks", { range: weekRange(p), count: wks })}</span>
             <span style={{
               position: "relative", zIndex: 1, display: "block", marginTop: 4,
               fontFamily: "var(--mono)", fontSize: 8, color: "var(--wl-accent)",
-            }}>IMR ~{m}%</span>
+            }}>{t("periodization.ribbonImr", { mean: m })}</span>
           </div>
         );
       })}
@@ -165,7 +167,7 @@ function PhaseRibbon({ macro }: { macro: Macrocycle }) {
 }
 
 // ---- 3. phase rows (ports phaseRows) ----
-function PhaseRows({ macro }: { macro: Macrocycle }) {
+function PhaseRows({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
       {macro.phaseProfile.map((p) => (
@@ -175,7 +177,7 @@ function PhaseRows({ macro }: { macro: Macrocycle }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
             <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5, color: "var(--wl-text)" }}>{p.name}</span>
             <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", whiteSpace: "nowrap" }}>
-              sem {weekRange(p)} · IMR {p.imrPct[0]}{DASH}{p.imrPct[1]}%
+              {t("periodization.rowWeeksImr", { range: weekRange(p), lo: p.imrPct[0], hi: p.imrPct[1] })}
             </span>
           </div>
           <div style={{
@@ -184,7 +186,7 @@ function PhaseRows({ macro }: { macro: Macrocycle }) {
           }}>
             <span style={{ display: "block", height: "100%", borderRadius: 99, width: `${p.volRel}%`, background: "var(--wl-accent)" }} />
           </div>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>vol {p.volRel}% · {p.focus}</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>{t("periodization.rowVolFocus", { vol: p.volRel, focus: p.focus })}</div>
         </div>
       ))}
     </div>
@@ -203,25 +205,26 @@ function CapItem({ children }: { children: ReactNode }) {
 }
 
 export function MacroPeriodization({ macro }: { macro: Macrocycle }) {
+  const { t } = useTranslation("charts");
   return (
     <div>
-      <div style={sec}>Periodización · intensidad y volumen</div>
-      <div style={surface}><PeriodizationChart macro={macro} /></div>
+      <div style={sec}>{t("periodization.secChart")}</div>
+      <div style={surface}><PeriodizationChart macro={macro} t={t} /></div>
       <div style={cap}>
-        <CapItem><Swatch kind="band" />banda = IMR esperado</CapItem>
-        <CapItem><Swatch kind="line" />media de fase</CapItem>
-        <CapItem><Swatch kind="bar" />volumen rel.</CapItem>
+        <CapItem><Swatch kind="band" />{t("periodization.capBand")}</CapItem>
+        <CapItem><Swatch kind="line" />{t("periodization.capLine")}</CapItem>
+        <CapItem><Swatch kind="bar" />{t("periodization.capBar")}</CapItem>
       </div>
 
-      <div style={sec}>Reparto de fases</div>
-      <PhaseRibbon macro={macro} />
+      <div style={sec}>{t("periodization.secRibbon")}</div>
+      <PhaseRibbon macro={macro} t={t} />
       <div style={cap}>
-        <CapItem>ancho = duración de fase</CapItem>
-        <CapItem><Swatch kind="band" />relleno = intensidad media</CapItem>
+        <CapItem>{t("periodization.capWidth")}</CapItem>
+        <CapItem><Swatch kind="band" />{t("periodization.capFill")}</CapItem>
       </div>
 
-      <div style={sec}>Fases en detalle · {macro.phaseProfile.length}</div>
-      <PhaseRows macro={macro} />
+      <div style={sec}>{t("periodization.secRows", { count: macro.phaseProfile.length })}</div>
+      <PhaseRows macro={macro} t={t} />
     </div>
   );
 }

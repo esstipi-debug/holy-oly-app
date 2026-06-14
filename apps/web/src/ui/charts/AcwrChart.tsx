@@ -1,8 +1,10 @@
 import { acwr, acwrStateSafe, type MonitorSeries } from "@holy-oly/core";
+import { useTranslation } from "react-i18next";
 import { STATUS } from "../status";
 import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 
 export function AcwrChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
+  const { t } = useTranslation("charts");
   const a = acwr(series.acute);
   const weeks = series.weeks;
 
@@ -13,14 +15,14 @@ export function AcwrChart({ series, onPointClick }: { series: MonitorSeries; onP
 
   return (
     <ChartCard
-      title="ACWR"
-      sub="banda segura 0,8–1,3 · el atleta no ve este número"
+      title={t("acwr.title")}
+      sub={t("acwr.sub")}
       chip={a.at(-1) != null ? a.at(-1)!.toFixed(2) : undefined}
       chipState={acwrStateSafe(a.at(-1) ?? NaN)}
       explain={{
-        forma: "Carga aguda ÷ media móvil de 4 semanas (incluye la actual).",
-        sirve: "Detecta picos de carga que anticipan riesgo; fuera de banda → considerá descarga.",
-        lectura: "Banda segura 0,8–1,3; >1,3 precaución, >1,5 alerta. El atleta no ve este número.",
+        forma: t("acwr.forma"),
+        sirve: t("acwr.sirve"),
+        lectura: t("acwr.lectura"),
       }}
     >
       <svg viewBox="0 0 300 128" width="100%" height={128}>

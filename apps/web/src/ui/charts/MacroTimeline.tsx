@@ -1,4 +1,5 @@
 import { volumeCurve, isTaperWeek, type Competencia, type Macrocycle, type MacrocyclePhase } from "@holy-oly/core";
+import { useTranslation } from "react-i18next";
 import { ChartCard } from "./chartkit";
 import { STATUS } from "../status";
 import { phaseColor } from "./phasePalette";
@@ -41,6 +42,7 @@ export function MacroTimeline({
   hoy: number;
   comps: Competencia[];
 }) {
+  const { t } = useTranslation("charts");
   const phases = macro.phaseProfile;
   const NW = phases.at(-1)?.weeks[1] ?? 1; // macro duration
   const phaseAt = (w: number): MacrocyclePhase =>
@@ -90,7 +92,7 @@ export function MacroTimeline({
   const hoyEl = (
     <g key="hoy">
       <line x1={hoyX} x2={hoyX} y1={36} y2={BOT} style={{ stroke: "var(--wl-text)", opacity: 0.55 }} strokeDasharray="3 2" />
-      <text x={hoyX} y={H - 3} textAnchor="middle" fontSize={9} style={{ fill: "var(--wl-text)" }}>HOY</text>
+      <text x={hoyX} y={H - 3} textAnchor="middle" fontSize={9} style={{ fill: "var(--wl-text)" }}>{t("timeline.hoy")}</text>
     </g>
   );
 
@@ -108,14 +110,14 @@ export function MacroTimeline({
 
   return (
     <ChartCard
-      title="Macrociclo · línea de tiempo"
+      title={t("timeline.title")}
       explain={{
-        forma: "Volumen semanal (barras) + intensidad media por fase (línea) a lo largo del macro, con el taper antes de cada competencia.",
-        sirve: "Ver el camino a la competencia y cómo se reestructura el volumen para picar.",
-        lectura: "Cinta de fases arriba; 🚩 = competencia; HOY = semana actual; el taper baja las barras antes de cada 🚩.",
+        forma: t("timeline.forma"),
+        sirve: t("timeline.sirve"),
+        lectura: t("timeline.lectura"),
       }}
     >
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={`Macrociclo ${macro.name} · ${NW} semanas`}>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={t("timeline.aria", { name: macro.name, count: NW })}>
         {ribbon}
         {bars}
         {intensityLine}

@@ -1,8 +1,10 @@
 import { imrStateForWeekSafe, type Macrocycle, type MonitorSeries } from "@holy-oly/core";
+import { useTranslation } from "react-i18next";
 import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 import { STATUS } from "../status";
 
 export function ImrFaseChart({ series, macro, onPointClick }: { series: MonitorSeries; macro: Macrocycle; onPointClick?: (week: number) => void }) {
+  const { t } = useTranslation("charts");
   const imr = series.imr;
   const weeks = series.weeks;
 
@@ -12,14 +14,14 @@ export function ImrFaseChart({ series, macro, onPointClick }: { series: MonitorS
 
   return (
     <ChartCard
-      title="IMR vs fase"
-      sub="corredor esperado de la fase ±2 (se mueve con el macro)"
+      title={t("imr.title")}
+      sub={t("imr.sub")}
       chip={Number.isFinite(imr.at(-1)) ? String(imr.at(-1)) : undefined}
       chipState={imr.at(-1) != null ? imrStateForWeekSafe(imr.at(-1)!, macro, weeks) : undefined}
       explain={{
-        forma: "IMR (intensidad media relativa) reportado vs la banda que el programa espera en cada fase.",
-        sirve: "Detectar desajuste entre el plan y la realidad; si el IMR se va de la banda de la fase, revisar cargas.",
-        lectura: "Banda escalonada por fase (se mueve con el macro), con tolerancia ±2.",
+        forma: t("imr.forma"),
+        sirve: t("imr.sirve"),
+        lectura: t("imr.lectura"),
       }}
     >
       <svg viewBox={`0 0 300 ${H}`} width="100%" height={H}>

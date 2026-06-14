@@ -1,6 +1,8 @@
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import type { CycleMark, WeekHeat } from "@holy-oly/core";
 import { maxLifts } from "@holy-oly/core";
+import { useLocale } from "../../i18n/useLocale";
 import { phaseColor } from "./phasePalette";
 import { heatCellColor, HEAT_STOPS } from "./heatPalette";
 import { dayColumnHeads, dayColumnNames } from "./planDates";
@@ -43,13 +45,15 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
    *  (día i = offset i de la semana del macro), el encoding y las aria-labels son idénticos. */
   orientation?: "vertical" | "horizontal";
 }) {
+  const { t } = useTranslation("charts");
+  const { lang } = useLocale();
   const max = maxLifts(heat);
   // Eje de días SIEMPRE Lunes-first (pedido del owner). Cada posición visual `vp` mapea a su offset
   // real de la semana del macro vía `dayOrder` → HOY/compe/ciclo/intensidad (indexados por offset)
   // caen en la celda correcta; sólo cambia el orden de las filas. `names` sigue rotado por firstDow
   // porque se indexa por offset (offset→weekday real para las aria-labels).
-  const heads = dayColumnHeads(0);
-  const names = dayColumnNames(firstDow);
+  const heads = dayColumnHeads(0, lang);
+  const names = dayColumnNames(firstDow, lang);
   const dayOrder = Array.from({ length: 7 }, (_, vp) => (((vp - firstDow) % 7) + 7) % 7);
   const last = heat.length;
   const isMilestone = (w: number): boolean => w === 1 || w % 4 === 0 || w === last;
@@ -68,9 +72,17 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
       isSel ? "0 0 0 2px var(--wl-accent)" : "",
       isHoy ? "inset 0 0 0 1.5px color-mix(in srgb, var(--wl-text) 88%, transparent)" : "",
     ].filter(Boolean).join(", ");
-    const label = `Semana ${w.week} ${names[day]}`
-      + (d ? "" : " · descanso") + (isHoy ? " · HOY" : "") + (isComp ? ` · competencia ${comp!.name}` : "")
-      + (cmark === "periodo" ? " · período (proy.)" : cmark === "preperiodo" ? " · pre-período (proy.)" : "");
+    // aria-label de orden-seguro por idioma: una sola key ICU con select{} para cada fragmento
+    // opcional (descanso / HOY / competencia / ciclo), no concatenación frágil.
+    const label = t("heatmap.cellLabel", {
+      week: w.week,
+      dow: names[day],
+      rest: d ? "no" : "yes",
+      hoy: isHoy ? "yes" : "no",
+      comp: isComp ? "yes" : "no",
+      compName: isComp ? comp!.name : "",
+      cycle: cmark === "periodo" ? "periodo" : cmark === "preperiodo" ? "preperiodo" : "none",
+    });
     return (
       <button key={`c${w.week}-${day}`} type="button" aria-label={label} className="wl-heatcell"
         onClick={() => onSelectDay(w.week, day)}
@@ -149,25 +161,26 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
 
 /** Leyenda compacta del encoding mixto, derivada de HEAT_STOPS (una línea, envuelve si hace falta). */
 export const HeatLegend = memo(function HeatLegend({ showCycle = false }: { showCycle?: boolean }) {
+  const { t } = useTranslation("charts");
   const swStyle = (bg: string): React.CSSProperties => ({ width: 13, height: 9, borderRadius: 2, background: bg, display: "inline-block" });
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>
       {HEAT_STOPS.map(([, rgb], i) => <span key={`t${i}`} style={swStyle(`rgba(${rgb},1)`)} />)}
-      <span>% tope</span>
+      <span>{t("heatmap.legendTopPct")}</span>
       <span style={{ width: 6 }} />
       <span style={swStyle(`rgba(${HEAT_STOPS[2]![1]},.35)`)} />
       <span style={swStyle(`rgba(${HEAT_STOPS[2]![1]},1)`)} />
-      <span>volumen</span>
+      <span>{t("heatmap.legendVolume")}</span>
       <span style={{ width: 6 }} />
       <span style={{ width: 11, height: 11, borderRadius: 3, border: `1.5px solid ${GOLD}`, display: "inline-block", boxSizing: "border-box" }} />
-      <span>compe</span>
+      <span>{t("heatmap.legendComp")}</span>
       {showCycle && (
         <>
           <span style={{ width: 6 }} />
           <span style={{ width: CYCLE_DOT, height: CYCLE_DOT, borderRadius: "50%", background: CYCLE_NEUTRAL, border: `2px solid ${CYCLE_NEUTRAL}`, boxSizing: "border-box", display: "inline-block" }} />
-          <span>período (proy.)</span>
+          <span>{t("heatmap.legendPeriod")}</span>
           <span style={{ width: CYCLE_DOT, height: CYCLE_DOT, borderRadius: "50%", border: `2px solid ${CYCLE_NEUTRAL}`, boxSizing: "border-box", display: "inline-block" }} />
-          <span>pre-período</span>
+          <span>{t("heatmap.legendPrePeriod")}</span>
         </>
       )}
     </div>

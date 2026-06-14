@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { DiscRow } from "../Disc";
 
 const GOLD = "var(--gold)";
@@ -5,11 +6,11 @@ const GOLD = "var(--gold)";
 export interface DayDetailExercise { name: string; sets: number; reps: number; pct?: number; kg?: number }
 export type DayEstado = "done" | "missed" | "today" | "pending";
 
-const ESTADO_LABEL: Record<DayEstado, { text: string; color: string }> = {
-  done: { text: "Hecha ✓", color: "var(--wl-muted)" },
-  missed: { text: "No se hizo ✗", color: "var(--wl-muted)" },
-  today: { text: "HOY", color: "var(--wl-accent)" },
-  pending: { text: "Programada", color: "var(--wl-muted)" },
+const ESTADO_COLOR: Record<DayEstado, string> = {
+  done: "var(--wl-muted)",
+  missed: "var(--wl-muted)",
+  today: "var(--wl-accent)",
+  pending: "var(--wl-muted)",
 };
 
 /**
@@ -34,7 +35,8 @@ export function PlanDayDetail({ title, sub, phaseName, phaseTint, focus, estado,
   /** Línea de contexto muted (p.ej. ventana del ciclo, SOLO en la vista de la atleta). */
   contextLine?: string;
 }) {
-  const est = estado ? ESTADO_LABEL[estado] : undefined;
+  const { t } = useTranslation("charts");
+  const est = estado ? { text: t(`dayDetail.estado.${estado}`), color: ESTADO_COLOR[estado] } : undefined;
   return (
     // wl-daydetail-in: entrada opacity+translateY (compositor-only, guard reduced-motion en theme.css);
     // los callers re-montan con key=semana-día para que el cambio de día también la dispare.
@@ -44,18 +46,18 @@ export function PlanDayDetail({ title, sub, phaseName, phaseTint, focus, estado,
         <span style={{ fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, color: "#0b0b11", background: phaseTint, borderRadius: 5, padding: "2px 7px", whiteSpace: "nowrap" }}>{phaseName}</span>
       </div>
       <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 5, lineHeight: 1.45 }}>
-        <span style={{ color: "var(--wl-text)", fontWeight: 700 }}>Objetivo: </span>{focus}
+        <span style={{ color: "var(--wl-text)", fontWeight: 700 }}>{t("dayDetail.objective")}</span>{focus}
       </div>
 
       {compName != null && (
         <div style={{ marginTop: 9, border: `1.5px solid ${GOLD}`, borderRadius: 9, padding: "8px 10px", color: GOLD, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12 }}>
-          Día de competencia — {compName}
+          {t("dayDetail.compDay", { name: compName })}
         </div>
       )}
 
       {compName == null && isRest && (
         <div style={{ marginTop: 9, fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
-          Descanso — sin sesión programada. La recuperación es la mitad del trabajo.
+          {t("dayDetail.rest")}
         </div>
       )}
 
@@ -70,7 +72,7 @@ export function PlanDayDetail({ title, sub, phaseName, phaseTint, focus, estado,
           <div style={{ marginTop: 4 }}>
             {exercises.length === 0 && (
               <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", padding: "6px 0" }}>
-                Sin ejercicios prescritos para este día.
+                {t("dayDetail.noExercises")}
               </div>
             )}
             {exercises.map((ex, i) => (

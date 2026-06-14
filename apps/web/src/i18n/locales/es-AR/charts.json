@@ -1,0 +1,8 @@
+{
+  "acwr": {
+    "sirve": "Detecta picos de carga que anticipan riesgo; fuera de banda → considerá descarga."
+  },
+  "weekDetail": {
+    "adherenceHint": "{done}/{perWeek} · tocá · → ✓ → ✗"
+  }
+}

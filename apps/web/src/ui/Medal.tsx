@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 
 type Metal = "oro" | "plata" | "bronce";
 
@@ -8,7 +9,7 @@ const METALS: Record<Metal, {
   plate: [string, string];
   sheen: string;
   sw: string;
-  name: string;
+  nameKey: string;
 }> = {
   oro: {
     rim:   ["#ffedb0", "#d59b2c", "#875812"],
@@ -16,7 +17,7 @@ const METALS: Record<Metal, {
     plate: ["#b78c2c", "#946818"],
     sheen: "#fff6d8",
     sw:    "#e7b53a",
-    name:  "Oro",
+    nameKey: "medalGold",
   },
   plata: {
     rim:   ["#f4f7fa", "#abb7c3", "#5d6975"],
@@ -24,7 +25,7 @@ const METALS: Record<Metal, {
     plate: ["#aab4bf", "#8b97a4"],
     sheen: "#ffffff",
     sw:    "#b9c2cc",
-    name:  "Plata",
+    nameKey: "medalSilver",
   },
   bronce: {
     rim:   ["#eec197", "#b1713b", "#693b18"],
@@ -32,13 +33,14 @@ const METALS: Record<Metal, {
     plate: ["#b07a48", "#8a5a2e"],
     sheen: "#ffe3c6",
     sw:    "#c07f49",
-    name:  "Bronce",
+    nameKey: "medalBronze",
   },
 };
 
 const RIBBON_COLS = ["#1f47bf", "#fbfcfe", "#1f47bf", "#fbfcfe", "#1f47bf"] as const;
 
 export function Medal({ metal, size = 40 }: { metal: Metal; size?: number }) {
+  const { t } = useTranslation();
   const uid = useId().replace(/:/g, "");
   const fid = `f${uid}`;
   const rid = `r${uid}`;
@@ -60,7 +62,7 @@ export function Medal({ metal, size = 40 }: { metal: Metal; size?: number }) {
       height={Math.round(size * 1.25)}
       style={{ display: "block" }}
       role="img"
-      aria-label={m.name}
+      aria-label={t(m.nameKey)}
     >
       <defs>
         {/* Face radial gradient: cx=38% cy=30% r=78% */}

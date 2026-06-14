@@ -1,3 +1,9 @@
 {
-  "tryAgain": "Probá de nuevo."
+  "tryAgain": "Probá de nuevo.",
+  "verifyEmail": {
+    "title": "Verificá tu email",
+    "defaultSub": "Sin verificación no podés confirmar atletas en el roster.",
+    "sent": "Enviado ✓ — revisá spam",
+    "error": "No se pudo reenviar el email. Probá de nuevo."
+  }
 }

@@ -44,10 +44,21 @@ export default tseslint.config(
       "apps/web/src/i18n/MovementLangToggle.tsx",
       "apps/web/src/auth/**/*.tsx",
       "apps/web/src/onboarding/**/*.tsx",
+      "apps/web/src/ui/charts/**/*.tsx",
+      "apps/web/src/ui/VerifyEmailBanner.tsx",
+      "apps/web/src/ui/Medal.tsx",
+      "apps/web/src/ui/SubstituteSheet.tsx",
     ],
+    // Test fixtures legitimately render placeholder literals (<div>LANDING</div>) — not user copy.
+    ignores: ["**/*.test.tsx", "**/*.test.ts"],
     plugins: { i18next },
     rules: {
-      "i18next/no-literal-string": ["error", { mode: "jsx-text-only" }],
+      // jsx-text-only catches visible text nodes; ignore non-letter glyphs (✓ ✗ — · → % S{w} etc.)
+      // and the single-letter weekday/week markers that are deliberately language-neutral.
+      "i18next/no-literal-string": [
+        "error",
+        { mode: "jsx-text-only", words: { exclude: ["^[^\\p{L}]*$", "^[A-Z]$"] } },
+      ],
     },
   },
 );

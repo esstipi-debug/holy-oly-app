@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
-import { simplerVariants, substitutesOf, getMovement } from "@holy-oly/core";
+import { useTranslation } from "react-i18next";
+import { simplerVariants, substitutesOf, getMovement, getBase } from "@holy-oly/core";
+import { useMovementLang } from "../i18n/useMovementLang";
 import { BottomSheet } from "./BottomSheet";
 
 const item: CSSProperties = {
@@ -51,8 +53,19 @@ export function SubstituteSheet({
   movementId: string;
   onPick: (id: string) => void;
 }) {
+  const { t } = useTranslation();
+  const { resolved } = useMovementLang();
   const simpler = simplerVariants(movementId);
   const subs = substitutesOf(movementId);
+
+  // The English nomenclature (`aliasEn`) lives on the base, reachable via the variant's baseId.
+  const movName = (id: string): string => {
+    const m = getMovement(id);
+    if (resolved === "en") {
+      return (m && getBase(m.baseId)?.aliasEn) ?? m?.name ?? id;
+    }
+    return m?.name ?? id;
+  };
 
   const choose = (id: string): void => {
     onPick(id);
@@ -60,7 +73,7 @@ export function SubstituteSheet({
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} ariaLabel="Cambiar movimiento">
+    <BottomSheet open={open} onClose={onClose} ariaLabel={t("substitute.title")}>
       <div
         style={{
           fontFamily: "var(--wl-display)",
@@ -69,7 +82,7 @@ export function SubstituteSheet({
           color: "var(--wl-text)",
         }}
       >
-        Cambiar movimiento
+        {t("substitute.title")}
       </div>
       <div
         style={{
@@ -79,10 +92,10 @@ export function SubstituteSheet({
           marginTop: 2,
         }}
       >
-        Actual: {getMovement(movementId)?.name ?? movementId}
+        {t("substitute.current", { name: movName(movementId) })}
       </div>
       <div style={{ maxHeight: 380, overflowY: "auto" }}>
-        <div style={grp}>Bajar complejidad</div>
+        <div style={grp}>{t("substitute.lowerComplexity")}</div>
         {simpler.length > 0 ? (
           simpler.map((m) => (
             <button
@@ -91,13 +104,13 @@ export function SubstituteSheet({
               style={item}
               onClick={() => choose(m.id)}
             >
-              {m.name}
+              {movName(m.id)}
             </button>
           ))
         ) : (
-          <div style={empty}>Sin variantes más simples.</div>
+          <div style={empty}>{t("substitute.noSimpler")}</div>
         )}
-        <div style={grp}>Sustituir por</div>
+        <div style={grp}>{t("substitute.substituteWith")}</div>
         {subs.length > 0 ? (
           subs.map((m) => (
             <button
@@ -106,11 +119,11 @@ export function SubstituteSheet({
               style={item}
               onClick={() => choose(m.id)}
             >
-              {m.name}
+              {movName(m.id)}
             </button>
           ))
         ) : (
-          <div style={empty}>Sin sustitutos sugeridos.</div>
+          <div style={empty}>{t("substitute.noSubstitutes")}</div>
         )}
       </div>
     </BottomSheet>

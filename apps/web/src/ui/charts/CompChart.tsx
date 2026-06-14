@@ -1,8 +1,10 @@
 import { type MonitorSeries } from "@holy-oly/core";
+import { useTranslation } from "react-i18next";
 import { ChartCard, linePath, WeekTapZones } from "./chartkit";
 import { STATUS } from "../status";
 
 export function CompChart({ series, onPointClick }: { series: MonitorSeries; onPointClick?: (week: number) => void }) {
+  const { t } = useTranslation("charts");
   const comp = series.compliance ?? [];
   const rpe = series.rpe ?? [];
   const weeks = series.weeks;
@@ -17,13 +19,13 @@ export function CompChart({ series, onPointClick }: { series: MonitorSeries; onP
 
   return (
     <ChartCard
-      title="Cumplimiento"
-      sub="% completado + RPE medio"
+      title={t("comp.title")}
+      sub={t("comp.sub")}
       chip={lastComp != null ? lastComp + "%" : undefined}
       explain={{
-        forma: "Sesiones completadas sobre planificadas por semana (barras) + RPE medio reportado (línea).",
-        sirve: "Ver si el plan se cumple y a qué costo percibido.",
-        lectura: "Barras: verde ≥85%, amarillo ≥70%, rojo abajo. RPE en escala 5–10.",
+        forma: t("comp.forma"),
+        sirve: t("comp.sirve"),
+        lectura: t("comp.lectura"),
       }}
     >
       <svg viewBox={`0 0 300 ${H}`} width="100%" height={H}>
