@@ -1,0 +1,125 @@
+{
+  "explain": {
+    "forma": "Como se forma",
+    "sirve": "Para que serve",
+    "lectura": "Contra o que se lê"
+  },
+  "howToRead": "Como se lê: {title}",
+  "detailFallback": "Detalhe",
+  "acwr": {
+    "title": "ACWR",
+    "sub": "faixa segura 0,8–1,3 · o atleta não vê este número",
+    "forma": "Carga aguda ÷ média móvel de 4 semanas (inclui a atual).",
+    "sirve": "Detecta picos de carga que antecipam risco; fora da faixa → considere uma descarga.",
+    "lectura": "Faixa segura 0,8–1,3; >1,3 atenção, >1,5 alerta. O atleta não vê este número."
+  },
+  "load": {
+    "title": "Carga aguda vs crônica",
+    "sub": "barras = semanal · linha = crônica (4 sem)",
+    "forma": "Carga semanal (barras) e carga crônica = média móvel de 4 semanas (linha).",
+    "sirve": "Ver a tendência de carga; a crônica é a base contra a qual o ACWR é medido.",
+    "lectura": "A linha crônica (média móvel de 4 sem) é a referência: barras bem acima dela = pico, e é isso que infla o ACWR."
+  },
+  "recovery": {
+    "title": "Recuperação",
+    "sub": "HRV ↓ e FC de repouso ↑ sustentados = alerta",
+    "forma": "HRV e FC de repouso (RHR) por semana, comparadas com o baseline do próprio atleta.",
+    "sirve": "Ler a recuperação: HRV caindo ou RHR subindo de forma sustentada sugerem fadiga.",
+    "lectura": "Faixa em torno do baseline; fora da faixa (HRV↓ / RHR↑) = ficar de olho.",
+    "hrvLabel": "HRV (ms)",
+    "rhrLabel": "FC de repouso (bpm)"
+  },
+  "comp": {
+    "title": "Cumprimento",
+    "sub": "% concluído + RPE médio",
+    "forma": "Sessões concluídas sobre as planejadas por semana (barras) + RPE médio reportado (linha).",
+    "sirve": "Ver se o plano está sendo cumprido e a que custo percebido.",
+    "lectura": "Barras: verde ≥85%, amarelo ≥70%, vermelho abaixo. RPE em escala 5–10."
+  },
+  "imr": {
+    "title": "IMR vs fase",
+    "sub": "corredor esperado da fase ±2 (se move com o macro)",
+    "forma": "IMR (intensidade média relativa) reportado vs a faixa que o programa espera em cada fase.",
+    "sirve": "Detectar descompasso entre o plano e a realidade; se o IMR sai da faixa da fase, revise as cargas.",
+    "lectura": "Faixa escalonada por fase (se move com o macro), com tolerância de ±2."
+  },
+  "weight": {
+    "title": "Peso vs categoria",
+    "sub": "faixa-alvo da categoria",
+    "forma": "Peso corporal por semana vs a faixa da categoria-alvo.",
+    "sirve": "Acompanhar se o atleta bate o peso da categoria dele antes da competição.",
+    "lectura": "Faixa = limites da categoria; o ponto fica verde dentro, vermelho fora, neutro se não houver categoria definida.",
+    "chip": "{value} kg"
+  },
+  "wellness": {
+    "title": "Bem-estar",
+    "sub": "pontuação 0–100 vs o seu normal · itens",
+    "forma": "Score de bem-estar (0–100) + 6 itens do questionário (fadiga, dor, estresse, humor, motivação, sono) como tendências.",
+    "sirve": "Contexto subjetivo que complementa os sinais fisiológicos.",
+    "lectura": "O score se lê contra o seu próprio normal (faixa média±desvio); cada item vs a tendência dele."
+  },
+  "timeline": {
+    "title": "Macrociclo · linha do tempo",
+    "forma": "Volume semanal (barras) + intensidade média por fase (linha) ao longo do macro, com o taper antes de cada competição.",
+    "sirve": "Ver o caminho até a competição e como o volume é reestruturado para chegar ao pico.",
+    "lectura": "Faixa de fases em cima; 🚩 = competição; HOJE = semana atual; o taper baixa as barras antes de cada 🚩.",
+    "hoy": "HOJE",
+    "aria": "Macrociclo {name} · {count, plural, one {# semana} other {# semanas}}"
+  },
+  "periodization": {
+    "secChart": "Periodização · intensidade e volume",
+    "secRibbon": "Distribuição das fases",
+    "secRows": "Fases em detalhe · {count}",
+    "axisLabel": "%1RM · SEMANAS",
+    "aria": "Periodização {name} · {count, plural, one {# semana} other {# semanas}}",
+    "capBand": "faixa = IMR esperado",
+    "capLine": "média da fase",
+    "capBar": "volume rel.",
+    "capWidth": "largura = duração da fase",
+    "capFill": "preenchimento = intensidade média",
+    "ribbonWeeks": "sem {range} · {count, plural, one {# sem} other {# sem}}",
+    "ribbonImr": "IMR ~{mean}%",
+    "rowWeeksImr": "sem {range} · IMR {lo}–{hi}%",
+    "rowVolFocus": "vol {vol}% · {focus}"
+  },
+  "signal": {
+    "acwr": "ACWR",
+    "acuteLoad": "Carga aguda",
+    "recovery": "Recuperação",
+    "imr": "IMR",
+    "wellness": "Bem-estar",
+    "compliance": "Cumprimento",
+    "weight": "Peso",
+    "noData": "sem dado",
+    "dash": "—"
+  },
+  "weekDetail": {
+    "ariaLabel": "Detalhe da semana",
+    "week": "Semana {week}",
+    "taper": "· 🚩 taper",
+    "adherence": "Adesão",
+    "adherenceHint": "{done}/{perWeek} · toque · → ✓ → ✗",
+    "noData": "sem dado",
+    "sessionAria": "semana {week} sessão {idx}: {status, select, done {treinou} missed {não treinou} other {pendente}}"
+  },
+  "dayDetail": {
+    "estado": {
+      "done": "Feita ✓",
+      "missed": "Não foi feita ✗",
+      "today": "HOJE",
+      "pending": "Programada"
+    },
+    "objective": "Objetivo: ",
+    "compDay": "Dia de competição — {name}",
+    "rest": "Descanso — sem sessão programada. A recuperação é metade do trabalho.",
+    "noExercises": "Sem exercícios prescritos para este dia."
+  },
+  "heatmap": {
+    "cellLabel": "Semana {week} {dow}{rest, select, yes { · descanso} other {}}{hoy, select, yes { · HOJE} other {}}{comp, select, yes { · competição {compName}} other {}}{cycle, select, periodo { · período (proj.)} preperiodo { · pré-período (proj.)} other {}}",
+    "legendTopPct": "% topo",
+    "legendVolume": "volume",
+    "legendComp": "compe",
+    "legendPeriod": "período (proj.)",
+    "legendPrePeriod": "pré-período"
+  }
+}

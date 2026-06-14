@@ -44,6 +44,19 @@ Quedan **idénticos** en todos los idiomas (se centralizan, no se localizan):
 
 ---
 
+## 2b. Portugués (PT-BR) — idioma BASE (decisión owner 2026-06-14)
+
+PT-BR (Brasil) es **idioma base** junto a ES/EN (subió desde Fase 5). Las superficies ya migradas
+(common/auth/charts) están en PT-BR; cada fase futura produce PT-BR junto a es-419/en.
+- **Registro:** portugués brasileño estándar ("você"). Sin variante pt-PT por ahora.
+- **`discos` → `anilhas`** (término de gimnasio BR estándar) — congelar al curar el glosario completo.
+- **Nomenclatura de movimientos en PT-BR = Fase 2** (con el builder de dominio): snatch → "arranco",
+  C&J → "arremesso", agachamento (sentadilla), etc. Curar con hablante nativo.
+- **Métricas:** Recuperación→Recuperação, Bienestar→Bem-estar, Cumplimiento→Adesão/Cumprimento.
+- Do-not-translate (§1) y siglas: igual. `useLegalLang` aún mapea pt-BR→prosa ES (legal PT-BR = Fase 5).
+
+---
+
 ## 3. Movimientos base (IDs CONGELADOS · `data/movements.ts`)
 
 `ES` = es-419 **y** es-AR (idénticos). `EN` = el `aliasEn` ya presente en el dato. La columna **Transcreación** marca dónde el nombre NO es literal.

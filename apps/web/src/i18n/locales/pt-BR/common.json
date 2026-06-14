@@ -1,0 +1,38 @@
+{
+  "loading": "Carregando…",
+  "retry": "Tentar de novo",
+  "back": "Voltar",
+  "backToHome": "Voltar ao início",
+  "backToLogin": "Voltar ao login",
+  "close": "Fechar",
+  "logout": "Sair",
+  "save": "Salvar",
+  "saving": "Salvando…",
+  "saved": "Salvo ✓",
+  "cancel": "Cancelar",
+  "confirm": "Confirmar",
+  "language": "Idioma",
+  "movementNames": "Nomes dos movimentos",
+  "errorLoad": "Não foi possível carregar.",
+  "errorSave": "Não foi possível salvar.",
+  "tryAgain": "Tente de novo.",
+  "medalGold": "Ouro",
+  "medalSilver": "Prata",
+  "medalBronze": "Bronze",
+  "verifyEmail": {
+    "title": "Verifique seu e-mail",
+    "defaultSub": "Sem a verificação, você não consegue confirmar atletas no elenco.",
+    "sending": "Enviando…",
+    "sent": "Enviado ✓ — confira o spam",
+    "resend": "Reenviar e-mail",
+    "error": "Não foi possível reenviar o e-mail. Tente de novo."
+  },
+  "substitute": {
+    "title": "Trocar movimento",
+    "current": "Atual: {name}",
+    "lowerComplexity": "Reduzir complexidade",
+    "noSimpler": "Sem variações mais simples.",
+    "substituteWith": "Substituir por",
+    "noSubstitutes": "Sem substitutos sugeridos."
+  }
+}

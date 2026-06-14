@@ -27,13 +27,13 @@ describe("useLocale", () => {
 
   test("exposes the toggle language list", () => {
     const { result } = renderHook(() => useLocale(), { wrapper });
-    expect(result.current.languages).toEqual(["es-419", "en"]);
+    expect(result.current.languages).toEqual(["es-419", "en", "pt-BR"]);
   });
 
   test("the pseudo-locale never yields an invalid selector value", async () => {
     await i18n.changeLanguage("en-XA");
     const { result } = renderHook(() => useLocale(), { wrapper });
-    expect(["es-419", "en"]).toContain(result.current.lang);
+    expect(["es-419", "en", "pt-BR"]).toContain(result.current.lang);
   });
 });
 

@@ -37,7 +37,7 @@ function flattenKeys(obj: Record<string, unknown>, prefix = ""): string[] {
   return out.sort();
 }
 
-const FULL_LOCALES = ["en"]; // locales expected to be complete (1:1 with es-419)
+const FULL_LOCALES = ["en", "pt-BR"]; // locales expected to be complete (1:1 with es-419)
 
 describe("locale catalog parity", () => {
   test("the es-419 base catalog exists", () => {

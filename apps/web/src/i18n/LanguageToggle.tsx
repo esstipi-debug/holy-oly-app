@@ -4,7 +4,7 @@ import { SegmentedTabs } from "../ui/SegmentedTabs";
 import { useLocale } from "./useLocale";
 import { TOGGLE_LANGS, type Lang } from "./config";
 
-const SHORT: Record<Lang, string> = { "es-419": "ES", "es-AR": "AR", en: "EN" };
+const SHORT: Record<Lang, string> = { "es-419": "ES", "es-AR": "AR", en: "EN", "pt-BR": "PT" };
 
 /**
  * Global language switch (ES / EN). Bound to the app-wide locale — persists the choice and updates

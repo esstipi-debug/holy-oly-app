@@ -7,7 +7,7 @@
  */
 
 /** User-facing locales. es-AR is auto-detected for AR browsers (not yet a toggle option). */
-export type Lang = "es-419" | "es-AR" | "en";
+export type Lang = "es-419" | "es-AR" | "en" | "pt-BR";
 
 /** QA-only pseudo-locale: accents + pads English to surface un-extracted strings and overflow. */
 export const PSEUDO_LANG = "en-XA";
@@ -18,16 +18,17 @@ export type LangOrPseudo = Lang | typeof PSEUDO_LANG;
 export const DEFAULT_LANG: Lang = "es-419";
 
 /** Locales offered in the language toggle. es-AR rides on detection; en-XA is dev/QA only. */
-export const TOGGLE_LANGS: readonly Lang[] = ["es-419", "en"];
+export const TOGGLE_LANGS: readonly Lang[] = ["es-419", "en", "pt-BR"];
 
 /** Everything i18next is allowed to resolve to. */
-export const SUPPORTED_LANGS: readonly LangOrPseudo[] = ["es-419", "es-AR", "en", PSEUDO_LANG];
+export const SUPPORTED_LANGS: readonly LangOrPseudo[] = ["es-419", "es-AR", "en", "pt-BR", PSEUDO_LANG];
 
 /** Human labels for the toggle. */
 export const LANG_LABELS: Record<Lang, string> = {
   "es-419": "Español",
   "es-AR": "Español (vos)",
   en: "English",
+  "pt-BR": "Português",
 };
 
 /** localStorage key for the persisted language choice (supersedes the legal-only "ho:legalLang"). */
@@ -45,6 +46,7 @@ export function normalizeLang(raw?: string | null): LangOrPseudo | null {
   if (v === "es-419") return "es-419";
   if (v.startsWith("es-ar")) return "es-AR"; // Rioplatense voseo
   if (v.startsWith("es")) return "es-419"; // any other Spanish → neutral default
+  if (v.startsWith("pt")) return "pt-BR"; // pt, pt-BR, pt-PT → Brazilian Portuguese (base)
   if (v.startsWith("en")) return "en";
   return null;
 }

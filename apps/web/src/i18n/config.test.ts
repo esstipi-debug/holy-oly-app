@@ -33,6 +33,12 @@ describe("normalizeLang", () => {
     expect(normalizeLang("en-GB")).toBe("en");
   });
 
+  test("maps any Portuguese variant to pt-BR (Brazilian Portuguese is the base)", () => {
+    expect(normalizeLang("pt-BR")).toBe("pt-BR");
+    expect(normalizeLang("pt")).toBe("pt-BR");
+    expect(normalizeLang("pt-PT")).toBe("pt-BR");
+  });
+
   test("recognizes the en-XA pseudo-locale", () => {
     expect(normalizeLang("en-XA")).toBe(PSEUDO_LANG);
     expect(normalizeLang("en-xa")).toBe(PSEUDO_LANG);
@@ -45,7 +51,7 @@ describe("normalizeLang", () => {
 
   test("returns null for unsupported or empty input", () => {
     expect(normalizeLang("fr")).toBeNull();
-    expect(normalizeLang("pt-BR")).toBeNull();
+    expect(normalizeLang("ja")).toBeNull();
     expect(normalizeLang("")).toBeNull();
     expect(normalizeLang(null)).toBeNull();
     expect(normalizeLang(undefined)).toBeNull();
@@ -73,8 +79,8 @@ describe("locale constants", () => {
     expect(DEFAULT_LANG).toBe("es-419");
   });
 
-  test("the toggle exposes Spanish and English (es-AR is auto-detected)", () => {
-    expect(TOGGLE_LANGS).toEqual(["es-419", "en"]);
+  test("the toggle exposes the three base languages (es-AR is auto-detected)", () => {
+    expect(TOGGLE_LANGS).toEqual(["es-419", "en", "pt-BR"]);
   });
 
   test("every supported user locale has a human label", () => {
@@ -87,6 +93,7 @@ describe("locale constants", () => {
     expect(SUPPORTED_LANGS).toContain("es-419");
     expect(SUPPORTED_LANGS).toContain("es-AR");
     expect(SUPPORTED_LANGS).toContain("en");
+    expect(SUPPORTED_LANGS).toContain("pt-BR");
     expect(SUPPORTED_LANGS).toContain(PSEUDO_LANG);
   });
 });
