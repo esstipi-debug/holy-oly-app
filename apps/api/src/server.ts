@@ -16,6 +16,7 @@ import { localDemoLoginRoutes } from "./auth/local-demo-login";
 import { googleAuthRoutes } from "./auth/google-routes";
 import { vinculoRoutes } from "./vinculo/routes";
 import { meRoutes } from "./me/routes";
+import { competitionRoutes } from "./competitions/routes";
 import { requireCoach } from "./auth/guards";
 import { requireCoachWrite } from "./auth/coach-writes";
 import { billingRoutes } from "./billing/routes";
@@ -149,6 +150,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   app.register(vinculoRoutes);
   app.register(billingRoutes);
   app.register(meRoutes);
+  app.register(competitionRoutes);
 
   app.get("/health", async () => ({ ok: true }));
 

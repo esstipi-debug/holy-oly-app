@@ -448,3 +448,54 @@ export const UpdateRmsInputSchema = z.object({
     .refine((u) => new Set(u.map((x) => x.lift)).size === u.length, "lift duplicado"),
   reason: z.enum(["manual", "pr"]),
 });
+
+// ── Competencias compartidas del coach (slice 2026-06-14). El input del coach es untrusted →
+//    acotado (free text/array). Las vistas de lectura validan shape (el server ya acotó al escribir). ──
+export const CompRoleSchema = z.enum(["pico", "paso"]);
+
+export const CompetitionInputSchema = z.object({
+  name: z.string().min(1).max(120),
+  date: IsoDateSchema,
+  place: z.string().max(120).optional(),
+});
+
+export const CompetitionEntryInputSchema = z.object({
+  athleteId: z.string().min(1).max(60),
+  role: CompRoleSchema,
+});
+/** Acople en lote: 1..200 atletas en una sola llamada. */
+export const AcoplarInputSchema = z.object({
+  entries: z.array(CompetitionEntryInputSchema).min(1).max(200),
+});
+
+export const CompResultSchema = z.object({
+  medal: z.enum(["oro", "plata", "bronce"]),
+  cat: z.string().max(40),
+  sn: z.number().nonnegative().max(1000),
+  cj: z.number().nonnegative().max(1000),
+  place: z.string().max(20),
+});
+
+export const CompetitionSchema = z.object({
+  id: z.string(),
+  name: z.string().max(120),
+  date: IsoDateSchema,
+  place: z.string().max(120).optional(),
+});
+export const CompetitionListItemSchema = CompetitionSchema.extend({
+  athleteCount: z.number().int().nonnegative(),
+  picoCount: z.number().int().nonnegative(),
+  pasoCount: z.number().int().nonnegative(),
+});
+export const CompetitionListSchema = z.array(CompetitionListItemSchema).max(500);
+export const CompetitionEntryViewSchema = z.object({
+  athleteId: z.string(),
+  nombre: z.string(),
+  iniciales: z.string(),
+  role: CompRoleSchema,
+  peakWeek: z.number().int().min(1).max(104).optional(),
+  result: CompResultSchema.optional(),
+});
+export const CompetitionDetailViewSchema = CompetitionSchema.extend({
+  entries: z.array(CompetitionEntryViewSchema).max(500),
+});

@@ -33,4 +33,5 @@ export * from "./logic/prilepin";
 export * from "./logic/prilepinPlan";
 export * from "./logic/readinessModulation";
 export * from "./logic/registro";
+export * from "./logic/competitions";
 export * from "./billing/plans";

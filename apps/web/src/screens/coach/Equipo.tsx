@@ -60,6 +60,7 @@ export function Equipo() {
         <h1 style={{ margin: 0, fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 24, letterSpacing: -.4 }}>Plantel</h1>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
           <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>{rows.length} ATLETAS</span>
+          <Link to="/coach/competencias" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-accent)", textDecoration: "none" }}>Competencias ›</Link>
           {API_ENABLED && (
             <Link to="/coach/invitaciones" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-accent)", textDecoration: "none" }}>Invitaciones ›</Link>
           )}

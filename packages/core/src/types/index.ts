@@ -375,6 +375,48 @@ export interface MacroHistoryView {
   avgAdherencePct: number;
 }
 
+// ── Competencias compartidas del coach (slice competencias 2026-06-14): el coach crea una compe
+//    UNA vez (nombre + fecha + lugar) y acopla a varios atletas con un ROL — "pico" ancla el pico
+//    del macro a la fecha (reusa el peaking: sincroniza la fila Competencia por-atleta), "paso" es
+//    una compe de preparación que se registra pero NO toca el plan. Los resultados (marcas +
+//    medalla) se cargan después de la compe (Fase 2). Propiedad del coach (catálogo por coach). ──
+
+/** Rol del atleta en una competencia. "pico": ancla el pico del macro a la fecha. "paso": compe
+ *  de preparación — se registra que va, pero NO toca la planificación. */
+export type CompRole = "pico" | "paso";
+
+/** Una competencia compartida, propiedad del coach. `date` ISO YYYY-MM-DD; `place` opcional. */
+export interface Competition { id: string; name: string; date: string; place?: string; }
+
+/** Resultado de un atleta en una competencia (Fase 2): marca lograda (Arr/Env), medalla y puesto.
+ *  `sn` arranque · `cj` envión (kg). Espejo de los campos de `Medal` salvo `comp`/`date` (los pone
+ *  la competencia compartida). */
+export interface CompResult {
+  medal: "oro" | "plata" | "bronce";
+  cat: string; sn: number; cj: number; place: string;
+}
+
+/** Input de creación/edición de una competencia (coach; untrusted → acotado en schema). */
+export interface CompetitionInput { name: string; date: string; place?: string; }
+
+/** Acople de un atleta (input): a quién, con qué rol. */
+export interface CompetitionEntryInput { athleteId: string; role: CompRole; }
+
+/** Una fila del catálogo de competencias (lista del coach), con el conteo de acoplados por rol. */
+export interface CompetitionListItem extends Competition {
+  athleteCount: number; picoCount: number; pasoCount: number;
+}
+
+/** Un atleta acoplado, enriquecido para el detalle. `peakWeek` (sólo rol "pico" con plan anclado)
+ *  = la semana del macro donde cae la compe; `result` presente sólo si ya se cargó (Fase 2). */
+export interface CompetitionEntryView {
+  athleteId: string; nombre: string; iniciales: string;
+  role: CompRole; peakWeek?: number; result?: CompResult;
+}
+
+/** Detalle de una competencia: la compe + sus atletas acoplados. */
+export interface CompetitionDetailView extends Competition { entries: CompetitionEntryView[]; }
+
 // ── ADN de escuela (slice entrenamientos-distintivos 2026-06-11): cada familia del catálogo
 //    descrita como DATOS — el generador determinístico los convierte en MacroRecipe. ──────────
 

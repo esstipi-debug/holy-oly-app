@@ -43,6 +43,11 @@ enum Metal {
   bronce
 }
 
+enum CompRole {
+  pico
+  paso
+}
+
 enum SessionStatus {
   done
   missed
@@ -133,6 +138,7 @@ model Coach {
   createdAt  DateTime  @default(now())
   vinculos   Vinculo[]
   subscription Subscription?
+  competitions Competition[]
 }
 
 /// B2B coach subscription (E3–E5). Athletes are free; only coaches pay.
@@ -208,6 +214,7 @@ model Athlete {
   rmUpdates        RmUpdate[]
   sessionRegistros SessionRegistro[]
   macroHistory     MacroHistory[]
+  competitionEntries CompetitionEntry[]
 }
 
 /// The multi-tenancy join: a coach sees an athlete only via an `activo` Vinculo.
@@ -243,8 +250,13 @@ model Competencia {
   name      String
   week      Int
   date      String? // ISO YYYY-MM-DD the coach picked; week is derived from it
+  // Slice competencias (2026-06-14): id de la compe COMPARTIDA que sincronizó esta fila (rol
+  // "pico"). Null = fila creada a mano (legacy / CompSheet directo). Sin FK formal: el sync la
+  // matchea por este id (ver repo competitions). Aditivo + nullable → filas viejas quedan en null.
+  competitionId String?
 
   @@index([athleteId])
+  @@index([competitionId])
 }
 
 /// Coach-tracked session adherence (mirrors getSessionLog/setSessionLog). Sparse — only marked
@@ -340,6 +352,9 @@ model Medal {
   sn        Int
   cj        Int
   place     String
+  // Slice competencias (2026-06-14, Fase 2): id de la compe compartida cuando el resultado se
+  // cargó desde una compe gestionada. Null = medalla cargada a mano (texto libre). Aditivo.
+  competitionId String?
 
   @@index([athleteId])
 }
@@ -439,5 +454,43 @@ model RmUpdate {
   reason    String
   createdAt DateTime @default(now())
 
+  @@index([athleteId])
+}
+
+/// Competencia COMPARTIDA, propiedad del coach (slice competencias 2026-06-14). El coach la crea
+/// UNA vez y acopla a varios atletas de su plantel (vínculo activo) vía CompetitionEntry. Catálogo
+/// por-coach: si dos coaches van al mismo torneo, son dos filas (sin catálogo global / sin dedup).
+model Competition {
+  id        String             @id @default(uuid())
+  coachId   String
+  coach     Coach              @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  name      String
+  date      String             // ISO YYYY-MM-DD
+  place     String?
+  createdAt DateTime           @default(now())
+  entries   CompetitionEntry[]
+
+  @@index([coachId])
+}
+
+/// El ACOPLE atleta ↔ competencia. `role` = pico (ancla el macro) | paso (no toca el plan). Los
+/// campos de resultado (medal/cat/sn/cj/place) son opcionales y se llenan DESPUÉS de la compe
+/// (Fase 2). Único por (competitionId, athleteId): un atleta una vez por compe.
+model CompetitionEntry {
+  id            String      @id @default(uuid())
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  athleteId     String
+  athlete       Athlete     @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  role          CompRole
+  medal         Metal?
+  cat           String?
+  sn            Int?
+  cj            Int?
+  place         String?
+  createdAt     DateTime    @default(now())
+
+  @@unique([competitionId, athleteId])
+  @@index([competitionId])
   @@index([athleteId])
 }

@@ -1,10 +1,11 @@
 import {
   RosterSchema, MonitorSeriesSchema, MedalsSchema, CompsSchema, SessionLogSchema, PlanSchema, CycleContextSchema,
   SessionViewsSchema, WeekHeatsSchema, PrCandidatesSchema, RmUpdatesSchema, AthleteDailyViewSchema, PrilepinWeekSchema,
-  MacroHistoryViewSchema,
+  MacroHistoryViewSchema, CompetitionListSchema, CompetitionDetailViewSchema, CompetitionSchema,
   type Repository, type Atleta, type MonitorSeries, type Medal, type Competencia, type Plan,
   type CycleShare, type CycleContext, type SessionLog, type SessionView, type PrescribedExercise, type WeekHeat,
   type PrCandidate, type RmLift, type RmUpdate, type AthleteDailyView, type EngineWeek, type MacroHistoryView,
+  type Competition, type CompetitionInput, type CompetitionListItem, type CompetitionDetailView, type CompetitionEntryInput,
 } from "@holy-oly/core";
 
 interface Parser<T> {
@@ -83,16 +84,22 @@ export class HttpRepository implements Repository {
   }
 
   // ── Writes (Fase 4). Coach-authorized; the httpOnly session cookie carries the principal. ──
-  private async mutate(path: string, method: "POST" | "PUT", body: unknown): Promise<void> {
+  private async send(path: string, method: "POST" | "PUT" | "PATCH" | "DELETE", body?: unknown): Promise<unknown> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method,
       credentials: "include",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
+      ...(body !== undefined ? { headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {}),
     });
     // Consume the body (like fetchJson) so the connection is released and API errors surface.
-    const payload = (await res.json().catch(() => undefined)) as { error?: string } | undefined;
-    if (!res.ok) throw new HttpError(res.status, path, payload?.error);
+    const payload = res.status === 204 ? undefined : await res.json().catch(() => undefined);
+    if (!res.ok) throw new HttpError(res.status, path, (payload as { error?: string } | undefined)?.error);
+    return payload;
+  }
+  private async mutate(path: string, method: "POST" | "PUT" | "PATCH" | "DELETE", body?: unknown): Promise<void> {
+    await this.send(path, method, body);
+  }
+  private async mutateJson<T>(path: string, method: "POST" | "PUT" | "PATCH" | "DELETE", body: unknown, schema: Parser<T>): Promise<T> {
+    return schema.parse(await this.send(path, method, body));
   }
 
   // The interface gives no separate id; the path athlete is plan.atletaId (server enforces the match).
@@ -145,5 +152,28 @@ export class HttpRepository implements Repository {
   // ── Historial de macrociclos cerrados (slice macro-history): coach-visible. ──
   async getMacroHistory(id: string): Promise<MacroHistoryView> {
     return this.get(this.athletePath(id, "macro-history"), MacroHistoryViewSchema);
+  }
+
+  // ── Competencias compartidas del coach (slice 2026-06-14). ──
+  async getCompetitions(): Promise<CompetitionListItem[]> {
+    return this.get("/competitions", CompetitionListSchema);
+  }
+  async getCompetition(id: string): Promise<CompetitionDetailView | undefined> {
+    return this.getOptional(`/competitions/${encodeURIComponent(id)}`, CompetitionDetailViewSchema);
+  }
+  async createCompetition(input: CompetitionInput): Promise<Competition> {
+    return this.mutateJson("/competitions", "POST", input, CompetitionSchema);
+  }
+  async updateCompetition(id: string, input: CompetitionInput): Promise<void> {
+    return this.mutate(`/competitions/${encodeURIComponent(id)}`, "PATCH", input);
+  }
+  async deleteCompetition(id: string): Promise<void> {
+    return this.mutate(`/competitions/${encodeURIComponent(id)}`, "DELETE");
+  }
+  async acoplarAtletas(id: string, entries: CompetitionEntryInput[]): Promise<void> {
+    return this.mutate(`/competitions/${encodeURIComponent(id)}/entries`, "POST", { entries });
+  }
+  async desacoplarAtleta(id: string, athleteId: string): Promise<void> {
+    return this.mutate(`/competitions/${encodeURIComponent(id)}/entries/${encodeURIComponent(athleteId)}`, "DELETE");
   }
 }

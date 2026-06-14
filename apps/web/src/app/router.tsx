@@ -21,6 +21,8 @@ import { CoachShell } from "../screens/coach/macros/CoachShell";
 import { MacroCatalog } from "../screens/coach/macros/MacroCatalog";
 import { MacroDetail } from "../screens/coach/macros/MacroDetail";
 import { CuentaCoach } from "../screens/coach/macros/CuentaCoach";
+import { CompetitionsList } from "../screens/coach/competitions/CompetitionsList";
+import { CompetitionDetail } from "../screens/coach/competitions/CompetitionDetail";
 import { AthleteShell } from "../screens/atleta/AthleteShell";
 import { HomeScreen } from "../screens/atleta/HomeScreen";
 import { ProgresoScreen } from "../screens/atleta/ProgresoScreen";
@@ -57,6 +59,8 @@ const routes: RouteObject[] = [
           { path: "macros", element: <MacroCatalog /> },
           { path: "macros/:id", element: <MacroDetail /> },
           { path: "a/:id", element: <Drilldown /> },
+          { path: "competencias", element: <CompetitionsList /> },
+          { path: "competencias/:id", element: <CompetitionDetail /> },
           { path: "invitaciones", element: <InvitacionesScreen /> },
           { path: "cuenta", element: <CuentaCoach /> },
           { path: "suscripcion", element: <SuscripcionScreen /> },
