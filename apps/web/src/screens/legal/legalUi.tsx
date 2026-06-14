@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { SegmentedTabs } from "../../ui/SegmentedTabs";
+import type { Lang } from "./useLegalLocale";
 
 /**
  * Presentación compartida de los documentos legales (Privacidad / Términos). El CONTENIDO vive en
@@ -104,17 +106,31 @@ export function Contact() {
 }
 
 /** Resumen «de un vistazo» (aviso por capas, recomendado por las autoridades de la UE). */
-export function Summary({ items }: { items: ReactNode[] }) {
+export function Summary({ title = "En resumen", items }: { title?: string; items: ReactNode[] }) {
   return (
     <div style={{ margin: "14px 0 8px", padding: "12px 14px", borderRadius: "var(--wl-radius)", border: "1px solid color-mix(in srgb,var(--wl-accent) 40%,transparent)", background: "color-mix(in srgb,var(--wl-accent) 8%,transparent)" }}>
-      <div style={{ ...muted, marginBottom: 6, color: "var(--wl-text)", fontWeight: 700 }}>En resumen</div>
+      <div style={{ ...muted, marginBottom: 6, color: "var(--wl-text)", fontWeight: 700 }}>{title}</div>
       <ul style={{ ...ulStyle, margin: 0 }}>{items.map((it, i) => <li key={i}>{it}</li>)}</ul>
     </div>
   );
 }
 
-/** Marco del documento: volver + título + metadatos de versión/vigencia + cuerpo. */
-export function LegalShell({ title, version, effectiveDate, children }: { title: string; version: string; effectiveDate: string; children: ReactNode }) {
+const CHROME = {
+  es: {
+    back: "← Volver",
+    meta: (v: string, d: string) => `Holy Oly · Versión ${v} · vigente desde ${d}`,
+    footer: (<>Holy Oly — entrenamiento inteligente. Para consultas sobre este documento o tus datos, escribinos a <Contact />.</>),
+  },
+  en: {
+    back: "← Back",
+    meta: (v: string, d: string) => `Holy Oly · Version ${v} · in effect since ${d}`,
+    footer: (<>Holy Oly — smart training. For questions about this document or your data, contact us at <Contact />.</>),
+  },
+} as const;
+
+/** Marco del documento: volver + selector de idioma + título + metadatos + cuerpo. El idioma
+ *  arranca automático (navegador) y se puede cambiar con el toggle ES/EN, que recuerda la elección. */
+export function LegalShell({ lang, setLang, title, version, effectiveDate, children }: { lang: Lang; setLang: (l: Lang) => void; title: string; version: string; effectiveDate: string; children: ReactNode }) {
   const navigate = useNavigate();
   // Volver = de dónde viniste (legal se linkea desde login, Cuenta coach y Cuenta atleta);
   // sin historial (deep-link) → a la raíz, que despacha por rol.
@@ -122,17 +138,28 @@ export function LegalShell({ title, version, effectiveDate, children }: { title:
     if (window.history.length > 1) navigate(-1);
     else navigate("/");
   };
+  const t = CHROME[lang];
   return (
     <div style={page}>
-      <button type="button" onClick={onBack}
-        style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer", ...muted }}>
-        ← Volver
-      </button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <button type="button" onClick={onBack}
+          style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer", ...muted }}>
+          {t.back}
+        </button>
+        <div style={{ width: 116, flex: "0 0 auto" }}>
+          <SegmentedTabs
+            ariaLabel="Idioma / Language"
+            options={[["es", "ES"], ["en", "EN"]] as const}
+            value={lang}
+            onChange={setLang}
+          />
+        </div>
+      </div>
       <h1 style={{ fontSize: 26, fontWeight: 800, margin: "12px 0 4px", letterSpacing: "-.01em" }}>{title}</h1>
-      <div style={{ ...muted, marginBottom: 14 }}>Holy Oly · Versión {version} · vigente desde {effectiveDate}</div>
+      <div style={{ ...muted, marginBottom: 14 }}>{t.meta(version, effectiveDate)}</div>
       {children}
       <div style={{ ...muted, marginTop: 28, paddingTop: 12, borderTop: "1px solid color-mix(in srgb,var(--wl-text) 12%,transparent)" }}>
-        Holy Oly — entrenamiento inteligente. Para consultas sobre este documento o tus datos, escribinos a <Contact />.
+        {t.footer}
       </div>
     </div>
   );
