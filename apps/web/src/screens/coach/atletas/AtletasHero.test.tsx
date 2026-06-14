@@ -5,7 +5,7 @@ import type { RosterRow } from "../roster";
 
 const hero: RosterRow = {
   id: "tomas", nombre: "Tomás L.", iniciales: "TL", metodo: "Polaco 5D", compite: true,
-  acwr: 0.98, rec: 88, cell: "ok", readiness: 91, trend: 4, cat: "102 kg", history: ["ok", "ok", "ok"],
+  acwr: 0.98, rec: 88, cell: "ok", readiness: 91, trend: 4, cat: "102 kg", history: ["ok", "ok", "ok"], needsRm: false,
 };
 
 describe("AtletasHero", () => {

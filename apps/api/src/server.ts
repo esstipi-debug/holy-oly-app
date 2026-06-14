@@ -323,6 +323,12 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     return repo.getRmHistory(prisma, req.params.id);
   });
 
+  // Slice macro-history: los ciclos cerrados del atleta (coach-visible). Adherencia derivada en core.
+  app.get<{ Params: { id: string } }>("/athletes/:id/macro-history", async (req, reply) => {
+    if (!(await guardAthlete(req, reply, req.params.id))) return;
+    return repo.getMacroHistory(prisma, req.params.id);
+  });
+
   app.put<{ Params: { id: string; week: string; idx: string } }>("/athletes/:id/prescription/:week/:idx", async (req, reply) => {
     if (!(await guardAthleteWrite(req, reply, req.params.id))) return;
     const week = Number(req.params.week);

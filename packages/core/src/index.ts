@@ -27,6 +27,7 @@ export * from "./logic/planHeat";
 export * from "./logic/adherence";
 export * from "./logic/dailyView";
 export * from "./logic/rm";
+export * from "./logic/macroHistory";
 export * from "./logic/cycle";
 export * from "./logic/prilepin";
 export * from "./logic/prilepinPlan";

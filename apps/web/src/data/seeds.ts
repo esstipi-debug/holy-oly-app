@@ -1,7 +1,7 @@
-import { recoverySeries, type Atleta, type Competencia, type Medal, type MonitorSeries, type CycleShare, type CycleState, type RM, type DayLog } from "@holy-oly/core";
+import { recoverySeries, buildMacroHistoryRows, macroHistoryView, stepDownRm, type Atleta, type Competencia, type Medal, type MonitorSeries, type CycleShare, type CycleState, type RM, type DayLog, type MacroHistoryView, type MacroHistoryCycleSpec } from "@holy-oly/core";
 
-/** Bump when SEED_* shapes change so already-seeded browsers re-seed (M4a medals → v2; M4c macroIds + comps → v4; A-offline Kevin + plan/daylog seeds → v5). */
-export const SEED_VERSION = 6; // bump → demo localStorage re-seeds (adds Mara's plan/prescription)
+/** Bump when SEED_* shapes change so already-seeded browsers re-seed (M4a medals → v2; M4c macroIds + comps → v4; A-offline Kevin + plan/daylog seeds → v5; macro-history + planes ds/lr/sm/ap → v8). */
+export const SEED_VERSION = 8; // bump → demo localStorage re-seeds (macro history + planes del resto del plantel)
 
 /** Clamp to an integer in [lo, hi] — keeps generated telemetry inside the domain's valid ranges. */
 const clampInt = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, Math.round(v)));
@@ -229,7 +229,51 @@ export const SEED_PLAN_INPUTS: Record<string, { macroId: string; currentWeek: nu
     rms: { arranque: 78, envion: 98, sentadilla: 130, frente: 105 },
     comps: [{ name: "Nacional", week: 16 }],
   },
+  // El resto del plantel del coach también arranca con plan + RM en el demo offline (espejo del API),
+  // así su drill-down deja de estar vacío y la alerta "Falta RM" queda sólo para los recién sumados.
+  ds: { macroId: "usa-intermedio", currentWeek: 10, rms: { arranque: 84, envion: 108, sentadilla: 150, frente: 120 }, comps: [{ name: "Panamericano", week: 16 }] },
+  lr: { macroId: "coreano-5d", currentWeek: 7, rms: { arranque: 62, envion: 80, sentadilla: 108, frente: 86 }, comps: [{ name: "Regional", week: 12 }] },
+  sm: { macroId: "bulgaro-6d", currentWeek: 9, rms: { arranque: 84, envion: 106, sentadilla: 148, frente: 118 }, comps: [{ name: "Nacional", week: 12 }] },
+  ap: { macroId: "cubano-int-5d", currentWeek: 6, rms: { arranque: 60, envion: 78, sentadilla: 104, frente: 84 }, comps: [{ name: "Apertura", week: 12 }] },
 };
+
+/**
+ * Closed-cycle macro history (slice macro-history) for the offline demo — mirror of the API seed's
+ * numbers. Each athlete's completed cycles with their adherence %, chained back from before their
+ * current block. `rmEnd` steps DOWN on older cycles (a believable strength curve). Built at seed
+ * time so the dates are relative to the real today. Pure given `today`.
+ */
+const MS_DAY = 86_400_000;
+const isoAgo = (today: string, n: number): string =>
+  new Date(new Date(`${today}T00:00:00Z`).getTime() - n * MS_DAY).toISOString().slice(0, 10);
+
+function buildAthleteHistory(macroId: string, adherences: number[], endBefore: string, currentRms: RM, rmStep: number): MacroHistoryView {
+  const n = adherences.length;
+  // El ciclo cerrado más nuevo cierra un paso por debajo del RM actual (el ciclo en curso ya lo
+  // viene subiendo) — espejo exacto del seed del API (seedAthleteHistory), vía el mismo core stepDownRm.
+  const rmTop = stepDownRm(currentRms, 1, rmStep);
+  const specs: MacroHistoryCycleSpec[] = adherences.map((adherencePct, i) => {
+    const below = n - 1 - i; // newest (i=n-1) → rmTop
+    return { macroId, adherencePct, rmEnd: stepDownRm(rmTop, below, rmStep) };
+  });
+  return macroHistoryView(buildMacroHistoryRows(specs, endBefore));
+}
+
+/** Per-athlete closed cycles. `currentWeek` (when set) ends the history before the current plan. */
+export function makeMacroHistory(today: string): Record<string, MacroHistoryView> {
+  // End the history a week before the current block starts (currentWeek-1 weeks back + 7-day gap),
+  // or ~2 weeks ago for athletes without a current plan in the offline demo.
+  const endBefore = (currentWeek?: number): string =>
+    isoAgo(today, currentWeek != null ? 7 + (currentWeek - 1) * 7 : 14);
+  return {
+    mv: buildAthleteHistory("ruso-5d", [94, 95, 96], endBefore(12), { arranque: 78, envion: 98, sentadilla: 130, frente: 105 }, 4),
+    ds: buildAthleteHistory("usa-intermedio", [68, 70, 70, 71, 71], endBefore(10), { arranque: 84, envion: 108, sentadilla: 150, frente: 120 }, 3),
+    lr: buildAthleteHistory("coreano-5d", [86, 88, 89, 89], endBefore(7), { arranque: 62, envion: 80, sentadilla: 108, frente: 86 }, 3),
+    sm: buildAthleteHistory("bulgaro-6d", [80, 82, 82, 83, 82, 83], endBefore(9), { arranque: 84, envion: 106, sentadilla: 148, frente: 118 }, 3),
+    ap: buildAthleteHistory("cubano-int-5d", [90, 92], endBefore(6), { arranque: 60, envion: 78, sentadilla: 104, frente: 84 }, 3),
+    kv: buildAthleteHistory("bulgaro-6d", [84, 86, 87, 87], endBefore(8), { arranque: 98, envion: 122, sentadilla: 165, frente: 132 }, 4),
+  };
+}
 
 /**
  * A deterministic ~year of daily check-ins ending `today`: mostly-daily with sparse older gaps,

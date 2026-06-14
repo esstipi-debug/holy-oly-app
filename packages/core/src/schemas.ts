@@ -19,6 +19,7 @@ export const AtletaSchema = z.object({
   sexo: z.enum(["M", "F"]),
   macroId: z.string().optional(),
   compite: z.boolean().optional(),
+  needsRm: z.boolean().optional(),
 });
 export const RosterSchema = z.array(AtletaSchema);
 
@@ -417,6 +418,26 @@ export const PrCandidateSchema = z.object({
   doneAt: IsoDateSchema.optional(),
 });
 export const PrCandidatesSchema = z.array(PrCandidateSchema).max(4);
+
+// ── Historial de macrociclos (slice macro-history). El % de adherencia viaja calculado por el
+//    server (core macroHistoryView) — el cliente lo valida pero jamás lo recalcula. ──
+export const MacroHistoryEntrySchema = z.object({
+  macroId: z.string().max(60),
+  macroName: z.string().max(120),
+  ordinal: z.number().int().min(1).max(1000),
+  startDate: IsoDateSchema,
+  endDate: IsoDateSchema,
+  weeks: z.number().int().min(1).max(104),
+  sessionsDone: z.number().int().min(0).max(10000),
+  sessionsTotal: z.number().int().min(0).max(10000),
+  adherencePct: z.number().int().min(0).max(100),
+  rmEnd: RMSchema.optional(),
+});
+export const MacroHistoryViewSchema = z.object({
+  entries: z.array(MacroHistoryEntrySchema).max(200),
+  cyclesDone: z.number().int().min(0).max(1000),
+  avgAdherencePct: z.number().int().min(0).max(100),
+});
 
 export const UpdateRmsInputSchema = z.object({
   // "assign" no es input del coach — sólo lo escribe savePlan al asignar.

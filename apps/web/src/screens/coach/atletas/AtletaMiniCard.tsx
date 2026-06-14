@@ -63,6 +63,19 @@ export function AtletaMiniCard({ row, onPick }: { row: RosterRow; onPick: (id: s
         <div style={{ fontFamily: "var(--wl-cond, var(--wl-display))", fontWeight: 700, fontSize: 17, letterSpacing: .2, textTransform: "uppercase", lineHeight: 1, color: "var(--wl-text)" }}>{row.nombre}</div>
         <div style={{ fontFamily: "var(--mono)", fontSize: 8.5, color: "var(--wl-muted)", textTransform: "uppercase", marginTop: 3 }}>{row.metodo}{row.cat ? ` · ${row.cat}` : ""}</div>
       </div>
+      {/* Alerta: sin RM no se puede prescribir. El coach lo ve sin entrar al drill-down. */}
+      {row.needsRm && (
+        <div style={{ position: "relative", marginTop: 8 }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 99,
+            background: "color-mix(in srgb, var(--wl-accent) 16%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--wl-accent) 50%, transparent)",
+            color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase",
+          }}>
+            <span aria-hidden="true">⚠</span> Falta RM
+          </span>
+        </div>
+      )}
       <div style={{ position: "relative", marginTop: 9 }}><HeatStrip history={row.history} /></div>
     </button>
   );

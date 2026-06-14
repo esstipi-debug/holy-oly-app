@@ -14,6 +14,8 @@ export interface RosterRow {
   trend: number | undefined;
   cat: string | undefined;
   history: CellState[];
+  /** Alerta del coach (slice macro-history): el atleta no tiene RM cargado → no se puede prescribir. */
+  needsRm: boolean;
 }
 
 export async function getRosterRows(repo: Repository): Promise<RosterRow[]> {
@@ -38,6 +40,7 @@ export async function getRosterRows(repo: Repository): Promise<RosterRow[]> {
       trend: readinessTrend(s),
       cat: s?.weightBand ? `${s.weightBand[1]} kg` : undefined,
       history: Array.from({ length: weeks }, (_, w) => seriesState(s, w + 1)),
+      needsRm: a.needsRm === true,
     };
   });
 }

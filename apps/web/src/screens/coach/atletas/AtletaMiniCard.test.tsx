@@ -6,7 +6,7 @@ import type { RosterRow } from "../roster";
 const row: RosterRow = {
   id: "mara", nombre: "Mara V.", iniciales: "MV", metodo: "Ruso 5D", compite: true,
   acwr: 1.62, rec: 41, cell: "alert", readiness: 28, trend: -9, cat: "64 kg",
-  history: ["ok", "ok", "warn", "alert", "warn", "alert", "alert"],
+  history: ["ok", "ok", "warn", "alert", "warn", "alert", "alert"], needsRm: false,
 };
 
 describe("AtletaMiniCard", () => {
@@ -43,5 +43,11 @@ describe("AtletaMiniCard", () => {
   it("V5: sin trend → no pinta flecha (sin-dato honesto)", () => {
     render(<AtletaMiniCard row={{ ...row, readiness: 78, trend: undefined }} onPick={() => {}} />);
     expect(screen.queryByLabelText(/tendencia/)).not.toBeInTheDocument();
+  });
+  it("macro-history: needsRm → badge 'Falta RM'; con RM → sin badge", () => {
+    const { rerender } = render(<AtletaMiniCard row={{ ...row, needsRm: true }} onPick={() => {}} />);
+    expect(screen.getByText("Falta RM")).toBeInTheDocument();
+    rerender(<AtletaMiniCard row={{ ...row, needsRm: false }} onPick={() => {}} />);
+    expect(screen.queryByText("Falta RM")).toBeNull();
   });
 });

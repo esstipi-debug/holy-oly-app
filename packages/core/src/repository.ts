@@ -1,7 +1,7 @@
 import type {
   Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleContext, SessionLog, SessionView, PrescribedExercise, WeekHeat,
-  PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek,
+  PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek, MacroHistoryView,
 } from "./types";
 
 export interface Repository {
@@ -49,4 +49,7 @@ export interface Repository {
   /** Lazo diario (coach): check-ins crudos del atleta (6 ítems + peso, SIN RPE) + adherencia
    *  reconciliada (atleta > coach > none) de las últimas semanas. El ciclo NUNCA viaja por acá. */
   getDaily(id: string): Promise<AthleteDailyView>;
+  /** Historial de macrociclos cerrados (slice macro-history): ciclos más reciente primero +
+   *  adherencia % derivada. {entries:[], cyclesDone:0, avgAdherencePct:0} sin historial. */
+  getMacroHistory(id: string): Promise<MacroHistoryView>;
 }

@@ -10,13 +10,13 @@
 import type {
   Atleta, CycleData, MeCycleView, MePlanView, MeRecorrido, MonitorSeries, Plan, PrescriptionRow, RecorridoSemana,
   DayLog, DayLogView, DayLogResult, DayLogInput,
-  SessionView, SessionActual, WeekHeat, SessionRegistro, PutMeSessionInput,
+  SessionView, SessionActual, WeekHeat, SessionRegistro, PutMeSessionInput, MacroHistoryView,
 } from "@holy-oly/core";
 import {
   buildMePlanView, computeStreak, mergeActuals, buildSessionViews, summarizeSets, barKgForSexo,
   DayLogInputSchema, PutMeSessionInputSchema, PutMeCycleInputSchema,
   MonitorSeriesSchema, PlanSchema, RosterSchema, PrescriptionRowsSchema,
-  DayLogsSchema, SessionActualsSchema, SessionRegistrosSchema, CycleShareSchema, CycleStateSchema,
+  DayLogsSchema, SessionActualsSchema, SessionRegistrosSchema, CycleShareSchema, CycleStateSchema, MacroHistoryViewSchema,
   MACROCYCLES, planHeat, weekDoneSummary, dayLayoutFor,
   validateFechaEntreno, fechaConflict, unresolvedPriorDays,
 } from "@holy-oly/core";
@@ -163,6 +163,12 @@ export class LocalMeClient implements MeClient {
       semanas.push({ week, trabajoKg, calentamientoKg, sesionesHechas, sesionesTotales });
     }
     return { semanas };
+  }
+
+  /** Historial de macrociclos cerrados del atleta (constancia propia). Espejo del API /me/macro-history. */
+  async getMeMacroHistory(): Promise<MacroHistoryView> {
+    const r = MacroHistoryViewSchema.safeParse(this.s.getOptional<unknown>(KEYS.macroHistory(this.id)));
+    return r.success ? r.data : { entries: [], cyclesDone: 0, avgAdherencePct: 0 };
   }
 
   /** Día/turno layout de la semana (para dayOf), espejo de repo. */

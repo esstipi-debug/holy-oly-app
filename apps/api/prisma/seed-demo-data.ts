@@ -133,6 +133,46 @@ export const DEMO_PLAN_INPUTS: Record<string, { macroId: string; currentWeek: nu
     rms: { arranque: 98, envion: 122, sentadilla: 165, frente: 132 },
     comps: [{ name: "Sudamericano", week: 12 }],
   },
+  // Slice macro-history: el resto del plantel del coach1 también arranca con plan + RM + prescripción
+  // (antes quedaban sin info en el drill-down). Sus macros del roster coinciden con ROSTER_META.
+  ds: {
+    macroId: "usa-intermedio",
+    currentWeek: 10,
+    rms: { arranque: 84, envion: 108, sentadilla: 150, frente: 120 },
+    comps: [{ name: "Panamericano", week: 16 }],
+  },
+  lr: {
+    macroId: "coreano-5d",
+    currentWeek: 7,
+    rms: { arranque: 62, envion: 80, sentadilla: 108, frente: 86 },
+    comps: [{ name: "Regional", week: 12 }],
+  },
+  sm: {
+    macroId: "bulgaro-6d",
+    currentWeek: 9,
+    rms: { arranque: 84, envion: 106, sentadilla: 148, frente: 118 },
+    comps: [{ name: "Nacional", week: 12 }],
+  },
+  ap: {
+    macroId: "cubano-int-5d",
+    currentWeek: 6,
+    rms: { arranque: 60, envion: 78, sentadilla: 104, frente: 84 },
+    comps: [{ name: "Apertura", week: 12 }],
+  },
+};
+
+/**
+ * Historial de macrociclos cerrados por atleta (slice macro-history): cuántos ciclos completó y a
+ * qué adherencia. El promedio ≈ el número "redondo" pedido (Mara 95% · Diego 70% · etc.). `rmStep`
+ * = el paso de la curva de RM entre ciclos. Consumido por `seedAthleteHistory`.
+ */
+export const DEMO_HISTORY_CFG: Record<string, { adherences: number[]; rmStep: number }> = {
+  mv: { adherences: [94, 95, 96], rmStep: 4 },              // 3 ciclos · ~95%
+  ds: { adherences: [68, 70, 70, 71, 71], rmStep: 3 },      // 5 ciclos · ~70%
+  lr: { adherences: [86, 88, 89, 89], rmStep: 3 },          // 4 ciclos · ~88%
+  sm: { adherences: [80, 82, 82, 83, 82, 83], rmStep: 3 },  // 6 ciclos · ~82%
+  ap: { adherences: [90, 92], rmStep: 3 },                  // 2 ciclos · ~91%
+  kv: { adherences: [84, 86, 87, 87], rmStep: 4 },          // 4 ciclos · ~86%
 };
 
 export function makeDayLogYear(today: string, span = 364): DayLog[] {

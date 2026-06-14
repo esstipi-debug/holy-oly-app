@@ -207,6 +207,7 @@ model Athlete {
   actuals          SessionActual[]
   rmUpdates        RmUpdate[]
   sessionRegistros SessionRegistro[]
+  macroHistory     MacroHistory[]
 }
 
 /// The multi-tenancy join: a coach sees an athlete only via an `activo` Vinculo.
@@ -401,6 +402,28 @@ model PrescribedExercise {
 
   @@unique([athleteId, week, sessionIdx, order])
   @@index([athleteId, week])
+}
+
+/// Historial de macrociclos CERRADOS (slice macro-history 2026-06-14). `Plan` es 1:1 = el ciclo en
+/// curso; esta tabla guarda los ciclos completados con su adherencia (sesiones hechas/prescritas)
+/// y el snapshot de RM al cerrar. La adherencia % se DERIVA al leer (core macroHistoryView), nunca
+/// se almacena. `ordinal` ascendente (1 = el más antiguo); único por atleta para reseed idempotente.
+model MacroHistory {
+  id            String   @id @default(uuid())
+  athleteId     String
+  athlete       Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  macroId       String
+  ordinal       Int
+  startDate     String   // ISO YYYY-MM-DD
+  endDate       String   // ISO YYYY-MM-DD
+  weeks         Int
+  sessionsDone  Int
+  sessionsTotal Int
+  rmEnd         Json?    // { arranque, envion, sentadilla, frente } al cerrar el ciclo
+  createdAt     DateTime @default(now())
+
+  @@unique([athleteId, ordinal])
+  @@index([athleteId])
 }
 
 /// Historial append-only de RMs (SP5). Cada cambio de Plan.rms escribe una fila acá (mismo

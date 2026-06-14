@@ -29,6 +29,7 @@ function client(cycle: CycleData): MeClient {
     getMeSessions: async () => [],
     getMeHeat: async () => HEAT,
     getMeRecorrido: async () => ({ semanas: [] }),
+    getMeMacroHistory: async () => ({ entries: [], cyclesDone: 0, avgAdherencePct: 0 }),
     putMeSession: async () => {},
     anularMeSession: async () => {},
     desanularMeSession: async () => {},

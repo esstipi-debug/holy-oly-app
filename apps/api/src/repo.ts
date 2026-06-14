@@ -4,9 +4,9 @@ import type {
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
   CycleShare, CycleState, CycleData, MeCycleView, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
-  MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf,
+  MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf, MacroHistoryView, MacroHistoryRow,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -36,13 +36,23 @@ function toAtleta(a: AthleteRow): Atleta {
   };
 }
 
-/** Roster = athletes with an active Vinculo to this coach. */
+/** Roster = athletes with an active Vinculo to this coach. `needsRm` señala a los que no tienen RM
+ *  cargado (sin plan, o rms incompleto) → sin RM el motor no puede prescribir (alerta del Plantel).
+ *  La regla vive en core: un plan SIN RMSchema válido (4 lifts > 0) ⇒ falta RM. */
 export async function getRoster(prisma: PrismaClient, coachId: string): Promise<Atleta[]> {
   const vinculos = await prisma.vinculo.findMany({
     where: { coachId, estado: "activo" },
     include: { athlete: true },
   });
-  return vinculos.map((v) => toAtleta(v.athlete));
+  const ids = vinculos.map((v) => v.athleteId);
+  const plans = await prisma.plan.findMany({ where: { athleteId: { in: ids } }, select: { athleteId: true, rms: true } });
+  const rmsByAthlete = new Map(plans.map((p) => [p.athleteId, p.rms]));
+  const needsRm = (athleteId: string): boolean => {
+    const raw = rmsByAthlete.get(athleteId);
+    // Sin plan → falta RM. Con plan → válido sólo si los 4 lifts existen y son > 0 (RMSchema).
+    return raw == null || !RMSchema.safeParse(raw).success;
+  };
+  return vinculos.map((v) => ({ ...toAtleta(v.athlete), needsRm: needsRm(v.athleteId) }));
 }
 
 export async function getSeries(prisma: PrismaClient, athleteId: string): Promise<MonitorSeries | undefined> {
@@ -632,9 +642,30 @@ export async function getRmHistory(prisma: PrismaClient, athleteId: string): Pro
   return rows.map((r) => ({ lift: r.lift as RmLift, kg: r.kg, setAt: r.setAt, reason: r.reason as RmReason }));
 }
 
+/** Historial de macrociclos cerrados (slice macro-history). Lee las filas, las ordena por ordinal y
+ *  deja que core (macroHistoryView) derive nombre + adherencia % + agregados. Sirve coach Y atleta
+ *  (el endpoint /me pasa el id propio). [] honesto sin historial. `rmEnd` inválido → omitido. */
+export async function getMacroHistory(prisma: PrismaClient, athleteId: string): Promise<MacroHistoryView> {
+  const rows = await prisma.macroHistory.findMany({ where: { athleteId }, orderBy: { ordinal: "asc" } });
+  const mapped: MacroHistoryRow[] = rows.map((r) => {
+    const rm = RMSchema.safeParse(r.rmEnd);
+    return {
+      macroId: r.macroId,
+      ordinal: r.ordinal,
+      startDate: r.startDate,
+      endDate: r.endDate,
+      weeks: r.weeks,
+      sessionsDone: r.sessionsDone,
+      sessionsTotal: r.sessionsTotal,
+      rmEnd: rm.success ? rm.data : undefined,
+    };
+  });
+  return macroHistoryView(mapped);
+}
+
 /** D3: everything the athlete owns, for a self-service data export (the athlete gets RAW cycle). */
 export async function exportAthleteData(prisma: PrismaClient, athleteId: string): Promise<unknown> {
-  const [athlete, plan, cycle, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates, sessionRegistros] =
+  const [athlete, plan, cycle, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates, sessionRegistros, macroHistory] =
     await Promise.all([
       prisma.athlete.findUnique({ where: { id: athleteId } }),
       prisma.plan.findUnique({ where: { athleteId } }),
@@ -650,6 +681,8 @@ export async function exportAthleteData(prisma: PrismaClient, athleteId: string)
       prisma.rmUpdate.findMany({ where: { athleteId }, orderBy: [{ setAt: "asc" }, { createdAt: "asc" }] }),
       // Spec 2026-06-12: la fecha real de cada entreno también es suya (D3).
       prisma.sessionRegistro.findMany({ where: { athleteId }, select: { week: true, sessionIdx: true, fecha: true } }),
+      // Slice macro-history: los ciclos cerrados del atleta también son su dato (D3).
+      prisma.macroHistory.findMany({ where: { athleteId }, orderBy: { ordinal: "asc" } }),
     ]);
   // The athlete owns their cycle → return it decrypted (raw values), not redacted.
   const cycleRaw = cycle
@@ -661,7 +694,7 @@ export async function exportAthleteData(prisma: PrismaClient, athleteId: string)
         cycleLengthDays: cycle.cycleLengthDays == null ? null : decryptAtRest(cycle.cycleLengthDays),
       }
     : null;
-  return { athlete, plan, cycle: cycleRaw, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates, sessionRegistros };
+  return { athlete, plan, cycle: cycleRaw, dayLogs, actuals, medals, comps, prescription, weeks, sessionMarks, rmUpdates, sessionRegistros, macroHistory };
 }
 
 /**
