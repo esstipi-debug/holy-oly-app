@@ -198,9 +198,10 @@ export const MePlanViewSchema = z.object({
 
 // ── Prescription wire shapes (SP2). The PUT body is untrusted coach input → bounded. ──
 const MovementFlagSchema = z.enum(["pausa", "deficit", "tempo", "sin-recibida"]);
-// Catalog ids are lowercase base ids + dot-joined variant modifiers (e.g. "arranque.potencia.colgado.rodilla").
+// Catalog ids are lowercase base ids + dot-joined variant modifiers (e.g. "arranque.potencia.colgado.rodilla")
+// y complejos en el namespace "cx." con eslabones unidos por '+' (e.g. "cx.tiron-cargada+cargada", "cx.a+b+c").
 // Constrain the charset (D7) so neither coach nor athlete can inject arbitrary/long strings as a movement id.
-const MovementIdSchema = z.string().min(1).max(60).regex(/^[a-z0-9.\-]+$/);
+const MovementIdSchema = z.string().min(1).max(60).regex(/^[a-z0-9.+\-]+$/);
 export const PrescribedExerciseSchema = z.object({
   movementId: MovementIdSchema,
   sets: z.number().int().min(1).max(20),
