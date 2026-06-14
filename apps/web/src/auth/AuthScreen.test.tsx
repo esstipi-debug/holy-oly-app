@@ -119,8 +119,31 @@ describe("AuthScreen", () => {
     fireEvent.click(screen.getByRole("checkbox", { name: /acepto/i }));
     fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" }));
     await waitFor(() => expect(spy).toHaveBeenCalled());
-    // signup(email, password, role, name?, website?, acceptTerms) — la aceptación es el último arg.
-    expect(spy).toHaveBeenCalledWith("a@b.com", "lawful-pass-9", "coach", undefined, "", true);
+    // signup(email, password, role, name?, website?, acceptTerms, sexo?, weightKg?) — coach: sexo/peso undefined.
+    expect(spy).toHaveBeenCalledWith("a@b.com", "lawful-pass-9", "coach", undefined, "", true, undefined, undefined);
+    await act(async () => {});
+  });
+
+  // Onboarding del atleta (2026-06-14): el sexo es obligatorio para atletas; el form lo exige y lo
+  // pasa a signup (gatea el ciclo female-only + la barra 15/20).
+  it("registro de atleta: exige sexo (error si falta) y lo pasa a signup al elegirlo", async () => {
+    const spy = vi.fn(async () => {});
+    injected.current.signup = spy as unknown as SignupFn;
+    renderLogin();
+    fireEvent.click(screen.getByRole("button", { name: /Regístrate/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Atleta" })); // rol atleta → aparecen sexo/peso
+    fireEvent.change(screen.getByPlaceholderText("tu@ejemplo.com"), { target: { value: "a@b.com" } });
+    fireEvent.change(screen.getByPlaceholderText("••••••••"), { target: { value: "lawful-pass-9" } });
+    fireEvent.click(screen.getByRole("checkbox", { name: /acepto/i }));
+    // sin sexo → error y signup NO se llama
+    fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" }));
+    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(/sexo/i));
+    expect(spy).not.toHaveBeenCalled();
+    // elige Mujer → signup recibe sexo "F" (peso opcional, sin setear → undefined)
+    fireEvent.click(screen.getByRole("button", { name: "Mujer" }));
+    fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" }));
+    await waitFor(() => expect(spy).toHaveBeenCalled());
+    expect(spy).toHaveBeenCalledWith("a@b.com", "lawful-pass-9", "atleta", undefined, "", true, "F", undefined);
     await act(async () => {});
   });
 });

@@ -17,6 +17,9 @@ export function GoogleCompleteScreen() {
   const navigate = useNavigate();
   const [role, setRole] = useState<Role>("coach");
   const [name, setName] = useState("");
+  // Onboarding del atleta (2026-06-14): sexo (obligatorio) + peso corporal (opcional).
+  const [sexo, setSexo] = useState<"M" | "F" | null>(null);
+  const [weightKg, setWeightKg] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [accepted, setAccepted] = useState(false);
@@ -28,9 +31,15 @@ export function GoogleCompleteScreen() {
       setError(t("mustAcceptTerms"));
       return;
     }
+    if (role === "atleta" && !sexo) {
+      setError(t("errors.sexRequired"));
+      return;
+    }
     setBusy(true);
     try {
-      await completeGoogleSignup(role, name || undefined, accepted);
+      await completeGoogleSignup(role, name || undefined, accepted,
+        role === "atleta" ? sexo ?? undefined : undefined,
+        role === "atleta" && weightKg.trim() ? Number(weightKg) : undefined);
       // navigate (no window.location.replace): bajo el hash-routing del demo file:// la URL
       // absoluta "/" apuntaría al filesystem.
       navigate("/", { replace: true });
@@ -65,6 +74,25 @@ export function GoogleCompleteScreen() {
 
         <label style={label}>{t("fields.name")}</label>
         <input style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("fields.namePlaceholder")} />
+
+        {role === "atleta" && (
+          <>
+            <label style={label}>{t("fields.sexLabel")}</label>
+            <div role="group" aria-label={t("fields.sexGroupLabel")} style={{ display: "flex", gap: 8, marginTop: 6 }}>
+              {(["M", "F"] as const).map((s) => (
+                <button type="button" key={s} onClick={() => setSexo(s)} aria-pressed={sexo === s}
+                  style={{ flex: 1, padding: "8px", borderRadius: 10, cursor: "pointer", fontFamily: "var(--wl-display)", fontWeight: 700,
+                    border: `1px solid ${sexo === s ? "var(--wl-accent)" : "color-mix(in srgb,var(--wl-text) 16%,transparent)"}`,
+                    background: sexo === s ? "color-mix(in srgb,var(--wl-accent) 16%,transparent)" : "transparent", color: "var(--wl-text)" }}>
+                  {s === "M" ? t("fields.sexMale") : t("fields.sexFemale")}
+                </button>
+              ))}
+            </div>
+            <label style={label} htmlFor="gc-weight">{t("fields.weight")}</label>
+            <input id="gc-weight" style={input} type="number" inputMode="decimal" min={20} max={300} step={0.5}
+              value={weightKg} onChange={(e) => setWeightKg(e.target.value)} placeholder={t("fields.weightPlaceholder")} />
+          </>
+        )}
 
         <label style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 16, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", lineHeight: 1.5, cursor: "pointer" }}>
           <input

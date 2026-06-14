@@ -31,6 +31,9 @@ interface OAuthCtxPayload {
   // PR-L1: legal acceptance is carried in the SIGNED context (not trusted from the callback query),
   // so the auto-provision branch can verify it server-side — not just rely on the frontend gate.
   acceptTerms?: boolean;
+  // Onboarding del atleta (2026-06-14): sexo/peso viajan en el contexto firmado para el auto-provision.
+  sexo?: "M" | "F";
+  weightKg?: number;
   exp: number;
 }
 
@@ -57,12 +60,16 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
   app.get("/auth/google/start", async (req, reply) => {
     if (!googleConfigured()) return reply.code(503).send({ error: "google login not configured" });
 
-    const q = req.query as { intent?: string; role?: string; name?: string; accept?: string };
+    const q = req.query as { intent?: string; role?: string; name?: string; accept?: string; sexo?: string; weightKg?: string };
     const intent = q.intent === "signup" ? "signup" : "login";
     let role: UserRole | undefined;
     if (q.role === "coach" || q.role === "atleta") role = q.role;
     const name = typeof q.name === "string" && q.name.trim() ? q.name.trim().slice(0, 120) : undefined;
     const acceptTerms = q.accept === "1" || q.accept === "true";
+    // Onboarding del atleta (2026-06-14): sexo/peso del form van al contexto firmado (para el auto-provision).
+    const sexo = q.sexo === "M" || q.sexo === "F" ? q.sexo : undefined;
+    const weightNum = typeof q.weightKg === "string" ? Number(q.weightKg) : NaN;
+    const weightKg = Number.isFinite(weightNum) && weightNum >= 20 && weightNum <= 300 ? weightNum : undefined;
 
     if (intent === "signup" && !role) {
       return reply.code(400).send({ error: "role required for signup" });
@@ -73,7 +80,7 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
     }
 
     const nonce = randomBytes(24).toString("hex");
-    const ctx: OAuthCtxPayload = { nonce, intent, role, name, acceptTerms, exp: ctxExpiry() };
+    const ctx: OAuthCtxPayload = { nonce, intent, role, name, acceptTerms, sexo, weightKg, exp: ctxExpiry() };
     const signed = signCookiePayload(ctx, oauthStateSecret());
     reply.setCookie(OAUTH_CTX_COOKIE, signed, oauthCookieOpts(OAUTH_COOKIE_MAX_AGE_SEC));
 
@@ -152,6 +159,8 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
             name: ctx.name ?? profile.name,
             emailVerified,
             passwordHash: null,
+            sexo: ctx.sexo,
+            weightKg: ctx.weightKg,
           });
           await tx.oAuthAccount.create({
             data: { provider: GOOGLE_PROVIDER, providerUserId: profile.sub, userId: u.id },
@@ -204,7 +213,8 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(409).send({ error: "email already registered" });
     }
 
-    const { role, name } = parsed.data;
+    const { role, name, sexo, weightKg } = parsed.data;
+    // Onboarding del atleta: el FORM (GoogleCompleteScreen) exige sexo; la API es tolerante (default "M").
     const emailVerified = role !== "coach" || pending.emailVerified;
     let user;
     try {
@@ -215,6 +225,8 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
           name: name ?? pending.name,
           emailVerified,
           passwordHash: null,
+          sexo,
+          weightKg,
         });
         await tx.oAuthAccount.create({
           data: { provider: GOOGLE_PROVIDER, providerUserId: pending.sub, userId: u.id },

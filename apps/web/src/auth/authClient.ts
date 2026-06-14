@@ -40,8 +40,8 @@ export function login(email: string, password: string): Promise<void> {
   return authPost("/auth/login", { email, password });
 }
 
-export function signup(email: string, password: string, role: Role, name?: string, website?: string, acceptTerms?: boolean): Promise<void> {
-  return authPost("/auth/signup", { email, password, role, name, website: website ?? "", acceptTerms: acceptTerms === true });
+export function signup(email: string, password: string, role: Role, name?: string, website?: string, acceptTerms?: boolean, sexo?: "M" | "F", weightKg?: number): Promise<void> {
+  return authPost("/auth/signup", { email, password, role, name, website: website ?? "", acceptTerms: acceptTerms === true, sexo, weightKg });
 }
 
 export function logout(): Promise<void> {
@@ -71,15 +71,18 @@ export async function googleAuthEnabled(): Promise<boolean> {
   return body.enabled === true;
 }
 
-export function googleAuthStart(params: { intent: "login" | "signup"; role?: Role; name?: string; accept?: boolean }): void {
+export function googleAuthStart(params: { intent: "login" | "signup"; role?: Role; name?: string; accept?: boolean; sexo?: "M" | "F"; weightKg?: number }): void {
   const q = new URLSearchParams({ intent: params.intent });
   if (params.role) q.set("role", params.role);
   if (params.name?.trim()) q.set("name", params.name.trim());
   // PR-L1: signup carries explicit legal acceptance into the signed OAuth context (server-enforced).
   if (params.accept) q.set("accept", "1");
+  // Onboarding del atleta: sexo/peso viajan al contexto firmado para el auto-provision del callback.
+  if (params.sexo) q.set("sexo", params.sexo);
+  if (params.weightKg != null) q.set("weightKg", String(params.weightKg));
   window.location.href = `${BASE}/auth/google/start?${q}`;
 }
 
-export function completeGoogleSignup(role: Role, name?: string, acceptTerms?: boolean): Promise<void> {
-  return authPost("/auth/google/complete", { role, name, acceptTerms: acceptTerms === true });
+export function completeGoogleSignup(role: Role, name?: string, acceptTerms?: boolean, sexo?: "M" | "F", weightKg?: number): Promise<void> {
+  return authPost("/auth/google/complete", { role, name, acceptTerms: acceptTerms === true, sexo, weightKg });
 }

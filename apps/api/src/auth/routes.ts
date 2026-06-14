@@ -39,7 +39,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       const weakPassword = parsed.error.issues.some((i) => i.path[0] === "password");
       return reply.code(400).send({ error: weakPassword ? "weak password" : "invalid input" });
     }
-    const { password, role, name } = parsed.data;
+    const { password, role, name, sexo, weightKg } = parsed.data;
     const email = parsed.data.email.trim().toLowerCase();
     if (parsed.data.website?.trim()) {
       return reply.code(400).send({ error: "invalid input" });
@@ -48,6 +48,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     if (parsed.data.acceptTerms !== true) {
       return reply.code(400).send({ error: "must accept terms" });
     }
+    // Onboarding del atleta (2026-06-14): el FORM exige sexo (gatea ciclo female-only + barra 15/20);
+    // la API es tolerante (sin sexo → default "M" en provisión), para no romper integraciones/seed.
 
     if (await prisma.user.findUnique({ where: { email } })) {
       return reply.code(409).send({ error: "email already registered" });
@@ -55,7 +57,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     const passwordHash = await hashPassword(password);
     const emailVerified = role !== "coach";
     const user = await prisma.$transaction(async (tx) =>
-      provisionUserRecords(tx, { email, role, name, emailVerified, passwordHash }),
+      provisionUserRecords(tx, { email, role, name, emailVerified, passwordHash, sexo, weightKg }),
     );
     if (role === "coach") {
       await sendCoachVerificationEmail(prisma, user.id, email);

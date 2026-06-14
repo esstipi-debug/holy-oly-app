@@ -17,6 +17,9 @@ export async function provisionUserRecords(
     name?: string;
     emailVerified: boolean;
     passwordHash?: string | null;
+    // Onboarding del atleta (2026-06-14): sexo (default "M" si no llega) + peso corporal opcional.
+    sexo?: "M" | "F";
+    weightKg?: number;
   },
 ): Promise<User> {
   const email = opts.email.trim().toLowerCase();
@@ -52,6 +55,8 @@ export async function provisionUserRecords(
         nombre: display,
         iniciales: display.slice(0, 2).toUpperCase(),
         nivel: "beginner",
+        sexo: opts.sexo === "F" ? "F" : "M", // default "M" si no se declaró (parità con el default de la columna)
+        weightKg: opts.weightKg ?? null,
       },
     });
   }
