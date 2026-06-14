@@ -71,4 +71,19 @@ describe("API integration — consentimiento del ciclo (PR-L2)", () => {
     expect((await app.inject({ method: "PUT", url: "/me/cycle", payload: { share: "none", state: "regular" } })).statusCode).toBe(401);
     expect((await app.inject({ method: "DELETE", url: "/me/cycle" })).statusCode).toBe(401);
   });
+
+  it("female-only (owner 2026-06-14): un atleta NO-femenino → 403 al registrar, y no se crea fila", async () => {
+    // Atleta masculino recién creado (sexo "M") → su PUT /me/cycle se rechaza server-side (no sólo en la UI).
+    const email = `male-cyc-${Date.now()}@x.dev`;
+    const su = await app.inject({ method: "POST", url: "/auth/signup",
+      payload: { email, password: "lawful-pass-9", role: "atleta", acceptTerms: true, sexo: "M" } });
+    expect(su.statusCode).toBe(201);
+    const male = sess(su as unknown as Res);
+    const res = await app.inject({ method: "PUT", url: "/me/cycle", headers: male,
+      payload: { share: "min", state: "regular", consent: true } });
+    expect(res.statusCode).toBe(403);
+    const u = await prisma.user.findUnique({ where: { email } });
+    const a = await prisma.athlete.findFirst({ where: { userId: u!.id } });
+    expect(await prisma.cycleConsent.findUnique({ where: { athleteId: a!.id } })).toBeNull();
+  });
 });

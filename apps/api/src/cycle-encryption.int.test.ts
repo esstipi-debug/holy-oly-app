@@ -42,7 +42,8 @@ describe("cycle encryption at rest (D1)", () => {
 
   it("putMyCycle cifra TODOS los campos (incl. fecha/duración del ciclo) y getMyCycle los descifra", async () => {
     const id = `enc2-${Date.now()}`;
-    await prisma.athlete.create({ data: { id, nombre: "Enc T2", iniciales: "E2", nivel: "beginner" } });
+    // Femenina: el ciclo es female-only (putMyCycle rechaza no-femeninas con CycleNotEligibleError).
+    await prisma.athlete.create({ data: { id, nombre: "Enc T2", iniciales: "E2", nivel: "beginner", sexo: "F" } });
     try {
       await putMyCycle(prisma, id, { share: "full", state: "regular", lastPeriodStart: "2026-06-01", cycleLengthDays: 28 }, true);
       const raw = await prisma.cycleConsent.findUnique({ where: { athleteId: id } });
@@ -51,7 +52,7 @@ describe("cycle encryption at rest (D1)", () => {
       expect(raw!.lastPeriodStart).not.toContain("2026-06-01");
       expect(raw!.cycleLengthDays!.startsWith("enc:")).toBe(true);
       // Roundtrip descifrado para la dueña (+ consented: ya activó al registrar con consent).
-      expect(await getMyCycle(prisma, id)).toEqual({ sexo: "M", share: "full", state: "regular", lastPeriodStart: "2026-06-01", cycleLengthDays: 28, consented: true });
+      expect(await getMyCycle(prisma, id)).toEqual({ sexo: "F", share: "full", state: "regular", lastPeriodStart: "2026-06-01", cycleLengthDays: 28, consented: true });
       // Y el coach con "full" recibe el lúteo computado desde el dato cifrado (día 9 < 14 → false).
       expect(await getCycle(prisma, id, "2026-06-10")).toEqual({ share: "full", inLutealNow: false, health: "ok", reliable: true });
     } finally {

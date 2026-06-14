@@ -426,7 +426,9 @@ async function main(): Promise<void> {
     data: { email: cfg.atletaEmail, passwordHash: await hash(cfg.atletaPassword), role: "atleta" },
   });
   await prisma.athlete.create({
-    data: { id: "demo-atleta", nombre: "Demo Atleta", iniciales: "DA", nivel: "beginner", sexo: "M", userId: atletaUser.id },
+    // Femenina (2026-06-14): el demo del atleta muestra el ciclo (female-only) y la barra de 15 kg;
+    // es la cuenta de demo con login (atleta@holyoly.dev), así el showcase del ciclo es real.
+    data: { id: "demo-atleta", nombre: "Demo Atleta", iniciales: "DA", nivel: "beginner", sexo: "F", userId: atletaUser.id },
   });
 
   const totalAthletes = ATHLETES.length + extraAthletes.length;
