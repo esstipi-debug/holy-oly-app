@@ -21,4 +21,6 @@ export const KEYS = {
   sessionRegistros: (id: string) => `ho:registros:${id}`,
   // Historial append-only de RMs (SP5), espejo de la tabla RmUpdate del API.
   rmUpdates: (id: string) => `ho:rmupdates:${id}`,
+  // Historial de macrociclos cerrados (slice macro-history), espejo de la tabla MacroHistory del API.
+  macroHistory: (id: string) => `ho:macrohistory:${id}`,
 } as const;

@@ -1,9 +1,10 @@
 import {
   RosterSchema, MonitorSeriesSchema, MedalsSchema, CompsSchema, SessionLogSchema, PlanSchema, CycleContextSchema,
   SessionViewsSchema, WeekHeatsSchema, PrCandidatesSchema, RmUpdatesSchema, AthleteDailyViewSchema, PrilepinWeekSchema,
+  MacroHistoryViewSchema,
   type Repository, type Atleta, type MonitorSeries, type Medal, type Competencia, type Plan,
   type CycleShare, type CycleContext, type SessionLog, type SessionView, type PrescribedExercise, type WeekHeat,
-  type PrCandidate, type RmLift, type RmUpdate, type AthleteDailyView, type EngineWeek,
+  type PrCandidate, type RmLift, type RmUpdate, type AthleteDailyView, type EngineWeek, type MacroHistoryView,
 } from "@holy-oly/core";
 
 interface Parser<T> {
@@ -139,5 +140,10 @@ export class HttpRepository implements Repository {
   // ── Lazo diario (coach-only en el server): check-ins + adherencia reconciliada. ──
   async getDaily(id: string): Promise<AthleteDailyView> {
     return this.get(this.athletePath(id, "daily"), AthleteDailyViewSchema);
+  }
+
+  // ── Historial de macrociclos cerrados (slice macro-history): coach-visible. ──
+  async getMacroHistory(id: string): Promise<MacroHistoryView> {
+    return this.get(this.athletePath(id, "macro-history"), MacroHistoryViewSchema);
   }
 }

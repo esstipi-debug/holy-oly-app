@@ -10,10 +10,12 @@ import {
   COACH2_ATHLETE_IDS,
   DEMO_MEDALS,
   DEMO_PLAN_INPUTS,
+  DEMO_HISTORY_CFG,
   DEMO_SERIES,
   makeDayLogYear,
 } from "./seed-demo-data";
 import { EXTRA_GYMS, buildExtraAthletes, generateLongSeries, type GeneratedAthlete } from "./seed-demo-generate";
+import { seedAthleteHistory } from "./seed-history";
 
 const prisma = new PrismaClient();
 
@@ -39,6 +41,9 @@ const ATHLETES: SeedAthlete[] = [
   { id: "sm", nombre: "Sofía M.", iniciales: "SM", nivel: "advanced", sexo: "F", macroId: "bulgaro-6d" },
   { id: "tl", nombre: "Tomás L.", iniciales: "TL", nivel: "beginner" },
   { id: "ap", nombre: "Ana P.", iniciales: "AP", nivel: "intermediate", sexo: "F", macroId: "cubano-int-5d" },
+  // Nahuel — recién sumado al plantel del coach1: SIN macro, SIN serie, SIN RM. Dispara la alerta
+  // "Falta RM" en el Plantel (slice macro-history): sin RM el motor no puede prescribir.
+  { id: "np", nombre: "Nahuel P.", iniciales: "NP", nivel: "beginner", sexo: "M" },
   { id: "bg", nombre: "Bruno G.", iniciales: "BG", nivel: "intermediate", macroId: "hibrido-5d" },
   { id: "cf", nombre: "Caro F.", iniciales: "CF", nivel: "intermediate", sexo: "F", macroId: "colombiano-5d" },
   { id: "kv", nombre: "Kevin A.", iniciales: "KV", nivel: "intermediate", sexo: "M", compite: true, macroId: "ruso-5d", weightBandLo: 80, weightBandHi: 82 },
@@ -387,8 +392,23 @@ async function main(): Promise<void> {
     await seedLightPlan(a, i);
   }
 
-  await seedPlanBundle("mv");
-  await seedPlanBundle("kv");
+  // Vitrina con plan: prescripción + historial de ciclos cerrados + RM + entrenos con fecha del
+  // ciclo en curso (slice macro-history). Antes sólo mv/kv tenían plan → el resto quedaba sin info.
+  const SHOWCASE_PLANNED = ["mv", "ds", "lr", "sm", "ap", "kv"] as const;
+  const sexoOf = (id: string): "M" | "F" => ATHLETES.find((a) => a.id === id)?.sexo ?? "M";
+  for (const id of SHOWCASE_PLANNED) {
+    await seedPlanBundle(id);
+    const input = DEMO_PLAN_INPUTS[id];
+    const cfg = DEMO_HISTORY_CFG[id];
+    if (!input || !cfg) continue;
+    await seedAthleteHistory(
+      prisma,
+      id,
+      { macroId: input.macroId, startDate: isoDaysAgo((input.currentWeek - 1) * 7), startWeek: 1, rms: input.rms, currentWeek: input.currentWeek },
+      sexoOf(id),
+      cfg,
+    );
+  }
 
   const maraUser = await prisma.user.create({
     data: { email: cfg.maraEmail, passwordHash: await hash(cfg.maraPassword), role: "atleta", emailVerified: true },

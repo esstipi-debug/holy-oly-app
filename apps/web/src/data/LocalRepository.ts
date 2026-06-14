@@ -1,18 +1,18 @@
 import type {
   Repository, Atleta, Plan, Medal, Competencia, MonitorSeries,
   CycleShare, CycleState, CycleContext, SessionLog, SessionView, PrescribedExercise, PrescriptionRow, WeekHeat,
-  PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek,
+  PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek, MacroHistoryView,
 } from "@holy-oly/core";
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
   CompsSchema, SessionLogSchema, CycleShareSchema, CycleStateSchema,
-  PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema, DayLogsSchema,
+  PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema, DayLogsSchema, MacroHistoryViewSchema,
   MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
-  prCandidates, RM_LIFTS, lutealNow, redactCycle, buildDailyView, DAILY_WINDOW_WEEKS, prilepinPreviewWeek,
+  prCandidates, RM_LIFTS, lutealNow, redactCycle, buildDailyView, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, planNeedsRm,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
-import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE, SEED_MEDALS, SEED_COMPS, SEED_VERSION, SEED_PLAN_INPUTS, makeDayLogYear } from "./seeds";
+import { SEED_ROSTER, SEED_SERIES, SEED_CYCLE, SEED_MEDALS, SEED_COMPS, SEED_VERSION, SEED_PLAN_INPUTS, makeDayLogYear, makeMacroHistory } from "./seeds";
 
 export class LocalRepository implements Repository {
   private s: JsonStore;
@@ -52,6 +52,10 @@ export class LocalRepository implements Repository {
       this.s.set(KEYS.prescription(id), macro ? instantiatePrescription(ALL_RECIPES, macro, totalWeeks) : []);
       this.s.set(KEYS.dayLog(id), makeDayLogYear(today));
     }
+    // Slice macro-history: ciclos cerrados (constancia entre ciclos) — espejo del seed del API.
+    for (const [id, view] of Object.entries(makeMacroHistory(today))) {
+      this.s.set(KEYS.macroHistory(id), view);
+    }
     this.s.set(KEYS.seeded, SEED_VERSION);
   }
 
@@ -59,7 +63,13 @@ export class LocalRepository implements Repository {
     // All-or-nothing: one invalid athlete rejects the whole roster → []. Acceptable because
     // the roster is seeded atomically and SEED_VERSION re-seeds on shape changes.
     const r = RosterSchema.safeParse(this.s.getOptional<unknown>(KEYS.roster));
-    return r.success ? r.data : [];
+    if (!r.success) return [];
+    // needsRm: mirror del API — sin plan o rms incompleto ⇒ falta RM (alerta del Plantel).
+    return r.data.map((a) => ({ ...a, needsRm: planNeedsRm(this.planFor(a.id)) }));
+  }
+  private planFor(id: string): Plan | undefined {
+    const r = PlanSchema.safeParse(this.s.getOptional<unknown>(KEYS.plan(id)));
+    return r.success ? r.data : undefined;
   }
   async getAthlete(id: string): Promise<Atleta | undefined> {
     return (await this.getRoster()).find((a) => a.id === id);
@@ -210,5 +220,11 @@ export class LocalRepository implements Repository {
       }
     }
     return redactCycle(share, state, luteal);
+  }
+
+  // ── Historial de macrociclos cerrados (slice macro-history). Espejo del API. ──
+  async getMacroHistory(id: string): Promise<MacroHistoryView> {
+    const r = MacroHistoryViewSchema.safeParse(this.s.getOptional<unknown>(KEYS.macroHistory(id)));
+    return r.success ? r.data : { entries: [], cyclesDone: 0, avgAdherencePct: 0 };
   }
 }

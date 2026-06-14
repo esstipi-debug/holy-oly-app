@@ -38,14 +38,17 @@ describe("API integration (auth + coach-scoped reads)", () => {
     expect(res.statusCode).toBe(401);
   });
 
-  it("login as the demo coach → /roster returns the 5 athletes on Coach Demo", async () => {
+  it("login as the demo coach → /roster returns the 6 athletes on Coach Demo (incl. Nahuel, sin RM)", async () => {
     const headers = await loginDemoCoach();
     const res = await app.inject({ method: "GET", url: "/roster", headers });
     expect(res.statusCode).toBe(200);
-    const roster = res.json() as Array<{ id: string }>;
-    expect(roster.length).toBe(5);
+    const roster = res.json() as Array<{ id: string; needsRm?: boolean }>;
+    expect(roster.length).toBe(6); // mv/ds/lr/sm/ap + np (Nahuel, recién sumado sin RM)
     expect(roster.some((a) => a.id === "mv")).toBe(true);
     expect(roster.some((a) => a.id === "kv")).toBe(false);
+    // Slice macro-history: Nahuel dispara la alerta del Plantel; Mara (con plan) no.
+    expect(roster.find((a) => a.id === "np")?.needsRm).toBe(true);
+    expect(roster.find((a) => a.id === "mv")?.needsRm).toBe(false);
   });
 
   it("GET /athletes/mv/series returns Mara's 12-week series", async () => {

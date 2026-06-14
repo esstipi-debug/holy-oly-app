@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import type { MonitorSeries } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
 import { RecorridoCard } from "./RecorridoCard";
+import { MisCiclosCard } from "./MisCiclosCard";
 import { LoadChart } from "../../ui/charts/LoadChart";
 import { RecoveryChart } from "../../ui/charts/RecoveryChart";
 import { WellnessChart } from "../../ui/charts/WellnessChart";
@@ -58,6 +59,8 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
         </div>
         {/* El recorrido es independiente del monitoreo: con entrenos registrados, aparece igual. */}
         <RecorridoCard client={client} />
+        {/* Historial de ciclos cerrados — también independiente del monitoreo. */}
+        <div style={{ marginTop: 12 }}><MisCiclosCard client={client} /></div>
       </>
     );
   }
@@ -153,6 +156,9 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
       {current.render()}
       <div style={{ marginTop: 12 }}>
         <RecorridoCard client={client} />
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <MisCiclosCard client={client} />
       </div>
     </>
   );

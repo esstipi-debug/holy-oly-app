@@ -4,8 +4,8 @@
  * resolves the athlete from the session, never from a path/body, so there is no cross-athlete read.
  */
 import {
-  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, MeCycleViewSchema, MeRecorridoSchema,
-  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type MeCycleView, type PutMeSessionInput,
+  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, MeCycleViewSchema, MeRecorridoSchema, MacroHistoryViewSchema,
+  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type MeCycleView, type PutMeSessionInput, type MacroHistoryView,
 } from "@holy-oly/core";
 import { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
 
@@ -70,6 +70,13 @@ export async function getMeRecorrido(): Promise<MeRecorrido> {
   const res = await fetch(`${BASE}/me/recorrido`, { credentials: "include" });
   if (!res.ok) return fail(res);
   return MeRecorridoSchema.parse(await res.json());
+}
+
+/** Historial de macrociclos cerrados del propio atleta (constancia entre ciclos, adherencia %). */
+export async function getMeMacroHistory(): Promise<MacroHistoryView> {
+  const res = await fetch(`${BASE}/me/macro-history`, { credentials: "include" });
+  if (!res.ok) return fail(res);
+  return MacroHistoryViewSchema.parse(await res.json());
 }
 
 /** El 409 del backend puede ser fecha_ocupada (1×fecha, D1) o dia_bloqueado (secuencia de días).

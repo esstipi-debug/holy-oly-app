@@ -6,7 +6,8 @@ vi.mock("../../../data/meClient", () => {
   const getMeSeries = vi.fn();
   const getMeRecorrido = vi.fn();
   const getMePlan = vi.fn();
-  return { getMeSeries, getMeRecorrido, getMePlan, meClient: { getMeSeries, getMeRecorrido, getMePlan } };
+  const getMeMacroHistory = vi.fn();
+  return { getMeSeries, getMeRecorrido, getMePlan, getMeMacroHistory, meClient: { getMeSeries, getMeRecorrido, getMePlan, getMeMacroHistory } };
 });
 import * as me from "../../../data/meClient";
 import { ProgresoScreen } from "../ProgresoScreen";
@@ -43,6 +44,8 @@ beforeEach(() => {
   vi.mocked(me.getMeRecorrido).mockResolvedValue({ semanas: [] });
   // Default: sin plan → la card degrada con gracia (sin marca de HOY ni atenuación).
   vi.mocked(me.getMePlan).mockResolvedValue(PLAN_NULL);
+  // Default: sin ciclos cerrados → la card "Tus ciclos" no aparece.
+  vi.mocked(me.getMeMacroHistory).mockResolvedValue({ entries: [], cyclesDone: 0, avgAdherencePct: 0 });
 });
 
 test("con serie: pills para las 4 señales + Carga por default, en voz de atleta (sin copy de coach)", async () => {

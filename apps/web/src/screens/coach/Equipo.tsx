@@ -4,6 +4,7 @@ import { useRepository } from "../../data/RepositoryProvider";
 import { getRosterRows, type RosterRow } from "./roster";
 import { AtletasHero } from "./atletas/AtletasHero";
 import { AtletaMiniCard } from "./atletas/AtletaMiniCard";
+import { RmFaltanteBanner } from "./atletas/RmFaltanteBanner";
 import { DemoSalesStrip } from "./atletas/DemoSalesStrip";
 import { DemoTourCard } from "./atletas/DemoTourCard";
 import { LeadCaptureButton } from "./LeadCaptureButton";
@@ -86,6 +87,8 @@ export function Equipo() {
         <Loading style={{ fontFamily: "var(--mono)", fontSize: 11, padding: "16px 0" }}>Cargando plantel…</Loading>
       ) : (
         <>
+          {/* Alerta: atletas sin RM (sin RM no se puede prescribir). Lleva al drill-down a asignar macro. */}
+          <RmFaltanteBanner rows={rows} onPick={onPick} />
           {!API_ENABLED && <DemoSalesStrip rows={rows} />}
           {hero && <AtletasHero row={hero} onPick={onPick} />}
           <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "16px 0 11px" }}>

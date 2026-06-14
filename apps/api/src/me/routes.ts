@@ -74,6 +74,14 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     return repo.getMeRecorrido(prisma, athleteId);
   });
 
+  // Historial de macrociclos (slice macro-history): los ciclos cerrados del propio atleta —
+  // su constancia (adherencia %). Sin RPE/ACWR; el RM del cierre es dato propio (HR-1 ok).
+  app.get("/me/macro-history", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    return repo.getMacroHistory(prisma, athleteId);
+  });
+
   // ── Ciclo (slice ciclo-visible): la verdad de la atleta — JAMÁS viaja al coach por acá. ──
   app.get("/me/cycle", async (req, reply) => {
     const athleteId = requireAthlete(req, reply);

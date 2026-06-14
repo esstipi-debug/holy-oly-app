@@ -1,6 +1,7 @@
 import type { Competencia, CycleContext, Macrocycle } from "@holy-oly/core";
 import { MacroTimeline } from "../../../ui/charts/MacroTimeline";
 import { DailySection } from "../daily/DailySection";
+import { MacroHistorySection } from "../history/MacroHistorySection";
 
 type Props = {
   athleteId: string;
@@ -17,6 +18,9 @@ export function ResumenTab({ athleteId, macro, seriesWeeks, comps, cycleCtx }: P
   return (
     <div style={{ display: "grid", gap: 12 }}>
       {macro && seriesWeeks != null && <MacroTimeline macro={macro} hoy={seriesWeeks} comps={comps} />}
+
+      {/* Historial de ciclos (slice macro-history): los macrociclos cerrados + adherencia (constancia). */}
+      <MacroHistorySection athleteId={athleteId} />
 
       {/* Lazo diario (slice lazo-diario): check-in del atleta + adherencia reconciliada (atleta >
           coach > none). Plan-independiente — los check-ins se muestran aunque no haya plan. */}

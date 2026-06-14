@@ -89,6 +89,9 @@ export interface Vinculo {
 export interface Atleta {
   id: Id; nombre: string; iniciales: string;
   nivel: MacrocycleLevel; sexo: "M" | "F"; macroId?: string; compite?: boolean;
+  /** Alerta del coach (slice macro-history): el atleta no tiene RM cargado (sin plan o lift ≤0).
+   *  Sin RM el motor no puede prescribir → el Plantel lo señala. Ausente = no computado. */
+  needsRm?: boolean;
 }
 
 // ── Athlete self-report (Proyecto A). `field` is the canonical key (DB column, DTO, answers map);
@@ -345,6 +348,32 @@ export interface RmUpdate { lift: RmLift; kg: number; setAt: string; reason: RmR
 export interface PrCandidate { lift: RmLift; movementId: string; movementName: string; kg: number; week: number; sessionIdx: number; doneAt?: string; }
 /** Vigencia por lift: cuándo se fijó y hace cuántas semanas ({} = sin dato, nunca inventar). */
 export type RmVigencia = Record<RmLift, { setAt?: string; weeksAgo?: number }>;
+
+// ── Historial de macrociclos (slice macro-history 2026-06-14): los ciclos CERRADOS del atleta.
+//    `Plan` es 1:1 (un ciclo en curso); esto persiste los ciclos completados con su adherencia.
+//    Coach- y atleta-visible (constancia propia); jamás señal de estado (no semáforo/readiness). ──
+/** Una fila persistida de un ciclo cerrado. `rmEnd` = los 4 RM al cerrar (curva de fuerza). */
+export interface MacroHistoryRow {
+  macroId: string;        // slug del catálogo (MACROCYCLES)
+  ordinal: number;        // 1 = el ciclo más antiguo del atleta (ascendente)
+  startDate: string;      // ISO YYYY-MM-DD
+  endDate: string;        // ISO YYYY-MM-DD
+  weeks: number;
+  sessionsDone: number;
+  sessionsTotal: number;
+  rmEnd?: RM;
+}
+/** Fila enriquecida para la UI: nombre del macro + adherencia derivada (jamás inventada). */
+export interface MacroHistoryEntry extends MacroHistoryRow {
+  macroName: string;
+  adherencePct: number;   // round(sessionsDone/sessionsTotal*100); 0 si total=0
+}
+/** Vista de /…/macro-history: ciclos más reciente primero + agregados derivados. */
+export interface MacroHistoryView {
+  entries: MacroHistoryEntry[];
+  cyclesDone: number;
+  avgAdherencePct: number;
+}
 
 // ── ADN de escuela (slice entrenamientos-distintivos 2026-06-11): cada familia del catálogo
 //    descrita como DATOS — el generador determinístico los convierte en MacroRecipe. ──────────
