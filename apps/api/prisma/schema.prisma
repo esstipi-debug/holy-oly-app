@@ -270,6 +270,8 @@ model SessionRegistro {
   week       Int
   sessionIdx Int
   fecha      String
+  /// Secuencia de días (2026-06-13): 'hecho' (default) | 'anulado' (día saltado, sin volumen).
+  estado     String  @default("hecho")
 
   @@unique([athleteId, week, sessionIdx])
   @@index([athleteId, fecha])

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { SessionView, ExerciseActualInput, MePlanView } from "@holy-oly/core";
-import { getMovement, barKgForSexo, fueraDeSemana } from "@holy-oly/core";
+import { getMovement, barKgForSexo, fueraDeSemana, priorDaysResolved } from "@holy-oly/core";
 import * as me from "../../data/meClient";
-import { FechaOcupadaError } from "../../data/meClient";
+import { FechaOcupadaError, DiaBloqueadoError } from "../../data/meClient";
 import { BackButton } from "../../ui/BackButton";
 import { SubstituteSheet } from "../../ui/SubstituteSheet";
 import { RetryButton } from "../../ui/RetryButton";
@@ -37,12 +37,17 @@ export function EntrenoScreen() {
   const [myDay, setMyDay] = useState(idx + 1);
   const [myTurno, setMyTurno] = useState<"AM" | "PM" | undefined>(undefined);
   const [startDate, setStartDate] = useState<string | undefined>(undefined);
+  // Secuencia de días (2026-06-13): este día está BLOQUEADO (faltan días anteriores) o ANULADO.
+  const [locked, setLocked] = useState(false);
+  const [anulado, setAnulado] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
 
   useEffect(() => {
     if (!Number.isInteger(week) || !Number.isInteger(idx)) { navigate("/atleta", { replace: true }); return; }
     let on = true;
     setRows(null); setLoadError(false);
     setFecha(null); setFechaSheet(null); setOcupadas([]);
+    setLocked(false); setAnulado(false);
     // D5: si el plan falla, el rechazo cae al catch general (loadError) — nada de degradar en
     // silencio a barra de 20 kg. El plan null RESUELTO (sin plan asignado) sigue siendo legítimo.
     Promise.all([me.getMePlan(), me.getMeSessions(week)])
@@ -58,6 +63,14 @@ export function EntrenoScreen() {
         const day = s?.day ?? idx + 1;
         setMyDay(day);
         setMyTurno(s?.turno);
+        // Secuencia de días: este día está bloqueado si algún día anterior no está resuelto;
+        // resuelto = la sesión tiene registro (fecha = hecho) o está anulada (espejo del backend).
+        const allIdxs = views.map((v) => v.sessionIdx);
+        const dayOfFn = (i: number): number => views.find((v) => v.sessionIdx === i)?.day ?? i + 1;
+        // Resuelto = anulado o registrado (con fecha) — espejo EXACTO del gate del backend.
+        const resolvedSet = new Set(views.filter((v) => v.anulado === true || v.fecha != null).map((v) => v.sessionIdx));
+        setAnulado(s?.anulado === true);
+        setLocked(!resolvedSet.has(idx) && !priorDaysResolved(allIdxs, (i) => resolvedSet.has(i), dayOfFn, idx));
         const tomadas = views
           .filter((v) => v.sessionIdx !== idx && v.fecha != null && (v.day ?? v.sessionIdx + 1) !== day)
           .map((v) => v.fecha!);
@@ -107,10 +120,36 @@ export function EntrenoScreen() {
       // Red de seguridad server-side (D5): una carrera entre dispositivos puede dejar la fecha
       // tomada recién al guardar → reabrimos el sheet en vez de un error opaco.
       if (e instanceof FechaOcupadaError) { setFechaSheet("conflicto"); return; }
+      // Secuencia de días: el gate server-side rechazó por días anteriores sin resolver.
+      if (e instanceof DiaBloqueadoError) { setError("Completá el día anterior antes de registrar este."); return; }
       setError(e instanceof Error ? e.message : "No se pudo guardar");
     }
     finally { setBusy(false); }
   }, [rows, week, idx, navigate, fecha, hoy]);
+
+  // Secuencia de días (2026-06-13): anular el entreno (falló/canceló) → vuelve al inicio.
+  const doAnular = useCallback(async () => {
+    if (!window.confirm("¿Anular este entreno? Queda marcado como saltado (sin volumen). Podés reactivarlo después.")) return;
+    setActionBusy(true); setError(null);
+    try {
+      await me.anularMeSession(week, idx);
+      navigate("/atleta");
+    } catch (e) {
+      if (e instanceof DiaBloqueadoError) { setError("Completá el día anterior antes de anular este."); return; }
+      setError(e instanceof Error ? e.message : "No se pudo anular");
+    } finally { setActionBusy(false); }
+  }, [week, idx, navigate]);
+
+  // Reactivar (des-anular) → el día vuelve a pendiente; recargamos para registrarlo normal.
+  const doReactivar = useCallback(async () => {
+    setActionBusy(true); setError(null);
+    try {
+      await me.desanularMeSession(week, idx);
+      setReload((r) => r + 1);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo reactivar");
+    } finally { setActionBusy(false); }
+  }, [week, idx]);
 
   if (rows === null) return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
 
@@ -125,6 +164,22 @@ export function EntrenoScreen() {
           No se pudo cargar la sesión.{" "}
           <RetryButton onClick={() => setReload((r) => r + 1)} />
         </div>
+      ) : locked ? (
+        // Secuencia de días: no se puede registrar este día sin resolver los anteriores.
+        <div style={{ marginTop: 18, textAlign: "center", fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>
+          <div style={{ fontSize: 30, marginBottom: 8 }} aria-hidden>🔒</div>
+          Completá el día anterior para desbloquear este.
+        </div>
+      ) : anulado ? (
+        // Día anulado: sin volumen; ofrecemos reactivarlo (des-anular) para registrarlo normal.
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)", marginBottom: 12 }}>
+            Este entreno está <strong style={{ color: "var(--wl-text)" }}>anulado</strong> (lo saltaste). No suma volumen.
+          </div>
+          <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%" }} disabled={actionBusy} onClick={() => void doReactivar()}>
+            Reactivar este entreno
+          </button>
+        </div>
       ) : rows.length === 0 ? (
         <div style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>No hay sesión para este día.</div>
       ) : !started ? (
@@ -135,6 +190,7 @@ export function EntrenoScreen() {
             fecha={fecha ?? hoy}
             onFechaTap={() => setFechaSheet("editar")}
             onStart={() => { setCur(0); setStarted(true); }}
+            onAnular={() => void doAnular()}
           />
         </div>
       ) : (
@@ -146,9 +202,9 @@ export function EntrenoScreen() {
             onMovementNotDone={movementNotDone}
             onFinish={() => void save()}
           />
-          {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
         </div>
       )}
+      {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
       {subOpen && rows[cur] && (
         <SubstituteSheet open movementId={rows[cur]!.movementId} onClose={() => setSubOpen(false)} onPick={pickSub} />

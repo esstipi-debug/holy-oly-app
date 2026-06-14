@@ -7,7 +7,7 @@ import {
   MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, MeCycleViewSchema, MeRecorridoSchema,
   type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type MeCycleView, type PutMeSessionInput,
 } from "@holy-oly/core";
-import { FechaOcupadaError } from "./fechaError";
+import { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -72,7 +72,22 @@ export async function getMeRecorrido(): Promise<MeRecorrido> {
   return MeRecorridoSchema.parse(await res.json());
 }
 
-/** Record (replace) the athlete's actuals for one session. Throws FechaOcupadaError on 409 (D1). */
+/** El 409 del backend puede ser fecha_ocupada (1×fecha, D1) o dia_bloqueado (secuencia de días).
+ *  Lanza el error tipado correspondiente; cuerpo inesperado → cae al error genérico. */
+async function throw409(res: Response): Promise<never> {
+  const body = (await res.json().catch(() => null)) as
+    | { error?: string; conflicto?: { week: number; sessionIdx: number; fecha: string }; faltan?: number[] }
+    | null;
+  if (body?.error === "dia_bloqueado") throw new DiaBloqueadoError(Array.isArray(body.faltan) ? body.faltan : []);
+  const c = body?.conflicto;
+  if (c && typeof c.week === "number" && typeof c.sessionIdx === "number" && typeof c.fecha === "string") {
+    throw new FechaOcupadaError(c);
+  }
+  return fail(res); // 409 con cuerpo inesperado (proxy raro)
+}
+
+/** Record (replace) the athlete's actuals for one session. 409 → FechaOcupadaError (D1) o
+ *  DiaBloqueadoError (secuencia de días). */
 export async function putMeSession(week: number, idx: number, input: PutMeSessionInput): Promise<void> {
   const res = await fetch(`${BASE}/me/session/${week}/${idx}`, {
     method: "PUT",
@@ -80,16 +95,20 @@ export async function putMeSession(week: number, idx: number, input: PutMeSessio
     headers: { "content-type": "application/json" },
     body: JSON.stringify(input),
   });
-  if (res.status === 409) {
-    const body = (await res.json().catch(() => null)) as { conflicto?: { week: number; sessionIdx: number; fecha: string } } | null;
-    const c = body?.conflicto;
-    if (c && typeof c.week === "number" && typeof c.sessionIdx === "number" && typeof c.fecha === "string") {
-      throw new FechaOcupadaError(c);
-    }
-    // 409 con cuerpo inesperado (proxy raro) → cae al manejo de error genérico
-    await fail(res);
-    return;
-  }
+  if (res.status === 409) return void (await throw409(res));
+  if (!res.ok) await fail(res);
+}
+
+/** Anular un entreno (secuencia de días). 409 → DiaBloqueadoError (días anteriores sin resolver). */
+export async function anularMeSession(week: number, idx: number): Promise<void> {
+  const res = await fetch(`${BASE}/me/session/${week}/${idx}/anular`, { method: "POST", credentials: "include" });
+  if (res.status === 409) return void (await throw409(res));
+  if (!res.ok) await fail(res);
+}
+
+/** Des-anular (reactivar) un entreno → vuelve a pendiente. Idempotente. */
+export async function desanularMeSession(week: number, idx: number): Promise<void> {
+  const res = await fetch(`${BASE}/me/session/${week}/${idx}/anular`, { method: "DELETE", credentials: "include" });
   if (!res.ok) await fail(res);
 }
 

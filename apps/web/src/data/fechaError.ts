@@ -8,3 +8,14 @@ export class FechaOcupadaError extends Error {
     super("fecha_ocupada");
   }
 }
+
+/**
+ * Error tipado para la secuencia de días (2026-06-13): la sesión que se quiere completar/anular
+ * tiene días anteriores sin resolver en la semana. `faltan` = sessionIdx de esos días. Vive acá
+ * por la misma razón que FechaOcupadaError (sin ciclo de imports con meClient).
+ */
+export class DiaBloqueadoError extends Error {
+  constructor(public readonly faltan: number[] = []) {
+    super("dia_bloqueado");
+  }
+}

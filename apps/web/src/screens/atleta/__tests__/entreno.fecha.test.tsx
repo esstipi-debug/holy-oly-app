@@ -62,9 +62,10 @@ async function startAndSave(idx: number) {
 }
 
 test("hoy ocupada por otra sesión → FechaSheet aparece al entrar (D5)", async () => {
-  // La sesión 0 (día 1) ya tiene HOY; entramos a la sesión 3 (día 4, distinto) → conflicto upfront.
+  // La sesión 0 (día 1) ya tiene HOY (resuelta → destraba el día 2); entramos a la sesión 1
+  // (día 2, distinto) → conflicto de fecha upfront. Secuencia de días: el día 2 está desbloqueado.
   vi.spyOn(me, "getMeSessions").mockResolvedValue(weekViews({ 0: { fecha: HOY } }));
-  renderEntreno(3);
+  renderEntreno(1);
   expect(await screen.findByText(/ya registraste un entreno hoy/i)).toBeInTheDocument();
 });
 

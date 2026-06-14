@@ -334,6 +334,7 @@ export const SessionRegistroSchema: z.ZodType<SessionRegistro> = z.object({
   week: z.number().int().min(1).max(104),
   sessionIdx: z.number().int().min(0).max(13),
   fecha: IsoDateSchema,
+  estado: z.enum(["hecho", "anulado"]).optional(),
 });
 /** Array listo para el read-side local (espejo del SessionActualsSchema). */
 export const SessionRegistrosSchema = z.array(SessionRegistroSchema);
@@ -389,6 +390,7 @@ export const SessionViewSchema = z.object({
   day: z.number().int().optional(),
   turno: z.enum(["AM", "PM"]).optional(),
   fecha: z.string().optional(), // read-side: el server ya validó al escribir (patrón de la casa)
+  anulado: z.boolean().optional(), // secuencia de días (2026-06-13): día saltado por el atleta
 });
 export const SessionViewsSchema = z.array(SessionViewSchema).max(14);
 

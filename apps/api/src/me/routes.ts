@@ -130,8 +130,45 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
       if (e instanceof repo.FechaOcupadaError) {
         return reply.code(409).send({ error: "fecha_ocupada", conflicto: e.conflicto });
       }
+      if (e instanceof repo.DiaBloqueadoError) {
+        return reply.code(409).send({ error: "dia_bloqueado", faltan: e.faltan });
+      }
       throw e;
     }
+    return reply.code(200).send({ ok: true });
+  });
+
+  // Secuencia de días (2026-06-13): ANULAR un entreno (falló/canceló). Mismo gate que completar
+  // (los días anteriores deben estar resueltos) → 409 dia_bloqueado. Sin volumen, no ocupa fecha.
+  app.post<{ Params: { week: string; idx: string } }>("/me/session/:week/:idx/anular", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    const week = Number(req.params.week);
+    const idx = Number(req.params.idx);
+    if (!Number.isInteger(week) || week < 1 || week > 104 || !Number.isInteger(idx) || idx < 0 || idx > 13) {
+      return reply.code(400).send({ error: "bad week/idx" });
+    }
+    try {
+      await repo.anularSession(prisma, athleteId, week, idx, todayISO());
+    } catch (e) {
+      if (e instanceof repo.DiaBloqueadoError) {
+        return reply.code(409).send({ error: "dia_bloqueado", faltan: e.faltan });
+      }
+      throw e;
+    }
+    return reply.code(200).send({ ok: true });
+  });
+
+  // Secuencia de días: DES-ANULAR (reactivar) → el día vuelve a pendiente. Idempotente.
+  app.delete<{ Params: { week: string; idx: string } }>("/me/session/:week/:idx/anular", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    const week = Number(req.params.week);
+    const idx = Number(req.params.idx);
+    if (!Number.isInteger(week) || week < 1 || week > 104 || !Number.isInteger(idx) || idx < 0 || idx > 13) {
+      return reply.code(400).send({ error: "bad week/idx" });
+    }
+    await repo.desanularSession(prisma, athleteId, week, idx);
     return reply.code(200).send({ ok: true });
   });
 

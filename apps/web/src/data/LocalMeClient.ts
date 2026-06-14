@@ -18,9 +18,9 @@ import {
   MonitorSeriesSchema, PlanSchema, RosterSchema, PrescriptionRowsSchema,
   DayLogsSchema, SessionActualsSchema, SessionRegistrosSchema, CycleShareSchema, CycleStateSchema,
   MACROCYCLES, planHeat, weekDoneSummary, dayLayoutFor,
-  validateFechaEntreno, fechaConflict,
+  validateFechaEntreno, fechaConflict, unresolvedPriorDays,
 } from "@holy-oly/core";
-import { FechaOcupadaError } from "./fechaError";
+import { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
 import type { MeClient } from "./meClient";
@@ -109,13 +109,15 @@ export class LocalMeClient implements MeClient {
     const barKg = barKgForSexo(this.athlete()?.sexo ?? "M");
     const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
     const layout = macro ? dayLayoutFor(macro, week) : null;
-    const fechaByIdx = new Map(
-      this.registros().filter((r) => r.week === week).map((r) => [r.sessionIdx, r.fecha]),
-    );
+    const weekRegs = this.registros().filter((r) => r.week === week);
+    // Secuencia de días: un día ANULADO no lleva fecha (no se entrenó) — sólo el flag `anulado`.
+    const fechaByIdx = new Map(weekRegs.filter((r) => r.estado !== "anulado").map((r) => [r.sessionIdx, r.fecha]));
+    const anuladoIdx = new Set(weekRegs.filter((r) => r.estado === "anulado").map((r) => r.sessionIdx));
     return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals).map((v) => ({
       ...v,
       ...(layout?.[v.sessionIdx] ? layout[v.sessionIdx]! : {}),
       ...(fechaByIdx.has(v.sessionIdx) ? { fecha: fechaByIdx.get(v.sessionIdx)! } : {}),
+      ...(anuladoIdx.has(v.sessionIdx) ? { anulado: true } : {}),
     }));
   }
 
@@ -163,15 +165,30 @@ export class LocalMeClient implements MeClient {
     return { semanas };
   }
 
-  /** Replace one session's actuals (self-written). Mirrors repo.setSessionActuals con regla D1 (1×fecha). */
+  /** Día/turno layout de la semana (para dayOf), espejo de repo. */
+  private dayOfFor(week: number): (idx: number) => number {
+    const macro = MACROCYCLES.find((m) => m.id === this.plan()?.macroId);
+    const layout = macro ? dayLayoutFor(macro, week) : null;
+    return (idx: number): number => layout?.[idx]?.day ?? idx + 1;
+  }
+
+  /** Secuencia de días (2026-06-13): para completar/anular `sessionIdx`, todo día anterior de la
+   *  semana debe estar resuelto (tener registro). Espejo de repo.assertDayUnlocked. */
+  private assertDayUnlocked(week: number, sessionIdx: number, dayOf: (idx: number) => number): void {
+    const allIdxs = [...new Set(this.prescriptionRows().filter((r) => r.week === week).map((r) => r.sessionIdx))];
+    const resolved = new Set(this.registros().filter((r) => r.week === week).map((r) => r.sessionIdx));
+    const faltan = unresolvedPriorDays(allIdxs, (i) => resolved.has(i), dayOf, sessionIdx);
+    if (faltan.length > 0) throw new DiaBloqueadoError(faltan);
+  }
+
+  /** Replace one session's actuals (self-written). Mirrors repo.setSessionActuals (1×fecha D1 +
+   *  gate de secuencia de días). */
   async putMeSession(week: number, sessionIdx: number, input: PutMeSessionInput): Promise<void> {
     const parsed = PutMeSessionInputSchema.parse(input);
     const hoy = this.today();
     const fecha = parsed.fecha ?? hoy;
     if (validateFechaEntreno(fecha, hoy) === "futuro") throw new Error("fecha futura");
-    const macro = MACROCYCLES.find((m) => m.id === this.plan()?.macroId);
-    const layout = macro ? dayLayoutFor(macro, week) : null;
-    const dayOf = (idx: number): number => layout?.[idx]?.day ?? idx + 1;
+    const dayOf = this.dayOfFor(week);
     const registros = this.registros();
     const summarized = parsed.actuals.map((a) => ({
       a,
@@ -179,8 +196,10 @@ export class LocalMeClient implements MeClient {
     }));
     const anyDone = summarized.some(({ sum }) => sum.done);
     if (anyDone) {
+      this.assertDayUnlocked(week, sessionIdx, dayOf); // secuencia de días: días anteriores resueltos
       const conflict = fechaConflict(registros, week, sessionIdx, fecha, dayOf);
-      if (conflict) throw new FechaOcupadaError(conflict);
+      // Contrato público = { week, sessionIdx, fecha }; `estado` es interno (espejo del backend).
+      if (conflict) throw new FechaOcupadaError({ week: conflict.week, sessionIdx: conflict.sessionIdx, fecha: conflict.fecha });
     }
     const kept = this.actuals().filter((a) => !(a.week === week && a.sessionIdx === sessionIdx));
     const added: SessionActual[] = summarized.map(({ a, sum }) => ({
@@ -191,11 +210,34 @@ export class LocalMeClient implements MeClient {
       doneAt: sum.done ? fecha : undefined,
     }));
     this.s.set(KEYS.sessionActuals(this.id), [...kept, ...added]);
-    // Actualizar el registro de fecha de la sesión (D1).
+    // Actualizar el registro de fecha de la sesión (D1). Completar SIEMPRE deja la sesión 'hecho'.
     const keptRegs = registros.filter((r) => !(r.week === week && r.sessionIdx === sessionIdx));
     this.s.set(
       KEYS.sessionRegistros(this.id),
-      anyDone ? [...keptRegs, { week, sessionIdx, fecha }] : keptRegs,
+      anyDone ? [...keptRegs, { week, sessionIdx, fecha, estado: "hecho" as const }] : keptRegs,
+    );
+  }
+
+  /** Anular un entreno (secuencia de días): gate + sin volumen + registro 'anulado'. Mirror de repo. */
+  async anularMeSession(week: number, sessionIdx: number): Promise<void> {
+    const dayOf = this.dayOfFor(week);
+    this.assertDayUnlocked(week, sessionIdx, dayOf);
+    this.s.set(
+      KEYS.sessionActuals(this.id),
+      this.actuals().filter((a) => !(a.week === week && a.sessionIdx === sessionIdx)),
+    );
+    const keptRegs = this.registros().filter((r) => !(r.week === week && r.sessionIdx === sessionIdx));
+    this.s.set(
+      KEYS.sessionRegistros(this.id),
+      [...keptRegs, { week, sessionIdx, fecha: this.today(), estado: "anulado" as const }],
+    );
+  }
+
+  /** Des-anular (reactivar): borra sólo el registro 'anulado' → el día vuelve a pendiente. */
+  async desanularMeSession(week: number, sessionIdx: number): Promise<void> {
+    this.s.set(
+      KEYS.sessionRegistros(this.id),
+      this.registros().filter((r) => !(r.week === week && r.sessionIdx === sessionIdx && r.estado === "anulado")),
     );
   }
 

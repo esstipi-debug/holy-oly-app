@@ -9,7 +9,7 @@ import * as http from "./httpMeClient";
 import { LocalMeClient } from "./LocalMeClient";
 
 // Re-exportar para que los callers (pantallas, tests) tengan un único punto de importación.
-export { FechaOcupadaError } from "./fechaError";
+export { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
 export type { PutMeSessionInput };
 
 // Lazy so the standalone client (which touches localStorage) is only built when actually used.
@@ -39,6 +39,12 @@ export function getMeRecorrido(): Promise<MeRecorrido> {
 }
 export function putMeSession(week: number, idx: number, input: PutMeSessionInput): Promise<void> {
   return API_ENABLED ? http.putMeSession(week, idx, input) : local().putMeSession(week, idx, input);
+}
+export function anularMeSession(week: number, idx: number): Promise<void> {
+  return API_ENABLED ? http.anularMeSession(week, idx) : local().anularMeSession(week, idx);
+}
+export function desanularMeSession(week: number, idx: number): Promise<void> {
+  return API_ENABLED ? http.desanularMeSession(week, idx) : local().desanularMeSession(week, idx);
 }
 export function getMeCycle(): Promise<MeCycleView> {
   return API_ENABLED ? http.getMeCycle() : local().getMeCycle();
@@ -75,6 +81,10 @@ export interface MeClient {
   /** Recorrido del macro: lo HECHO acumulado por semana (kg propios — jamás RM/RPE/ACWR). */
   getMeRecorrido(): Promise<MeRecorrido>;
   putMeSession(week: number, idx: number, input: PutMeSessionInput): Promise<void>;
+  /** Secuencia de días (2026-06-13): anular un entreno (falló/canceló) y des-anular (reactivar).
+   *  `anularMeSession` lanza `DiaBloqueadoError` si los días anteriores no están resueltos. */
+  anularMeSession(week: number, idx: number): Promise<void>;
+  desanularMeSession(week: number, idx: number): Promise<void>;
   /** Registro propio del ciclo (slice ciclo-visible) — la verdad de la atleta, jamás del coach.
    *  `getMeCycle` incluye `consented` (¿activó el módulo?); `putMeCycle` con `consent:true` en la
    *  1ª activación (PR-L2); `deleteMeCycle` revoca (borra el registro). */
@@ -84,4 +94,4 @@ export interface MeClient {
 }
 
 /** The module singleton as a `MeClient` object — the default client for the athlete screens. */
-export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, getMeHeat, getMeRecorrido, putMeSession, getMeCycle, putMeCycle, deleteMeCycle };
+export const meClient: MeClient = { getMePlan, getMeSeries, getDayLog, putDayLog, getMeSessions, getMeHeat, getMeRecorrido, putMeSession, anularMeSession, desanularMeSession, getMeCycle, putMeCycle, deleteMeCycle };

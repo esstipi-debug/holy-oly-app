@@ -30,6 +30,8 @@ function client(cycle: CycleData): MeClient {
     getMeHeat: async () => HEAT,
     getMeRecorrido: async () => ({ semanas: [] }),
     putMeSession: async () => {},
+    anularMeSession: async () => {},
+    desanularMeSession: async () => {},
     getMeCycle: async () => ({ ...cycle, consented: true }),
     putMeCycle: async () => {},
     deleteMeCycle: async () => {},

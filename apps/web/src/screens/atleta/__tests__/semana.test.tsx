@@ -11,7 +11,8 @@ import * as me from "../../../data/meClient";
 import { SemanaCard } from "../hoy/SemanaCard";
 
 const MOCK_SESSIONS: import("@holy-oly/core").SessionView[] = [
-  { week: 8, sessionIdx: 0, exercises: [{ movementId: "arranque", sets: 5, reps: 2, pct: 80, movementName: "Arranque", targetKg: 64, actual: { done: true, movementId: "arranque", movementName: "Arranque", substituted: false, desfasado: false } }] },
+  // Día 1 hecho: en datos reales un día hecho SIEMPRE lleva fecha (registro) → resuelto (destraba el día 2).
+  { week: 8, sessionIdx: 0, fecha: "2026-06-05", exercises: [{ movementId: "arranque", sets: 5, reps: 2, pct: 80, movementName: "Arranque", targetKg: 64, actual: { done: true, movementId: "arranque", movementName: "Arranque", substituted: false, desfasado: false } }] },
   { week: 8, sessionIdx: 1, exercises: [{ movementId: "cargada", sets: 5, reps: 2, pct: 80, movementName: "Cargada", targetKg: 80 }] },
 ];
 
@@ -109,4 +110,30 @@ test("día hecho muestra su fecha; CTA usa day/turno del próximo pendiente", as
   renderCard();
   expect(await screen.findByText(/hecho · 2026-06-09/)).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /Registrar entreno · Día 2/ })).toBeInTheDocument();
+});
+
+// ── Secuencia de días (2026-06-13): bloqueo + anulado ─────────────────────────
+test("día con el anterior pendiente → bloqueado (🔒) y no navega", async () => {
+  const sessions: import("@holy-oly/core").SessionView[] = [
+    { week: 9, sessionIdx: 0, day: 1, exercises: [exPend()] }, // día 1 pendiente
+    { week: 9, sessionIdx: 1, day: 2, exercises: [exPend()] }, // día 2 → bloqueado
+  ];
+  vi.mocked(me.getMeSessions).mockResolvedValueOnce(sessions);
+  renderCard();
+  expect(await screen.findByText(/completá el día anterior/i)).toBeInTheDocument();
+  const dia2 = screen.getByRole("button", { name: "Día 2" });
+  expect(dia2).toBeDisabled();
+  fireEvent.click(dia2);
+  expect(screen.queryByText("ENTRENO")).not.toBeInTheDocument(); // no navegó
+});
+
+test("día anulado: se muestra «anulado» y destraba el día siguiente", async () => {
+  const sessions: import("@holy-oly/core").SessionView[] = [
+    { week: 9, sessionIdx: 0, day: 1, anulado: true, exercises: [exPend()] },
+    { week: 9, sessionIdx: 1, day: 2, exercises: [exPend()] },
+  ];
+  vi.mocked(me.getMeSessions).mockResolvedValueOnce(sessions);
+  renderCard();
+  expect(await screen.findByText("anulado")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Día 2" })).not.toBeDisabled(); // día 1 anulado = resuelto
 });

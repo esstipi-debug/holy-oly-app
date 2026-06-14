@@ -249,11 +249,18 @@ export interface PrescribedExerciseView extends PrescribedExercise { movementNam
 export interface SessionView {
   week: number; sessionIdx: number; exercises: PrescribedExerciseView[];
   day?: number; turno?: "AM" | "PM"; fecha?: string;
+  /** Secuencia de días: la sesión fue ANULADA por el atleta (falló/canceló). Sin volumen,
+   *  cuenta como resuelta para destrabar los días siguientes. `fecha` ausente cuando anulado. */
+  anulado?: boolean;
 }
 
+/** Estado de una sesión en la secuencia de días: sin registro · hecho (con fecha) · anulado. */
+export type SessionEstado = "hecho" | "anulado";
+
 /** Registro de fecha de una sesión (spec 2026-06-12 D1/D3): cuándo se HIZO el entreno.
- *  Fuente de verdad; doneAt por-ejercicio es copia estampada en la misma transacción. */
-export interface SessionRegistro { week: number; sessionIdx: number; fecha: string }
+ *  Fuente de verdad; doneAt por-ejercicio es copia estampada en la misma transacción.
+ *  `estado` (secuencia de días, 2026-06-13): ausente ⇒ "hecho"; "anulado" = día saltado. */
+export interface SessionRegistro { week: number; sessionIdx: number; fecha: string; estado?: SessionEstado }
 
 /** One day's heat aggregate (calendar heat map). `topPct` absent = no % data that day. */
 export interface DayHeat { topPct?: number; lifts: number }

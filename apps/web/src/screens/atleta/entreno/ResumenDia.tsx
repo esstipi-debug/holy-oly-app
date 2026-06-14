@@ -11,12 +11,15 @@ export function ResumenDia({
   fecha,
   onFechaTap,
   onStart,
+  onAnular,
 }: {
   rows: ResumenRow[];
   barKg: number;
   fecha?: string;
   onFechaTap?: () => void;
   onStart: () => void;
+  /** Secuencia de días (2026-06-13): anular el entreno (falló/canceló). Ausente → sin botón. */
+  onAnular?: () => void;
 }) {
   const setDot = { width: 5, height: 14, borderRadius: 3, background: "color-mix(in srgb,var(--wl-text) 15%,transparent)" };
   return (
@@ -31,6 +34,15 @@ export function ResumenDia({
         </button>
       )}
       <button type="button" className="wl-btn wl-btn--primary" onClick={onStart} style={{ width: "100%" }}>▶ Iniciar entrenamiento</button>
+      {onAnular && (
+        <button
+          type="button"
+          onClick={onAnular}
+          style={{ width: "100%", marginTop: 8, background: "none", border: "1px solid color-mix(in srgb,var(--wl-text) 14%,transparent)", borderRadius: "var(--wl-radius)", padding: "9px 0", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}
+        >
+          Anular este entreno
+        </button>
+      )}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
         {rows.map((r, i) => (
           <div key={i} style={{ background: "var(--wl-surface)", borderRadius: 16, padding: "13px 15px", border: "1px solid color-mix(in srgb,var(--wl-text) 7%,transparent)" }}>

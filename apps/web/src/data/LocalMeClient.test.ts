@@ -4,7 +4,7 @@ import { MemStorage } from "../test-utils/MemStorage";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
 import { LocalMeClient } from "./LocalMeClient";
-import { FechaOcupadaError } from "./fechaError";
+import { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
 
 const TODAY = "2026-06-06";
 const ID = "kv";
@@ -37,6 +37,20 @@ function seed(store: MemStorage, opts: { dayLogs?: DayLog[] } = {}): void {
   s.set(KEYS.prescription(ID), RX);
   if (opts.dayLogs) s.set(KEYS.dayLog(ID), opts.dayLogs);
 }
+
+// Semana 10 con DOS sesiones (día 1 = idx0, día 2 = idx1) — para la secuencia de días + anular.
+const RX2: PrescriptionRow[] = [
+  { week: 10, sessionIdx: 0, order: 0, movementId: "arranque", sets: 5, reps: 3, pct: 70 },
+  { week: 10, sessionIdx: 1, order: 0, movementId: "sentadilla", sets: 5, reps: 5, pct: 75 },
+];
+function seed2(store: MemStorage): void {
+  const s = new JsonStore(store);
+  s.set(KEYS.roster, ROSTER);
+  s.set(KEYS.plan(ID), PLAN);
+  s.set(KEYS.prescription(ID), RX2);
+}
+const arranque = (kg: number) => ({ order: 0, movementId: "arranque", done: true, kg });
+const sentadilla = (kg: number) => ({ order: 0, movementId: "sentadilla", done: true, kg });
 
 const log = (date: string): DayLog => ({ date, fatiga: 2, dolor: 1, estres: 2, humor: 4, motivacion: 4, sueno: 4 });
 const me = (store: MemStorage): LocalMeClient => new LocalMeClient(ID, store, () => TODAY);
@@ -163,26 +177,51 @@ describe("LocalMeClient", () => {
     expect(views10[0]!.fecha).toBe(TODAY);
   });
 
-  it("actuals:[] libera la fecha en local (D11)", async () => {
-    // Seed con dos sesiones en la semana 10 para poder verificar via getMeSessions
-    const s = new JsonStore(store);
-    s.set(KEYS.roster, ROSTER);
-    s.set(KEYS.plan(ID), PLAN);
-    const RX2: PrescriptionRow[] = [
-      { week: 10, sessionIdx: 0, order: 0, movementId: "arranque", sets: 5, reps: 3, pct: 70 },
-      { week: 10, sessionIdx: 1, order: 0, movementId: "sentadilla", sets: 5, reps: 5, pct: 75 },
-    ];
-    s.set(KEYS.prescription(ID), RX2);
+  it("actuals:[] libera la fecha en local (D11): liberar el ÚLTIMO día pierde su fecha y puede re-tomarse", async () => {
+    seed2(store);
     const c = me(store);
-    // registrar sesión 0 en hoy
-    await c.putMeSession(10, 0, { actuals: [{ order: 0, movementId: "arranque", done: true, kg: 60 }] });
-    // borrar la sesión 0 (actuals vacíos libera el registro de fecha)
-    await c.putMeSession(10, 0, { actuals: [] });
-    // ahora sesión 1 puede tomar hoy (no hay conflicto porque la 0 ya no tiene registro de fecha)
-    await c.putMeSession(10, 1, { actuals: [{ order: 0, movementId: "sentadilla", done: true, kg: 70 }] });
-    const views = await c.getMeSessions(10);
-    expect(views.find((v) => v.sessionIdx === 1)?.fecha).toBe(TODAY);
-    // sesión 0 no tiene fecha (fue borrada)
-    expect(views.find((v) => v.sessionIdx === 0)?.fecha).toBeUndefined();
+    // día 1 hoy, día 2 en otra fecha (ambos resueltos, en orden)
+    await c.putMeSession(10, 0, { actuals: [arranque(60)] });
+    await c.putMeSession(10, 1, { fecha: "2026-06-05", actuals: [sentadilla(70)] });
+    // liberar el día 2 (último) → pierde su fecha (no rompe la secuencia)
+    await c.putMeSession(10, 1, { actuals: [] });
+    expect((await c.getMeSessions(10)).find((v) => v.sessionIdx === 1)?.fecha).toBeUndefined();
+    // la fecha liberada se puede re-tomar (día 1 resuelto → gate ok)
+    await c.putMeSession(10, 1, { fecha: "2026-06-05", actuals: [sentadilla(72)] });
+    expect((await c.getMeSessions(10)).find((v) => v.sessionIdx === 1)?.fecha).toBe("2026-06-05");
+  });
+
+  it("secuencia de días (gate): completar el día 2 sin el día 1 → DiaBloqueadoError", async () => {
+    seed2(store);
+    await expect(me(store).putMeSession(10, 1, { actuals: [sentadilla(70)] }))
+      .rejects.toBeInstanceOf(DiaBloqueadoError);
+  });
+
+  it("anular respeta el gate: anular el día 2 sin el día 1 → DiaBloqueadoError", async () => {
+    seed2(store);
+    await expect(me(store).anularMeSession(10, 1)).rejects.toBeInstanceOf(DiaBloqueadoError);
+  });
+
+  it("anular cuenta como resuelto: anular el día 1 destraba completar el día 2 (sin volumen, sin fecha)", async () => {
+    seed2(store);
+    const c = me(store);
+    await c.anularMeSession(10, 0);
+    const v0 = (await c.getMeSessions(10)).find((v) => v.sessionIdx === 0)!;
+    expect(v0.anulado).toBe(true);
+    expect(v0.fecha).toBeUndefined();           // un día anulado no ocupa fecha
+    expect(v0.exercises[0]!.actual).toBeUndefined(); // ni volumen
+    // el día 2 ahora se puede completar (día 1 anulado = resuelto)
+    await c.putMeSession(10, 1, { actuals: [sentadilla(70)] });
+    expect((await c.getMeSessions(10)).find((v) => v.sessionIdx === 1)?.fecha).toBe(TODAY);
+  });
+
+  it("des-anular (reactivar) vuelve el día a pendiente → el día siguiente se bloquea de nuevo", async () => {
+    seed2(store);
+    const c = me(store);
+    await c.anularMeSession(10, 0);
+    await c.desanularMeSession(10, 0);
+    expect((await c.getMeSessions(10)).find((v) => v.sessionIdx === 0)?.anulado).toBeUndefined();
+    await expect(c.putMeSession(10, 1, { actuals: [sentadilla(70)] }))
+      .rejects.toBeInstanceOf(DiaBloqueadoError);
   });
 });

@@ -116,6 +116,47 @@ test("0 filas → 'No hay sesión para este día.' sin alert (vacío honesto)", 
   expect(screen.queryByRole("button", { name: "Reintentar" })).not.toBeInTheDocument();
 });
 
+// ── Secuencia de días (2026-06-13): anular / bloqueo / reactivar ──────────────
+const exFor = (): SessionView["exercises"] => [
+  { movementId: "arranque", movementName: "Arranque", sets: 3, reps: 2, pct: 80, targetKg: 64, warmup: [] },
+];
+
+test("anular: confirma → llama anularMeSession y vuelve al inicio", async () => {
+  vi.spyOn(window, "confirm").mockReturnValue(true);
+  const anular = vi.spyOn(me, "anularMeSession").mockResolvedValue(undefined);
+  renderEntreno(); // 8/0 = día 1, desbloqueado
+  fireEvent.click(await screen.findByRole("button", { name: /anular este entreno/i }));
+  await waitFor(() => expect(anular).toHaveBeenCalledWith(8, 0));
+  await waitFor(() => expect(screen.getByText("HOY")).toBeInTheDocument());
+});
+
+test("día bloqueado (día anterior pendiente): muestra 🔒 y no deja iniciar", async () => {
+  vi.spyOn(me, "getMeSessions").mockResolvedValue([
+    { week: 8, sessionIdx: 0, day: 1, exercises: exFor() },
+    { week: 8, sessionIdx: 1, day: 2, exercises: exFor() },
+  ]);
+  render(
+    <MemoryRouter initialEntries={["/atleta/entreno/8/1"]}>
+      <Routes>
+        <Route path="/atleta/entreno/:week/:idx" element={<EntrenoScreen />} />
+        <Route path="/atleta" element={<div>HOY</div>} />
+      </Routes>
+    </MemoryRouter>,
+  );
+  expect(await screen.findByText(/completá el día anterior/i)).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /iniciar entrenamiento/i })).not.toBeInTheDocument();
+});
+
+test("día anulado: ofrece reactivar → llama desanularMeSession", async () => {
+  vi.spyOn(me, "getMeSessions").mockResolvedValue([
+    { week: 8, sessionIdx: 0, day: 1, anulado: true, exercises: exFor() },
+  ]);
+  const des = vi.spyOn(me, "desanularMeSession").mockResolvedValue(undefined);
+  renderEntreno(); // 8/0
+  fireEvent.click(await screen.findByRole("button", { name: /reactivar este entreno/i }));
+  await waitFor(() => expect(des).toHaveBeenCalledWith(8, 0));
+});
+
 test("sustituir → kg de las series se limpia → cargar kg en serie 1 → guardar → movementId correcto", async () => {
   await start();
   fireEvent.click(screen.getByRole("button", { name: /cambiar movimiento de Arranque/i }));

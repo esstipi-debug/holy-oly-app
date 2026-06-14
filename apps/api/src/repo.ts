@@ -6,7 +6,7 @@ import type {
   CycleShare, CycleState, CycleData, MeCycleView, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
   MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, CYCLE_CONSENT_VERSION } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -326,11 +326,14 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
   const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
   const layout = macro ? dayLayoutFor(macro, week) : null;
   const registros = await prisma.sessionRegistro.findMany({ where: { athleteId, week } });
-  const fechaByIdx = new Map(registros.map((r) => [r.sessionIdx, r.fecha]));
+  // Secuencia de días: un día ANULADO no lleva fecha (no se entrenó) — sólo el flag `anulado`.
+  const fechaByIdx = new Map(registros.filter((r) => r.estado !== "anulado").map((r) => [r.sessionIdx, r.fecha]));
+  const anuladoIdx = new Set(registros.filter((r) => r.estado === "anulado").map((r) => r.sessionIdx));
   return mergeActuals(buildSessionViews(rows, plan.rms, barKg), actuals).map((v) => ({
     ...v,
     ...(layout?.[v.sessionIdx] ? layout[v.sessionIdx]! : {}),
     ...(fechaByIdx.has(v.sessionIdx) ? { fecha: fechaByIdx.get(v.sessionIdx)! } : {}),
+    ...(anuladoIdx.has(v.sessionIdx) ? { anulado: true } : {}),
   }));
 }
 
@@ -469,6 +472,30 @@ export class FechaOcupadaError extends Error {
   }
 }
 
+/** Secuencia de días (2026-06-13): la sesión que se quiere completar/anular tiene días anteriores
+ *  sin resolver en la misma semana (la ruta lo traduce a 409 `dia_bloqueado`). */
+export class DiaBloqueadoError extends Error {
+  constructor(public readonly faltan: number[]) {
+    super("dia_bloqueado");
+  }
+}
+
+/** Gate de secuencia de días: para completar/anular `sessionIdx`, todo día anterior de la semana
+ *  debe estar resuelto (tener registro: hecho o anulado). Resuelto = existe SessionRegistro.
+ *  `allIdxs` = sessionIdx distintos del plan en esa semana. Corre dentro de la tx (lectura coherente). */
+async function assertDayUnlocked(
+  tx: Prisma.TransactionClient, athleteId: string, week: number, sessionIdx: number, dayOf: DayOf,
+): Promise<void> {
+  const pres = await tx.prescribedExercise.findMany({
+    where: { athleteId, week }, select: { sessionIdx: true }, distinct: ["sessionIdx"],
+  });
+  const allIdxs = pres.map((p) => p.sessionIdx);
+  const regs = await tx.sessionRegistro.findMany({ where: { athleteId, week }, select: { sessionIdx: true } });
+  const resolved = new Set(regs.map((r) => r.sessionIdx));
+  const faltan = unresolvedPriorDays(allIdxs, (i) => resolved.has(i), dayOf, sessionIdx);
+  if (faltan.length > 0) throw new DiaBloqueadoError(faltan);
+}
+
 /** Replace one session's athlete actuals + su registro de fecha (spec 2026-06-12 D1/D3).
  *  Transaccional. `fecha` = fecha REAL del entreno (la ruta ya validó ≤ hoy): estampa doneAt
  *  en filas done (las ediciones ya no corren la procedencia) y aplica la regla 1×fecha con
@@ -493,11 +520,17 @@ export async function setSessionActuals(
   const anyDone = summarized.some(({ sum }) => sum.done);
   await prisma.$transaction(async (tx) => {
     if (anyDone) {
+      // Secuencia de días: no se puede completar el día N sin los anteriores resueltos.
+      await assertDayUnlocked(tx, athleteId, week, sessionIdx, dayOf);
       const registros = await tx.sessionRegistro.findMany({
-        where: { athleteId, fecha }, select: { week: true, sessionIdx: true, fecha: true },
+        where: { athleteId, fecha }, select: { week: true, sessionIdx: true, fecha: true, estado: true },
       });
-      const conflict = fechaConflict(registros, week, sessionIdx, fecha, dayOf);
-      if (conflict) throw new FechaOcupadaError(conflict);
+      const conflict = fechaConflict(
+        registros.map((r) => ({ ...r, estado: r.estado as "hecho" | "anulado" })),
+        week, sessionIdx, fecha, dayOf,
+      );
+      // Contrato público del conflicto = { week, sessionIdx, fecha } — `estado` es interno, no se filtra.
+      if (conflict) throw new FechaOcupadaError({ week: conflict.week, sessionIdx: conflict.sessionIdx, fecha: conflict.fecha });
     }
     await tx.sessionActual.deleteMany({ where: { athleteId, week, sessionIdx } });
     if (summarized.length > 0) {
@@ -513,15 +546,47 @@ export async function setSessionActuals(
       });
     }
     if (anyDone) {
+      // Completar SIEMPRE deja la sesión en 'hecho' (revierte un anulado previo, secuencia de días).
       await tx.sessionRegistro.upsert({
         where: { athleteId_week_sessionIdx: { athleteId, week, sessionIdx } },
-        create: { athleteId, week, sessionIdx, fecha },
-        update: { fecha },
+        create: { athleteId, week, sessionIdx, fecha, estado: "hecho" },
+        update: { fecha, estado: "hecho" },
       });
     } else {
       await tx.sessionRegistro.deleteMany({ where: { athleteId, week, sessionIdx } });
     }
   });
+}
+
+/** Secuencia de días (2026-06-13): ANULAR una sesión (el atleta falló/canceló). Transaccional.
+ *  Gate-checked (los días anteriores deben estar resueltos). Borra las filas SessionActual (sin
+ *  volumen) y marca el registro `estado="anulado"` (no ocupa fecha; `fecha` = hoy, irrelevante). */
+export async function anularSession(
+  prisma: PrismaClient, athleteId: string, week: number, sessionIdx: number, fecha: string,
+): Promise<void> {
+  const plan = await getPlan(prisma, athleteId);
+  const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
+  const layout = macro ? dayLayoutFor(macro, week) : null;
+  // dayOf se deriva antes de la tx: TOCTOU inofensivo (mismo trato que setSessionActuals) — si el
+  // coach re-asigna el macro en vuelo, a lo sumo la agrupación de días de ESTE anular usa el layout viejo.
+  const dayOf: DayOf = (idx) => layout?.[idx]?.day ?? idx + 1;
+  await prisma.$transaction(async (tx) => {
+    await assertDayUnlocked(tx, athleteId, week, sessionIdx, dayOf);
+    await tx.sessionActual.deleteMany({ where: { athleteId, week, sessionIdx } });
+    await tx.sessionRegistro.upsert({
+      where: { athleteId_week_sessionIdx: { athleteId, week, sessionIdx } },
+      create: { athleteId, week, sessionIdx, fecha, estado: "anulado" },
+      update: { fecha, estado: "anulado" },
+    });
+  });
+}
+
+/** Secuencia de días: DES-ANULAR (reactivar) — el atleta vuelve el día a pendiente. Sólo borra
+ *  registros `anulado` (jamás un día hecho), así que es un no-op seguro sobre días ya completados. */
+export async function desanularSession(
+  prisma: PrismaClient, athleteId: string, week: number, sessionIdx: number,
+): Promise<void> {
+  await prisma.sessionRegistro.deleteMany({ where: { athleteId, week, sessionIdx, estado: "anulado" } });
 }
 
 /** Replace one session's exercises (coach edit). Transactional. */

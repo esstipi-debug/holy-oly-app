@@ -55,6 +55,14 @@ describe("API integration — registro con fecha (regla 1×fecha + excepción AM
 
   const put = (week: number, idx: number, payload: object, headers?: { cookie: string }) =>
     app.inject({ method: "PUT", url: `/me/session/${week}/${idx}`, headers: headers ?? athlete, payload });
+  const anular = (week: number, idx: number, headers?: { cookie: string }) =>
+    app.inject({ method: "POST", url: `/me/session/${week}/${idx}/anular`, headers: headers ?? athlete });
+  const desanular = (week: number, idx: number, headers?: { cookie: string }) =>
+    app.inject({ method: "DELETE", url: `/me/session/${week}/${idx}/anular`, headers: headers ?? athlete });
+  const getSessions = async (week: number, headers?: { cookie: string }) => {
+    const res = await app.inject({ method: "GET", url: `/me/sessions?week=${week}`, headers: headers ?? athlete });
+    return res.json() as Array<{ sessionIdx: number; day?: number; fecha?: string; anulado?: boolean }>;
+  };
   const body = (fecha?: string) =>
     ({ ...(fecha ? { fecha } : {}), actuals: [{ order: 0, movementId: "arranque", done: true, kg: 60, reps: 2 }] });
 
@@ -65,6 +73,18 @@ describe("API integration — registro con fecha (regla 1×fecha + excepción AM
 
   it("fecha futura → 400 (D2: backdating libre, futuro jamás)", async () => {
     expect((await put(1, 0, body(MANANA))).statusCode).toBe(400);
+  });
+
+  it("secuencia de días: completar el día 2 sin el día 1 → 409 dia_bloqueado (faltan)", async () => {
+    const res = await put(1, 1, body()); // idx1 = día 2 (mono-diario), día 1 sin resolver
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toEqual({ error: "dia_bloqueado", faltan: [0] });
+  });
+
+  it("secuencia de días: anular el día 2 sin el día 1 → 409 dia_bloqueado (anular respeta el gate)", async () => {
+    const res = await anular(1, 1);
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toEqual({ error: "dia_bloqueado", faltan: [0] });
   });
 
   it("sin fecha → hoy; segunda sesión el mismo día → 409 con conflicto identificado (D1/D5)", async () => {
@@ -93,9 +113,29 @@ describe("API integration — registro con fecha (regla 1×fecha + excepción AM
     expect(row?.doneAt).toBe(AYER);
   });
 
-  it("actuals: [] libera la fecha (D11): otra sesión puede tomarla", async () => {
+  it("anular el día 3 (gate ok: días 1 y 2 resueltos) → 200; la vista lo marca anulado y sin fecha", async () => {
+    expect((await anular(1, 2)).statusCode).toBe(200);
+    const s2 = (await getSessions(1)).find((s) => s.sessionIdx === 2)!;
+    expect(s2.anulado).toBe(true);
+    expect(s2.fecha).toBeUndefined();
+  });
+
+  it("des-anular (reactivar) → 200; la vista vuelve a pendiente (sin anulado, sin fecha)", async () => {
+    expect((await desanular(1, 2)).statusCode).toBe(200);
+    const s2 = (await getSessions(1)).find((s) => s.sessionIdx === 2)!;
+    expect(s2.anulado).toBeUndefined();
+    expect(s2.fecha).toBeUndefined();
+  });
+
+  it("actuals: [] libera la fecha (D11): la vista del día pierde su fecha", async () => {
     expect((await put(1, 1, { actuals: [] })).statusCode).toBe(200);
-    expect((await put(1, 2, body(AYER))).statusCode).toBe(200);
+    const s1 = (await getSessions(1)).find((s) => s.sessionIdx === 1)!;
+    expect(s1.fecha).toBeUndefined();
+  });
+
+  it("anulado cuenta como resuelto: anular el día 1 destraba completar el día 2 (semana 2, aislada)", async () => {
+    expect((await anular(2, 0)).statusCode).toBe(200);              // día 1 anulado (sin día anterior)
+    expect((await put(2, 1, body(iso(-10)))).statusCode).toBe(200); // día 2: día 1 anulado = resuelto → ok
   });
 
   it("GET /me/sessions trae day (ruso-5d mono-diario: day = idx+1)", async () => {
