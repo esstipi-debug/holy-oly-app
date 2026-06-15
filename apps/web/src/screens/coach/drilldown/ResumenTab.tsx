@@ -12,19 +12,20 @@ type Props = {
   cycleCtx?: CycleContext;
 };
 
-/** Resumen: el vistazo "¿cómo viene el atleta hoy?" — orientación en el macro + check-in diario +
- *  contexto de ciclo redactado. Read-only; las superficies de edición viven en el tab Plan. */
+/** Resumen: el vistazo "¿cómo viene el atleta hoy?" (sólo lectura) — orientación en el macro
+ *  (MacroTimeline) + Adherencia del bloque (N/M) + Bienestar + Historial + línea de ciclo redactada.
+ *  Las superficies de edición viven en el tab Plan. */
 export function ResumenTab({ athleteId, macro, seriesWeeks, comps, cycleCtx }: Props) {
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 10 }}>
       {macro && seriesWeeks != null && <MacroTimeline macro={macro} hoy={seriesWeeks} comps={comps} />}
+
+      {/* Lazo diario (slice lazo-diario): rinde DOS Sections — "Adherencia del bloque" (N/M, verdad
+          reconciliada atleta > coach > none) + "Bienestar" (check-in). Plan-independiente. */}
+      <DailySection athleteId={athleteId} />
 
       {/* Historial de ciclos (slice macro-history): los macrociclos cerrados + adherencia (constancia). */}
       <MacroHistorySection athleteId={athleteId} />
-
-      {/* Lazo diario (slice lazo-diario): check-in del atleta + adherencia reconciliada (atleta >
-          coach > none). Plan-independiente — los check-ins se muestran aunque no haya plan. */}
-      <DailySection athleteId={athleteId} />
 
       {cycleCtx && (
         // Contrato redactado, paleta NEUTRA (jamás la del semáforo — el ciclo no es señal del estado).

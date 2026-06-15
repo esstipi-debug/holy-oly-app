@@ -24,7 +24,10 @@ export function heatAlpha(lifts: number, maxLifts: number): number {
   return 0.35 + 0.65 * Math.min(1, Math.max(0, lifts) / maxLifts);
 }
 
-/** Color CSS final de una celda del mapa. */
-export function heatCellColor(topPct: number | undefined, lifts: number, maxLifts: number): string {
+/** Color CSS final de una celda del mapa.
+ *  `singleRamp` (formato GitHub limpio, lado coach): una sola rampa por % tope a opacidad plena —
+ *  se cae el eje de volumen (opacidad). El lado atleta no lo pasa → encoding mixto intacto. */
+export function heatCellColor(topPct: number | undefined, lifts: number, maxLifts: number, singleRamp = false): string {
+  if (singleRamp) return `rgba(${heatRgb(topPct)},1)`;
   return `rgba(${heatRgb(topPct)},${heatAlpha(lifts, maxLifts).toFixed(2)})`;
 }

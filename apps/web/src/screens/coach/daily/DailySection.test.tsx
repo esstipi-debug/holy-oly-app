@@ -33,7 +33,7 @@ async function setup(opts: { checkins?: DailyCheckin[]; actuals?: SessionActual[
 
 test("muestra la tendencia de check-ins (bienestar + peso + 6 ítems) sin RPE", async () => {
   await setup({ checkins: [checkin({ weight: 61 })] });
-  await waitFor(() => expect(screen.getByText(/Check-in diario · bienestar/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText("Bienestar")).toBeInTheDocument());
   expect(screen.getByText("61 kg", { exact: false })).toBeInTheDocument();
   // Los 6 ítems crudos como chips (1..5), jamás RPE.
   expect(screen.getByText(/Fatiga 2\/5/)).toBeInTheDocument();
@@ -45,14 +45,16 @@ test("adherencia reconciliada: el actual del atleta marca origen '✓ del atleta
   await setup({
     actuals: [{ week: 1, sessionIdx: 0, order: 0, movementId: "arranque", done: true }],
   });
-  await waitFor(() => expect(screen.getByText(/Adherencia reconciliada/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText("Adherencia del bloque")).toBeInTheDocument());
+  expect(screen.getByText("1/1")).toBeInTheDocument(); // 1 hecha / 1 con registro
   expect(screen.getByText(/Sem 1 · sesión 1 — hecha/)).toBeInTheDocument();
   expect(screen.getByText(/✓ del atleta/)).toBeInTheDocument();
 });
 
 test("sin actuals, cae a la marca del coach con origen 'marca del coach'", async () => {
   await setup({ marks: [{ week: 1, idx: 0, status: "done" }] });
-  await waitFor(() => expect(screen.getByText(/Adherencia reconciliada/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText("Adherencia del bloque")).toBeInTheDocument());
+  expect(screen.getByText("1/1")).toBeInTheDocument();
   expect(screen.getByText(/Sem 1 · sesión 1 — hecha/)).toBeInTheDocument();
   expect(screen.getByText(/marca del coach/)).toBeInTheDocument();
 });
