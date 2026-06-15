@@ -1,8 +1,9 @@
 /**
  * Tips de "Mi estado de hoy" — píldoras de bienestar para el atleta, elegidas por su estado de
  * recuperación + el ítem más flojo del check-in del día. Contenido PARAFRASEADO de protocolos de
- * divulgación científica (Huberman Lab y col. — sueño/luz/NSDR/respiración/recuperación); son
- * HECHOS/protocolos en palabras propias, con atribución genérica (no se copia texto de nadie).
+ * divulgación científica del sueño/luz/NSDR/respiración/recuperación; son HECHOS/protocolos en
+ * palabras propias, con atribución GENÉRICA — la fuente es real pero NUNCA se nombra en el producto
+ * (regla del owner; blindada por el test de regresión en wellnessTips.test.ts). No se copia texto.
  * Advisory: complementan una señal, NUNCA prescriben ni cambian el plan. Sin RPE, sin diagnóstico.
  */
 import { WELLNESS_ITEMS, goodness } from "../logic/wellness";
@@ -23,7 +24,7 @@ export interface WellnessTip {
   items: readonly WellnessItemField[];
 }
 
-const SRC = "Basado en divulgación de Huberman Lab y col.";
+const SRC = "Basado en divulgación científica sobre sueño, estrés y recuperación";
 const ALL: readonly TipState[] = ["ok", "warn", "alert"];
 
 export const WELLNESS_TIPS: readonly WellnessTip[] = [
