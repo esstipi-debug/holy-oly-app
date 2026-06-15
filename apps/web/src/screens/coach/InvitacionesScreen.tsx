@@ -6,12 +6,29 @@ import { Loading } from "../../ui/Loading";
 
 const muted = { fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" } as const;
 
+// Códigos estables que el backend devuelve en inglés → copy accionable en español (la UI nunca
+// muestra el string crudo del server).
+const ERR_ES: Record<string, string> = {
+  "coach session required": "Necesitás entrar como coach para ver tus invitaciones.",
+  "email verification required": "Verificá tu correo antes de confirmar atletas. Te enviamos un enlace al registrarte — podés reenviarlo desde Equipo.",
+};
+const trErr = (e: unknown, fallback: string): string => {
+  const msg = e instanceof Error ? e.message : "";
+  return ERR_ES[msg] ?? (msg || fallback);
+};
+
+const pillBtn = {
+  padding: "6px 12px", borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)",
+  background: "transparent", color: "var(--wl-text)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer",
+} as const;
+
 export function InvitacionesScreen() {
   const navigate = useNavigate();
   const [code, setCode] = useState<string | null>(null);
   const [vinculos, setVinculos] = useState<vc.VinculoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -20,7 +37,7 @@ export function InvitacionesScreen() {
       setCode(inv.inviteCode);
       setVinculos(vs);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo cargar");
+      setError(trErr(e, "No se pudo cargar"));
     } finally {
       setLoading(false);
     }
@@ -32,21 +49,32 @@ export function InvitacionesScreen() {
     setError(null);
     try {
       setCode((await vc.rotateInvite()).inviteCode);
+      setCopied(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo generar el código");
+      setError(trErr(e, "No se pudo generar el código"));
     }
   }
+
+  // Copia al portapapeles con feedback breve. Si el navegador bloquea la API (permiso/contexto
+  // inseguro), no rompemos: el código sigue visible para copiar a mano.
+  const copy = async (): Promise<void> => {
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setError("No se pudo copiar automáticamente — copialo a mano.");
+    }
+  };
+
   const confirm = async (id: string): Promise<void> => {
     setError(null);
     try {
       await vc.confirmVinculo(id);
       await refresh();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "";
-      // El backend gatea esto con un código estable en inglés: lo traducimos a copy accionable.
-      setError(msg === "email verification required"
-        ? "Verificá tu correo antes de confirmar atletas. Te enviamos un enlace al registrarte — podés reenviarlo desde Equipo."
-        : (msg || "No se pudo confirmar"));
+      setError(trErr(e, "No se pudo confirmar"));
     }
   };
   const deny = async (id: string): Promise<void> => {
@@ -55,7 +83,7 @@ export function InvitacionesScreen() {
       await vc.denyVinculo(id);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo rechazar");
+      setError(trErr(e, "No se pudo rechazar"));
     }
   };
 
@@ -73,12 +101,17 @@ export function InvitacionesScreen() {
       ) : (
         <>
           <div style={{ ...muted, marginTop: 16 }}>Tu código de invitación</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
             <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 26, letterSpacing: ".12em", color: "var(--wl-accent)" }}>
               {code ?? "— — — —"}
             </span>
-            <button type="button" onClick={() => void rotate()}
-              style={{ padding: "6px 12px", borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "transparent", color: "var(--wl-text)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer" }}>
+            {code && (
+              <button type="button" onClick={() => void copy()} aria-label="Copiar código de invitación"
+                style={{ ...pillBtn, ...(copied ? { borderColor: "var(--wl-accent)", color: "var(--wl-accent)" } : {}) }}>
+                {copied ? "¡Copiado!" : "Copiar"}
+              </button>
+            )}
+            <button type="button" onClick={() => void rotate()} style={pillBtn}>
               {code ? "Rotar" : "Generar"}
             </button>
           </div>
