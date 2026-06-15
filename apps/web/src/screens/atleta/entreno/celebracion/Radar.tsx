@@ -1,6 +1,7 @@
 /** Radar poligonal de bienestar: Hoy (relleno) vs tu Promedio (punteado). Valores 0..1 por vértice.
- *  Si no hay datos del día (caso común — el autorreporte vive en DayLog), el caller muestra el empty-state. */
-export interface RadarData { labels: string[]; today: number[]; avg: number[] }
+ *  Si no hay datos del día (caso común — el autorreporte vive en DayLog), el caller muestra el
+ *  empty-state. `avg: null` = no hay histórico semanal → se dibuja SÓLO Hoy (jamás un promedio falso). */
+export interface RadarData { labels: string[]; today: number[]; avg: number[] | null }
 
 export function Radar({ size = 180, data }: { size?: number; data: RadarData }) {
   const { labels, today, avg } = data;
@@ -13,10 +14,10 @@ export function Radar({ size = 180, data }: { size?: number; data: RadarData }) 
   const rings = [0.25, 0.5, 0.75, 1].map((r) => labels.map((_, i) => pt(i, r).map((x) => x.toFixed(1)).join(",")).join(" "));
 
   return (
-    <svg className="cel-radar__svg" viewBox={`0 0 ${size} ${size}`} width={size} height={size} role="img" aria-label="Tu bienestar de hoy vs tu promedio">
+    <svg className="cel-radar__svg" viewBox={`0 0 ${size} ${size}`} width={size} height={size} role="img" aria-label={avg ? "Tu bienestar de hoy vs tu promedio" : "Tu bienestar de hoy"}>
       {rings.map((pts, i) => <polygon key={`r${i}`} className="rd-ring" points={pts} />)}
       {labels.map((_, i) => { const [x, y] = pt(i, 1); return <line key={`s${i}`} className="rd-spoke" x1={cx} y1={cy} x2={x.toFixed(1)} y2={y.toFixed(1)} />; })}
-      <polygon className="rd-avg" points={polyStr(avg)} />
+      {avg && <polygon className="rd-avg" points={polyStr(avg)} />}
       <polygon className="rd-today" points={polyStr(today)} />
       {today.map((v, i) => { const [x, y] = pt(i, v); return <circle key={`d${i}`} className="rd-dot" cx={x.toFixed(1)} cy={y.toFixed(1)} r="3.2" />; })}
       {labels.map((lab, i) => {

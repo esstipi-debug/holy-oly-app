@@ -16,14 +16,18 @@ export function buildWellnessRadar(entry: DayLog | null, series: MonitorSeries |
   const labels: string[] = [];
   const today: number[] = [];
   const avg: number[] = [];
+  let everyAxisHasHistory = true;
   for (const item of WELLNESS_ITEMS) {
     const v = entry[item.field];
     if (v == null || !Number.isFinite(v)) continue;
     labels.push(item.label);
     today.push(norm(v, item.highBad));
     const arr = series?.wellnessItems?.[item.field] ?? series?.wellnessItems?.[item.label];
-    avg.push(arr && arr.length ? norm(mean(arr), item.highBad) : norm(v, item.highBad));
+    if (arr && arr.length) avg.push(norm(mean(arr), item.highBad));
+    else everyAxisHasHistory = false; // sin histórico de este ítem → no hay promedio honesto
   }
-  // Necesita ≥3 ejes para un polígono legible; si no, empty-state honesto.
-  return labels.length >= 3 ? { labels, today, avg } : null;
+  if (labels.length < 3) return null; // <3 ejes → polígono ilegible → empty-state honesto
+  // Promedio REAL sólo si TODOS los ejes mostrados tienen histórico semanal; si no, `avg: null`
+  // → la UI dibuja sólo HOY (jamás un "promedio" que en realidad copia el valor de hoy).
+  return { labels, today, avg: everyAxisHasHistory && avg.length === labels.length ? avg : null };
 }

@@ -99,7 +99,7 @@ function pesoSpec(band?: [number, number]): HeatSpec {
     level: (d) => {
       if (d.future) return -1;
       if (d.bw == null) return 0;
-      if (lo == null || hi == null) return 3;
+      if (lo == null || hi == null) return 1; // sin banda: la escala "lejos↔en banda" no aplica → nivel mínimo, sin insinuar "en banda"
       if (d.bw >= lo && d.bw <= hi) return 4;
       if (d.bw <= hi + 0.8) return 3;
       if (d.bw <= hi + 1.8) return 2;

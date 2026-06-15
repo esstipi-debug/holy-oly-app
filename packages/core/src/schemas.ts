@@ -245,7 +245,7 @@ export const HeatDayCellSchema = z.object({
   kg: z.number().nonnegative(),
   sessions: z.number().int().nonnegative(),
   wellness: z.number().min(0).max(100).nullable(),
-  bw: z.number().min(0).max(400).nullable(),
+  bw: z.number().min(0).max(500).nullable(), // techo = KgSchema.max(500) del productor (DayLog.weight)
   hrv: z.number().min(0).max(300).nullable(),
   rhr: z.number().min(0).max(250).nullable(),
   comp: z.object({ name: z.string().max(120), note: z.string().max(40) }).optional(),
