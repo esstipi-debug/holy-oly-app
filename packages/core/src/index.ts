@@ -3,6 +3,7 @@ export * from "./schemas";
 export * from "./legal";
 export * from "./data/macrocycles";
 export * from "./data/movements";
+export * from "./data/wellnessTips";
 export * from "./logic/discs";
 export * from "./logic/monitor";
 export * from "./logic/restructure";

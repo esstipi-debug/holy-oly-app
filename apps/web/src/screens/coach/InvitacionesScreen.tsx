@@ -42,7 +42,11 @@ export function InvitacionesScreen() {
       await vc.confirmVinculo(id);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo confirmar");
+      const msg = e instanceof Error ? e.message : "";
+      // El backend gatea esto con un código estable en inglés: lo traducimos a copy accionable.
+      setError(msg === "email verification required"
+        ? "Verificá tu correo antes de confirmar atletas. Te enviamos un enlace al registrarte — podés reenviarlo desde Equipo."
+        : (msg || "No se pudo confirmar"));
     }
   };
   const deny = async (id: string): Promise<void> => {

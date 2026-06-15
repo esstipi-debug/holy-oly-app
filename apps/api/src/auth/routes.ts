@@ -59,11 +59,19 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     const user = await prisma.$transaction(async (tx) =>
       provisionUserRecords(tx, { email, role, name, emailVerified, passwordHash, sexo, weightKg }),
     );
-    if (role === "coach") {
-      await sendCoachVerificationEmail(prisma, user.id, email);
-    }
+    // La sesión se crea SIEMPRE primero: así el alta queda usable aunque el email de verificación
+    // falle (SMTP/throttle). Antes, un envío fallido tiraba 500 y dejaba la cuenta creada SIN sesión
+    // (y el reintento chocaba con 409 "email already registered").
     const { token, expiresAt } = await createSession(prisma, user.id);
     reply.setCookie(SESSION_COOKIE, token, cookieOpts(expiresAt));
+    if (role === "coach") {
+      // Best-effort: el coach ya quedó logueado y puede reenviar el link desde el banner de verificación.
+      try {
+        await sendCoachVerificationEmail(prisma, user.id, email);
+      } catch (err) {
+        req.log.error(err, "coach verification email failed at signup; user can resend from banner");
+      }
+    }
     await recordAudit(prisma, { action: "signup", actorUserId: user.id, actorRole: role, ip: req.ip });
     return reply.code(201).send({ id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified });
   });
