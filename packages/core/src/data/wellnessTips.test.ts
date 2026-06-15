@@ -41,10 +41,12 @@ describe("pickWellnessTip", () => {
     expect(seeds.every((id) => typeof id === "string")).toBe(true);
   });
 
-  test("nunca menciona RPE ni prescribe (intocables) — todos los tips", () => {
+  test("nunca menciona RPE, ni prescribe, ni nombra la fuente (intocables) — todos los tips", () => {
     for (const t of WELLNESS_TIPS) {
       expect(`${t.title} ${t.body}`).not.toMatch(/\brpe\b/i);
-      expect(t.source).toMatch(/Huberman/);
+      // Regla del owner: la fuente es real pero NUNCA se nombra explícitamente en el producto.
+      expect(`${t.title} ${t.body} ${t.source}`).not.toMatch(/huberman/i);
+      expect(t.source.length).toBeGreaterThan(0); // sigue habiendo atribución, sólo que genérica
       expect(t.states.length).toBeGreaterThan(0);
     }
   });

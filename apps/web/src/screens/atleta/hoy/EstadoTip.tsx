@@ -3,7 +3,7 @@ import { lowestWellnessItem, pickWellnessTip } from "@holy-oly/core";
 
 /**
  * Tip de "Mi estado de hoy": una píldora de bienestar elegida por el estado de recuperación + el
- * ítem más flojo del check-in del día (contenido PARAFRASEADO de Huberman Lab y col.). Advisory —
+ * ítem más flojo del check-in del día (contenido PARAFRASEADO de divulgación científica). Advisory —
  * complementa el estado, nunca prescribe ni cambia el plan. Se oculta sin estado o sin tip aplicable.
  * `seed` (derivado de la fecha) hace que el tip varíe día a día de forma determinística.
  */

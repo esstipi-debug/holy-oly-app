@@ -88,7 +88,7 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
       </div>
 
       <Titular state={titularState} />
-      {/* Tip del día (parafraseado de Huberman Lab y col.), elegido por estado + ítem más flojo del
+      {/* Tip del día (parafraseado de divulgación científica), elegido por estado + ítem más flojo del
           check-in. Determinístico por fecha → varía día a día sin cambiar a cada render. */}
       <EstadoTip state={titularState} entry={daylog.entry} seed={Number(daylog.today.replaceAll("-", "")) || 0} />
 
