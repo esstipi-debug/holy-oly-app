@@ -4,6 +4,7 @@ import { seriesState, type CellState, type DayLogInput, type DayLogView, type Me
 import { meClient, type MeClient } from "../../data/meClient";
 import type { CheckinVariant } from "./prefs";
 import { Titular } from "./hoy/Titular";
+import { EstadoTip } from "./hoy/EstadoTip";
 import { CaminoCard } from "./hoy/CaminoCard";
 import { SemanaCard } from "./hoy/SemanaCard";
 import { CicloCarousel } from "./ciclo/CicloCarousel";
@@ -87,6 +88,9 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
       </div>
 
       <Titular state={titularState} />
+      {/* Tip del día (parafraseado de Huberman Lab y col.), elegido por estado + ítem más flojo del
+          check-in. Determinístico por fecha → varía día a día sin cambiar a cada render. */}
+      <EstadoTip state={titularState} entry={daylog.entry} seed={Number(daylog.today.replaceAll("-", "")) || 0} />
 
       {checkedIn ? (
         <button className="ho-cta__done" onClick={() => setCheckinOpen(true)}>

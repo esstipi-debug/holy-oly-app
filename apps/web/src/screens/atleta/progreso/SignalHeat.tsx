@@ -120,7 +120,7 @@ export function SignalHeat({ data, signal, active = true }: { data: MeHeatDays; 
                     <button key={day.iso} type="button" className={cls}
                       aria-label={`${fmtDate(day.iso)}${day.comp ? ` · ${day.comp.name}` : ""}`}
                       onClick={clickable ? () => setSelIso(isSel ? null : day.iso) : undefined}
-                      tabIndex={-1} />
+                      tabIndex={clickable ? 0 : -1} />
                   );
                 })}
               </div>
