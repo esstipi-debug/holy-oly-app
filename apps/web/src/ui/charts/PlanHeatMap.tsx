@@ -29,7 +29,7 @@ export interface HeatMapComp { name: string; day?: number }
  * memo: la grilla (~112 celdas) sólo re-renderiza cuando cambian sus props — los callers
  * estabilizan onSelectDay/phaseIndexFor con useCallback para que el estado ajeno no la toque.
  */
-export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSelectDay, phaseIndexFor, comps, firstDow = 0, cycleMarks, orientation = "vertical" }: {
+export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSelectDay, phaseIndexFor, comps, firstDow = 0, cycleMarks, orientation = "vertical", singleRamp = false }: {
   heat: WeekHeat[];
   hoy: HeatMapPos | null;
   selected: HeatMapPos | null;
@@ -44,6 +44,9 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
   /** "vertical" (semanas = filas, default) | "horizontal" (semanas = columnas, izq→der). El eje
    *  (día i = offset i de la semana del macro), el encoding y las aria-labels son idénticos. */
   orientation?: "vertical" | "horizontal";
+  /** Rampa única por % tope (formato GitHub limpio, lado coach). Default false = encoding mixto
+   *  (tono + opacidad por volumen), el que usa la vista de la atleta. */
+  singleRamp?: boolean;
 }) {
   const { t } = useTranslation("charts");
   const { lang } = useLocale();
@@ -93,7 +96,7 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
           background: isComp
             ? "transparent"
             : d
-              ? heatCellColor(d.topPct, d.lifts, max)
+              ? heatCellColor(d.topPct, d.lifts, max, singleRamp)
               : "color-mix(in srgb, var(--wl-text) 5%, transparent)",
           boxShadow: rings || undefined,
           transform: isSel ? "scale(1.12)" : undefined,
@@ -160,17 +163,22 @@ export const PlanHeatMap = memo(function PlanHeatMap({ heat, hoy, selected, onSe
 });
 
 /** Leyenda compacta del encoding mixto, derivada de HEAT_STOPS (una línea, envuelve si hace falta). */
-export const HeatLegend = memo(function HeatLegend({ showCycle = false }: { showCycle?: boolean }) {
+export const HeatLegend = memo(function HeatLegend({ showCycle = false, singleRamp = false }: { showCycle?: boolean; singleRamp?: boolean }) {
   const { t } = useTranslation("charts");
   const swStyle = (bg: string): React.CSSProperties => ({ width: 13, height: 9, borderRadius: 2, background: bg, display: "inline-block" });
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>
       {HEAT_STOPS.map(([, rgb], i) => <span key={`t${i}`} style={swStyle(`rgba(${rgb},1)`)} />)}
       <span>{t("heatmap.legendTopPct")}</span>
-      <span style={{ width: 6 }} />
-      <span style={swStyle(`rgba(${HEAT_STOPS[2]![1]},.35)`)} />
-      <span style={swStyle(`rgba(${HEAT_STOPS[2]![1]},1)`)} />
-      <span>{t("heatmap.legendVolume")}</span>
+      {/* Eje de volumen (opacidad): sólo en el encoding mixto del atleta — la rampa única coach lo omite. */}
+      {!singleRamp && (
+        <>
+          <span style={{ width: 6 }} />
+          <span style={swStyle(`rgba(${HEAT_STOPS[2]![1]},.35)`)} />
+          <span style={swStyle(`rgba(${HEAT_STOPS[2]![1]},1)`)} />
+          <span>{t("heatmap.legendVolume")}</span>
+        </>
+      )}
       <span style={{ width: 6 }} />
       <span style={{ width: 11, height: 11, borderRadius: 3, border: `1.5px solid ${GOLD}`, display: "inline-block", boxSizing: "border-box" }} />
       <span>{t("heatmap.legendComp")}</span>

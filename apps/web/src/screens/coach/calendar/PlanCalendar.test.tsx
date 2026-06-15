@@ -29,16 +29,23 @@ const base = {
 };
 
 describe("PlanCalendar", () => {
-  it("colapsado por default: muestra el header, NO el contenido", () => {
+  it("des-enterrado: muestra el mapa directo, sin botón de colapso propio", async () => {
     render(<PlanCalendar {...base} onWeekClick={() => {}} />);
-    expect(screen.getByRole("button", { name: /calendario/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Semana 1 Lun/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Semana 1\b.*sesiones/ })).not.toBeInTheDocument();
+    // El marco/título lo da la Section del PlanTab → acá ya no hay header-colapso.
+    expect(screen.queryByRole("button", { name: /calendario del plan/i })).not.toBeInTheDocument();
+    // El heatmap (Mapa por default) se ve sin abrir nada.
+    expect(await screen.findByRole("button", { name: /^Semana 1 Lun$/ })).toBeInTheDocument();
   });
 
-  it("abierto: Mapa por default — celdas del heat map + HOY preseleccionado con su desglose", async () => {
+  it("leyenda formato GitHub: rampa única por % tope, sin el eje de volumen", async () => {
     render(<PlanCalendar {...base} onWeekClick={() => {}} />);
-    fireEvent.click(screen.getByRole("button", { name: /calendario/i }));
+    await screen.findByRole("button", { name: /^Semana 1 Lun$/ });
+    expect(screen.getByText("% tope")).toBeInTheDocument();
+    expect(screen.queryByText("volumen")).not.toBeInTheDocument();
+  });
+
+  it("Mapa por default: HOY preseleccionado con su desglose", async () => {
+    render(<PlanCalendar {...base} onWeekClick={() => {}} />);
     expect(await screen.findByRole("button", { name: /^Semana 1 Lun$/ })).toBeInTheDocument();
     // HOY = miércoles de la semana 4 → marcado en su celda y desglosado en el panel
     expect(screen.getByRole("button", { name: /Semana 4 Mié · HOY/ })).toBeInTheDocument();
@@ -48,7 +55,6 @@ describe("PlanCalendar", () => {
 
   it("tap en otro día → desglose con ejercicio, kg y discos", async () => {
     const { container } = render(<PlanCalendar {...base} onWeekClick={() => {}} />);
-    fireEvent.click(screen.getByRole("button", { name: /calendario/i }));
     fireEvent.click(await screen.findByRole("button", { name: /^Semana 1 Jue$/ }));
     expect(await screen.findByText("Envión")).toBeInTheDocument();
     expect(screen.getByText("85 kg")).toBeInTheDocument();
@@ -57,14 +63,12 @@ describe("PlanCalendar", () => {
 
   it("la competencia con fecha queda en su celda (sábado de la semana 9)", async () => {
     render(<PlanCalendar {...base} onWeekClick={() => {}} />);
-    fireEvent.click(screen.getByRole("button", { name: /calendario/i }));
     expect(await screen.findByRole("button", { name: /Semana 9 Sáb.*competencia Nacional/ })).toBeInTheDocument();
   });
 
   it("toggle Lista: las filas por semana siguen; tap fila → onWeekClick(week)", async () => {
     const picks: number[] = [];
     render(<PlanCalendar {...base} onWeekClick={(w) => picks.push(w)} />);
-    fireEvent.click(screen.getByRole("button", { name: /calendario/i }));
     fireEvent.click(screen.getByRole("button", { name: "Lista" }));
     const semana9 = await screen.findByRole("button", { name: /Semana 9\b.*sesiones/ });
     fireEvent.click(semana9);
@@ -76,7 +80,6 @@ describe("PlanCalendar", () => {
   it("start no-lunes: columnas, HOY y compe comparten el eje de la semana del macro", async () => {
     // start = miércoles 4 mar → col 0 del mapa es Mié. HOY (mié 25 mar) = semana 4, offset 0.
     render(<PlanCalendar {...base} startDate="2026-03-04" today="2026-03-25" onWeekClick={() => {}} />);
-    fireEvent.click(screen.getByRole("button", { name: /calendario/i }));
     expect(await screen.findByRole("button", { name: /Semana 4 Mié · HOY/ })).toBeInTheDocument();
     // El bug viejo (weekday absoluto) lo habría puesto en la col 2 (rotada = Vie):
     expect(screen.queryByRole("button", { name: /Semana 4 Vie · HOY/ })).not.toBeInTheDocument();
@@ -92,7 +95,6 @@ describe("PlanCalendar", () => {
       return makeHeat(12);
     };
     render(<PlanCalendar {...base} loadHeat={flaky} onWeekClick={() => {}} />);
-    fireEvent.click(screen.getByRole("button", { name: /calendario/i }));
     expect(await screen.findByText(/No se pudo cargar el mapa/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
     expect(await screen.findByRole("button", { name: /^Semana 1 Lun$/ })).toBeInTheDocument();

@@ -25,32 +25,41 @@ test("por default abre Resumen: chip de ciclo visible, Monitor y Plan ocultos (M
   await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
   expect(screen.getByText(/Ciclo · compartido/)).toBeInTheDocument();        // Resumen
   expect(screen.queryByText("ACWR")).not.toBeInTheDocument();                 // Monitor oculto
-  expect(screen.queryByText("📅 Calendario del plan")).not.toBeInTheDocument(); // Plan oculto
+  expect(screen.queryByText("Calendario")).not.toBeInTheDocument();          // Plan oculto
 });
 
-test("tab Monitor: header persistente + charts (palmarés/medallas desactivadas, Mara)", async () => {
+test("tab Monitor: 4 señales coach-only (ACWR · Carga · IMR · Peso); Bienestar/Cumplimiento/Recuperación fuera (Mara)", async () => {
   const { container } = renderAt("mv");
   await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
   // los charts viven en Monitor, no en el Resumen por default
   expect(screen.queryByText("ACWR")).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Monitor" }));
   expect(await screen.findByText("ACWR")).toBeInTheDocument();
-  expect(screen.getByText(/Recuperación/)).toBeInTheDocument();
+  expect(screen.getByText("Carga aguda vs crónica")).toBeInTheDocument();
   expect(screen.getByText("IMR vs fase")).toBeInTheDocument();
-  expect(screen.getByText("Bienestar")).toBeInTheDocument();
-  expect(screen.getByText("Cumplimiento")).toBeInTheDocument();
   expect(screen.getByText("Peso vs categoría")).toBeInTheDocument();
+  // Salen del Monitor: Recuperación (sin datos HRV/FC), Bienestar y Cumplimiento (los cubre Resumen).
+  expect(screen.queryByText(/Recuperación/)).toBeNull();
+  expect(screen.queryByText("Bienestar")).toBeNull();
+  expect(screen.queryByText("Cumplimiento")).toBeNull();
   // Medallas desactivadas por el owner (2026-06-12): el palmarés no se renderiza.
   expect(screen.queryByText(/Palmar/)).toBeNull();
   expect(screen.queryByText("Nacional Absoluto")).toBeNull();
   expect(container.querySelectorAll("svg").length).toBeGreaterThan(3);
 });
 
-test("tab Plan: muestra el calendario del plan, no los charts", async () => {
+test("tab Plan: Secciones (Calendario abierto · RM y Prilepin colapsados), no los charts", async () => {
   renderAt("mv");
   await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
   fireEvent.click(screen.getByRole("button", { name: "Plan" }));
-  expect(await screen.findByText("📅 Calendario del plan")).toBeInTheDocument();
+  // Calendario abierto: la Section se ve directo (sin el colapso viejo "📅 Calendario del plan")
+  expect(await screen.findByText("Calendario")).toBeInTheDocument();
+  expect(screen.queryByText("📅 Calendario del plan")).not.toBeInTheDocument();
+  // RM y Prilepin arrancan colapsados: header presente con aria-expanded=false (el expand/lazy-mount
+  // lo cubre Section.test). Su contenido no está montado todavía.
+  expect(screen.getByRole("button", { name: /RM y referencias/ })).toHaveAttribute("aria-expanded", "false");
+  expect(screen.getByRole("button", { name: /Prilepin/ })).toHaveAttribute("aria-expanded", "false");
+  // no los charts del Monitor
   expect(screen.queryByText("ACWR")).not.toBeInTheDocument();
 });
 

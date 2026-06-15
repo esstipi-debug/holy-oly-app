@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AthleteDailyView, DailyCheckin, ReconciledSession, AdherenceStatus } from "@holy-oly/core";
 import { wellnessScore, WELLNESS_ITEMS } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
+import { Section } from "../../../ui/Section";
 import { STATUS } from "../../../ui/status";
 import { isoDateLabel } from "../../../ui/charts/planDates";
 import { RetryButton } from "../../../ui/RetryButton";
@@ -43,10 +44,11 @@ function Sparkline({ values }: { values: number[] }) {
 }
 
 /**
- * Sección "Día a día" del drill-down del coach (slice lazo-diario). READ-ONLY: muestra la
- * mini-tendencia de los check-ins (bienestar + peso) y la adherencia RECONCILIADA con un
- * indicador sutil de origen (✓ del atleta vs marca del coach). Carga sus propios datos con
- * error honesto + retry, como RmSection. JAMÁS muestra RPE ni nada del ciclo.
+ * "Día a día" del drill-down del coach (slice lazo-diario), partido en DOS `Section` de Resumen:
+ *  - **Adherencia del bloque**: la verdad reconciliada por sesión (✓ del atleta > marca del coach >
+ *    none) con un stat N/M en el header = hechas / con registro.
+ *  - **Bienestar**: la mini-tendencia de check-ins (puntaje 0-100 + peso + los 6 ítems crudos).
+ *  READ-ONLY, una sola carga (`getDaily` + error/retry). JAMÁS muestra RPE ni nada del ciclo.
  */
 export function DailySection({ athleteId }: { athleteId: string }) {
   const repo = useRepository();
@@ -78,90 +80,96 @@ export function DailySection({ athleteId }: { athleteId: string }) {
   const lastCheckin = view && view.checkins.length > 0 ? view.checkins[view.checkins.length - 1]! : null;
   // Sesiones con algún dato real (≠ none) — el "sin datos" se decide sobre esto, no sobre el total.
   const withData = (view?.adherence ?? []).filter((a) => a.status !== "none");
+  const doneCount = withData.filter((a) => a.status === "done").length;
 
-  return (
-    <section aria-label="Día a día · check-in y adherencia" style={{ marginTop: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Día a día</div>
-        <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>últimas semanas · sólo lectura</span>
-      </div>
-
-      {error && (
-        <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 8 }}>
+  if (error) {
+    return (
+      <Section title="Adherencia del bloque">
+        <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)" }}>
           No se pudo cargar el día a día.{" "}
           <RetryButton onClick={() => void load()} fontSize={10.5} />
         </div>
-      )}
+      </Section>
+    );
+  }
+  if (loading) {
+    return (
+      <Section title="Adherencia del bloque">
+        <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5 }}>Cargando día a día…</Loading>
+      </Section>
+    );
+  }
+  if (!view) return null;
 
-      {loading ? (
-        <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5, marginTop: 8 }}>Cargando día a día…</Loading>
-      ) : !error && view && (
-        <>
-          {/* Mini-tendencia de check-ins (bienestar 0-100 + peso). Sin check-ins → fallback visible. */}
-          <div style={{ marginTop: 8, padding: "10px 12px", borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Check-in diario · bienestar</div>
-            {view.checkins.length === 0 ? (
-              <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 6 }}>
-                Sin check-ins en las últimas semanas. Cuando registre su día, aparecerá acá.
-              </div>
-            ) : (
-              <>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
-                  <Sparkline values={scores} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, lineHeight: 1 }}>
-                      {scores[scores.length - 1]}<span style={{ fontSize: 11, fontWeight: 600, color: "var(--wl-muted)" }}> /100</span>
-                    </div>
-                    <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 2 }}>
-                      {view.checkins.length} día{view.checkins.length === 1 ? "" : "s"}
-                      {lastCheckin?.weight != null ? ` · ${lastCheckin.weight} kg` : ""}
-                      {lastCheckin ? ` · ${isoDateLabel(lastCheckin.date)}` : ""}
-                    </div>
+  return (
+    <>
+      {/* Adherencia: la verdad reconciliada por sesión + el stat N/M (hechas / con registro). */}
+      <Section
+        title="Adherencia del bloque"
+        eyebrow="hechas / con registro"
+        right={withData.length > 0
+          ? <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 22, color: "var(--wl-text)" }}>{doneCount}/{withData.length}</span>
+          : undefined}
+      >
+        {withData.length === 0 ? (
+          <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
+            Sin datos de sesiones en las últimas semanas (ni del atleta ni marcadas).
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {withData.map((a) => (
+              <div key={`${a.week}-${a.idx}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+                <span aria-hidden="true" style={{ width: 22, height: 22, flex: "0 0 auto", display: "grid", placeItems: "center", borderRadius: 6, fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 12, color: STATUS_TINT[a.status], background: `color-mix(in srgb,${STATUS_TINT[a.status]} 16%,transparent)`, border: `1px solid color-mix(in srgb,${STATUS_TINT[a.status]} 50%,transparent)` }}>
+                  {STATUS_GLYPH[a.status]}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5 }}>
+                    Sem {a.week} · sesión {a.idx + 1} — {STATUS_LABEL[a.status]}
+                  </div>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: a.source === "athlete" ? "var(--wl-accent)" : "var(--wl-muted)", marginTop: 2 }}>
+                    {SOURCE_LABEL[a.source]}
                   </div>
                 </div>
-                {/* Último check-in: los 6 ítems crudos (1..5). Jamás RPE. */}
-                {lastCheckin && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-                    {WELLNESS_ITEMS.map((it) => (
-                      <span key={it.field} style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", padding: "2px 7px", borderRadius: 99, background: "color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
-                        {it.label} {lastCheckin[it.field]}/5
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Adherencia reconciliada con indicador de origen. Sin dato real → fallback visible. */}
-          <div style={{ marginTop: 10 }}>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Adherencia reconciliada</div>
-            {withData.length === 0 ? (
-              <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 6 }}>
-                Sin datos de sesiones en las últimas semanas (ni del atleta ni marcadas).
               </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
-                {withData.map((a) => (
-                  <div key={`${a.week}-${a.idx}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-                    <span aria-hidden="true" style={{ width: 22, height: 22, flex: "0 0 auto", display: "grid", placeItems: "center", borderRadius: 6, fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 12, color: STATUS_TINT[a.status], background: `color-mix(in srgb,${STATUS_TINT[a.status]} 16%,transparent)`, border: `1px solid color-mix(in srgb,${STATUS_TINT[a.status]} 50%,transparent)` }}>
-                      {STATUS_GLYPH[a.status]}
-                    </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5 }}>
-                        Sem {a.week} · sesión {a.idx + 1} — {STATUS_LABEL[a.status]}
-                      </div>
-                      <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: a.source === "athlete" ? "var(--wl-accent)" : "var(--wl-muted)", marginTop: 2 }}>
-                        {SOURCE_LABEL[a.source]}
-                      </div>
-                    </div>
-                  </div>
+            ))}
+          </div>
+        )}
+      </Section>
+
+      {/* Bienestar: tendencia de check-in (puntaje + peso + 6 ítems crudos). Jamás RPE. */}
+      <Section title="Bienestar">
+        {view.checkins.length === 0 ? (
+          <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
+            Sin check-ins en las últimas semanas. Cuando registre su día, aparecerá acá.
+          </div>
+        ) : (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Sparkline values={scores} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, lineHeight: 1 }}>
+                  {scores[scores.length - 1]}<span style={{ fontSize: 11, fontWeight: 600, color: "var(--wl-muted)" }}> /100</span>
+                </div>
+                <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 2 }}>
+                  {view.checkins.length} día{view.checkins.length === 1 ? "" : "s"}
+                  {lastCheckin?.weight != null ? ` · ${lastCheckin.weight} kg` : ""}
+                  {lastCheckin ? ` · ${isoDateLabel(lastCheckin.date)}` : ""}
+                </div>
+              </div>
+            </div>
+            {/* Último check-in: los 6 ítems crudos (1..5). Jamás RPE. */}
+            {lastCheckin && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                {WELLNESS_ITEMS.map((it) => (
+                  <span key={it.field} style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", padding: "2px 7px", borderRadius: 99, background: "color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
+                    {it.label} {lastCheckin[it.field]}/5
+                  </span>
                 ))}
               </div>
             )}
-          </div>
-        </>
-      )}
-    </section>
+          </>
+        )}
+      </Section>
+    </>
   );
 }

@@ -11,9 +11,10 @@ import { SegmentedToggle } from "../../../ui/SegmentedToggle";
 import { RetryButton } from "../../../ui/RetryButton";
 import { Loading } from "../../../ui/Loading";
 
-/** Calendario del plan: header plegable + toggle Mapa ↔ Lista (decisión owner 2026-06-10).
- *  Mapa = heat map de intensidad (tono = % tope, opacidad = volumen) con desglose del día
- *  (fase + objetivo + ejercicios con kg y discos). Lista = las filas por semana de siempre
+/** Calendario del plan: toggle Mapa ↔ Lista (decisión owner 2026-06-10). El marco/título lo da la
+ *  `Section "Calendario"` del PlanTab — acá NO hay colapso propio (des-enterrado): el mapa se ve directo.
+ *  Mapa = heat map estilo GitHub con **rampa única** (singleRamp = tono por % tope a opacidad plena)
+ *  + desglose del día (fase + objetivo + ejercicios con kg y discos). Lista = las filas por semana
  *  (tocar una abre el WeekDetailSheet vía onWeekClick). Heat y semanas se cargan lazy.
  *  Eje del mapa: columna = offset dentro de la semana del MACRO (anclada al weekday del
  *  startDate) — HOY y la compe se colocan con dayOffsetInWeek, nunca por weekday absoluto. */
@@ -26,7 +27,6 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
   sexo?: "M" | "F";
   today: string;
 }) {
-  const [open, setOpen] = useState(false);
   const [view, setView] = useState<"mapa" | "lista">("mapa");
   const [heat, setHeat] = useState<WeekHeat[] | null>(null);
   const [heatError, setHeatError] = useState(false);
@@ -41,7 +41,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
   }, [startDate, hoyWeek, today]);
 
   useEffect(() => {
-    if (!open || view !== "mapa" || heat !== null || heatError) return;
+    if (view !== "mapa" || heat !== null || heatError) return;
     let on = true;
     loadHeat()
       .then((h) => {
@@ -51,7 +51,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
       })
       .catch(() => { if (on) setHeatError(true); });
     return () => { on = false; };
-  }, [open, view, heat, heatError, loadHeat, hoyPos, hoyWeek]);
+  }, [view, heat, heatError, loadHeat, hoyPos, hoyWeek]);
 
   useEffect(() => {
     if (sel === null || weekViews.has(sel.week) || dayError) return;
@@ -80,8 +80,8 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
   const selectDay = useCallback((w: number, d: number) => { setSel({ week: w, day: d }); setDayError(false); }, []);
 
   const rows = useMemo(
-    () => (open && view === "lista" ? planWeeks(macro, weeks, startDate, hoyWeek, comps, marks, perWeek) : []),
-    [open, view, macro, weeks, startDate, hoyWeek, comps, marks, perWeek],
+    () => (view === "lista" ? planWeeks(macro, weeks, startDate, hoyWeek, comps, marks, perWeek) : []),
+    [view, macro, weeks, startDate, hoyWeek, comps, marks, perWeek],
   );
 
   // ── desglose del día seleccionado ──
@@ -136,82 +136,66 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
     );
 
   return (
-    <div style={{ marginTop: 16 }}>
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls="plan-cal-body"
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-          background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)",
-          borderRadius: 12, padding: "10px 12px", cursor: "pointer", color: "var(--wl-text)" }}>
-        <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2 }}>
-          <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>📅 Calendario del plan</span>
-          <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>{weeks} semanas · HOY sem {hoyWeek}</span>
-        </span>
-        <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>{open ? "▲" : "▼"}</span>
-      </button>
+    <div>
+      <SegmentedToggle
+        ariaLabel="Vista del calendario"
+        options={[["mapa", "Mapa"], ["lista", "Lista"]] as const}
+        value={view}
+        onChange={setView}
+        size="sm"
+      />
 
-      {open && (
-        <div id="plan-cal-body">
-          <SegmentedToggle
-            ariaLabel="Vista del calendario"
-            options={[["mapa", "Mapa"], ["lista", "Lista"]] as const}
-            value={view}
-            onChange={setView}
-            size="sm"
-            style={{ marginTop: 8 }}
-          />
-
-          {view === "mapa" && (
-            <div className="wl-viewfade" style={{ marginTop: 8 }}>
-              <HeatLegend />
-              <div style={{ marginTop: 8 }}>
-                {heatError ? (
-                  <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
-                    No se pudo cargar el mapa.{" "}
-                    <RetryButton onClick={() => setHeatError(false)} fontSize={10.5} />
-                  </div>
-                ) : heat === null ? (
-                  <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5 }}>Cargando mapa…</Loading>
-                ) : (
-                  <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal"
-                    onSelectDay={selectDay} phaseIndexFor={phaseIndexFor} comps={compMap} />
-                )}
+      {view === "mapa" && (
+        <div className="wl-viewfade" style={{ marginTop: 8 }}>
+          <HeatLegend singleRamp />
+          <div style={{ marginTop: 8 }}>
+            {heatError ? (
+              <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
+                No se pudo cargar el mapa.{" "}
+                <RetryButton onClick={() => setHeatError(false)} fontSize={10.5} />
               </div>
-              {heat !== null && panel}
-            </div>
-          )}
+            ) : heat === null ? (
+              <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5 }}>Cargando mapa…</Loading>
+            ) : (
+              <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal" singleRamp
+                onSelectDay={selectDay} phaseIndexFor={phaseIndexFor} comps={compMap} />
+            )}
+          </div>
+          {heat !== null && panel}
+        </div>
+      )}
 
-          {view === "lista" && (
-            <div className="wl-viewfade" style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
-              {rows.map((r) => (
-                <button key={r.week} type="button" onClick={() => onWeekClick(r.week)}
-                  aria-label={`Semana ${r.week} · ${r.range}${r.comp ? ` · 🚩 ${r.comp}` : ""} · ${r.done} de ${r.perWeek} sesiones`}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8, textAlign: "left", cursor: "pointer",
-                    padding: "8px 10px", borderRadius: 10, color: "var(--wl-text)",
-                    background: r.isToday ? "color-mix(in srgb,var(--wl-accent) 12%,transparent)" : "var(--wl-surface)",
-                    border: r.isToday
-                      ? "1px solid color-mix(in srgb,var(--wl-accent) 55%,transparent)"
-                      : "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)",
-                  }}>
-                  <span style={{ width: 52, flexShrink: 0 }}>
-                    <span style={{ display: "block", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 12.5 }}>Sem {r.week}</span>
-                    <span style={{ display: "block", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>{r.range}</span>
-                  </span>
-                  <span style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, color: "#0b0b11",
-                      background: phaseColor(r.phaseIndex), borderRadius: 5, padding: "2px 7px",
-                      whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 120 }}>{r.phaseName}</span>
-                    {r.isToday && <span style={{ fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, color: "var(--wl-accent)" }}>HOY</span>}
-                    {r.comp && <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🚩 {r.comp}</span>}
-                    {!r.comp && r.isTaper && <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>taper</span>}
-                  </span>
-                  <span style={{ flexShrink: 0, fontFamily: "var(--mono)", fontSize: 10.5,
-                    color: r.perWeek > 0 && r.done >= r.perWeek ? "var(--ok)" : "var(--wl-muted)" }}>
-                    {r.perWeek > 0 ? `${r.done}/${r.perWeek}` : "—"}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+      {view === "lista" && (
+        <div className="wl-viewfade" style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
+          {rows.map((r) => (
+            <button key={r.week} type="button" onClick={() => onWeekClick(r.week)}
+              aria-label={`Semana ${r.week} · ${r.range}${r.comp ? ` · 🚩 ${r.comp}` : ""} · ${r.done} de ${r.perWeek} sesiones`}
+              style={{
+                display: "flex", alignItems: "center", gap: 8, textAlign: "left", cursor: "pointer",
+                padding: "8px 10px", borderRadius: 10, color: "var(--wl-text)",
+                background: r.isToday ? "color-mix(in srgb,var(--wl-accent) 12%,transparent)" : "var(--wl-surface)",
+                border: r.isToday
+                  ? "1px solid color-mix(in srgb,var(--wl-accent) 55%,transparent)"
+                  : "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)",
+              }}>
+              <span style={{ width: 52, flexShrink: 0 }}>
+                <span style={{ display: "block", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 12.5 }}>Sem {r.week}</span>
+                <span style={{ display: "block", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>{r.range}</span>
+              </span>
+              <span style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, color: "#0b0b11",
+                  background: phaseColor(r.phaseIndex), borderRadius: 5, padding: "2px 7px",
+                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 120 }}>{r.phaseName}</span>
+                {r.isToday && <span style={{ fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, color: "var(--wl-accent)" }}>HOY</span>}
+                {r.comp && <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🚩 {r.comp}</span>}
+                {!r.comp && r.isTaper && <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>taper</span>}
+              </span>
+              <span style={{ flexShrink: 0, fontFamily: "var(--mono)", fontSize: 10.5,
+                color: r.perWeek > 0 && r.done >= r.perWeek ? "var(--ok)" : "var(--wl-muted)" }}>
+                {r.perWeek > 0 ? `${r.done}/${r.perWeek}` : "—"}
+              </span>
+            </button>
+          ))}
         </div>
       )}
     </div>

@@ -138,6 +138,19 @@
   .wl-daydetail-in, .wl-viewfade{ animation:none; }
 }
 
+/* ---- Section primitive (.wl-sect*) — tarjeta titulada + colapso opcional (token-driven, skin-agnostic).
+   UNA escala de 3 niveles (eyebrow 9 · título 14 · cuerpo heredado) reemplaza los fontSize inline sueltos. ---- */
+.wl-sect{ background:var(--wl-surface); border:1px solid color-mix(in srgb,var(--wl-text) 8%,transparent); border-radius:var(--wl-radius, 12px); padding:12px; }
+.wl-sect__head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.wl-sect__head--btn{ width:100%; background:transparent; border:0; padding:0; margin:0; cursor:pointer; color:inherit; text-align:left; font:inherit; }
+.wl-sect__head--btn:focus-visible{ outline:2px solid var(--wl-accent); outline-offset:3px; border-radius:4px; }
+.wl-sect__titles{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.wl-sect__eyebrow{ font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--wl-muted); }
+.wl-sect__title{ font-family:var(--wl-display); font-weight:700; font-size:14px; color:var(--wl-text); }
+.wl-sect__right{ flex:0 0 auto; }
+.wl-sect__chev{ flex:0 0 auto; font-family:var(--mono); font-size:12px; color:var(--wl-muted); }
+.wl-sect__body{ margin-top:10px; }
+
 /* demo cell scaffolding (used in the canvas detail artboards) */
 .wl-cell{ padding:22px; display:flex; flex-direction:column; gap:18px; min-height:100%; background:var(--wl-bg); }
 .wl-cell__title{ font-family:var(--wl-display); font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--wl-muted); margin:0; }
