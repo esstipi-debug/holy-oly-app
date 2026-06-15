@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { getMovement, type WarmupSet } from "@holy-oly/core";
 import { ExerciseHero } from "./ExerciseHero";
 import { WarmupSection } from "./WarmupSection";
@@ -109,17 +109,39 @@ export function SessionAccordion({
   const totalSets = rows.reduce((a, r) => a + r.series.length, 0);
   const nextIdx = rows.findIndex((r) => !isComplete(r)); // -1 = todos hechos → glow al CTA
 
-  // Auto-avance: al completar el ejercicio abierto, abrir el siguiente incompleto (en su calentamiento).
+  // Desplaza el ejercicio `i` a la vista dentro del scroller del shell del atleta (.ho-scroll).
+  const scrollToEx = useCallback((i: number) => {
+    const run = (): void => {
+      const list = document.querySelector(".et-ex-list");
+      const scroller = document.querySelector(".ho-scroll");
+      if (!list || !scroller || !list.children[i] || !scroller.scrollTo) return;
+      const cr = list.children[i]!.getBoundingClientRect();
+      const sr = scroller.getBoundingClientRect();
+      scroller.scrollTo({ top: scroller.scrollTop + (cr.top - sr.top) - 12, behavior: "smooth" });
+    };
+    setTimeout(() => requestAnimationFrame(run), 60);
+  }, []);
+
+  // Auto-avance (espejo exacto del mock 0110): al completar el ejercicio abierto, tras 850ms se cierra
+  // y se abre el siguiente con series pendientes (que arranca en su calentamiento), scrolleándolo a la
+  // vista; si era el último, se cierra (open=-1) y el botón Terminar queda con glow. Dedupe por índice.
+  const advancedFrom = useRef(-1);
   const openRow = rows[open];
   const openComplete = !!openRow && isComplete(openRow);
   useEffect(() => {
-    if (!openComplete || nextIdx === -1 || nextIdx === open) return;
-    const t = setTimeout(() => onOpen(nextIdx), 480);
+    if (!openComplete) { if (advancedFrom.current === open) advancedFrom.current = -1; return; }
+    if (advancedFrom.current === open) return;
+    advancedFrom.current = open;
+    const next = rows.findIndex((x, i) => i > open && x.series.some((s) => !s.done));
+    const t = setTimeout(() => {
+      if (next !== -1) { onOpen(next); scrollToEx(next); }
+      else onOpen(-1);
+    }, 850);
     return () => clearTimeout(t);
-  }, [openComplete, nextIdx, open, onOpen]);
+  }, [rows, open, openComplete, onOpen, scrollToEx]);
 
   return (
-    <div>
+    <div style={{ ["--et-glow" as string]: 0.15 } as CSSProperties}>
       <div className="et-sublead">Tocá una serie para marcarla · ajustá con ✎</div>
       <div className="et-ex-list">
         {rows.map((r, i) => (

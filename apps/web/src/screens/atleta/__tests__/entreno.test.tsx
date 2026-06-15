@@ -61,8 +61,13 @@ test("entrada: resumen con iniciar; tras iniciar abre el primer ejercicio (hero 
   expect(screen.getByRole("button", { name: /serie 1 de 3/i })).toBeInTheDocument();
 });
 
-test("guardar sin modificar → sets de 3 series done@target, top-level done:true", async () => {
+test("marcar-a-medida: confirmar las 3 series → guardar → done@target, top-level done:true", async () => {
   await start();
+  fireEvent.click(screen.getByRole("button", { name: /saltar calentamiento/i }));
+  // las series NACEN sin marcar (marcar-a-medida): confirmo cada una
+  fireEvent.click(screen.getByRole("button", { name: /serie 1 de 3/i }));
+  fireEvent.click(screen.getByRole("button", { name: /serie 2 de 3/i }));
+  fireEvent.click(screen.getByRole("button", { name: /serie 3 de 3/i }));
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
   const sent = (put.mock.calls[0]![2] as PutMeSessionInput).actuals[0]!;
