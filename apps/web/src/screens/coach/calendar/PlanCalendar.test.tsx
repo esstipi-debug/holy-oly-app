@@ -19,7 +19,7 @@ const weekViews = (week: number): SessionView[] => [
 
 // hoy 2026-03-25 (miércoles) cae en la semana 4 del plan que arranca el lunes 2026-03-02.
 const base = {
-  macro, weeks: 12, startDate: "2026-03-02", hoyWeek: 4,
+  macro, startDate: "2026-03-02", hoyWeek: 4,
   comps: [{ name: "Nacional", week: 9, date: "2026-05-02" }] as Competencia[],
   marks: [] as SessionLog, perWeek: 5,
   loadHeat: async () => makeHeat(12),
@@ -29,23 +29,36 @@ const base = {
 };
 
 describe("PlanCalendar", () => {
-  it("des-enterrado: muestra el mapa directo, sin botón de colapso propio", async () => {
-    render(<PlanCalendar {...base} onWeekClick={() => {}} />);
-    // El marco/título lo da la Section del PlanTab → acá ya no hay header-colapso.
+  it("mapa-only: muestra el heatmap directo (sin toggle Mapa/Lista ni colapso)", async () => {
+    render(<PlanCalendar {...base} />);
+    // La Lista se eliminó: ya no hay toggle Mapa/Lista ni header-colapso.
+    expect(screen.queryByRole("button", { name: /^Lista$/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /calendario del plan/i })).not.toBeInTheDocument();
-    // El heatmap (Mapa por default) se ve sin abrir nada.
+    // El heatmap se ve sin abrir nada.
     expect(await screen.findByRole("button", { name: /^Semana 1 Lun$/ })).toBeInTheDocument();
   });
 
+  it("leyenda de fases (reemplazo de la Lista): cada fase con su nombre + rango de semanas", async () => {
+    render(<PlanCalendar {...base} />);
+    // El panel (que también muestra phaseName) sólo aparece tras cargar el heat → acá, sync, sólo está
+    // la leyenda → un único match por nombre de fase.
+    for (const p of macro.phaseProfile) {
+      expect(screen.getByText(p.name)).toBeInTheDocument();
+    }
+    const p0 = macro.phaseProfile[0]!;
+    expect(screen.getByText(new RegExp(`sem ${p0.weeks[0]}–${p0.weeks[1]}`))).toBeInTheDocument();
+    await screen.findByRole("button", { name: /^Semana 1 Lun$/ }); // flush heat load (evita act warning)
+  });
+
   it("leyenda formato GitHub: rampa única por % tope, sin el eje de volumen", async () => {
-    render(<PlanCalendar {...base} onWeekClick={() => {}} />);
+    render(<PlanCalendar {...base} />);
     await screen.findByRole("button", { name: /^Semana 1 Lun$/ });
     expect(screen.getByText("% tope")).toBeInTheDocument();
     expect(screen.queryByText("volumen")).not.toBeInTheDocument();
   });
 
   it("Mapa por default: HOY preseleccionado con su desglose", async () => {
-    render(<PlanCalendar {...base} onWeekClick={() => {}} />);
+    render(<PlanCalendar {...base} />);
     expect(await screen.findByRole("button", { name: /^Semana 1 Lun$/ })).toBeInTheDocument();
     // HOY = miércoles de la semana 4 → marcado en su celda y desglosado en el panel
     expect(screen.getByRole("button", { name: /Semana 4 Mié · HOY/ })).toBeInTheDocument();
@@ -54,7 +67,7 @@ describe("PlanCalendar", () => {
   });
 
   it("tap en otro día → desglose con ejercicio, kg y discos", async () => {
-    const { container } = render(<PlanCalendar {...base} onWeekClick={() => {}} />);
+    const { container } = render(<PlanCalendar {...base} />);
     fireEvent.click(await screen.findByRole("button", { name: /^Semana 1 Jue$/ }));
     expect(await screen.findByText("Envión")).toBeInTheDocument();
     expect(screen.getByText("85 kg")).toBeInTheDocument();
@@ -62,24 +75,13 @@ describe("PlanCalendar", () => {
   });
 
   it("la competencia con fecha queda en su celda (sábado de la semana 9)", async () => {
-    render(<PlanCalendar {...base} onWeekClick={() => {}} />);
+    render(<PlanCalendar {...base} />);
     expect(await screen.findByRole("button", { name: /Semana 9 Sáb.*competencia Nacional/ })).toBeInTheDocument();
-  });
-
-  it("toggle Lista: las filas por semana siguen; tap fila → onWeekClick(week)", async () => {
-    const picks: number[] = [];
-    render(<PlanCalendar {...base} onWeekClick={(w) => picks.push(w)} />);
-    fireEvent.click(screen.getByRole("button", { name: "Lista" }));
-    const semana9 = await screen.findByRole("button", { name: /Semana 9\b.*sesiones/ });
-    fireEvent.click(semana9);
-    expect(picks).toEqual([9]);
-    expect(screen.getByText("HOY")).toBeInTheDocument();
-    expect(screen.getByText(/Nacional/)).toBeInTheDocument();
   });
 
   it("start no-lunes: columnas, HOY y compe comparten el eje de la semana del macro", async () => {
     // start = miércoles 4 mar → col 0 del mapa es Mié. HOY (mié 25 mar) = semana 4, offset 0.
-    render(<PlanCalendar {...base} startDate="2026-03-04" today="2026-03-25" onWeekClick={() => {}} />);
+    render(<PlanCalendar {...base} startDate="2026-03-04" today="2026-03-25" />);
     expect(await screen.findByRole("button", { name: /Semana 4 Mié · HOY/ })).toBeInTheDocument();
     // El bug viejo (weekday absoluto) lo habría puesto en la col 2 (rotada = Vie):
     expect(screen.queryByRole("button", { name: /Semana 4 Vie · HOY/ })).not.toBeInTheDocument();
@@ -94,7 +96,7 @@ describe("PlanCalendar", () => {
       if (calls === 1) throw new Error("boom");
       return makeHeat(12);
     };
-    render(<PlanCalendar {...base} loadHeat={flaky} onWeekClick={() => {}} />);
+    render(<PlanCalendar {...base} loadHeat={flaky} />);
     expect(await screen.findByText(/No se pudo cargar el mapa/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
     expect(await screen.findByRole("button", { name: /^Semana 1 Lun$/ })).toBeInTheDocument();
