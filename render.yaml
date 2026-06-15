@@ -36,6 +36,18 @@ services:
         fromDatabase:
           name: holy-oly-db
           property: connectionString
+      # Transactional email (verification + password reset). WITHOUT a real provider it falls back to
+      # the "console" sink (logs only, sends NOTHING) and no verification email ever arrives. Set the
+      # two secrets below in the Render dashboard (they're marked sync:false so they aren't in git):
+      #   GOOGLE_SMTP_USER          sending mailbox, e.g. no-reply@your-domain.com
+      #   GOOGLE_SMTP_APP_PASSWORD  16-char Google App Password (NOT the account password)
+      # See apps/api/.env.example and docs/superpowers/DEPLOY.md.
+      - key: EMAIL_PROVIDER
+        value: google
+      - key: GOOGLE_SMTP_USER
+        sync: false
+      - key: GOOGLE_SMTP_APP_PASSWORD
+        sync: false
     # Security headers are owned in-app by @fastify/helmet (CSP, HSTS, X-Frame-Options: DENY,
     # X-Content-Type-Options, Referrer-Policy) — see apps/api/src/server.ts (C1/C2/C6). Only
     # Permissions-Policy is set here at the edge, since helmet does not manage it.

@@ -9,7 +9,7 @@
  * Future providers (resend | postmark | ses) would slot into the same switch.
  */
 
-import { sendViaGoogle, type OutboundMessage } from "./google";
+import { sendViaGoogle, googleEmailConfigured, type OutboundMessage } from "./google";
 
 export type EmailTemplate = "password_reset" | "email_verify";
 
@@ -32,7 +32,7 @@ function textFor(template: EmailTemplate, data: EmailPayload): string {
   if (template === "password_reset") {
     return `Recibimos un pedido para restablecer tu contraseña.\n\n${data.resetUrl ?? ""}\n\nEl enlace expira en 1 hora. Si no lo pediste, ignorá este mensaje.`;
   }
-  return `Confirmá tu cuenta de coach en Holy Oly:\n\n${data.verifyUrl ?? ""}\n\nEl enlace expira en 24 horas.`;
+  return `Confirmá tu cuenta en Holy Oly:\n\n${data.verifyUrl ?? ""}\n\nEl enlace expira en 24 horas.`;
 }
 
 function escapeHtml(value: string): string {
@@ -50,7 +50,7 @@ function htmlFor(template: EmailTemplate, data: EmailPayload): string {
   const safeUrl = escapeHtml(url);
   const intro = isReset
     ? "Recibimos un pedido para restablecer tu contraseña."
-    : "Confirmá tu cuenta de coach en Holy Oly:";
+    : "Confirmá tu cuenta en Holy Oly:";
   const cta = isReset ? "Restablecer contraseña" : "Confirmar email";
   const note = isReset
     ? "El enlace expira en 1 hora. Si no lo pediste, ignorá este mensaje."
@@ -98,4 +98,26 @@ export async function sendEmail(to: string, template: EmailTemplate, data: Email
 
 export function appOrigin(): string {
   return process.env.APP_ORIGIN ?? process.env.WEB_ORIGIN ?? "http://localhost:8765";
+}
+
+/** True when, in production, email won't actually be delivered (no real provider configured). */
+export function emailMisconfiguredForProd(): boolean {
+  if (process.env.NODE_ENV !== "production") return false;
+  return activeProvider() !== "google" || !googleEmailConfigured();
+}
+
+/**
+ * Startup visibility for the #1 "no llega el correo" cause: in production the provider defaults to
+ * "console" (logs only, sends nothing). Unlike billing this is a loud WARNING, not a hard fail —
+ * the rest of the app must keep serving even if transactional email is temporarily unconfigured.
+ *
+ * Sets EMAIL_PROVIDER=google + GOOGLE_SMTP_USER + GOOGLE_SMTP_APP_PASSWORD to deliver real email.
+ */
+export function warnEmailProdConfig(log: { warn: (msg: string) => void }): void {
+  if (!emailMisconfiguredForProd()) return;
+  log.warn(
+    "EMAIL is not configured for production: verification and password-reset emails will NOT be " +
+      "delivered (provider falls back to the 'console' sink). Set EMAIL_PROVIDER=google plus " +
+      "GOOGLE_SMTP_USER and GOOGLE_SMTP_APP_PASSWORD (a Google App Password) to send real email.",
+  );
 }

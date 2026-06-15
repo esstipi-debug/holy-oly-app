@@ -22,6 +22,7 @@
   "verifyEmail": {
     "title": "Verifica tu email",
     "defaultSub": "Sin verificación no puedes confirmar atletas en el roster.",
+    "athleteSub": "Confirma tu email para asegurar tu cuenta y no perder el acceso.",
     "sending": "Enviando…",
     "sent": "Enviado ✓ — revisa spam",
     "resend": "Reenviar email",

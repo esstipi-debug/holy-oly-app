@@ -21,6 +21,7 @@ import { requireCoach } from "./auth/guards";
 import { requireCoachWrite } from "./auth/coach-writes";
 import { billingRoutes } from "./billing/routes";
 import { dummyHash } from "./auth/password";
+import { warnEmailProdConfig } from "./email";
 import { recordAudit } from "./audit";
 
 declare module "fastify" {
@@ -151,6 +152,9 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   app.register(billingRoutes);
   app.register(meRoutes);
   app.register(competitionRoutes);
+
+  // Loud (non-fatal) warning when prod can't actually deliver email — the #1 "no llega el correo" cause.
+  warnEmailProdConfig(app.log);
 
   app.get("/health", async () => ({ ok: true }));
 

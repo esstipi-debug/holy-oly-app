@@ -32,8 +32,6 @@ export function CompSheet({
   const [error, setError] = useState<string | null>(null);
 
   const week = weekOfDate(startDate, date, totalWeeks);
-  const minDate = dateOfWeek(startDate, 1);
-  const maxDate = dateOfWeek(startDate, totalWeeks);
 
   async function run(fn: () => Promise<void>): Promise<void> {
     setError(null);
@@ -74,7 +72,11 @@ export function CompSheet({
       <input style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={nextName} />
 
       <label style={label}>Fecha de la competencia</label>
-      <input type="date" aria-label="Fecha de la competencia" style={input} value={date} min={minDate} max={maxDate}
+      {/* Sin min/max nativos: el date picker del navegador rechaza fechas fuera de [min,max] y dejaba
+          al coach SIN poder ingresar la fecha (p. ej. competencia posterior al fin del macro, o macro
+          que ya arrancó). La fecha se ancla a la semana del macro vía weekOfDate (que clampa a [1,N]),
+          así que el feedback "Cae en la semana X" sigue siendo correcto y guía sin bloquear. */}
+      <input type="date" aria-label="Fecha de la competencia" style={input} value={date}
         onChange={(e) => setDate(e.target.value)} />
       <div style={{ marginTop: 6, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-accent)" }}>
         Cae en la <b>semana {week}</b> de {totalWeeks} del macro.
