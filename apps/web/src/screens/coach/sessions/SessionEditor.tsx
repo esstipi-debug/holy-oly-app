@@ -1,8 +1,7 @@
 import { useState, type CSSProperties } from "react";
-import { getMovement, PrescribedExercisesSchema, type PrescribedExercise, type PrescribedExerciseView, type RM } from "@holy-oly/core";
+import { getMovement, resolveTargetKg, PrescribedExercisesSchema, type PrescribedExercise, type PrescribedExerciseView, type RM } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 import { MovementPicker } from "./MovementPicker";
-import { SubstituteSheet } from "../../../ui/SubstituteSheet";
 import { ComplexAnalysis } from "./ComplexAnalysis";
 
 interface Draft { movementId: string; movementName: string; sets: number; reps: number; pct?: number; kgOverride?: number; }
@@ -40,8 +39,9 @@ export function SessionEditor({ open, week, sessionIdx, exercises, rms, onClose,
 }) {
   const [rows, setRows] = useState<Draft[]>(() =>
     exercises.map((e) => ({ movementId: e.movementId, movementName: e.movementName, sets: e.sets, reps: e.reps, pct: e.pct, kgOverride: e.kgOverride })));
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [subFor, setSubFor] = useState<number | null>(null);
+  // Selector unificado: "add" agrega una fila; un número cambia el movimiento de esa fila (cualquiera
+  // de la librería). Antes el ⇄ sólo ofrecía sustitutos → no se podía cambiar a cualquier movimiento.
+  const [pickerFor, setPickerFor] = useState<number | "add" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,41 +68,50 @@ export function SessionEditor({ open, week, sessionIdx, exercises, rms, onClose,
     <BottomSheet open={open} onClose={onClose} ariaLabel="Editar sesión">
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Sesión · sem {week} · día {sessionIdx + 1}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
-        {rows.map((r, i) => (
-          <div key={i} style={{ background: "var(--wl-surface)", borderRadius: 10, padding: "8px 10px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14, color: "var(--wl-text)" }}>{r.movementName}</span>
-              <button type="button" style={mini} aria-label={`cambiar ${r.movementName}`} onClick={() => setSubFor(i)}>⇄</button>
-              <button type="button" style={mini} aria-label={`subir ${r.movementName}`} onClick={() => move(i, -1)}>↑</button>
-              <button type="button" style={mini} aria-label={`bajar ${r.movementName}`} onClick={() => move(i, 1)}>↓</button>
-              <button type="button" style={{ ...mini, color: "var(--wl-danger)" }} aria-label={`Quitar ${r.movementName}`} onClick={() => remove(i)}>✕</button>
+        {rows.map((r, i) => {
+          // kg en vivo desde el % (override > %×RM, complejo por eslabón débil). Sin RM → no se muestra.
+          const ex = { movementId: r.movementId, sets: r.sets, reps: r.reps, pct: r.pct, kgOverride: r.kgOverride };
+          const effKg = rms ? resolveTargetKg(ex, rms) : undefined;
+          const derivedKg = rms ? resolveTargetKg({ ...ex, kgOverride: undefined }, rms) : undefined;
+          return (
+            <div key={i} style={{ background: "var(--wl-surface)", borderRadius: 10, padding: "8px 10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14, color: "var(--wl-text)" }}>{r.movementName}</span>
+                <button type="button" style={mini} aria-label={`cambiar ${r.movementName}`} onClick={() => setPickerFor(i)}>⇄</button>
+                <button type="button" style={mini} aria-label={`subir ${r.movementName}`} onClick={() => move(i, -1)}>↑</button>
+                <button type="button" style={mini} aria-label={`bajar ${r.movementName}`} onClick={() => move(i, 1)}>↓</button>
+                <button type="button" style={{ ...mini, color: "var(--wl-danger)" }} aria-label={`Quitar ${r.movementName}`} onClick={() => remove(i)}>✕</button>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, flexWrap: "wrap", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
+                <input style={num} type="number" min={1} aria-label={`sets de ${r.movementName}`} value={r.sets} onChange={(e) => patch(i, { sets: Number(e.target.value) })} />×
+                <input style={num} type="number" min={1} aria-label={`reps de ${r.movementName}`} value={r.reps} onChange={(e) => patch(i, { reps: Number(e.target.value) })} />
+                {r.pct != null && <>@<input style={num} type="number" aria-label={`% de ${r.movementName}`} value={r.pct} onChange={(e) => patch(i, { pct: Number(e.target.value) })} />%</>}
+                {/* Peso derivado del % (lo que el atleta carga). "(fijo)" cuando hay override manual. */}
+                {r.pct != null && rms && (
+                  <span aria-label={`peso de ${r.movementName}`} style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, whiteSpace: "nowrap", color: r.kgOverride != null ? "var(--wl-accent)" : "var(--wl-text)" }}>
+                    = {effKg != null ? `${effKg} kg` : "—"}{r.kgOverride != null ? " (fijo)" : ""}
+                  </span>
+                )}
+                <input style={{ ...num, width: 64 }} type="number" placeholder={derivedKg != null ? `${derivedKg}` : "kg"} aria-label={`kg de ${r.movementName}`} value={r.kgOverride ?? ""} onChange={(e) => patch(i, { kgOverride: e.target.value ? Number(e.target.value) : undefined })} />
+              </div>
+              <ComplexAnalysis movementId={r.movementId} rms={rms} />
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
-              <input style={num} type="number" min={1} aria-label={`sets de ${r.movementName}`} value={r.sets} onChange={(e) => patch(i, { sets: Number(e.target.value) })} />×
-              <input style={num} type="number" min={1} aria-label={`reps de ${r.movementName}`} value={r.reps} onChange={(e) => patch(i, { reps: Number(e.target.value) })} />
-              {r.pct != null && <>@<input style={num} type="number" aria-label={`% de ${r.movementName}`} value={r.pct} onChange={(e) => patch(i, { pct: Number(e.target.value) })} />%</>}
-              <input style={{ ...num, width: 64 }} type="number" placeholder="kg" aria-label={`kg de ${r.movementName}`} value={r.kgOverride ?? ""} onChange={(e) => patch(i, { kgOverride: e.target.value ? Number(e.target.value) : undefined })} />
-            </div>
-            <ComplexAnalysis movementId={r.movementId} rms={rms} />
-          </div>
-        ))}
+          );
+        })}
       </div>
-      <button type="button" onClick={() => setPickerOpen(true)}
+      <button type="button" onClick={() => setPickerFor("add")}
         style={{ width: "100%", marginTop: 10, padding: 10, borderRadius: 10, border: "1px dashed color-mix(in srgb,var(--wl-text) 24%,transparent)", background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>+ Agregar ejercicio</button>
       {error && <div role="alert" style={{ marginTop: 8, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
       <button type="button" disabled={busy} onClick={() => void save()}
         style={{ width: "100%", marginTop: 12, padding: 13, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15 }}>
         {busy ? "Guardando…" : "Guardar sesión"}
       </button>
-      <MovementPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={(id) => setRows((rs) => [...rs, toDraft(id)])} />
-      {subFor !== null && rows[subFor] && (
-        <SubstituteSheet
-          open
-          movementId={rows[subFor]!.movementId}
-          onClose={() => setSubFor(null)}
-          onPick={(id) => setRows((rs) => rs.map((r, j) => (j === subFor ? swapMovement(r, id) : r)))}
-        />
-      )}
+      {/* Un solo selector para AGREGAR y para CAMBIAR (cualquier movimiento de la librería). */}
+      <MovementPicker
+        open={pickerFor !== null}
+        onClose={() => setPickerFor(null)}
+        onPick={(id) => setRows((rs) => (pickerFor === "add" ? [...rs, toDraft(id)] : rs.map((r, j) => (j === pickerFor ? swapMovement(r, id) : r))))}
+      />
     </BottomSheet>
   );
 }

@@ -41,24 +41,33 @@ test("muestra error si onSave falla", async () => {
   expect(screen.getByRole("button", { name: "Guardar sesión" })).not.toBeDisabled();
 });
 
-test("sustituye un movimiento y onSave recibe el nuevo movementId con esquema preservado", async () => {
+test("cambia el movimiento por CUALQUIERA de la librería (no sólo sustitutos), esquema preservado", async () => {
   const onSave = vi.fn().mockResolvedValue(undefined);
   render(<SessionEditor open week={1} sessionIdx={0} exercises={exs} onClose={() => {}} onSave={onSave} />);
-  // Open the substitute sheet for "Arranque"
+  // ⇄ "cambiar" abre el selector de movimientos COMPLETO (no el de sustitutos)
   fireEvent.click(screen.getByRole("button", { name: "cambiar Arranque" }));
-  // The sheet should be open — pick "Arranque desde colgado (bajo)" (simpler variant id: arranque.colgado.bajo)
-  const pickBtn = await screen.findByRole("button", { name: "Arranque desde colgado (bajo)" });
-  fireEvent.click(pickBtn);
-  // Row now shows the new movement name
-  expect(screen.getByText("Arranque desde colgado (bajo)")).toBeInTheDocument();
-  // Save and verify onSave receives the new movementId with scheme (sets/reps) preserved
+  // buscar y elegir un movimiento distinto, que NO es un sustituto registrado del arranque
+  fireEvent.change(await screen.findByLabelText("Buscar movimiento"), { target: { value: "sentadilla" } });
+  fireEvent.click(await screen.findByRole("button", { name: "Sentadilla trasera" }));
+  // la fila ahora muestra el nuevo movimiento
+  expect(screen.getByText("Sentadilla trasera")).toBeInTheDocument();
+  // guarda con el nuevo movementId, esquema (sets/reps) preservado, pct presente
   fireEvent.click(screen.getByRole("button", { name: "Guardar sesión" }));
   await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
   const saved = onSave.mock.calls[0]![0][0] as { movementId: string; sets: number; reps: number; pct?: number };
-  expect(saved.movementId).toBe("arranque.colgado.bajo");
+  expect(saved.movementId).toBe("sentadilla");
   expect(saved.sets).toBe(5);
   expect(saved.reps).toBe(3);
-  expect(saved.pct).toBeDefined(); // arranque.colgado.bajo has rmRef "arranque" → usesPct = true
+  expect(saved.pct).toBeDefined(); // sentadilla tiene rmRef "sentadilla" → usesPct = true
+});
+
+test("con % y RM muestra el kg derivado en vivo; override manual lo marca '(fijo)'", () => {
+  render(<SessionEditor open week={1} sessionIdx={0} exercises={exs} rms={RMS} onClose={() => {}} onSave={vi.fn()} />);
+  // arranque 5×3 @ 70% · RM arranque 100 → 70 kg
+  expect(screen.getByText(/= 70 kg/)).toBeInTheDocument();
+  // override manual → el peso pasa a "(fijo)"
+  fireEvent.change(screen.getByLabelText("kg de Arranque"), { target: { value: "90" } });
+  expect(screen.getByText(/= 90 kg \(fijo\)/)).toBeInTheDocument();
 });
 
 test("V3: una fila cx.* muestra el análisis de carga neural con eslabón débil (RMs presentes)", () => {
