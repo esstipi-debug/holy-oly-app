@@ -48,18 +48,26 @@ async function start() {
   fireEvent.click(await screen.findByRole("button", { name: /iniciar entrenamiento/i }));
 }
 
-test("entrada: resumen con iniciar; tras iniciar entra al acordeón con chips por serie + calentamiento", async () => {
+test("entrada: resumen con iniciar; tras iniciar abre el primer ejercicio (hero + calentamiento bloqueante)", async () => {
   renderEntreno();
   expect(await screen.findByRole("button", { name: /iniciar entrenamiento/i })).toBeInTheDocument();
   expect(screen.getByText("Arranque")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: /iniciar entrenamiento/i }));
-  // la card abierta muestra las series como chips tocables (nacen hechas) + el calentamiento
-  expect(screen.getByRole("button", { name: /serie 1 · hecha/i })).toBeInTheDocument();
-  expect(screen.getByText(/Calentamiento/)).toBeInTheDocument();
+  // la card abierta muestra el calentamiento (valorado como volumen) y BLOQUEA las series hasta calentar
+  expect(screen.getByText(/técnica \+ volumen de base/i)).toBeInTheDocument();
+  expect(screen.getByText(/Calentá primero/i)).toBeInTheDocument();
+  // saltar calentamiento revela las series de trabajo (nacen hechas — adherencia por defecto)
+  fireEvent.click(screen.getByRole("button", { name: /saltar calentamiento/i }));
+  expect(screen.getByRole("button", { name: /serie 1 de 3/i })).toBeInTheDocument();
 });
 
-test("guardar sin modificar → sets de 3 series done@target, top-level done:true", async () => {
+test("marcar-a-medida: confirmar las 3 series → guardar → done@target, top-level done:true", async () => {
   await start();
+  fireEvent.click(screen.getByRole("button", { name: /saltar calentamiento/i }));
+  // las series NACEN sin marcar (marcar-a-medida): confirmo cada una
+  fireEvent.click(screen.getByRole("button", { name: /serie 1 de 3/i }));
+  fireEvent.click(screen.getByRole("button", { name: /serie 2 de 3/i }));
+  fireEvent.click(screen.getByRole("button", { name: /serie 3 de 3/i }));
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
   const sent = (put.mock.calls[0]![2] as PutMeSessionInput).actuals[0]!;
@@ -69,17 +77,16 @@ test("guardar sin modificar → sets de 3 series done@target, top-level done:tru
   expect(sent.sets!.every((s) => s.done && s.kg === 64 && s.reps === 2)).toBe(true);
 });
 
-test("modificar la serie 2 (kg=60) → guardar → sólo esa serie cambia (independiente)", async () => {
+test("modificar la serie 2 (−1 kg) → guardar → sólo esa serie cambia (independiente)", async () => {
   await start();
-  fireEvent.click(screen.getByRole("button", { name: /ajustar kg\/reps/i }));
-  fireEvent.click(screen.getByRole("button", { name: /modificar serie 2/i }));
-  fireEvent.change(screen.getByLabelText(/kg serie 2/i), { target: { value: "60" } });
-  fireEvent.click(screen.getByRole("button", { name: /listo serie 2/i }));
+  fireEvent.click(screen.getByRole("button", { name: /saltar calentamiento/i }));
+  fireEvent.click(screen.getByRole("button", { name: /ajustar serie 2/i }));
+  fireEvent.click(screen.getByRole("button", { name: /menos kg serie 2/i }));
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
   const sets = (put.mock.calls[0]![2] as PutMeSessionInput).actuals[0]!.sets!;
   expect(sets[0]!.kg).toBe(64);
-  expect(sets[1]!.kg).toBe(60); // sólo la 2
+  expect(sets[1]!.kg).toBe(63); // 64 − 1, sólo la serie 2 (independiente)
   expect(sets[2]!.kg).toBe(64);
 });
 
@@ -162,14 +169,13 @@ test("sustituir → kg de las series se limpia → cargar kg en serie 1 → guar
   fireEvent.click(screen.getByRole("button", { name: /cambiar movimiento de Arranque/i }));
   // simplerVariants("arranque")[0] = "arranque.colgado.bajo" → "Arranque desde colgado (bajo)"
   fireEvent.click(await screen.findByRole("button", { name: /Arranque desde colgado \(bajo\)/i }));
-  fireEvent.click(screen.getByRole("button", { name: /ajustar kg\/reps/i }));
-  fireEvent.click(screen.getByRole("button", { name: /modificar serie 1/i }));
-  fireEvent.change(screen.getByLabelText(/kg serie 1/i), { target: { value: "50" } });
-  fireEvent.click(screen.getByRole("button", { name: /listo serie 1/i }));
+  // sustituido → sin gate de calentamiento: las series aparecen directo (kg en blanco)
+  fireEvent.click(screen.getByRole("button", { name: /ajustar serie 1/i }));
+  fireEvent.click(screen.getByRole("button", { name: /más kg serie 1/i }));
   fireEvent.click(screen.getByRole("button", { name: /guardar entreno/i }));
   await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
   const sent = (put.mock.calls[0]![2] as PutMeSessionInput).actuals[0]!;
   expect(sent.movementId).toBe("arranque.colgado.bajo");
   expect(sent.prescribedMovementId).toBe("arranque");
-  expect(sent.sets![0]!.kg).toBe(50);
+  expect(sent.sets![0]!.kg).toBe(1); // de — (limpio) a 1 con un "+"
 });

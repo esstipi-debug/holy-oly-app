@@ -80,9 +80,12 @@ export function EntrenoScreen() {
         else setFecha(hoy);
         setRows((s?.exercises ?? []).map((e) => {
           const fromActual = e.actual?.sets;
+          // Flujo MARCAR-A-MEDIDA (rediseño 0110): una sesión fresca nace SIN marcar (done:false) —
+          // el atleta confirma cada serie a medida que la hace. Al re-editar una sesión ya guardada,
+          // se respetan los estados guardados (fromActual).
           const series: SetRow[] = fromActual && fromActual.length > 0
             ? fromActual.map((x) => ({ kg: x.kg, reps: x.reps, done: x.done }))
-            : Array.from({ length: e.sets }, () => ({ kg: e.targetKg, reps: e.reps, done: true }));
+            : Array.from({ length: e.sets }, () => ({ kg: e.targetKg, reps: e.reps, done: false }));
           return {
             movementId: e.actual?.movementId ?? e.movementId,
             movementName: e.actual?.movementName ?? e.movementName,

@@ -86,7 +86,7 @@ export function Disc({ w, size = 28, view = "3q" }: { w: DiscW; size?: number; v
     : <ThreeQuarterDisc w={w} size={size} uid={uid} />;
 }
 
-export function DiscRow({ kg, barKg = 20, view = "3q" }: { kg: number; barKg?: number; view?: DiscView }) {
+export function DiscRow({ kg, barKg = 20, view = "3q", size }: { kg: number; barKg?: number; view?: DiscView; size?: number }) {
   const discs = perSide(kg, barKg);
-  return <div style={{ display: "flex", gap: 3, alignItems: "center" }}>{discs.map((d, i) => <Disc key={i} w={d} view={view} />)}</div>;
+  return <div style={{ display: "flex", gap: 3, alignItems: "center", flexWrap: "wrap" }}>{discs.map((d, i) => <Disc key={i} w={d} view={view} {...(size != null ? { size } : {})} />)}</div>;
 }
