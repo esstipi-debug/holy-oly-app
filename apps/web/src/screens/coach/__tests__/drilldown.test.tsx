@@ -124,11 +124,12 @@ test("'ver como atleta' muestra la Home COMPLETA del atleta (saludo) + la sesió
   expect(screen.getByTestId("atleta-preview")).toBeInTheDocument();
 });
 
-test("no-data athlete (Tomás): el tab Monitor muestra un empty state, no charts", async () => {
+test("no-data athlete (Tomás): sin series → NO hay tab Monitor, se ve Plan directo", async () => {
   renderAt("tl");
   await waitFor(() => expect(screen.getByText("Tomás L.")).toBeInTheDocument());
-  fireEvent.click(screen.getByRole("button", { name: "Monitor" }));
-  expect(await screen.findByText(/sin datos de monitoreo/i)).toBeInTheDocument();
+  // Monitor depende de datos (MonitorSeries). Tomás no tiene → sin tab strip, sin Monitor ni su empty-state.
+  expect(screen.queryByRole("button", { name: "Monitor" })).not.toBeInTheDocument();
+  expect(screen.queryByText(/sin datos de monitoreo/i)).not.toBeInTheDocument();
 });
 
 test("shows an error state when the athlete fails to load", async () => {

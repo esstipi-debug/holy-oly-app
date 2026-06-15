@@ -25,7 +25,7 @@ export function Drilldown() {
   const navigate = useNavigate();
   const repo = useRepository();
   // P1: la tab activa vive en `?tab=` (URL-as-state). Se deriva de la URL en cada render — sin estado
-  // espejo — y se valida con toTab para que valores desconocidos caigan a Resumen sin romper.
+  // espejo — y se valida con toTab para que valores desconocidos caigan a Plan sin romper.
   const [params, setParams] = useSearchParams();
   const tab = toTab(params.get("tab"));
   const setTab = (next: TabKey): void => {
@@ -122,6 +122,12 @@ export function Drilldown() {
         ? `${comps[0]!.name} · ${compLabel(comps[0]!)}`
         : `${comps.length} competencias · ${[...comps].sort((a, b) => a.week - b.week).map(compLabel).join(", ")}`;
 
+  // Monitor sólo tiene datos para atletas seed (no hay writer de MonitorSeries en runtime); para un
+  // atleta real `series` es undefined → ocultamos la tab Monitor y mostramos Plan directo, sin un tab
+  // strip con una tab que no puede poblarse. Los demos (con series) conservan las 2 tabs.
+  const showMonitor = series != null;
+  const effectiveTab: TabKey = showMonitor ? tab : "plan";
+
   return (
     <div style={{ padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)", minHeight: "100vh", maxWidth: 390, margin: "0 auto", position: "relative" }}>
       <BackButton ariaLabel="Volver a Atletas" onClick={() => navigate("/coach")} style={{ marginBottom: 5 }} />
@@ -166,17 +172,19 @@ export function Drilldown() {
         </div>
       ) : (
         <>
-          {/* Tira de tabs sticky: el header (identidad) scrollea, las tabs se fijan. Fondo opaco +
-              hairline para que el contenido no traspase; zIndex 10 < BottomNav (20). */}
-          <div style={{ position: "sticky", top: 0, zIndex: 10, margin: "12px -13px 0", padding: "8px 13px", background: "var(--wl-bg)", borderBottom: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-            <SegmentedToggle ariaLabel="Sección del atleta" options={TABS} value={tab} onChange={setTab} size="lg" />
-          </div>
+          {/* Tira de tabs sticky: SÓLO si Monitor tiene datos (series). Sin series → Plan directo, sin
+              un tab strip con una tab que no puede poblarse. zIndex 10 < BottomNav (20). */}
+          {showMonitor && (
+            <div style={{ position: "sticky", top: 0, zIndex: 10, margin: "12px -13px 0", padding: "8px 13px", background: "var(--wl-bg)", borderBottom: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+              <SegmentedToggle ariaLabel="Sección del atleta" options={TABS} value={effectiveTab} onChange={setTab} size="lg" />
+            </div>
+          )}
 
           <div className="wl-viewfade" style={{ marginTop: 14 }}>
-            {tab === "monitor" && (
+            {effectiveTab === "monitor" && (
               <MonitorTab series={series} macro={macro} onPointClick={setSelectedWeek} />
             )}
-            {tab === "plan" && (
+            {effectiveTab === "plan" && (
               <PlanTab
                 athleteId={id}
                 macro={macro}
@@ -191,7 +199,6 @@ export function Drilldown() {
                 sexo={athlete.sexo}
                 loadHeat={loadHeat}
                 loadWeek={loadWeek}
-                onWeekClick={setSelectedWeek}
                 onRmsChange={onRmsChange}
                 rmsStamp={rmsStamp}
               />
@@ -203,8 +210,8 @@ export function Drilldown() {
       {/* Palmarés/medallas DESACTIVADAS por el owner (2026-06-12). Medal.tsx + MedalSheet.tsx y la
           capa de datos (getMedals/addMedal, seeds) quedan vivas para reactivar. */}
 
-      {/* Overlays cross-cutting: se abren desde Monitor (charts) Y Plan (calendario), así que viven
-          en el shell, fuera del switch de tabs y del switch asAthlete. */}
+      {/* Overlays cross-cutting: el WeekDetailSheet se abre desde Monitor (tap en un chart); el
+          calendario de Plan usa su propio desglose in-place. Viven en el shell, fuera del switch. */}
       <CompSheet open={compOpen} onClose={() => setCompOpen(false)} comps={comps} startDate={startDate} totalWeeks={maxWeek} onAdd={onAddComp} onRemove={onRemoveComp} />
       {selectedWeek != null && (
         <WeekDetailSheet

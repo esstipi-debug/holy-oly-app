@@ -24,8 +24,6 @@ type Props = {
   /** Mapea kg derivado → discos lazy; lo provee el shell (memoizado por id). */
   loadHeat: CalProps["loadHeat"];
   loadWeek: CalProps["loadWeek"];
-  /** Abre el WeekDetailSheet del shell. */
-  onWeekClick: (week: number) => void;
   /** RmSection lo dispara: el shell bumpea rmsStamp (remonta calendario+sesiones) y refetchea plan. */
   onRmsChange: () => void;
   /** Remount key parent-owned: un RM guardado tira el kg cacheado de calendario y sesiones. */
@@ -38,7 +36,7 @@ type Props = {
  *  derivado queda obsoleto). Superficie coach-only — kg manda, discos vía DiscRow canónico, jamás RPE. */
 export function PlanTab({
   athleteId, macro, plan, maxWeek, startDate, hoyWeek, perWeek, comps, sessionLog,
-  today, sexo, loadHeat, loadWeek, onWeekClick, onRmsChange, rmsStamp,
+  today, sexo, loadHeat, loadWeek, onRmsChange, rmsStamp,
 }: Props) {
   const navigate = useNavigate();
   return (
@@ -63,13 +61,11 @@ export function PlanTab({
           <PlanCalendar
             key={`cal-${rmsStamp}`}
             macro={macro}
-            weeks={maxWeek}
             startDate={startDate}
             hoyWeek={hoyWeek}
             comps={comps}
             marks={sessionLog}
             perWeek={perWeek}
-            onWeekClick={onWeekClick}
             loadHeat={loadHeat}
             loadWeek={loadWeek}
             sexo={sexo}

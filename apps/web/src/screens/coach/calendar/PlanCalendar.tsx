@@ -1,33 +1,35 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Competencia, Macrocycle, SessionLog, SessionView, WeekHeat } from "@holy-oly/core";
-import { phaseForWeek, barKgForSexo } from "@holy-oly/core";
-import { planWeeks } from "./planRows";
-import { dayDateLabel, dayOffsetInWeek, weekdayMonFirst } from "../../../ui/charts/planDates";
+import { phaseForWeek, barKgForSexo, dateOfWeek } from "@holy-oly/core";
+import { dayDateLabel, dayOffsetInWeek, weekdayMonFirst, isoRangeLabel } from "../../../ui/charts/planDates";
 import { markFor } from "../sessions/sessionLog";
 import { phaseColor } from "../../../ui/charts/phasePalette";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../../ui/charts/PlanHeatMap";
 import { PlanDayDetail, type DayEstado, type DayDetailExercise } from "../../../ui/charts/PlanDayDetail";
-import { SegmentedToggle } from "../../../ui/SegmentedToggle";
+import { useLocale } from "../../../i18n/useLocale";
 import { RetryButton } from "../../../ui/RetryButton";
 import { Loading } from "../../../ui/Loading";
 
-/** Calendario del plan: toggle Mapa ↔ Lista (decisión owner 2026-06-10). El marco/título lo da la
- *  `Section "Calendario"` del PlanTab — acá NO hay colapso propio (des-enterrado): el mapa se ve directo.
- *  Mapa = heat map estilo GitHub con **rampa única** (singleRamp = tono por % tope a opacidad plena)
- *  + desglose del día (fase + objetivo + ejercicios con kg y discos). Lista = las filas por semana
- *  (tocar una abre el WeekDetailSheet vía onWeekClick). Heat y semanas se cargan lazy.
- *  Eje del mapa: columna = offset dentro de la semana del MACRO (anclada al weekday del
- *  startDate) — HOY y la compe se colocan con dayOffsetInWeek, nunca por weekday absoluto. */
-export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, perWeek, onWeekClick, loadHeat, loadWeek, sexo, today }: {
-  macro: Macrocycle; weeks: number; startDate: string; hoyWeek: number;
+const DAY_MS = 86_400_000;
+/** Último día (ISO) de la semana `to` del macro = primer día de esa semana + 6. */
+const isoPlusDays = (iso: string, days: number): string =>
+  new Date(new Date(`${iso}T00:00:00Z`).getTime() + days * DAY_MS).toISOString().slice(0, 10);
+
+/** Calendario del plan, mapa-only (reemplaza el viejo toggle Mapa/Lista — la Lista se eliminó). El
+ *  marco/título lo da la `Section "Calendario"` del PlanTab. Arriba, una **leyenda de fases** (nombre
+ *  · semanas · fechas, con la fase de HOY marcada) recupera lo que daba la Lista. Abajo, el heat map
+ *  estilo GitHub (rampa única) + el desglose del día (fase + objetivo + ejercicios con kg y discos).
+ *  Eje del mapa: columna = offset dentro de la semana del MACRO (anclada al weekday del startDate) —
+ *  HOY y la compe se colocan con dayOffsetInWeek, nunca por weekday absoluto. */
+export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek, loadHeat, loadWeek, sexo, today }: {
+  macro: Macrocycle; startDate: string; hoyWeek: number;
   comps: Competencia[]; marks: SessionLog; perWeek: number;
-  onWeekClick: (week: number) => void;
   loadHeat: () => Promise<WeekHeat[]>;
   loadWeek: (week: number) => Promise<SessionView[]>;
   sexo?: "M" | "F";
   today: string;
 }) {
-  const [view, setView] = useState<"mapa" | "lista">("mapa");
+  const { lang } = useLocale();
   const [heat, setHeat] = useState<WeekHeat[] | null>(null);
   const [heatError, setHeatError] = useState(false);
   const [sel, setSel] = useState<HeatMapPos | null>(null);
@@ -41,7 +43,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
   }, [startDate, hoyWeek, today]);
 
   useEffect(() => {
-    if (view !== "mapa" || heat !== null || heatError) return;
+    if (heat !== null || heatError) return;
     let on = true;
     loadHeat()
       .then((h) => {
@@ -51,7 +53,7 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
       })
       .catch(() => { if (on) setHeatError(true); });
     return () => { on = false; };
-  }, [view, heat, heatError, loadHeat, hoyPos, hoyWeek]);
+  }, [heat, heatError, loadHeat, hoyPos, hoyWeek]);
 
   useEffect(() => {
     if (sel === null || weekViews.has(sel.week) || dayError) return;
@@ -79,10 +81,8 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
   }, [macro]);
   const selectDay = useCallback((w: number, d: number) => { setSel({ week: w, day: d }); setDayError(false); }, []);
 
-  const rows = useMemo(
-    () => (view === "lista" ? planWeeks(macro, weeks, startDate, hoyWeek, comps, marks, perWeek) : []),
-    [view, macro, weeks, startDate, hoyWeek, comps, marks, perWeek],
-  );
+  // Leyenda de fases (reemplazo de la Lista): por fase, color + nombre + rango de semanas + de fechas.
+  const currentPhaseKey = phaseForWeek(macro, hoyWeek)?.key;
 
   // ── desglose del día seleccionado ──
   const selCell = sel && heat ? (heat[sel.week - 1]?.days[sel.day] ?? null) : null;
@@ -136,68 +136,40 @@ export function PlanCalendar({ macro, weeks, startDate, hoyWeek, comps, marks, p
     );
 
   return (
-    <div>
-      <SegmentedToggle
-        ariaLabel="Vista del calendario"
-        options={[["mapa", "Mapa"], ["lista", "Lista"]] as const}
-        value={view}
-        onChange={setView}
-        size="sm"
-      />
+    <div className="wl-viewfade" style={{ marginTop: 8 }}>
+      {/* Leyenda de fases: el panorama del macro (lo que daba la Lista), nombre · semanas · fechas. */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+        {macro.phaseProfile.map((p, i) => {
+          const current = p.key === currentPhaseKey;
+          const range = isoRangeLabel(dateOfWeek(startDate, p.weeks[0]), isoPlusDays(dateOfWeek(startDate, p.weeks[1]), 6), lang);
+          return (
+            <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 8,
+              background: "var(--wl-surface)",
+              border: current ? `1px solid ${phaseColor(i)}` : "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+              <span aria-hidden="true" style={{ width: 9, height: 9, borderRadius: 2, background: phaseColor(i), flex: "0 0 auto" }} />
+              <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 11, color: "var(--wl-text)" }}>{p.name}</span>
+              <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>sem {p.weeks[0]}–{p.weeks[1]} · {range}</span>
+              {current && <span style={{ fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, color: "var(--wl-accent)" }}>HOY</span>}
+            </div>
+          );
+        })}
+      </div>
 
-      {view === "mapa" && (
-        <div className="wl-viewfade" style={{ marginTop: 8 }}>
-          <HeatLegend singleRamp />
-          <div style={{ marginTop: 8 }}>
-            {heatError ? (
-              <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
-                No se pudo cargar el mapa.{" "}
-                <RetryButton onClick={() => setHeatError(false)} fontSize={10.5} />
-              </div>
-            ) : heat === null ? (
-              <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5 }}>Cargando mapa…</Loading>
-            ) : (
-              <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal" singleRamp
-                onSelectDay={selectDay} phaseIndexFor={phaseIndexFor} comps={compMap} />
-            )}
+      <HeatLegend singleRamp />
+      <div style={{ marginTop: 8 }}>
+        {heatError ? (
+          <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
+            No se pudo cargar el mapa.{" "}
+            <RetryButton onClick={() => setHeatError(false)} fontSize={10.5} />
           </div>
-          {heat !== null && panel}
-        </div>
-      )}
-
-      {view === "lista" && (
-        <div className="wl-viewfade" style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
-          {rows.map((r) => (
-            <button key={r.week} type="button" onClick={() => onWeekClick(r.week)}
-              aria-label={`Semana ${r.week} · ${r.range}${r.comp ? ` · 🚩 ${r.comp}` : ""} · ${r.done} de ${r.perWeek} sesiones`}
-              style={{
-                display: "flex", alignItems: "center", gap: 8, textAlign: "left", cursor: "pointer",
-                padding: "8px 10px", borderRadius: 10, color: "var(--wl-text)",
-                background: r.isToday ? "color-mix(in srgb,var(--wl-accent) 12%,transparent)" : "var(--wl-surface)",
-                border: r.isToday
-                  ? "1px solid color-mix(in srgb,var(--wl-accent) 55%,transparent)"
-                  : "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)",
-              }}>
-              <span style={{ width: 52, flexShrink: 0 }}>
-                <span style={{ display: "block", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 12.5 }}>Sem {r.week}</span>
-                <span style={{ display: "block", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>{r.range}</span>
-              </span>
-              <span style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, color: "#0b0b11",
-                  background: phaseColor(r.phaseIndex), borderRadius: 5, padding: "2px 7px",
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 120 }}>{r.phaseName}</span>
-                {r.isToday && <span style={{ fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, color: "var(--wl-accent)" }}>HOY</span>}
-                {r.comp && <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🚩 {r.comp}</span>}
-                {!r.comp && r.isTaper && <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>taper</span>}
-              </span>
-              <span style={{ flexShrink: 0, fontFamily: "var(--mono)", fontSize: 10.5,
-                color: r.perWeek > 0 && r.done >= r.perWeek ? "var(--ok)" : "var(--wl-muted)" }}>
-                {r.perWeek > 0 ? `${r.done}/${r.perWeek}` : "—"}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
+        ) : heat === null ? (
+          <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5 }}>Cargando mapa…</Loading>
+        ) : (
+          <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal" singleRamp
+            onSelectDay={selectDay} phaseIndexFor={phaseIndexFor} comps={compMap} />
+        )}
+      </div>
+      {heat !== null && panel}
     </div>
   );
 }
