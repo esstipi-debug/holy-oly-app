@@ -81,6 +81,11 @@ export function DailySection({ athleteId }: { athleteId: string }) {
   // Sesiones con algún dato real (≠ none) — el "sin datos" se decide sobre esto, no sobre el total.
   const withData = (view?.adherence ?? []).filter((a) => a.status !== "none");
   const doneCount = withData.filter((a) => a.status === "done").length;
+  // En Resumen (vistazo) sólo importan las FALTAS: 25/25 con 25 filas "hecha" era un muro confuso.
+  // El stat N/M ya da el total; el detalle por-sesión completo vive en Plan › Sesiones.
+  const faltas = withData.filter((a) => a.status !== "done");
+  const FALTAS_CAP = 8;
+  const faltasShown = faltas.slice(-FALTAS_CAP); // las más recientes
 
   if (error) {
     return (
@@ -115,24 +120,40 @@ export function DailySection({ athleteId }: { athleteId: string }) {
           <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
             Sin datos de sesiones en las últimas semanas (ni del atleta ni marcadas).
           </div>
+        ) : faltas.length === 0 ? (
+          // Todo hecho: una línea, no 25 filas "hecha" idénticas.
+          <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
+            Sin faltas en el bloque — todas las sesiones con registro están hechas.
+          </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {withData.map((a) => (
-              <div key={`${a.week}-${a.idx}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-                <span aria-hidden="true" style={{ width: 22, height: 22, flex: "0 0 auto", display: "grid", placeItems: "center", borderRadius: 6, fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 12, color: STATUS_TINT[a.status], background: `color-mix(in srgb,${STATUS_TINT[a.status]} 16%,transparent)`, border: `1px solid color-mix(in srgb,${STATUS_TINT[a.status]} 50%,transparent)` }}>
-                  {STATUS_GLYPH[a.status]}
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5 }}>
-                    Sem {a.week} · sesión {a.idx + 1} — {STATUS_LABEL[a.status]}
-                  </div>
-                  <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: a.source === "athlete" ? "var(--wl-accent)" : "var(--wl-muted)", marginTop: 2 }}>
-                    {SOURCE_LABEL[a.source]}
+          // Sólo las faltas (a medias / no hechas): lo accionable. Lo hecho lo dice el stat N/M.
+          <>
+            <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)", marginBottom: 6 }}>
+              {faltas.length === 1 ? "1 falta" : `${faltas.length} faltas`} · el resto, hechas
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {faltasShown.map((a) => (
+                <div key={`${a.week}-${a.idx}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+                  <span aria-hidden="true" style={{ width: 22, height: 22, flex: "0 0 auto", display: "grid", placeItems: "center", borderRadius: 6, fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 12, color: STATUS_TINT[a.status], background: `color-mix(in srgb,${STATUS_TINT[a.status]} 16%,transparent)`, border: `1px solid color-mix(in srgb,${STATUS_TINT[a.status]} 50%,transparent)` }}>
+                    {STATUS_GLYPH[a.status]}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5 }}>
+                      Sem {a.week} · sesión {a.idx + 1} — {STATUS_LABEL[a.status]}
+                    </div>
+                    <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: a.source === "athlete" ? "var(--wl-accent)" : "var(--wl-muted)", marginTop: 2 }}>
+                      {SOURCE_LABEL[a.source]}
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+            {faltas.length > faltasShown.length && (
+              <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 6 }}>
+                +{faltas.length - faltasShown.length} anteriores · el detalle completo en Plan › Sesiones
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </Section>
 

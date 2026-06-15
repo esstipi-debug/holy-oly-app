@@ -41,22 +41,24 @@ test("muestra la tendencia de check-ins (bienestar + peso + 6 ítems) sin RPE", 
   expect(screen.queryByText(/rpe/i)).not.toBeInTheDocument();
 });
 
-test("adherencia reconciliada: el actual del atleta marca origen '✓ del atleta'", async () => {
+test("todo hecho: stat N/M + 'sin faltas', SIN el muro de filas 'hecha'", async () => {
   await setup({
     actuals: [{ week: 1, sessionIdx: 0, order: 0, movementId: "arranque", done: true }],
   });
   await waitFor(() => expect(screen.getByText("Adherencia del bloque")).toBeInTheDocument());
   expect(screen.getByText("1/1")).toBeInTheDocument(); // 1 hecha / 1 con registro
-  expect(screen.getByText(/Sem 1 · sesión 1 — hecha/)).toBeInTheDocument();
-  expect(screen.getByText(/✓ del atleta/)).toBeInTheDocument();
+  expect(screen.getByText(/Sin faltas en el bloque/)).toBeInTheDocument();
+  // las sesiones hechas NO se listan (era el muro confuso de 25 filas idénticas)
+  expect(screen.queryByText(/Sem 1 · sesión 1 — hecha/)).toBeNull();
 });
 
-test("sin actuals, cae a la marca del coach con origen 'marca del coach'", async () => {
-  await setup({ marks: [{ week: 1, idx: 0, status: "done" }] });
+test("una falta (no hecha) SÍ se lista, con su origen 'marca del coach'", async () => {
+  await setup({ marks: [{ week: 1, idx: 0, status: "missed" }] });
   await waitFor(() => expect(screen.getByText("Adherencia del bloque")).toBeInTheDocument());
-  expect(screen.getByText("1/1")).toBeInTheDocument();
-  expect(screen.getByText(/Sem 1 · sesión 1 — hecha/)).toBeInTheDocument();
+  expect(screen.getByText("0/1")).toBeInTheDocument(); // 0 hechas / 1 con registro
+  expect(screen.getByText(/Sem 1 · sesión 1 — no hecha/)).toBeInTheDocument();
   expect(screen.getByText(/marca del coach/)).toBeInTheDocument();
+  expect(screen.queryByText(/Sin faltas/)).toBeNull();
 });
 
 test("estado vacío: sin check-ins y sin datos de sesión → fallbacks visibles (none, nunca inventar)", async () => {
