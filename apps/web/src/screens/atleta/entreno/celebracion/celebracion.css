@@ -1,0 +1,133 @@
+/* Holy Oly · Celebración (rediseño 0110) — gamificación derivada. Token-driven (--wl-*): anda en los
+   6 skins. Renderiza EN FLUJO dentro del shell del atleta (sin el marco de teléfono del mock).
+   `--st-*` del mock → tokens semánticos de producción (--ok/--warn/--alert de theme.css). */
+
+.cel-root {
+  --ok:#1bc98a; --warn:#ffab2e; --alert:#ff3b46;
+  --ease-out:cubic-bezier(.2,.7,.3,1);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
+  position:relative; display:flex; flex-direction:column; gap:13px;
+}
+.cel-root *{ box-sizing:border-box; }
+
+/* ── confetti ── */
+.cf-layer{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:5; }
+.cf-piece{ position:absolute; top:-24px; width:8px; height:13px; border-radius:1.5px; opacity:0; will-change:transform; animation:cfFall 2.6s var(--ease-out) forwards; }
+@keyframes cfFall{ 0%{ transform:translateY(-24px) rotate(0); opacity:0; } 8%{ opacity:1; } 100%{ transform:translateY(820px) rotate(620deg); opacity:.95; } }
+@media (prefers-reduced-motion: reduce){ .cf-piece{ display:none; } }
+
+/* ── header de celebración ── */
+.cel-head{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; }
+.cel-check{ width:60px; height:60px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb,var(--ok) 18%,transparent); color:var(--ok); animation:celPop .5s var(--ease-spring) backwards; }
+.wl--neon .cel-check, .wl--bloomnight .cel-check{ box-shadow:0 0 28px color-mix(in srgb,var(--ok) 50%,transparent); }
+@keyframes celPop{ from{ transform:scale(.4); opacity:0; } to{ transform:scale(1); opacity:1; } }
+.cel-kicker{ font-family:var(--mono); font-size:9.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--wl-accent); }
+.cel-title{ font-family:var(--wl-display); font-weight:800; font-size:28px; line-height:.98; color:var(--wl-text); letter-spacing:.01em; }
+.wl--neon .cel-title, .wl--neonlight .cel-title, .wl--bloomnight .cel-title, .wl--chalk .cel-title{ text-transform:uppercase; }
+.wl--neon .cel-title, .wl--bloomnight .cel-title{ text-shadow:0 0 22px color-mix(in srgb,var(--wl-accent) 30%,transparent); }
+.cel-meta{ font-family:var(--mono); font-size:10px; color:var(--wl-muted); letter-spacing:.02em; }
+
+/* ── radar ── */
+.cel-radar{ display:flex; flex-direction:column; align-items:center; }
+.cel-radar__svg{ display:block; overflow:visible; }
+.cel-legend{ display:flex; gap:16px; justify-content:center; margin-top:6px; flex-wrap:wrap; }
+.cel-legend__i{ display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:9.5px; color:var(--wl-muted); }
+.cel-legend__sw{ width:14px; height:9px; border-radius:2px; flex:0 0 auto; }
+.cel-legend__sw--today{ background:var(--wl-accent); }
+.cel-legend__sw--avg{ background:transparent; border:1.5px dashed color-mix(in srgb,var(--wl-text) 45%,transparent); }
+.rd-ring{ fill:none; stroke:color-mix(in srgb,var(--wl-text) 13%,transparent); stroke-width:1; }
+.rd-spoke{ stroke:color-mix(in srgb,var(--wl-text) 11%,transparent); stroke-width:1; }
+.rd-avg{ fill:none; stroke:color-mix(in srgb,var(--wl-text) 42%,transparent); stroke-width:1.6; stroke-dasharray:3 3; stroke-linejoin:round; }
+.rd-today{ fill:color-mix(in srgb,var(--wl-accent) 20%,transparent); stroke:var(--wl-accent); stroke-width:2.2; stroke-linejoin:round; }
+.wl--neon .rd-today, .wl--bloomnight .rd-today{ filter:drop-shadow(0 0 8px color-mix(in srgb,var(--wl-accent) 55%,transparent)); }
+.rd-dot{ fill:var(--wl-accent); stroke:var(--wl-bg); stroke-width:1.6; }
+.rd-label{ fill:var(--wl-text); font-family:var(--wl-display); font-weight:700; font-size:11px; }
+.cel-radar__empty{ font-family:var(--mono); font-size:10px; color:var(--wl-muted); text-align:center; line-height:1.5; padding:18px 10px; max-width:280px; }
+
+/* ── streak ── */
+.cel-streak{ display:flex; align-items:center; justify-content:center; gap:9px; }
+.cel-streak__flame{ font-size:19px; }
+.cel-streak b{ font-family:var(--wl-display); font-weight:800; font-size:22px; color:var(--wl-accent); line-height:1; }
+.cel-streak span{ font-family:var(--mono); font-size:9.5px; color:var(--wl-muted); }
+
+/* ── XP / nivel ── */
+.cel-xp__top{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:7px; }
+.cel-xp__lvl{ font-family:var(--wl-display); font-weight:800; font-size:13px; color:var(--wl-text); }
+.cel-xp__lvl b{ color:var(--wl-accent); }
+.cel-xp__pts{ font-family:var(--mono); font-size:10px; color:var(--ok); }
+.cel-xp__track{ height:11px; border-radius:99px; background:color-mix(in srgb,var(--wl-text) 12%,transparent); overflow:hidden; }
+.cel-xp__fill{ height:100%; border-radius:99px; background:var(--wl-accent); width:var(--xp-to,72%); animation:xpFill 1.1s var(--ease-out) .3s backwards; }
+.wl--neon .cel-xp__fill, .wl--neonlight .cel-xp__fill, .wl--bloomnight .cel-xp__fill{ box-shadow:0 0 12px var(--wl-accent); }
+@keyframes xpFill{ from{ width:var(--xp-from,40%); } to{ width:var(--xp-to,72%); } }
+.cel-xp__next{ font-family:var(--mono); font-size:8.5px; color:var(--wl-muted); margin-top:6px; text-align:right; }
+@media (prefers-reduced-motion: reduce){ .cel-xp__fill{ animation:none; } }
+
+/* ── CTA ── */
+.cel-cta{ width:100%; padding:14px; border-radius:14px; cursor:pointer; border:none; background:var(--wl-accent); color:var(--wl-bg); font-family:var(--wl-display); font-weight:800; font-size:15px; letter-spacing:.02em; }
+.wl--neon .cel-cta, .wl--bloomnight .cel-cta{ text-transform:uppercase; box-shadow:0 0 22px color-mix(in srgb,var(--wl-accent) 35%,transparent); }
+.wl--chalk .cel-cta{ border-radius:0; border:3px solid var(--wl-ink); box-shadow:5px 5px 0 var(--wl-ink); }
+
+/* ── resumen del entreno ── */
+.cel-resumen__head{ display:flex; align-items:baseline; justify-content:space-between; padding:0 2px 8px; }
+.cel-resumen__title{ font-family:var(--wl-display); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--wl-muted); }
+.cel-resumen__total{ font-family:var(--mono); font-size:10px; color:var(--wl-accent); font-weight:700; }
+.cel-resumen{ display:flex; flex-direction:column; border-radius:14px; overflow:hidden; background:color-mix(in srgb,var(--wl-text) 4%,transparent); border:1px solid color-mix(in srgb,var(--wl-text) 8%,transparent); }
+.wl--chalk .cel-resumen{ border-radius:0; border:2px solid var(--wl-ink); }
+.wl--neon .cel-resumen{ background:rgba(255,255,255,.02); }
+.cel-resumen__row{ display:flex; align-items:flex-start; gap:10px; padding:10px 13px; }
+.cel-resumen__row+.cel-resumen__row{ border-top:1px solid color-mix(in srgb,var(--wl-text) 7%,transparent); }
+.cel-resumen__chk{ width:19px; height:19px; border-radius:50%; flex:0 0 auto; margin-top:2px; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb,var(--ok) 18%,transparent); color:var(--ok); }
+.cel-resumen__body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+.cel-resumen__l1{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.cel-resumen__l2{ display:flex; align-items:center; gap:8px; min-height:20px; }
+.cel-resumen__nm{ flex:1; min-width:0; font-family:var(--wl-display); font-weight:700; font-size:14px; color:var(--wl-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cel-resumen__discs{ display:flex; align-items:center; margin-left:auto; }
+.cel-resumen__sets{ font-family:var(--mono); font-size:10px; color:var(--wl-muted); flex:0 0 auto; white-space:nowrap; }
+.cel-resumen__pct{ font-family:var(--mono); font-size:9.5px; font-weight:700; padding:2px 6px; border-radius:6px; background:color-mix(in srgb,var(--gold) 20%,transparent); color:var(--gold); flex:0 0 auto; white-space:nowrap; }
+.cel-resumen__kg{ font-family:var(--wl-display); font-weight:800; font-size:15px; color:var(--wl-text); font-variant-numeric:tabular-nums; flex:0 0 auto; white-space:nowrap; }
+.cel-resumen__kg i{ font-family:var(--mono); font-weight:400; font-size:9px; color:var(--wl-muted); font-style:normal; margin-left:2px; }
+
+/* ── PANAL hexagonal (radar + movimientos/stats/trofeo) ── */
+.cel-panal{ position:relative; width:316px; height:352px; margin:0 auto; align-self:center; flex:0 0 auto; max-width:100%; }
+.cel-flower{ position:relative; width:316px; height:296px; margin:0 auto; align-self:center; flex:0 0 auto; max-width:100%; }
+.hex{ position:absolute; }
+.hex__ring, .hex__bg{ position:absolute; clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%); }
+.hex__ring{ inset:0; background:color-mix(in srgb,var(--wl-text) 14%,transparent); }
+.hex__bg{ inset:2px; background:var(--wl-surface); }
+.wl--neon .hex__bg{ background:#0c0c17; }
+.wl--neonlight .hex__bg{ background:#fff; }
+.hex__in{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:0 16px; }
+.hex--radar .hex__ring{ background:color-mix(in srgb,var(--wl-accent) 32%,transparent); }
+.hex--radar .hex__in{ padding:0; }
+.hex--mov .hex__ring{ background:color-mix(in srgb,var(--wl-accent) 42%,transparent); }
+.wl--neon .hex--mov, .wl--bloomnight .hex--mov{ filter:drop-shadow(0 0 7px color-mix(in srgb,var(--wl-accent) 28%,transparent)); }
+.hex-mov__nm{ font-family:var(--wl-display); font-weight:700; font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--wl-text); white-space:nowrap; }
+.hex-mov__kg{ font-family:var(--wl-display); font-weight:800; font-size:22px; color:var(--wl-text); line-height:1; font-variant-numeric:tabular-nums; }
+.hex-mov__kg i{ font-family:var(--mono); font-style:normal; font-weight:400; font-size:8px; color:var(--wl-muted); margin-left:2px; }
+.hex-mov__scheme{ display:flex; align-items:center; gap:5px; margin-top:1px; }
+.hex-mov__sets{ font-family:var(--mono); font-size:9px; color:var(--wl-muted); white-space:nowrap; }
+.hex-mov__pct{ font-family:var(--mono); font-size:9px; color:var(--wl-accent); white-space:nowrap; }
+.hex-mov__discs{ display:flex; gap:2px; margin-top:2px; }
+.hex--stat .hex__ring{ background:color-mix(in srgb,var(--wl-accent) 40%,transparent); }
+.wl--neon .hex--stat, .wl--bloomnight .hex--stat{ filter:drop-shadow(0 0 7px color-mix(in srgb,var(--wl-accent) 26%,transparent)); }
+.hex-stat__v{ font-family:var(--wl-display); font-weight:800; font-size:21px; color:var(--wl-text); line-height:1; font-variant-numeric:tabular-nums; }
+.hex-stat__l{ font-family:var(--mono); font-size:8px; letter-spacing:.05em; text-transform:uppercase; color:var(--wl-muted); margin-top:4px; text-align:center; }
+.hex--trophy .hex__ring{ background:var(--wl-accent); }
+.hex--trophy .hex__bg{ background:color-mix(in srgb,var(--wl-accent) 15%,var(--wl-surface)); }
+.wl--neon .hex--trophy, .wl--bloomnight .hex--trophy{ filter:drop-shadow(0 0 14px color-mix(in srgb,var(--wl-accent) 55%,transparent)); }
+.hex-trophy__ic{ font-size:26px; line-height:1; }
+.hex-trophy__t{ font-family:var(--wl-display); font-weight:800; font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--wl-text); text-align:center; margin-top:3px; line-height:1.1; }
+
+/* ── ribbon de fases (macro) ── */
+.cel-phases{ display:flex; gap:5px; justify-content:center; flex-wrap:wrap; }
+.cel-phase{ display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:99px; background:color-mix(in srgb,var(--wl-accent) 12%,transparent); border:1px solid color-mix(in srgb,var(--wl-accent) 35%,transparent); }
+.wl--chalk .cel-phase{ border-radius:0; }
+.cel-phase__nm{ font-family:var(--wl-display); font-weight:700; font-size:10px; color:var(--wl-text); }
+.cel-phase__ck{ font-family:var(--mono); font-size:9px; color:var(--wl-accent); font-weight:700; }
+
+/* ── rotador (Día · Semana · Macro) — sólo aparece si hay más de un tier logrado ── */
+.cel-rotator{ display:flex; align-items:center; justify-content:center; gap:4px; padding:4px; border-radius:99px; background:color-mix(in srgb,var(--wl-text) 5%,transparent); border:1px solid color-mix(in srgb,var(--wl-text) 10%,transparent); align-self:center; }
+.cel-rotator__tab{ display:flex; flex-direction:column; align-items:center; gap:1px; border:0; background:transparent; cursor:pointer; padding:8px 16px; border-radius:99px; color:var(--wl-muted); font-family:var(--wl-display); font-weight:700; font-size:13px; letter-spacing:.03em; transition:background .18s,color .18s; }
+.cel-rotator__tab small{ font-family:var(--mono); font-size:8px; font-weight:400; opacity:.7; letter-spacing:0; }
+.cel-rotator__tab.on{ background:var(--wl-accent); color:var(--wl-bg); }
+.wl--chalk .cel-rotator, .wl--chalk .cel-rotator__tab.on{ border-radius:0; }

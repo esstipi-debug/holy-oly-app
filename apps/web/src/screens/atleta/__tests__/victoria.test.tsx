@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { afterEach, beforeEach, test, expect, vi } from "vitest";
-import type { MePlanView, SessionView, ExerciseActual } from "@holy-oly/core";
+import type { MePlanView, SessionView, ExerciseActual, MeRecorrido } from "@holy-oly/core";
 import * as me from "../../../data/meClient";
 import { VictoriaScreen } from "../entreno/VictoriaScreen";
 
@@ -26,8 +26,11 @@ function sessions(): SessionView[] {
   }];
 }
 
+const RECORRIDO: MeRecorrido = { semanas: [] };
+
 beforeEach(() => {
   vi.spyOn(me, "getMePlan").mockResolvedValue(PLAN);
+  vi.spyOn(me, "getMeRecorrido").mockResolvedValue(RECORRIDO);
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -42,57 +45,21 @@ function renderVictoria() {
   );
 }
 
-test("≥1 hecho → «Sesión completada» y carga total; SIN «serie más pesada» (no lleva a cuidarse)", async () => {
+test("≥1 hecho → celebración «¡Entreno guardado!» con los lifts + nivel; SIN «serie más pesada»; SIN RPE", async () => {
   vi.spyOn(me, "getMeSessions").mockResolvedValue(sessions());
-  renderVictoria();
-  expect(await screen.findByText("Sesión completada")).toBeInTheDocument();
-  // carga total = 64*2 + 66*2 + 120*1 = 380
-  expect(screen.getByText("380")).toBeInTheDocument();
-  // El hito «serie más pesada» se quitó: celebra el PR/ego, no la recuperación (directiva owner).
-  expect(screen.queryByText("Tu serie más pesada hoy")).not.toBeInTheDocument();
-  expect(screen.getByText("2/2")).toBeInTheDocument();
-  // única sesión de la semana → semana == día → la línea micro se omite (no repite el número)
-  expect(screen.queryByText(/llevás/)).not.toBeInTheDocument();
+  const { container } = renderVictoria();
+  expect(await screen.findByText("¡Entreno guardado!")).toBeInTheDocument();
+  // los movimientos aparecen (hex + resumen)
+  expect(screen.getAllByText(/Arranque/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/Env/).length).toBeGreaterThan(0);
+  // gamificación: nivel visible (recorrido vacío → Nivel 1)
+  expect(screen.getAllByText(/Nivel/).length).toBeGreaterThan(0);
+  // intocables: nunca «serie más pesada» (no lleva a cuidarse) ni RPE en superficie del atleta
+  expect(screen.queryByText(/serie más pesada/i)).not.toBeInTheDocument();
+  expect((container.textContent ?? "")).not.toMatch(/\brpe\b/i);
 });
 
-test("otra sesión hecha en la semana → línea micro «Con esta, llevás X kg en la semana.»", async () => {
-  const views: SessionView[] = [
-    ...sessions(), // día 0: 380 kg
-    {
-      week: 8, sessionIdx: 1,
-      exercises: [
-        { movementId: "sentadilla", movementName: "Sentadilla", sets: 5, reps: 5, pct: 75, targetKg: 124,
-          actual: actual({ movementId: "sentadilla", movementName: "Sentadilla", sets: [{ kg: 100, reps: 1, done: true }] }) },
-      ],
-    },
-  ];
-  vi.spyOn(me, "getMeSessions").mockResolvedValue(views);
-  renderVictoria();
-  expect(await screen.findByText("Sesión completada")).toBeInTheDocument();
-  // semana = 380 (día 0) + 100 (día 1) = 480 > 380 del día → la línea aparece, SIN «~» (cero calentamiento)
-  expect(screen.getByText("Con esta, llevás 480 kg en la semana.")).toBeInTheDocument();
-});
-
-test("acumulado semanal con calentamiento → «Con esta, llevás ~X kg…» (rampa estimada, regla 06-11)", async () => {
-  const views: SessionView[] = [
-    ...sessions(), // día 0: 380 kg de trabajo, sin rampa
-    {
-      week: 8, sessionIdx: 1,
-      exercises: [
-        { movementId: "sentadilla", movementName: "Sentadilla", sets: 5, reps: 5, pct: 75, targetKg: 124,
-          warmup: [{ pct: 0, kg: 20, reps: 5, label: "barra" }],
-          actual: actual({ movementId: "sentadilla", movementName: "Sentadilla", sets: [{ kg: 100, reps: 1, done: true }] }) },
-      ],
-    },
-  ];
-  vi.spyOn(me, "getMeSessions").mockResolvedValue(views);
-  renderVictoria();
-  expect(await screen.findByText("Sesión completada")).toBeInTheDocument();
-  // semana = 380 + 100 de trabajo + 100 de rampa prescrita del ejercicio hecho = ~580
-  expect(screen.getByText("Con esta, llevás ~580 kg en la semana.")).toBeInTheDocument();
-});
-
-test("0 hechos → «Sesión registrada», sin carga total ni serie más pesada", async () => {
+test("0 hechos → «Sesión registrada» sobria (sin celebración)", async () => {
   const all0: SessionView[] = [{
     week: 8, sessionIdx: 0,
     exercises: [
@@ -103,24 +70,28 @@ test("0 hechos → «Sesión registrada», sin carga total ni serie más pesada"
   vi.spyOn(me, "getMeSessions").mockResolvedValue(all0);
   renderVictoria();
   expect(await screen.findByText("Sesión registrada")).toBeInTheDocument();
-  expect(screen.queryByText("Carga total del día")).not.toBeInTheDocument();
-  expect(screen.queryByText("Tu serie más pesada hoy")).not.toBeInTheDocument();
-  expect(screen.getByText("0/1")).toBeInTheDocument();
+  expect(screen.queryByText("¡Entreno guardado!")).not.toBeInTheDocument();
 });
 
-test("ejercicio hecho pero sin kg → sin tarjeta de carga total (no «0 kg»)", async () => {
-  const doneNoKg: SessionView[] = [{
-    week: 8, sessionIdx: 0,
-    exercises: [
-      { movementId: "arranque", movementName: "Arranque", sets: 1, reps: 2, pct: 80, targetKg: 64,
-        actual: actual({ movementId: "arranque", movementName: "Arranque", done: true, sets: [{ kg: undefined, reps: 2, done: true }] }) },
-    ],
-  }];
-  vi.spyOn(me, "getMeSessions").mockResolvedValue(doneNoKg);
+test("semana cerrada → abre en la celebración de Semana, con rotador para volver al Día", async () => {
+  // recorrido marca la semana 8 con el plan cumplido → tier semana disponible
+  vi.spyOn(me, "getMeRecorrido").mockResolvedValue({
+    semanas: [{ week: 8, sesionesHechas: 5, sesionesTotales: 5, trabajoKg: 12000, calentamientoKg: 1000 }],
+  });
+  vi.spyOn(me, "getMeSessions").mockResolvedValue(sessions());
   renderVictoria();
-  expect(await screen.findByText("Sesión completada")).toBeInTheDocument();
-  expect(screen.queryByText("Carga total del día")).not.toBeInTheDocument();
-  expect(screen.queryByText("Tu serie más pesada hoy")).not.toBeInTheDocument();
+  // abre en el mayor alcance logrado (Semana)
+  expect(await screen.findByText("¡Semana cerrada!")).toBeInTheDocument();
+  // el rotador permite volver al Día
+  fireEvent.click(screen.getByRole("tab", { name: /Día/ }));
+  expect(screen.getByText("¡Entreno guardado!")).toBeInTheDocument();
+});
+
+test("«Reclamar» navega al inicio", async () => {
+  vi.spyOn(me, "getMeSessions").mockResolvedValue(sessions());
+  renderVictoria();
+  fireEvent.click(await screen.findByRole("button", { name: /reclamar/i }));
+  await waitFor(() => expect(screen.getByText("HOY")).toBeInTheDocument());
 });
 
 test("«Registrar bienestar» navega al inicio", async () => {
@@ -130,17 +101,9 @@ test("«Registrar bienestar» navega al inicio", async () => {
   await waitFor(() => expect(screen.getByText("HOY")).toBeInTheDocument());
 });
 
-test("«Listo» navega al inicio", async () => {
-  vi.spyOn(me, "getMeSessions").mockResolvedValue(sessions());
-  renderVictoria();
-  fireEvent.click(await screen.findByRole("button", { name: /^listo$/i }));
-  await waitFor(() => expect(screen.getByText("HOY")).toBeInTheDocument());
-});
-
-test("D13: header muestra day/turno del view cuando están presentes", async () => {
+test("meta muestra day/turno del view (Día 1 · PM)", async () => {
   const views: SessionView[] = [{
-    week: 8, sessionIdx: 0,
-    day: 1, turno: "PM", fecha: "2026-06-12",
+    week: 8, sessionIdx: 0, day: 1, turno: "PM", fecha: "2026-06-12",
     exercises: [
       { movementId: "arranque", movementName: "Arranque", sets: 2, reps: 2, pct: 80, targetKg: 64,
         actual: actual({ movementId: "arranque", movementName: "Arranque", sets: [{ kg: 64, reps: 2, done: true }] }) },
@@ -148,21 +111,7 @@ test("D13: header muestra day/turno del view cuando están presentes", async () 
   }];
   vi.spyOn(me, "getMeSessions").mockResolvedValue(views);
   renderVictoria();
-  // header muestra "Día 1 · PM" y la fecha del view
   expect(await screen.findByText(/Día 1 · PM/)).toBeInTheDocument();
-  expect(screen.getByText(/2026-06-12/)).toBeInTheDocument();
-});
-
-test("D13: header fallback a idx+1 y fecha local cuando el view no trae day/turno/fecha", async () => {
-  vi.spyOn(me, "getMeSessions").mockResolvedValue(sessions()); // sin day/turno/fecha
-  renderVictoria();
-  // idx=0 → fallback a "Día 1" sin · PM/AM, sin turno
-  await screen.findByText("Sesión completada");
-  // La línea contiene "Día 1 —" con los movimientos (no debe romper el fallback)
-  expect(screen.getByText(/Día 1/)).toBeInTheDocument();
-  // No debe aparecer ningún turno
-  expect(screen.queryByText(/· PM/)).not.toBeInTheDocument();
-  expect(screen.queryByText(/· AM/)).not.toBeInTheDocument();
 });
 
 test("API falla → estado de error con volver al inicio", async () => {
