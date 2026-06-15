@@ -13,7 +13,7 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import type { RM } from "@holy-oly/core";
 import { MACROCYCLES, ALL_RECIPES, instantiatePrescription } from "@holy-oly/core";
-import { DEMO_PLAN_INPUTS, DEMO_HISTORY_CFG } from "../prisma/seed-demo-data";
+import { DEMO_PLAN_INPUTS, DEMO_HISTORY_CFG, makeDayLogYear } from "../prisma/seed-demo-data";
 import { seedAthleteHistory } from "../prisma/seed-history";
 
 const prisma = new PrismaClient();
@@ -44,6 +44,21 @@ const SEXO_BY_ID: Record<string, "M" | "F"> = { mv: "F", ds: "M", lr: "F", sm: "
 
 const DAY_MS = 86_400_000;
 const isoDaysAgo = (n: number): string => new Date(Date.now() - n * DAY_MS).toISOString().slice(0, 10);
+const TODAY = new Date().toISOString().slice(0, 10);
+
+/** Siembra (scoped) un año de check-ins diarios HASTA HOY → alimenta el mapa de calor de Bienestar
+ *  y Peso (Mi Progreso) + el radar de la Celebración (hoy vs promedio). Idempotente. */
+async function rebuildDayLogs(athleteId: string): Promise<void> {
+  await prisma.dayLog.deleteMany({ where: { athleteId } });
+  const logs = makeDayLogYear(TODAY);
+  await prisma.dayLog.createMany({
+    data: logs.map((l) => ({
+      athleteId, date: l.date,
+      fatiga: l.fatiga, dolor: l.dolor, estres: l.estres, humor: l.humor, motivacion: l.motivacion, sueno: l.sueno,
+      weight: l.weight ?? null,
+    })),
+  });
+}
 
 function totalWeeksOf(macroId: string): number {
   const macro = MACROCYCLES.find((m) => m.id === macroId);
@@ -132,8 +147,9 @@ async function main(): Promise<void> {
       SEXO_BY_ID[id] ?? "M",
       cfg,
     );
+    await rebuildDayLogs(id); // check-ins diarios → Bienestar/Peso (Mi Progreso) + radar (Celebración)
     touched++;
-    console.log(`✓ ${id}: plan + prescripción + historial (${cfg.adherences.length} ciclos) + entrenos`);
+    console.log(`✓ ${id}: plan + prescripción + historial (${cfg.adherences.length} ciclos) + entrenos + check-ins`);
   }
 
   await ensureNahuel(coachId);

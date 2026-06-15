@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { MePlanView, SessionView, MeRecorrido } from "@holy-oly/core";
+import type { MePlanView, SessionView, MeRecorrido, DayLog, MonitorSeries } from "@holy-oly/core";
 import { sessionTonnage, completion } from "@holy-oly/core";
 import * as me from "../../../data/meClient";
 import { xpForSession, cumulativeXp, levelInfo, weekStreak, highestTier } from "./celebracion/gamify";
+import { buildWellnessRadar } from "./celebracion/radarData";
 import { Celebracion, type CelData, type CelLift, type CelStat } from "./celebracion/Celebracion";
 
 type LoadState = "loading" | "ready" | "error";
@@ -25,19 +26,26 @@ export function VictoriaScreen() {
   const [plan, setPlan] = useState<MePlanView | null>(null);
   const [session, setSession] = useState<SessionView | undefined>(undefined);
   const [recorrido, setRecorrido] = useState<MeRecorrido | null>(null);
+  const [dayLog, setDayLog] = useState<DayLog | null>(null);
+  const [series, setSeries] = useState<MonitorSeries | undefined>(undefined);
   const [state, setState] = useState<LoadState>("loading");
 
   useEffect(() => {
     if (!Number.isInteger(week) || !Number.isInteger(idx)) { navigate("/atleta", { replace: true }); return; }
     let on = true;
-    // El recorrido es independiente: un fallo no debe tumbar la celebración (cae a sin-gamificación).
+    // Recorrido / check-in / serie son independientes: un fallo no tumba la celebración (la
+    // gamificación cae a su default; el radar de bienestar cae a su empty-state honesto).
     const recP = me.getMeRecorrido().then((r) => r as MeRecorrido | null, () => null);
+    const dayP = me.getDayLog().then((d) => d.entry, () => null);
+    const serP = me.getMeSeries().then((s) => s, () => undefined);
     Promise.all([me.getMePlan(), me.getMeSessions(week)])
       .then(async ([p, views]: [MePlanView, SessionView[]]) => {
         if (!on) return;
         const s = views.find((v) => v.sessionIdx === idx);
         if (!s) { setState("error"); return; }
-        setPlan(p); setSession(s); setRecorrido(await recP); setState("ready");
+        setPlan(p); setSession(s);
+        setRecorrido(await recP); setDayLog(await dayP); setSeries(await serP);
+        setState("ready");
       })
       .catch(() => { if (on) setState("error"); });
     return () => { on = false; };
@@ -134,7 +142,7 @@ export function VictoriaScreen() {
   const data: CelData = {
     tiers: [...tierList],
     barKg,
-    radar: null, // v1: el radar de bienestar necesita ítems del check-in diario (hueco de datos) → empty-state
+    radar: buildWellnessRadar(dayLog, series), // hoy (check-in) vs promedio (ítems semanales); null → empty-state
     streakWeeks,
     level: lvl.level, nextLevel: lvl.nextLevel, xpToNext: lvl.xpToNext, xpFromPct: fromPct, xpToPct: toPct, tag,
     diaMeta: `Semana ${week} · Día ${session.day ?? idx + 1}${session.turno ? ` · ${session.turno}` : ""}`,

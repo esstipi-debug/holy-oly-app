@@ -4,8 +4,8 @@
  * resolves the athlete from the session, never from a path/body, so there is no cross-athlete read.
  */
 import {
-  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, MeCycleViewSchema, MeRecorridoSchema, MacroHistoryViewSchema,
-  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type MeCycleView, type PutMeSessionInput, type MacroHistoryView,
+  MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, MeCycleViewSchema, MeRecorridoSchema, MacroHistoryViewSchema, MeHeatDaysSchema,
+  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type MeCycleView, type PutMeSessionInput, type MacroHistoryView, type MeHeatDays,
 } from "@holy-oly/core";
 import { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
 
@@ -63,6 +63,13 @@ export async function getMeHeat(): Promise<WeekHeat[]> {
   const res = await fetch(`${BASE}/me/heat`, { credentials: "include" });
   if (!res.ok) return fail(res);
   return WeekHeatsSchema.parse(await res.json());
+}
+
+/** Mapa de calor por día (rediseño 0110): carga/bienestar/peso/recuperación por día. Sin RPE. */
+export async function getMeHeatDays(): Promise<MeHeatDays> {
+  const res = await fetch(`${BASE}/me/heatdays`, { credentials: "include" });
+  if (!res.ok) return fail(res);
+  return MeHeatDaysSchema.parse(await res.json());
 }
 
 /** Recorrido del macro: lo HECHO acumulado por semana (kg propios, jamás RM/RPE/ACWR). */

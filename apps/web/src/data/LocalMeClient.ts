@@ -10,14 +10,14 @@
 import type {
   Atleta, CycleData, MeCycleView, MePlanView, MeRecorrido, MonitorSeries, Plan, PrescriptionRow, RecorridoSemana,
   DayLog, DayLogView, DayLogResult, DayLogInput,
-  SessionView, SessionActual, WeekHeat, SessionRegistro, PutMeSessionInput, MacroHistoryView,
+  SessionView, SessionActual, WeekHeat, SessionRegistro, PutMeSessionInput, MacroHistoryView, MeHeatDays,
 } from "@holy-oly/core";
 import {
   buildMePlanView, computeStreak, mergeActuals, buildSessionViews, summarizeSets, barKgForSexo,
   DayLogInputSchema, PutMeSessionInputSchema, PutMeCycleInputSchema,
   MonitorSeriesSchema, PlanSchema, RosterSchema, PrescriptionRowsSchema,
   DayLogsSchema, SessionActualsSchema, SessionRegistrosSchema, CycleShareSchema, CycleStateSchema, MacroHistoryViewSchema,
-  MACROCYCLES, planHeat, weekDoneSummary, dayLayoutFor,
+  MACROCYCLES, planHeat, weekDoneSummary, dayLayoutFor, buildMeHeatDays, setTonnage, wellnessScore,
   validateFechaEntreno, fechaConflict, unresolvedPriorDays,
 } from "@holy-oly/core";
 import { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
@@ -163,6 +163,53 @@ export class LocalMeClient implements MeClient {
       semanas.push({ week, trabajoKg, calentamientoKg, sesionesHechas, sesionesTotales });
     }
     return { semanas };
+  }
+
+  /** Mapa de calor por día (rediseño 0110). Espejo de repo.getMeHeatDays con las MISMAS fuentes
+   *  REALES del seed/registro local: carga (actuals.doneAt → tonelaje), bienestar+peso (DayLog),
+   *  recuperación (HRV/FC semanal del macro). NUNCA RPE. Días sin dato → null (gris honesto). */
+  async getMeHeatDays(): Promise<MeHeatDays> {
+    const plan = this.plan();
+    const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
+    const totalWeeks = macro ? macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] : undefined;
+
+    const byDate = new Map<string, { kg: number; sessions: Set<string> }>();
+    for (const a of this.actuals()) {
+      if (!a.doneAt) continue;
+      const kg = a.sets && a.sets.length > 0
+        ? a.sets.reduce((s, set) => s + setTonnage(set), 0)
+        : a.done && a.actualKg != null && a.actualReps != null ? a.actualKg * a.actualReps : 0;
+      let e = byDate.get(a.doneAt);
+      if (!e) { e = { kg: 0, sessions: new Set() }; byDate.set(a.doneAt, e); }
+      e.kg += kg;
+      e.sessions.add(`${a.week}-${a.sessionIdx}`);
+    }
+    const training: Record<string, { kg: number; sessions: number }> = {};
+    for (const [iso, e] of byDate) training[iso] = { kg: Math.round(e.kg), sessions: e.sessions.size };
+
+    const daylogs = this.dayLogs().map((l) => ({
+      date: l.date,
+      wellness: wellnessScore({ fatiga: l.fatiga, dolor: l.dolor, estres: l.estres, humor: l.humor, motivacion: l.motivacion, sueno: l.sueno }),
+      bw: l.weight ?? null,
+    }));
+
+    const series = await this.getMeSeries();
+    const comps = (plan?.comps ?? []).filter((c) => c.date).map((c) => ({ iso: c.date!, name: c.name, note: `S${c.week}` }));
+    const band = series?.weightBand;
+
+    return buildMeHeatDays({
+      today: this.today(),
+      startDate: plan?.startDate,
+      totalWeeks,
+      training,
+      daylogs,
+      comps,
+      weekly: series ? { hrv: series.hrv, rhr: series.rhr } : undefined,
+      hrvBase: series?.hrvBase,
+      rhrBase: series?.rhrBase,
+      weightBand: band,
+      category: band ? `${Math.round(band[1])} kg` : undefined,
+    });
   }
 
   /** Historial de macrociclos cerrados del atleta (constancia propia). Espejo del API /me/macro-history. */

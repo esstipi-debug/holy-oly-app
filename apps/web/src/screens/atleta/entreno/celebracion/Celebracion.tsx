@@ -75,10 +75,10 @@ function RadarHex({ radar }: { radar: RadarData | null }) {
   );
 }
 
-const RadarLegend = ({ extra }: { extra?: string }) => (
+const RadarLegend = ({ extra, hasAvg = true }: { extra?: string; hasAvg?: boolean }) => (
   <div className="cel-legend">
     <span className="cel-legend__i"><span className="cel-legend__sw cel-legend__sw--today" />Hoy</span>
-    <span className="cel-legend__i"><span className="cel-legend__sw cel-legend__sw--avg" />Promedio</span>
+    {hasAvg && <span className="cel-legend__i"><span className="cel-legend__sw cel-legend__sw--avg" />Promedio</span>}
     {extra && <span className="cel-legend__i" style={{ color: "var(--wl-accent)", fontWeight: 700 }}>{extra}</span>}
   </div>
 );
@@ -108,7 +108,7 @@ function CelDia({ d }: { d: CelData }) {
           </Hex>
         ))}
       </div>
-      {d.radar && <RadarLegend extra={`${CL(d.diaTotalKg)} kg · ${d.diaSets} series`} />}
+      {d.radar && <RadarLegend extra={`${CL(d.diaTotalKg)} kg · ${d.diaSets} series`} hasAvg={d.radar.avg != null} />}
       <XPBlock level={d.level} nextLevel={d.nextLevel} xpToNext={d.xpToNext} pts={`+${d.diaXp} XP`} fromPct={d.xpFromPct} toPct={d.xpToPct} tag={d.tag} />
       {/* resumen del entreno (pedido owner 2026-06-11: cada ejercicio visible) */}
       <div className="cel-resumen-wrap">
@@ -153,7 +153,7 @@ function CelSemana({ d }: { d: CelData }) {
           </Hex>
         ))}
       </div>
-      {d.radar && <RadarLegend extra="bienestar de la semana" />}
+      {d.radar && <RadarLegend extra="bienestar de la semana" hasAvg={d.radar.avg != null} />}
       <XPBlock level={d.level} nextLevel={d.nextLevel} xpToNext={d.xpToNext} pts={`+${d.weekXp} XP`} fromPct={d.xpFromPct} toPct={d.xpToPct} tag={d.tag} />
       <button type="button" className="cel-cta" onClick={d.onClaim}>Seguir</button>
     </>
