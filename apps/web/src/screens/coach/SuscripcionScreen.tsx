@@ -4,6 +4,7 @@ import { formatClp, MULTISEDE } from "@holy-oly/core";
 import { billingCheckout, billingPlans, billingStatus, mockActivate, type BillingPeriod, type BillingPlan, type BillingStatus } from "../../billing/billingClient";
 import { useAuth } from "../../auth/AuthContext";
 import { BackButton } from "../../ui/BackButton";
+import { RetryButton } from "../../ui/RetryButton";
 import { VerifyEmailBanner } from "../../ui/VerifyEmailBanner";
 
 const monthsFree = (p: BillingPlan): number => Math.round((p.priceClpMonthly * 6 - p.priceClpSemiannual) / p.priceClpMonthly);
@@ -28,15 +29,20 @@ export function SuscripcionScreen() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const [reload, setReload] = useState(0);
   const refresh = useCallback(async (): Promise<void> => {
     setStatus(await billingStatus());
   }, []);
 
   useEffect(() => {
+    let on = true;
+    setError(null);
     void Promise.all([billingPlans(), refresh()])
-      .then(([p]) => setPlans(p))
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Error"));
-  }, [refresh]);
+      .then(([p]) => { if (on) setPlans(p); })
+      // Error en español fijo (no el crudo del server, posible inglés). El reintento re-corre el load.
+      .catch(() => { if (on) setError("No se pudo cargar la información de la suscripción. Probá de nuevo."); });
+    return () => { on = false; };
+  }, [refresh, reload]);
 
   useEffect(() => {
     if (params.get("mockCheckout") !== "1") return;
@@ -183,7 +189,11 @@ export function SuscripcionScreen() {
         </>
       )}
 
-      {error && <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontSize: 12 }}>{error}</div>}
+      {error && (
+        <div role="alert" style={{ marginTop: 12, color: "var(--wl-danger)", fontSize: 12 }}>
+          {error}{plans.length === 0 && <> <RetryButton onClick={() => setReload((r) => r + 1)} /></>}
+        </div>
+      )}
 
       {status?.active ? (
         // D6: suscripción activa → nada de CTA falso que re-dispare checkout. Cambios = contacto.

@@ -1,4 +1,5 @@
 import { type ComponentProps } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Competencia, Macrocycle, Plan, SessionLog } from "@holy-oly/core";
 import { PlanCalendar } from "../calendar/PlanCalendar";
 import { SessionAdherence } from "../sessions/SessionAdherence";
@@ -41,8 +42,24 @@ export function PlanTab({
   athleteId, macro, plan, maxWeek, startDate, hoyWeek, perWeek, comps, sessionLog,
   sessionError, today, sexo, loadHeat, loadWeek, onWeekClick, onToggle, onRmsChange, rmsStamp,
 }: Props) {
+  const navigate = useNavigate();
   return (
     <div>
+      {/* Sin macro asignado: cerrar el lazo de onboarding. Los RM se cargan al asignar un macro
+          (AssignSheet en el catálogo), no en el drill-down → CTA directo a /coach/macros. */}
+      {!macro && (
+        <div style={{ marginTop: 8, padding: "16px 14px", borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)", textAlign: "center" }}>
+          <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, color: "var(--wl-text)" }}>Todavía sin macro asignado</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 6, lineHeight: 1.5 }}>
+            Asignale un macrociclo para cargar sus RM y armar el plan.
+          </div>
+          <button type="button" onClick={() => navigate("/coach/macros")}
+            style={{ marginTop: 12, padding: "10px 16px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 13.5, cursor: "pointer" }}>
+            Asignar macro ›
+          </button>
+        </div>
+      )}
+
       {macro && (
         <PlanCalendar
           key={`cal-${rmsStamp}`}
