@@ -1,15 +1,15 @@
 import { toTab } from "../tabs";
 
-test("toTab acepta las 3 tabs conocidas", () => {
-  expect(toTab("resumen")).toBe("resumen");
-  expect(toTab("monitor")).toBe("monitor");
+test("toTab acepta las 2 tabs conocidas", () => {
   expect(toTab("plan")).toBe("plan");
+  expect(toTab("monitor")).toBe("monitor");
 });
 
-test("toTab cae a 'resumen' ante null/undefined/vacío/basura", () => {
-  expect(toTab(null)).toBe("resumen");
-  expect(toTab(undefined)).toBe("resumen");
-  expect(toTab("")).toBe("resumen");
-  expect(toTab("palmares")).toBe("resumen"); // tab vieja eliminada
-  expect(toTab("MONITOR")).toBe("resumen"); // case-sensitive a propósito
+test("toTab cae a 'plan' ante null/undefined/vacío/basura (incluida la vieja 'resumen')", () => {
+  expect(toTab(null)).toBe("plan");
+  expect(toTab(undefined)).toBe("plan");
+  expect(toTab("")).toBe("plan");
+  expect(toTab("resumen")).toBe("plan"); // tab eliminada
+  expect(toTab("palmares")).toBe("plan"); // tab vieja eliminada
+  expect(toTab("MONITOR")).toBe("plan"); // case-sensitive a propósito
 });

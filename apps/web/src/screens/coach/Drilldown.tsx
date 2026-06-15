@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useRepository } from "../../data/RepositoryProvider";
-import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type CycleContext, type Macrocycle, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
+import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
 import { Badge } from "../../ui/Badge";
 import { BackButton } from "../../ui/BackButton";
@@ -16,7 +16,6 @@ import { AtletaPreview } from "./AtletaPreview";
 import { HomeScreen } from "../atleta/HomeScreen";
 import { LocalMeClient } from "../../data/LocalMeClient";
 import { API_ENABLED } from "../../data/apiConfig";
-import { ResumenTab } from "./drilldown/ResumenTab";
 import { MonitorTab } from "./drilldown/MonitorTab";
 import { PlanTab } from "./drilldown/PlanTab";
 import { TABS, toTab, type TabKey } from "./drilldown/tabs";
@@ -39,7 +38,6 @@ export function Drilldown() {
   const [comps, setComps] = useState<Competencia[]>([]);
   const [plan, setPlan] = useState<Plan | undefined>();
   const [sessionLog, setSessionLog] = useState<SessionLog>([]);
-  const [sessionError, setSessionError] = useState(false);
   const [compOpen, setCompOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
@@ -62,16 +60,13 @@ export function Drilldown() {
     void repo.getPlan(id).then((p) => { if (p) setPlan(p); }, () => {});
   }, [repo, id]);
 
-  // Ciclo redactado del atleta (slice ciclo-visible): {share, lúteo-hoy, salud, fiable} — jamás fase/fecha.
-  const [cycleCtx, setCycleCtx] = useState<CycleContext | undefined>(undefined);
-
   useEffect(() => {
     let on = true;
     setLoaded(false); setError(false); setAsAthlete(false); // reset on athlete change (incl. the athlete-view toggle)
-    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id), repo.getCycleContext(id)])
-      .then(([a, s, c, sl, pl, cy]) => {
+    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id)])
+      .then(([a, s, c, sl, pl]) => {
         if (!on) return;
-        setAthlete(a); setSeries(s); setComps(c); setSessionLog(sl); setPlan(pl); setCycleCtx(cy); setLoaded(true);
+        setAthlete(a); setSeries(s); setComps(c); setSessionLog(sl); setPlan(pl); setLoaded(true);
       })
       .catch(() => { if (on) { setError(true); setLoaded(true); } });
     return () => { on = false; };
@@ -113,11 +108,9 @@ export function Drilldown() {
   async function onToggleSession(week: number, idx: number): Promise<void> {
     const next = applyToggle(sessionLog, week, idx);
     setSessionLog(next); // optimistic
-    setSessionError(false);
     try {
       await repo.setSessionLog(id, next);
     } catch {
-      setSessionError(true);
       setSessionLog(await repo.getSessionLog(id)); // revert to the persisted truth
     }
   }
@@ -180,9 +173,6 @@ export function Drilldown() {
           </div>
 
           <div className="wl-viewfade" style={{ marginTop: 14 }}>
-            {tab === "resumen" && (
-              <ResumenTab athleteId={id} macro={macro} seriesWeeks={series?.weeks} comps={comps} cycleCtx={cycleCtx} />
-            )}
             {tab === "monitor" && (
               <MonitorTab series={series} macro={macro} onPointClick={setSelectedWeek} />
             )}
@@ -197,13 +187,11 @@ export function Drilldown() {
                 perWeek={perWeek}
                 comps={comps}
                 sessionLog={sessionLog}
-                sessionError={sessionError}
                 today={today}
                 sexo={athlete.sexo}
                 loadHeat={loadHeat}
                 loadWeek={loadWeek}
                 onWeekClick={setSelectedWeek}
-                onToggle={(w, i) => void onToggleSession(w, i)}
                 onRmsChange={onRmsChange}
                 rmsStamp={rmsStamp}
               />

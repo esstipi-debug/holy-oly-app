@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import type { Competencia, Macrocycle, Plan, SessionLog } from "@holy-oly/core";
 import { Section } from "../../../ui/Section";
 import { PlanCalendar } from "../calendar/PlanCalendar";
-import { SessionAdherence } from "../sessions/SessionAdherence";
 import { SessionsSection } from "../sessions/SessionsSection";
 import { RmSection } from "../rm/RmSection";
 import { PrilepinSection } from "../prilepin/PrilepinSection";
@@ -20,7 +19,6 @@ type Props = {
   perWeek: number;
   comps: Competencia[];
   sessionLog: SessionLog;
-  sessionError: boolean;
   today: string;
   sexo: "M" | "F";
   /** Mapea kg derivado → discos lazy; lo provee el shell (memoizado por id). */
@@ -28,8 +26,6 @@ type Props = {
   loadWeek: CalProps["loadWeek"];
   /** Abre el WeekDetailSheet del shell. */
   onWeekClick: (week: number) => void;
-  /** Optimistic toggle del shell (compartido con WeekDetailSheet). */
-  onToggle: (week: number, idx: number) => void;
   /** RmSection lo dispara: el shell bumpea rmsStamp (remonta calendario+sesiones) y refetchea plan. */
   onRmsChange: () => void;
   /** Remount key parent-owned: un RM guardado tira el kg cacheado de calendario y sesiones. */
@@ -42,7 +38,7 @@ type Props = {
  *  derivado queda obsoleto). Superficie coach-only — kg manda, discos vía DiscRow canónico, jamás RPE. */
 export function PlanTab({
   athleteId, macro, plan, maxWeek, startDate, hoyWeek, perWeek, comps, sessionLog,
-  sessionError, today, sexo, loadHeat, loadWeek, onWeekClick, onToggle, onRmsChange, rmsStamp,
+  today, sexo, loadHeat, loadWeek, onWeekClick, onRmsChange, rmsStamp,
 }: Props) {
   const navigate = useNavigate();
   return (
@@ -83,12 +79,8 @@ export function PlanTab({
       )}
 
       {macro && (
-        <Section title="Sesiones" eyebrow="tocá · → ✓ → ✗">
-          {sessionError && <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginBottom: 8 }}>No se pudo guardar la sesión. Reintentá.</div>}
-          <SessionAdherence marks={sessionLog} weeks={maxWeek} perWeek={perWeek} onToggle={onToggle} />
-          <div style={{ marginTop: 14 }}>
-            <SessionsSection key={`ses-${rmsStamp}`} athleteId={athleteId} hoyWeek={hoyWeek} totalWeeks={maxWeek} />
-          </div>
+        <Section title="Sesiones">
+          <SessionsSection key={`ses-${rmsStamp}`} athleteId={athleteId} hoyWeek={hoyWeek} totalWeeks={maxWeek} />
         </Section>
       )}
 

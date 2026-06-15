@@ -20,25 +20,24 @@ function renderAt(id: string, search = "") {
   );
 }
 
-test("por default abre Resumen: chip de ciclo visible, Monitor y Plan ocultos (Mara)", async () => {
+test("por default abre Plan: Calendario visible, Monitor oculto (Mara)", async () => {
   renderAt("mv");
   await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
-  expect(screen.getByText(/Ciclo · compartido/)).toBeInTheDocument();        // Resumen
+  expect(await screen.findByText("Calendario")).toBeInTheDocument();          // Plan = default (Resumen eliminado)
   expect(screen.queryByText("ACWR")).not.toBeInTheDocument();                 // Monitor oculto
-  expect(screen.queryByText("Calendario")).not.toBeInTheDocument();          // Plan oculto
 });
 
 test("tab Monitor: 4 señales coach-only (ACWR · Carga · IMR · Peso); Bienestar/Cumplimiento/Recuperación fuera (Mara)", async () => {
   const { container } = renderAt("mv");
   await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
-  // los charts viven en Monitor, no en el Resumen por default
+  // los charts viven en Monitor, no en el Plan por default
   expect(screen.queryByText("ACWR")).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Monitor" }));
   expect(await screen.findByText("ACWR")).toBeInTheDocument();
   expect(screen.getByText("Carga aguda vs crónica")).toBeInTheDocument();
   expect(screen.getByText("IMR vs fase")).toBeInTheDocument();
   expect(screen.getByText("Peso vs categoría")).toBeInTheDocument();
-  // Salen del Monitor: Recuperación (sin datos HRV/FC), Bienestar y Cumplimiento (los cubre Resumen).
+  // Quedaron fuera del Monitor: Recuperación (sin datos HRV/FC), Bienestar y Cumplimiento.
   expect(screen.queryByText(/Recuperación/)).toBeNull();
   expect(screen.queryByText("Bienestar")).toBeNull();
   expect(screen.queryByText("Cumplimiento")).toBeNull();
@@ -68,10 +67,10 @@ test("deep-link ?tab=monitor abre Monitor directo", async () => {
   expect(await screen.findByText("ACWR")).toBeInTheDocument();
 });
 
-test("?tab= inválido cae a Resumen (sin romper)", async () => {
-  renderAt("mv", "?tab=palmares");
+test("?tab= inválido (incluida la vieja 'resumen') cae a Plan (default, sin romper)", async () => {
+  renderAt("mv", "?tab=resumen");
   await waitFor(() => expect(screen.getByText("Mara V.")).toBeInTheDocument());
-  expect(screen.getByText(/Ciclo · compartido/)).toBeInTheDocument();
+  expect(await screen.findByText("Calendario")).toBeInTheDocument();          // default = Plan
   expect(screen.queryByText("ACWR")).not.toBeInTheDocument();
 });
 
@@ -130,23 +129,6 @@ test("no-data athlete (Tomás): el tab Monitor muestra un empty state, no charts
   await waitFor(() => expect(screen.getByText("Tomás L.")).toBeInTheDocument());
   fireEvent.click(screen.getByRole("button", { name: "Monitor" }));
   expect(await screen.findByText(/sin datos de monitoreo/i)).toBeInTheDocument();
-});
-
-test("ciclo: chip redactado con lúteo REAL (Mara, share full) y CERO fuga de fase/ventanas en el coach", async () => {
-  const { container } = renderAt("mv");
-  await waitFor(() => expect(screen.getByText(/Ciclo · compartido — contexto lúteo hoy:/)).toBeInTheDocument());
-  // seed: día ~20 de un ciclo de 28 → lútea hoy = sí (computado, no placeholder)
-  expect(screen.getByText(/contexto lúteo hoy: sí/)).toBeInTheDocument();
-  // No-leak: el DOM del coach jamás contiene ventanas/fechas/proyección del ciclo (eso es de la atleta).
-  expect(container.textContent ?? "").not.toMatch(/per[íi]odo|proyecci|lastPeriod/i);
-});
-
-test("ciclo: share mínimo → chip sin lúteo (Tomás, default min del seed)", async () => {
-  // tl NO está en SEED_CYCLE → LocalRepository.init() le aplica el default share:"min" (si algún
-  // día tl pasa a "none" como ejemplar sin-ciclo, este test debe mudarse a otro atleta).
-  renderAt("tl");
-  await waitFor(() => expect(screen.getByText(/Ciclo · compartido \(mínimo\)/)).toBeInTheDocument());
-  expect(screen.queryByText(/contexto lúteo/)).toBeNull();
 });
 
 test("shows an error state when the athlete fails to load", async () => {
