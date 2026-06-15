@@ -86,6 +86,17 @@ export function Equipo() {
         </div>
       ) : loading ? (
         <Loading style={{ fontFamily: "var(--mono)", fontSize: 11, padding: "16px 0" }}>Cargando plantel…</Loading>
+      ) : API_ENABLED && rows.length === 0 ? (
+        // Coach nuevo (0 atletas): en vez de "EL PLANTEL" sobre un vacío, un próximo paso claro.
+        <div style={{ marginTop: 26, textAlign: "center" }}>
+          <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Todavía no tenés atletas</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11.5, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.5 }}>
+            Generá tu código de invitación y compartilo para que tu primer atleta se vincule a tu plantel.
+          </div>
+          <Link to="/coach/invitaciones" style={{ display: "inline-block", marginTop: 16, padding: "11px 18px", borderRadius: 12, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 14, textDecoration: "none" }}>
+            Invitar a un atleta ›
+          </Link>
+        </div>
       ) : (
         <>
           {/* Alerta: atletas sin RM (sin RM no se puede prescribir). Lleva al drill-down a asignar macro. */}

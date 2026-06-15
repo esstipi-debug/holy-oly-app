@@ -54,8 +54,10 @@ export function AcoplarSheet({ open, onClose, roster, yaAcoplados, onAcoplar }: 
       </div>
 
       {candidates.length === 0 ? (
-        <div style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)", margin: "16px 0" }}>
-          Todo el plantel ya está acoplado a esta competencia.
+        <div style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)", margin: "16px 0", lineHeight: 1.5 }}>
+          {roster.length === 0
+            ? "Todavía no tenés atletas en tu plantel — invitalos desde Invitaciones para poder acoplarlos."
+            : "Todo el plantel ya está acoplado a esta competencia."}
         </div>
       ) : (
         <div style={{ marginTop: 12 }}>
