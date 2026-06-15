@@ -1,0 +1,139 @@
+/* Holy Oly · Mi Progreso — mapa de calor estilo "contribuciones" (port del mock 0110).
+   Token-driven: la rampa de color sale del --wl-accent del skin activo; el marcador de
+   competencia usa --wl-comp (contraste por skin). Anda en cualquier skin. NUNCA muestra RPE. */
+
+/* rampa de intensidad + color de competencia, por defecto (familia oscura/neon) */
+.wl {
+  --hm-l0: color-mix(in srgb, var(--wl-text) 9%, transparent);
+  --hm-l1: color-mix(in srgb, var(--wl-accent) 28%, var(--wl-surface));
+  --hm-l2: color-mix(in srgb, var(--wl-accent) 52%, var(--wl-surface));
+  --hm-l3: color-mix(in srgb, var(--wl-accent) 76%, var(--wl-surface));
+  --hm-l4: var(--wl-accent);
+  --wl-comp: var(--wl-accent-2);
+}
+/* contrastes de competencia por skin (que el punto NO se confunda con la rampa) */
+.wl--neon       { --wl-comp: #ff2e7e; }
+.wl--plates     { --wl-comp: #f2c12e; }
+.wl--chalk      { --wl-comp: #2b59ff; }
+.wl--premium    { --wl-comp: #37d6b8; }
+.wl--neonlight  { --wl-comp: #ff9d3d; }
+.wl--bloomnight { --wl-comp: #a06bff; }
+
+/* ====== contenedor ====== */
+.hm { margin-top: 14px; }
+
+/* selector de ventana (carrusel de calendarios) */
+.hm-windows { display: flex; gap: 6px; margin-bottom: 13px; }
+.hm-win {
+  flex: 1 1 0; min-width: 0; padding: 8px 6px; cursor: pointer;
+  border-radius: var(--wl-radius, 12px);
+  border: 1px solid color-mix(in srgb, var(--wl-text) 12%, transparent);
+  background: color-mix(in srgb, var(--wl-text) 4%, transparent);
+  font-family: var(--wl-display); font-weight: 700; font-size: 11.5px; letter-spacing: .02em;
+  color: var(--wl-muted); transition: color .2s, background .2s, border-color .2s;
+}
+.wl--neon .hm-win, .wl--chalk .hm-win, .wl--neonlight .hm-win, .wl--bloomnight .hm-win { text-transform: uppercase; }
+.wl--chalk .hm-win { border-radius: 0; border-width: 2px; }
+.hm-win.is-on { color: var(--wl-bg); background: var(--wl-accent); border-color: var(--wl-accent); }
+.wl--neon .hm-win.is-on, .wl--bloomnight .hm-win.is-on { box-shadow: 0 0 14px color-mix(in srgb, var(--wl-accent) 55%, transparent); }
+.wl--neonlight .hm-win.is-on { color: #fff; }
+.wl--chalk .hm-win.is-on { background: var(--wl-accent-2); border-color: var(--wl-accent-2); color: #fff; }
+
+/* ====== grilla del calendario ====== */
+.hm-cal { display: flex; gap: 6px; }
+.hm-dows {
+  display: flex; flex-direction: column; gap: var(--hm-gap, 2px);
+  padding-top: var(--hm-monh, 14px); flex: 0 0 auto;
+}
+.hm-dow {
+  height: var(--hm-cell, 12px); line-height: var(--hm-cell, 12px);
+  font-family: var(--mono); font-size: 8px; color: var(--wl-muted); white-space: nowrap;
+  display: flex; align-items: center;
+}
+.hm-main { flex: 1 1 auto; min-width: 0; }
+
+.hm-months { position: relative; height: var(--hm-monh, 14px); }
+.hm-month {
+  position: absolute; top: 0; transform: translateX(-1px);
+  font-family: var(--mono); font-size: 8.5px; color: var(--wl-muted); white-space: nowrap;
+}
+
+.hm-grid { display: flex; gap: var(--hm-gap, 2px); }
+.hm-col { flex: 0 0 auto; width: var(--hm-cell, 12px); display: flex; flex-direction: column; gap: var(--hm-gap, 2px); }
+
+.hm-cell {
+  width: 100%; height: var(--hm-cell, 12px); border-radius: 2px; padding: 0; border: none;
+  background: var(--hm-l0); cursor: pointer; position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms var(--ease-out, ease-out);
+}
+.wl--chalk .hm-cell { border-radius: 0; }
+.hm-cell.l1 { background: var(--hm-l1); }
+.hm-cell.l2 { background: var(--hm-l2); }
+.hm-cell.l3 { background: var(--hm-l3); }
+.hm-cell.l4 { background: var(--hm-l4); }
+.wl--neon .hm-cell.l4, .wl--bloomnight .hm-cell.l4 { box-shadow: 0 0 5px color-mix(in srgb, var(--wl-accent) 55%, transparent); }
+.hm-cell:active { transform: scale(.86); }
+
+/* días futuros / sin registro */
+.hm-cell.is-future {
+  background: transparent; cursor: default;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wl-text) 9%, transparent);
+}
+.hm-cell.is-future:active { transform: none; }
+
+/* hoy */
+.hm-cell.is-today { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--wl-text) 55%, transparent); }
+
+/* seleccionado */
+.hm-cell.is-sel { box-shadow: 0 0 0 1.5px var(--wl-text), 0 0 0 3px color-mix(in srgb, var(--wl-text) 30%, transparent); z-index: 2; }
+
+/* COMPETENCIA — anillo de contraste + diamante en la esquina */
+.hm-cell.is-comp { box-shadow: inset 0 0 0 1.5px var(--wl-comp); }
+.hm-cell.is-comp.is-future { background: color-mix(in srgb, var(--wl-comp) 14%, transparent); }
+.hm-cell.is-comp::after {
+  content: ""; position: absolute; top: 50%; left: 50%;
+  width: 42%; height: 42%; min-width: 3px; min-height: 3px;
+  background: var(--wl-comp); transform: translate(-50%, -50%) rotate(45deg);
+  border-radius: 1px;
+}
+.hm-cell.is-comp.is-sel { box-shadow: inset 0 0 0 1.5px var(--wl-comp), 0 0 0 1.5px var(--wl-text); }
+
+/* aparición */
+@keyframes hmIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+.hm-cal.is-draw { animation: hmIn 320ms var(--ease-out, ease-out) backwards; }
+
+/* ====== leyenda ====== */
+.hm-legend {
+  display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 8.5px; color: var(--wl-muted);
+}
+.hm-scale { display: flex; align-items: center; gap: 4px; }
+.hm-swatch { width: 11px; height: 11px; border-radius: 2px; }
+.wl--chalk .hm-swatch { border-radius: 0; }
+.hm-swatch.l0 { background: var(--hm-l0); }
+.hm-swatch.l1 { background: var(--hm-l1); }
+.hm-swatch.l2 { background: var(--hm-l2); }
+.hm-swatch.l3 { background: var(--hm-l3); }
+.hm-swatch.l4 { background: var(--hm-l4); }
+.hm-legend__comp { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; }
+.hm-legend__diam { width: 8px; height: 8px; background: var(--wl-comp); transform: rotate(45deg); border-radius: 1px; }
+
+/* ====== detalle del día ====== */
+.hm-detail {
+  margin-top: 13px; padding: 11px 13px; border-radius: var(--wl-radius, 12px);
+  background: color-mix(in srgb, var(--wl-text) 4%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--wl-accent) 55%, transparent);
+}
+.wl--chalk .hm-detail { border: 2px solid var(--wl-ink); border-left-width: 4px; border-radius: 0; }
+.hm-detail.is-comp { border-left-color: var(--wl-comp); }
+.hm-detail__date { font-family: var(--mono); font-size: 9px; letter-spacing: .04em; text-transform: uppercase; color: var(--wl-muted); }
+.hm-detail__val { font-family: var(--wl-display); font-weight: 800; font-size: 17px; color: var(--wl-text); margin-top: 4px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.hm-detail__comp { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--wl-comp); }
+.hm-detail__comp::before { content: ""; width: 8px; height: 8px; background: var(--wl-comp); transform: rotate(45deg); border-radius: 1px; }
+.hm-detail__hint { font-family: var(--mono); font-size: 9.5px; color: var(--wl-muted); line-height: 1.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-cal.is-draw { animation: none; }
+  .hm-cell, .hm-cell:active { transition: none; transform: none; }
+}

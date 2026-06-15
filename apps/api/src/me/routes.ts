@@ -66,6 +66,15 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     return repo.getPlanHeat(prisma, athleteId);
   });
 
+  // Mapa de calor por día (rediseño 0110): carga/bienestar/peso/recuperación por día calendario.
+  // Conecta fuentes reales (sessions/daylog/series) sin RM/RPE/ACWR (HR-1). Siempre 200 (grilla
+  // vacía si no hay datos — el "gris" es honesto).
+  app.get("/me/heatdays", async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    return repo.getMeHeatDays(prisma, athleteId, todayISO());
+  });
+
   // Recorrido (slice recorrido-ciclos): lo HECHO acumulado por semana — carga PROPIA en kg,
   // jamás RM/RPE/ACWR (HR-1). { semanas: [] } sin plan.
   app.get("/me/recorrido", async (req, reply) => {

@@ -18,6 +18,7 @@ function stubClient(over: Partial<MeClient> = {}): MeClient {
     getMeSessions: async (week: number) => [session(week)],
     getMeHeat: async () => [],
     getMeRecorrido: async () => ({ semanas: [] }),
+    getMeHeatDays: async () => ({ today: "2026-01-01", weeks: [], anchorWeekIdx: 0, macroFromIdx: -1, macroToIdx: -1 }),
     getMeMacroHistory: async () => ({ entries: [], cyclesDone: 0, avgAdherencePct: 0 }),
     putMeSession: async () => {},
     anularMeSession: async () => {},

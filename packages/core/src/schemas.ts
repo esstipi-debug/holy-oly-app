@@ -235,6 +235,39 @@ export const WeekHeatSchema = z.object({
 });
 export const WeekHeatsSchema = z.array(WeekHeatSchema).max(104);
 
+// ── Mapa de calor por día (GET /me/heatdays — rediseño 0110). Lectura del atleta: el server arma
+//    desde fuentes ya acotadas (sessions/daylog/series) → sólo shape + rangos honestos. NUNCA RPE. ──
+export const HeatDayCellSchema = z.object({
+  iso: IsoDateSchema,
+  future: z.boolean(),
+  today: z.boolean(),
+  trained: z.boolean(),
+  kg: z.number().nonnegative(),
+  sessions: z.number().int().nonnegative(),
+  wellness: z.number().min(0).max(100).nullable(),
+  bw: z.number().min(0).max(400).nullable(),
+  hrv: z.number().min(0).max(300).nullable(),
+  rhr: z.number().min(0).max(250).nullable(),
+  comp: z.object({ name: z.string().max(120), note: z.string().max(40) }).optional(),
+});
+export const HeatWeekRowSchema = z.object({
+  startIso: IsoDateSchema,
+  days: z.array(HeatDayCellSchema).length(7),
+});
+export const MeHeatDaysSchema = z.object({
+  today: IsoDateSchema,
+  weeks: z.array(HeatWeekRowSchema).max(60),
+  anchorWeekIdx: z.number().int().min(0),
+  macroFromIdx: z.number().int().min(-1),
+  macroToIdx: z.number().int().min(-1),
+  weightBand: z.tuple([z.number(), z.number()]).optional(),
+  category: z.string().max(40).optional(),
+  hrvBase: z.number().optional(),
+  rhrBase: z.number().optional(),
+  wellnessMean: z.number().optional(),
+  wellnessStd: z.number().optional(),
+});
+
 // ── Motor Prilepin preview wire shape (GET /athletes/:id/prilepin-week — COACH-ONLY). El coach
 //    SÍ ve pct/zonas/audits (HR-1: jamás llega a superficie de atleta). `null` = sin datos
 //    honesto (sin RM vigente / compe pasada / semana fuera de rango). Sin RPE en ningún campo. ──

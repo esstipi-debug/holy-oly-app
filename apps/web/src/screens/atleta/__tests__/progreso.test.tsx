@@ -1,13 +1,14 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { vi, beforeEach } from "vitest";
-import type { MePlanView, MeRecorrido, MonitorSeries } from "@holy-oly/core";
+import type { MePlanView, MeRecorrido, MonitorSeries, MeHeatDays } from "@holy-oly/core";
 
 vi.mock("../../../data/meClient", () => {
   const getMeSeries = vi.fn();
   const getMeRecorrido = vi.fn();
+  const getMeHeatDays = vi.fn();
   const getMePlan = vi.fn();
   const getMeMacroHistory = vi.fn();
-  return { getMeSeries, getMeRecorrido, getMePlan, getMeMacroHistory, meClient: { getMeSeries, getMeRecorrido, getMePlan, getMeMacroHistory } };
+  return { getMeSeries, getMeRecorrido, getMeHeatDays, getMePlan, getMeMacroHistory, meClient: { getMeSeries, getMeRecorrido, getMeHeatDays, getMePlan, getMeMacroHistory } };
 });
 import * as me from "../../../data/meClient";
 import { ProgresoScreen } from "../ProgresoScreen";
@@ -32,6 +33,23 @@ const RECORRIDO: MeRecorrido = {
   ],
 };
 
+// Heatdays mínimo (rediseño 0110): una semana de días vacíos + un día entrenado. Sin macro →
+// ventanas Año + 12 sem. Suficiente para verificar que el carrusel monta el MAPA DE CALOR.
+const heatDay = (iso: string, over: Partial<MeHeatDays["weeks"][number]["days"][number]> = {}): MeHeatDays["weeks"][number]["days"][number] =>
+  ({ iso, future: false, today: false, trained: false, kg: 0, sessions: 0, wellness: null, bw: null, hrv: null, rhr: null, ...over });
+const HEATDAYS: MeHeatDays = {
+  today: "2026-06-10",
+  weeks: [{
+    startIso: "2026-06-08",
+    days: [
+      heatDay("2026-06-08", { trained: true, kg: 8200, sessions: 1, wellness: 78, bw: 80.5, hrv: 70, rhr: 50 }),
+      heatDay("2026-06-09"), heatDay("2026-06-10", { today: true }), heatDay("2026-06-11", { future: true }),
+      heatDay("2026-06-12", { future: true }), heatDay("2026-06-13", { future: true }), heatDay("2026-06-14", { future: true }),
+    ],
+  }],
+  anchorWeekIdx: 0, macroFromIdx: -1, macroToIdx: -1, weightBand: [80, 81], hrvBase: 70, rhrBase: 50,
+};
+
 const PLAN_NULL: MePlanView = { athlete: { nombre: "Kevin", iniciales: "KV", sexo: "M" }, plan: null };
 const PLAN_W2: MePlanView = {
   athlete: { nombre: "Kevin", iniciales: "KV", sexo: "M" },
@@ -46,6 +64,8 @@ beforeEach(() => {
   vi.mocked(me.getMePlan).mockResolvedValue(PLAN_NULL);
   // Default: sin ciclos cerrados → la card "Tus ciclos" no aparece.
   vi.mocked(me.getMeMacroHistory).mockResolvedValue({ entries: [], cyclesDone: 0, avgAdherencePct: 0 });
+  // Default: mapa de calor con datos (rediseño 0110); los tests lo sobreescriben si hace falta.
+  vi.mocked(me.getMeHeatDays).mockResolvedValue(HEATDAYS);
 });
 
 test("con serie: carrusel con Camino + las 4 señales, en voz de atleta (sin copy de coach)", async () => {
@@ -63,6 +83,19 @@ test("con serie: carrusel con Camino + las 4 señales, en voz de atleta (sin cop
   expect(screen.getByRole("tab", { name: "peso" })).toBeInTheDocument();
   // coach-voiced title must NOT appear
   expect(screen.queryByText("Carga aguda vs crónica")).not.toBeInTheDocument();
+});
+
+test("con heatdays: la señal activa muestra el MAPA DE CALOR (ventanas + leyenda), no la línea", async () => {
+  vi.mocked(me.getMeSeries).mockResolvedValue(SERIES);
+  const { container } = render(<ProgresoScreen />);
+  await screen.findByText("Camino a la competencia");
+  // navego al slide de Carga → su mapa de calor queda visible (los demás siguen aria-hidden)
+  fireEvent.click(screen.getByRole("tab", { name: "carga" }));
+  // control de ventana del heatmap (no existe en el gráfico de línea viejo)
+  expect(screen.getByRole("tab", { name: "12 sem" })).toBeInTheDocument();
+  expect(screen.getAllByText("competencia").length).toBeGreaterThanOrEqual(1);
+  // intocable: ni una mención de RPE en toda la pantalla
+  expect(container.textContent ?? "").not.toMatch(/\brpe\b/i);
 });
 
 test("la «i» de carga no enseña ACWR (regla del atleta) y no hay RPE en pantalla", async () => {

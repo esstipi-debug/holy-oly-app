@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import type { MonitorSeries, MePlanView } from "@holy-oly/core";
+import { useEffect, useState, type ReactNode } from "react";
+import type { MonitorSeries, MePlanView, MeHeatDays } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
 import { RecorridoCard } from "./RecorridoCard";
 import { MisCiclosCard } from "./MisCiclosCard";
@@ -11,54 +11,62 @@ import { WeightChart } from "../../ui/charts/WeightChart";
 import { Loading } from "../../ui/Loading";
 import { ProgresoCarousel, type CarouselSlide } from "./progreso/ProgresoCarousel";
 import { SignalCard } from "./progreso/SignalCard";
+import { SignalHeat } from "./progreso/SignalHeat";
+import type { SignalKey } from "./progreso/heatSpecs";
 import { cargaDisplay, recuperacionDisplay, bienestarDisplay, pesoDisplay } from "./progreso/signalData";
 
 type Load = "loading" | "ready" | "error";
 
+// HR-2: cada señal explica «cómo se forma / para qué sirve / contra qué se lee». Textos del mapa de
+// calor (rediseño 0110): cada celda = un día. NUNCA mencionan RPE.
 const EXPLAIN = {
   carga: {
-    forma: "Tu carga de cada semana (barras) y tu tendencia = promedio de las últimas 4 semanas (línea).",
-    sirve: "Ver cómo viene tu carga semana a semana.",
-    lectura: "Picos muy por encima de tu tendencia, varias semanas seguidas, son señal de cuidar el descanso.",
+    forma: "Cada celda es un día; el color sube con el volumen (kg de trabajo) que moviste ese día. Los días sin entrenar quedan en gris.",
+    sirve: "Ver tu carga día a día y semana a semana, frente a tu propia base.",
+    lectura: "Rachas de días muy intensos seguidos sin descanso son señal de cuidar la recuperación.",
   },
   recuperacion: {
-    forma: "Tu HRV y tu FC en reposo por semana, comparadas con tu propio normal.",
-    sirve: "Ver cómo venís recuperando.",
-    lectura: "Mientras te mantenés en tu banda normal, vas bien. HRV cayendo o FC reposo subiendo varias semanas = momento de aflojar.",
+    forma: "Cada celda es un día; el color sigue tu HRV de esa semana del macro (más alto = mejor recuperación). Fuera del macro queda en gris.",
+    sirve: "Leer cómo venís recuperando, más allá de cómo entrenaste.",
+    lectura: "Dentro de tu banda, vas bien. HRV cayendo o FC reposo subiendo varias semanas = momento de aflojar.",
   },
   bienestar: {
-    forma: "Tu score de bienestar (0–100) y tus 6 ítems (fatiga, dolor, estrés, humor, motivación, sueño) como tendencias.",
-    sirve: "Ver cómo te venís sintiendo, más allá de los números.",
-    lectura: "Se lee contra tu propia normal (la banda); cada ítem, contra su tendencia.",
+    forma: "Cada celda es un día; el color sube con tu score de bienestar (0–100) de ese día — el promedio de tus 6 ítems del check-in.",
+    sirve: "Ver cómo te venís sintiendo, más allá de los números fisiológicos.",
+    lectura: "Se lee contra tu propia normal; los días sin check-in quedan en gris.",
   },
   peso: {
-    forma: "Tu peso corporal por semana vs la banda de tu categoría.",
+    forma: "Cada celda es un día; cuanto más cerca de tu categoría (en banda), más intenso el color.",
     sirve: "Seguir si estás en el peso de tu categoría de cara a la competencia.",
-    lectura: "La banda son los límites de tu categoría; el punto va verde dentro, rojo fuera.",
+    lectura: "La banda son los límites de tu categoría; los días sin pesarte quedan en gris.",
   },
 };
 
 /**
  * "Mi progreso" (A2 · rediseño 0110) — carrusel de señales con hero (valor grande + delta vs tu
- * normal) + mini-stats, reusando los charts de línea en modo `bare`. Primer slide: "Camino a la
- * competencia" (reusa la card del Home; sin readiness/RM). "Tu recorrido" + ciclo se mantienen.
- * Nunca RPE. El carrusel de señales sólo se arma con `series`; el guard `!series` muestra el estado
- * honesto "Todavía sin datos" (atleta nuevo sin monitoreo), preservado del diseño A2.
+ * normal) + mini-stats + MAPA DE CALOR de calendario por día (reemplaza los gráficos de línea para
+ * calzar con el mock). El hero/stats salen de `series` (semanal); el mapa, de `getMeHeatDays`
+ * (datos REALES por día: carga/bienestar/peso/recuperación). Si el mapa no carga, cae al gráfico de
+ * línea como fallback. Primer slide: "Camino a la competencia". "Tu recorrido" + ciclo se mantienen.
+ * Nunca RPE. Sin `series` → estado honesto "Todavía sin datos" (atleta nuevo sin monitoreo).
  */
 export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}) {
   const [series, setSeries] = useState<MonitorSeries | undefined>(undefined);
   const [planView, setPlanView] = useState<MePlanView | undefined>(undefined);
+  const [heat, setHeat] = useState<MeHeatDays | undefined>(undefined);
   const [load, setLoad] = useState<Load>("loading");
 
   useEffect(() => {
     let on = true;
     setLoad("loading");
-    // El plan se carga con catch propio: un fallo de plan NO tumba el progreso (Camino cae a su empty).
+    // Plan y mapa de calor con catch propio: un fallo de cualquiera NO tumba el progreso (Camino cae
+    // a su empty; las señales caen al gráfico de línea de fallback).
     const planP = client.getMePlan().then((p) => p as MePlanView | undefined, () => undefined);
+    const heatP = client.getMeHeatDays().then((h) => h, () => undefined);
     client.getMeSeries()
       .then(async (s) => {
-        const p = await planP;
-        if (on) { setSeries(s); setPlanView(p); setLoad("ready"); }
+        const [p, h] = await Promise.all([planP, heatP]);
+        if (on) { setSeries(s); setPlanView(p); setHeat(h); setLoad("ready"); }
       })
       .catch(() => { if (on) setLoad("error"); });
     return () => { on = false; };
@@ -84,14 +92,19 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
     node: <CaminoCard plan={planView?.plan ?? null} client={client} sexo={planView?.athlete.sexo} />,
   };
 
-  // Slides de señales: sólo con serie. Peso es condicional (sin bodyweight → no hay slide).
+  // El chart de cada señal: el MAPA DE CALOR (rediseño 0110) cuando hay datos por día; si no cargó,
+  // cae al gráfico de línea semanal como fallback (sin regresión).
+  const chart = (key: SignalKey, fallback: ReactNode): ReactNode =>
+    heat ? <SignalHeat data={heat} signal={key} /> : fallback;
+
+  // Slides de señales: sólo con serie (el hero/stats son semanales). Peso es condicional.
   const signalSlides: CarouselSlide[] = [];
   if (series) {
     signalSlides.push({
       key: "carga",
       node: (
         <SignalCard name="Tu carga" sub="carga semanal vs tu tendencia" display={cargaDisplay(series)} explain={EXPLAIN.carga}>
-          <LoadChart series={series} bare />
+          {chart("carga", <LoadChart series={series} bare />)}
         </SignalCard>
       ),
     });
@@ -99,7 +112,7 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
       key: "recuperacion",
       node: (
         <SignalCard name="Tu recuperación" sub="HRV y FC en reposo vs tu normal" display={recuperacionDisplay(series)} explain={EXPLAIN.recuperacion}>
-          <RecoveryChart series={series} bare />
+          {chart("recuperacion", <RecoveryChart series={series} bare />)}
         </SignalCard>
       ),
     });
@@ -107,7 +120,7 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
       key: "bienestar",
       node: (
         <SignalCard name="Tu bienestar" sub="score 0–100 vs tu normal · tus ítems" display={bienestarDisplay(series)} explain={EXPLAIN.bienestar}>
-          <WellnessChart series={series} bare />
+          {chart("bienestar", <WellnessChart series={series} bare />)}
         </SignalCard>
       ),
     });
@@ -117,7 +130,7 @@ export function ProgresoScreen({ client = meClient }: { client?: MeClient } = {}
         key: "peso",
         node: (
           <SignalCard name="Tu peso" sub="vs la banda de tu categoría" display={peso} explain={EXPLAIN.peso}>
-            <WeightChart series={series} bare />
+            {chart("peso", <WeightChart series={series} bare />)}
           </SignalCard>
         ),
       });

@@ -4,10 +4,10 @@ import type {
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
   CycleShare, CycleState, CycleData, MeCycleView, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
-  MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf, MacroHistoryView, MacroHistoryRow,
+  MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf, MacroHistoryView, MacroHistoryRow, MeHeatDays,
   Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryView, CompetitionEntryInput,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -407,6 +407,66 @@ export async function getMeRecorrido(prisma: PrismaClient, athleteId: string): P
     semanas.push({ week, trabajoKg, calentamientoKg, sesionesHechas, sesionesTotales });
   }
   return { semanas };
+}
+
+/**
+ * Mi Progreso · mapa de calor por día (rediseño 0110). Conecta fuentes REALES ya existentes — sin
+ * migración ni captura nueva: carga (SessionActual.doneAt → tonelaje/día), bienestar+peso (DayLog),
+ * recuperación (HRV/FC SEMANAL del macro mapeada al calendario). NUNCA expone RPE (HR-1). Siempre
+ * devuelve la grilla (vacía si el atleta no tiene datos) — el "gris" es honesto, no se inventa.
+ */
+export async function getMeHeatDays(prisma: PrismaClient, athleteId: string, today: string): Promise<MeHeatDays> {
+  const [plan, actualRows, dayRows, comps, series, athlete] = await Promise.all([
+    getPlan(prisma, athleteId),
+    prisma.sessionActual.findMany({ where: { athleteId } }),
+    prisma.dayLog.findMany({ where: { athleteId } }),
+    getComps(prisma, athleteId),
+    getSeries(prisma, athleteId),
+    prisma.athlete.findUnique({ where: { id: athleteId }, select: { weightBandLo: true, weightBandHi: true } }),
+  ]);
+
+  // ── carga por día: tonelaje de trabajo + nº de sesiones, agrupado por la fecha real (doneAt) ──
+  const byDate = new Map<string, { kg: number; sessions: Set<string> }>();
+  for (const r of actualRows) {
+    const a = toSessionActual(r as SessionActualRow);
+    if (!a.doneAt) continue;
+    const kg = a.sets && a.sets.length > 0
+      ? a.sets.reduce((s, set) => s + setTonnage(set), 0)
+      : a.done && a.actualKg != null && a.actualReps != null ? a.actualKg * a.actualReps : 0;
+    let e = byDate.get(a.doneAt);
+    if (!e) { e = { kg: 0, sessions: new Set() }; byDate.set(a.doneAt, e); }
+    e.kg += kg;
+    e.sessions.add(`${a.week}-${a.sessionIdx}`);
+  }
+  const training: Record<string, { kg: number; sessions: number }> = {};
+  for (const [iso, e] of byDate) training[iso] = { kg: Math.round(e.kg), sessions: e.sessions.size };
+
+  // ── bienestar (score 0–100 de los 6 ítems) + peso, por día (DayLog) ──
+  const daylogs = dayRows.map((r) => ({
+    date: r.date,
+    wellness: wellnessScore({ fatiga: r.fatiga, dolor: r.dolor, estres: r.estres, humor: r.humor, motivacion: r.motivacion, sueno: r.sueno }),
+    bw: r.weight ?? null,
+  }));
+
+  const compDays = comps.filter((c) => c.date).map((c) => ({ iso: c.date!, name: c.name, note: `S${c.week}` }));
+  const band: [number, number] | undefined =
+    athlete?.weightBandLo != null && athlete.weightBandHi != null ? [athlete.weightBandLo, athlete.weightBandHi] : undefined;
+  const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
+  const totalWeeks = macro ? macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] : undefined;
+
+  return buildMeHeatDays({
+    today,
+    startDate: plan?.startDate,
+    totalWeeks,
+    training,
+    daylogs,
+    comps: compDays,
+    weekly: series ? { hrv: series.hrv, rhr: series.rhr } : undefined,
+    hrvBase: series?.hrvBase,
+    rhrBase: series?.rhrBase,
+    weightBand: band,
+    category: band ? `${Math.round(band[1])} kg` : undefined,
+  });
 }
 
 function groupByWeek<T extends { week: number }>(items: T[]): Map<number, T[]> {
