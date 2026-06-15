@@ -60,7 +60,7 @@ function Mini({ arr, base, label, pad, pointState, onPick }: MiniProps) {
   );
 }
 
-export function RecoveryChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
+export function RecoveryChart({ series, onPointClick, title, sub, explain, bare }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain; bare?: boolean }) {
   const { t } = useTranslation("charts");
   const rec = recoverySeries(series);
   const lastRec = rec.at(-1) ?? NaN;
@@ -68,6 +68,7 @@ export function RecoveryChart({ series, onPointClick, title, sub, explain }: { s
 
   return (
     <ChartCard
+      bare={bare}
       title={title ?? t("recovery.title")}
       sub={sub ?? t("recovery.sub")}
       chip={lastRec != null && !Number.isNaN(lastRec) ? String(lastRec) : undefined}

@@ -48,22 +48,19 @@ beforeEach(() => {
   vi.mocked(me.getMeMacroHistory).mockResolvedValue({ entries: [], cyclesDone: 0, avgAdherencePct: 0 });
 });
 
-test("con serie: pills para las 4 señales + Carga por default, en voz de atleta (sin copy de coach)", async () => {
+test("con serie: carrusel con Camino + las 4 señales, en voz de atleta (sin copy de coach)", async () => {
   vi.mocked(me.getMeSeries).mockResolvedValue(SERIES);
   render(<ProgresoScreen />);
-  // Carga es la señal visible por default…
-  expect(await screen.findByText("Tu carga")).toBeInTheDocument();
-  // …y las 4 señales existen como pills
-  expect(screen.getByRole("button", { name: "Carga" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Recuperación" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Bienestar" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Peso" })).toBeInTheDocument();
-  // sólo la señal activa está montada (no las 4 apiladas)
-  expect(screen.queryByText("Tu recuperación")).not.toBeInTheDocument();
-  // al tocar una pill cambia el chart visible
-  fireEvent.click(screen.getByRole("button", { name: "Recuperación" }));
+  // Camino es el primer slide (activo)
+  expect(await screen.findByText("Camino a la competencia")).toBeInTheDocument();
+  // las 4 señales están en el carrusel (todas montadas; las inactivas quedan aria-hidden)
+  expect(screen.getByText("Tu carga")).toBeInTheDocument();
   expect(screen.getByText("Tu recuperación")).toBeInTheDocument();
-  expect(screen.queryByText("Tu carga")).not.toBeInTheDocument();
+  expect(screen.getByText("Tu bienestar")).toBeInTheDocument();
+  expect(screen.getByText("Tu peso")).toBeInTheDocument();
+  // navegación por dots (uno por señal)
+  expect(screen.getByRole("tab", { name: "carga" })).toBeInTheDocument();
+  expect(screen.getByRole("tab", { name: "peso" })).toBeInTheDocument();
   // coach-voiced title must NOT appear
   expect(screen.queryByText("Carga aguda vs crónica")).not.toBeInTheDocument();
 });
@@ -71,8 +68,11 @@ test("con serie: pills para las 4 señales + Carga por default, en voz de atleta
 test("la «i» de carga no enseña ACWR (regla del atleta) y no hay RPE en pantalla", async () => {
   vi.mocked(me.getMeSeries).mockResolvedValue(SERIES);
   const { container } = render(<ProgresoScreen />);
-  await screen.findByText("Tu carga");
+  await screen.findByText("Camino a la competencia");
+  // sin RPE en NINGUNA superficie del atleta (intocable)
   expect(container.textContent ?? "").not.toMatch(/\brpe\b/i);
+  // navego al slide de Carga (su ⓘ deja de estar aria-hidden) y abro el "cómo se lee"
+  fireEvent.click(screen.getByRole("tab", { name: "carga" }));
   fireEvent.click(screen.getByRole("button", { name: "Cómo se lee: Tu carga" }));
   const dialog = await screen.findByRole("dialog");
   expect(dialog.textContent ?? "").not.toMatch(/acwr/i);

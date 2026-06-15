@@ -52,7 +52,7 @@ export function WeekTapZones({ weeks, x, top, bot, onPick }: {
 }
 
 /** El panel de detalle (tap) con las 3 preguntas de HR-2: cómo se forma / para qué sirve / contra qué se lee. */
-function ChartExplainSheet({ title, explain }: { title: string; explain: Explain }) {
+export function ChartExplainSheet({ title, explain }: { title: string; explain: Explain }) {
   const { t } = useTranslation("charts");
   const rows: [string, string][] = [
     [t("explain.forma"), explain.forma],
@@ -72,12 +72,15 @@ function ChartExplainSheet({ title, explain }: { title: string; explain: Explain
   );
 }
 
-/** Chart card: title + subtitle + optional estado chip + required HR-2 explain (tap "ⓘ" → BottomSheet). */
-export function ChartCard({ title, sub, chip, chipState, explain, children }: {
-  title: string; sub?: string; chip?: string; chipState?: CellState; explain: Explain; children: ReactNode;
+/** Chart card: title + subtitle + optional estado chip + required HR-2 explain (tap "ⓘ" → BottomSheet).
+ *  `bare`: dentro de un host que ya provee chrome + ⓘ (p.ej. SignalCard del rediseño de Mi Progreso),
+ *  renderiza SÓLO el SVG — sin Card, título, chip ni explain (el host es dueño de todo eso). */
+export function ChartCard({ title, sub, chip, chipState, explain, children, bare = false }: {
+  title: string; sub?: string; chip?: string; chipState?: CellState; explain: Explain; children: ReactNode; bare?: boolean;
 }) {
   const { t } = useTranslation("charts");
   const [open, setOpen] = useState(false);
+  if (bare) return <>{children}</>;
   return (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>

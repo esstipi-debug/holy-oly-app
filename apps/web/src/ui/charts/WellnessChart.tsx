@@ -2,10 +2,11 @@ import { type MonitorSeries } from "@holy-oly/core";
 import { useTranslation } from "react-i18next";
 import { ChartCard, linePath, WeekTapZones, type Explain } from "./chartkit";
 
-export function WellnessChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
+export function WellnessChart({ series, onPointClick, title, sub, explain, bare }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain; bare?: boolean }) {
   const { t } = useTranslation("charts");
   const wsc = series.wellness;
   const items = series.wellnessItems ?? {};
+  const hasItems = Object.keys(items).length > 0;
   const weeks = series.weeks;
 
   const H = 96, top = 10, bot = 80;
@@ -28,6 +29,7 @@ export function WellnessChart({ series, onPointClick, title, sub, explain }: { s
 
   return (
     <ChartCard
+      bare={bare}
       title={title ?? t("wellness.title")}
       sub={sub ?? t("wellness.sub")}
       chip={lastWsc != null ? String(lastWsc) : undefined}
@@ -58,7 +60,13 @@ export function WellnessChart({ series, onPointClick, title, sub, explain }: { s
         {onPointClick && <WeekTapZones weeks={weeks} x={x} top={top} bot={bot} onPick={onPointClick} />}
       </svg>
 
-      {/* Item sparklines grid */}
+      {/* Item sparklines grid — empty-state honesto cuando aún no hay ítems (el autorreporte diario
+          vive en DayLog; sin rollup, wellnessItems está ausente para casi todos los atletas). */}
+      {!hasItems ? (
+        <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 10, lineHeight: 1.5 } as React.CSSProperties}>
+          {t("wellness.itemsEmpty", "Cuando registres tu día a día, acá vas a ver la tendencia de cada ítem (fatiga, dolor, sueño…).")}
+        </div>
+      ) : (
       <div
         style={{
           display: "flex",
@@ -102,6 +110,7 @@ export function WellnessChart({ series, onPointClick, title, sub, explain }: { s
           </div>
         ))}
       </div>
+      )}
     </ChartCard>
   );
 }
