@@ -4,7 +4,7 @@ import { ChartCard, linePath, weekLabels, WeekTapZones, type Explain } from "./c
 
 // Copy defaults to the coach framing (drilldown). The athlete screen overrides title/sub/explain
 // to drop ACWR and speak in 2nd person — same rendering, athlete-safe voice.
-export function LoadChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
+export function LoadChart({ series, onPointClick, title, sub, explain, bare }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain; bare?: boolean }) {
   const { t } = useTranslation("charts");
   const weeks = series.weeks;
   const acute = series.acute;
@@ -19,6 +19,7 @@ export function LoadChart({ series, onPointClick, title, sub, explain }: { serie
 
   return (
     <ChartCard
+      bare={bare}
       title={title ?? t("load.title")}
       sub={sub ?? t("load.sub")}
       chip={acute.at(-1) != null ? String(acute.at(-1)) : undefined}

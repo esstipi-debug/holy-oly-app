@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ChartCard, linePath, WeekTapZones, type Explain } from "./chartkit";
 import { STATUS } from "../status";
 
-export function WeightChart({ series, onPointClick, title, sub, explain }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain }) {
+export function WeightChart({ series, onPointClick, title, sub, explain, bare }: { series: MonitorSeries; onPointClick?: (week: number) => void; title?: string; sub?: string; explain?: Explain; bare?: boolean }) {
   const { t } = useTranslation("charts");
   const wt = series.bodyweight ?? [];
   const band = series.weightBand;
@@ -24,6 +24,7 @@ export function WeightChart({ series, onPointClick, title, sub, explain }: { ser
 
   return (
     <ChartCard
+      bare={bare}
       title={title ?? t("weight.title")}
       sub={sub ?? t("weight.sub")}
       chip={lastWt != null ? t("weight.chip", { value: lastWt }) : undefined}
