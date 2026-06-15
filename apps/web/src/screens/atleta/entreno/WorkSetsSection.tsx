@@ -1,54 +1,91 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { DiscRow } from "../../../ui/Disc";
 
 export interface SetRow { kg?: number; reps?: number; done: boolean; }
 
-const num: CSSProperties = { width: 64, boxSizing: "border-box", padding: "6px 7px", borderRadius: "var(--wl-radius)", textAlign: "center", border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontSize: 14 };
-const chip: CSSProperties = { border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", borderRadius: 999, background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5, padding: "6px 11px", cursor: "pointer" };
-
-/** Series de trabajo: cada serie nace hecha al target (adherencia por defecto). ✎ modifica esa serie
- *  (kg/reps o "no la hice"), independiente de las demás. Discos por serie. */
-export function WorkSetsSection({
-  series, barKg, onPatchSet,
-}: {
-  series: SetRow[]; barKg: number;
-  onPatchSet: (i: number, p: Partial<SetRow>) => void;
+function Stepper({ value, onChange, step = 1, min = 0, unit, label }: {
+  value?: number; onChange: (v: number) => void; step?: number; min?: number; unit: string; label: string;
 }) {
-  const [openSet, setOpenSet] = useState<number | null>(null);
   return (
-    <div style={{ marginTop: 14 }}>
-      <div style={{ fontFamily: "var(--wl-display)", fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Series de trabajo</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-        {series.map((s, i) => {
-          const open = openSet === i;
-          return (
-            <div key={i} style={{ background: "var(--wl-surface)", borderRadius: "var(--wl-radius)", padding: "9px 11px", opacity: s.done ? 1 : 0.55 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                <span style={{ fontFamily: "var(--wl-display)", fontSize: 12, color: "var(--wl-muted)" }}>Serie {i + 1}/{series.length}</span>
-                <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>{s.kg != null ? s.kg : "—"}<span style={{ fontSize: 11, color: "var(--wl-muted)", fontWeight: 600 }}> kg</span></span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 6 }}>
-                {s.kg != null ? <DiscRow kg={s.kg} barKg={barKg} /> : <span />}
-                <span style={{ fontFamily: "var(--wl-display)", fontSize: 13, color: "var(--wl-muted)" }}>{s.done ? `${s.reps ?? "—"} reps` : "no la hice"}</span>
-              </div>
-              {!open ? (
-                <button type="button" onClick={() => setOpenSet(i)} aria-label={`modificar serie ${i + 1}`} style={{ marginTop: 8, border: 0, background: "transparent", color: "var(--wl-accent)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, cursor: "pointer", padding: 0 }}>✎ modificar</button>
-              ) : (
-                <div style={{ marginTop: 8 }}>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                    <input style={num} type="number" inputMode="decimal" aria-label={`kg serie ${i + 1}`} value={s.kg ?? ""} onChange={(e) => onPatchSet(i, { kg: e.target.value ? Number(e.target.value) : undefined })} /><span style={{ color: "var(--wl-muted)", fontSize: 12 }}>kg</span>
-                    <input style={num} type="number" inputMode="numeric" aria-label={`reps serie ${i + 1}`} value={s.reps ?? ""} onChange={(e) => onPatchSet(i, { reps: e.target.value === "" ? undefined : Number(e.target.value) })} /><span style={{ color: "var(--wl-muted)", fontSize: 12 }}>reps</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-                    <button type="button" style={chip} onClick={() => onPatchSet(i, { done: !s.done })}>{s.done ? "no la hice" : "sí la hice"}</button>
-                    <button type="button" aria-label={`listo serie ${i + 1}`} style={chip} onClick={() => setOpenSet(null)}>✓ listo</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+    <div className="et-step" role="group" aria-label={label}>
+      <button type="button" className="et-step__b" aria-label={`menos ${label}`} onClick={() => onChange(Math.max(min, (Number(value) || 0) - step))}>−</button>
+      <div className="et-step__v">{value == null ? "" : value}<span className="et-step__u">{unit}</span></div>
+      <button type="button" className="et-step__b" aria-label={`más ${label}`} onClick={() => onChange((Number(value) || 0) + step)}>+</button>
+    </div>
+  );
+}
+
+function WorkSetRow({ i, n, s, barKg, isNext, onToggle, onPatch }: {
+  i: number; n: number; s: SetRow; barKg: number; isNext: boolean;
+  onToggle: () => void; onPatch: (p: Partial<SetRow>) => void;
+}) {
+  const [edit, setEdit] = useState(false);
+  const done = s.done;
+  return (
+    <div className={"et-set" + (done ? " is-done" : "") + (edit ? " is-editing" : "") + (isNext ? " is-next" : "")}>
+      <button type="button" className="et-set__main" onClick={onToggle} aria-pressed={done}
+        aria-label={`serie ${i + 1} de ${n}, ${s.kg != null ? s.kg : "—"} kilos por ${s.reps ?? "—"} reps, ${done ? "hecha" : "pendiente"}`}>
+        <span className="et-set__num" aria-hidden>{done ? "✓" : i + 1}</span>
+        <span className="et-set__mid">
+          <span className="et-set__serie">Serie {i + 1}<span className="et-set__of">/{n}</span></span>
+          {s.kg != null && <span className="et-set__bar"><DiscRow kg={s.kg} barKg={barKg} size={30} /></span>}
+        </span>
+        <span className="et-set__nums">
+          <span className="et-set__kg">{s.kg != null ? s.kg : "—"}<span className="et-set__u"> kg</span></span>
+          <span className="et-set__reps">{s.reps != null ? `× ${s.reps} ${s.reps === 1 ? "rep" : "reps"}` : "—"}</span>
+        </span>
+      </button>
+
+      <button type="button" className="et-set__edit" aria-label={`ajustar serie ${i + 1}`} onClick={() => setEdit((e) => !e)}>{edit ? "▴" : "✎"}</button>
+
+      {edit && (
+        <div className="et-set__editor">
+          <Stepper label={`kg serie ${i + 1}`} value={s.kg} unit="kg" step={1} onChange={(v) => onPatch({ kg: v })} />
+          <Stepper label={`reps serie ${i + 1}`} value={s.reps} unit="reps" step={1} onChange={(v) => onPatch({ reps: v })} />
+          <div className="et-set__editrow">
+            <button type="button" className="et-minibtn" onClick={() => onPatch({ done: !done })}>{done ? "no la hice" : "sí la hice"}</button>
+            <button type="button" className="et-minibtn is-accent" onClick={() => setEdit(false)}>✓ listo</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Series de trabajo: filas tocables con discos (vía DiscRow). Nacen al target con `done:true`
+ *  (adherencia por defecto — decisión owner); se ven como ✓ y se tocan para des-marcar excepciones,
+ *  o ✎ para ajustar kg/reps. Glow "spotlight" en la próxima serie PENDIENTE (si des-marcás alguna). */
+export function WorkSetsSection({ series, barKg, onPatchSet }: {
+  series: SetRow[]; barKg: number; onPatchSet: (i: number, p: Partial<SetRow>) => void;
+}) {
+  const nDone = series.filter((s) => s.done).length;
+  const vol = series.filter((s) => s.done).reduce((a, s) => a + (s.kg || 0) * (s.reps || 0), 0);
+  const all = series.length > 0 && nDone === series.length;
+  const nextPending = series.findIndex((s) => !s.done); // -1 = ninguna pendiente
+
+  return (
+    <div className="et-worksets">
+      <div className="et-worksets__head">
+        <span className="et-worksets__title">Series de trabajo</span>
+        <span className={"et-worksets__count" + (all ? " is-all" : "")}>{nDone}/{series.length}{vol > 0 ? ` · ${vol.toLocaleString("es-CL")} kg` : ""}</span>
       </div>
+      <div className="et-worksets__track" aria-hidden><span className="et-worksets__fill" style={{ width: `${series.length ? (nDone / series.length) * 100 : 0}%` }} /></div>
+
+      <div className="et-worksets__rows">
+        {series.map((s, i) => (
+          <WorkSetRow key={i} i={i} n={series.length} s={s} barKg={barKg}
+            isNext={i === nextPending}
+            onToggle={() => onPatchSet(i, { done: !s.done })}
+            onPatch={(p) => onPatchSet(i, p)} />
+        ))}
+      </div>
+
+      {all && (
+        <div className="et-worksets__complete">
+          <span className="et-worksets__complete-ic" aria-hidden>✓</span>
+          {series.length} series listas · {vol.toLocaleString("es-CL")} kg · tocá una para des-marcar
+        </div>
+      )}
     </div>
   );
 }
