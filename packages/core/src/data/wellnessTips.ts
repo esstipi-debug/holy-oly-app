@@ -94,16 +94,17 @@ export const WELLNESS_TIPS: readonly WellnessTip[] = [
     body: "Buen día para seguir el plan como viene. Mantené el sueño y la luz de la mañana constantes para que esta racha se sostenga.",
     source: SRC,
   },
+  // Generales por estado: dan el CÓMO concreto (el recuadro de estado ya dice el QUÉ) — nunca lo repiten.
   {
-    id: "gen-warn", topic: "Cuidarte hoy", states: ["warn"], items: [],
-    title: "Bajá un escalón y priorizá dormir",
-    body: "Tu recuperación viene algo por debajo de tu normal. Hoy conviene bajar un poco la intensidad y darle prioridad al descanso.",
+    id: "gen-warn", topic: "Sueño", states: ["warn"], items: [],
+    title: "Cómo dormir mejor esta noche",
+    body: "Bajá la luz y las pantallas una hora antes de acostarte y dejá el cuarto fresco (~18-19 °C). Sostener el horario es lo que más mejora tu recuperación.",
     source: SRC,
   },
   {
-    id: "gen-alert", topic: "Aflojar", states: ["alert"], items: [],
-    title: "Tu cuerpo viene pidiendo descanso",
-    body: "Hoy conviene aflojar de verdad y priorizar sueño y movilidad por sobre la carga. Si se sostiene varios días, hablalo con tu coach.",
+    id: "gen-alert", topic: "Bajar un cambio", states: ["alert"], items: [],
+    title: "Reseteá el sistema nervioso",
+    body: "Suspiro fisiológico: dos inhalaciones cortas por la nariz y una exhalación larga por la boca, 3-4 veces. Si podés, sumá 10-20 min de descanso profundo (NSDR) a la tarde.",
     source: SRC,
   },
   {
