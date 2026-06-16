@@ -37,6 +37,10 @@ const sec: CSSProperties = {
   fontFamily: "var(--wl-display)", fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase",
   color: "var(--wl-muted)", margin: "22px 0 10px",
 };
+const assignBtn: CSSProperties = {
+  width: "100%", padding: 14, borderRadius: 14, border: 0, cursor: "pointer",
+  background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15,
+};
 
 export function MacroDetail() {
   const { id } = useParams();
@@ -86,6 +90,13 @@ export function MacroDetail() {
     window.setTimeout(() => setToast(null), 2800);
   }
 
+  // Mismo CTA arriba (al entrar al macro, sin scrollear) y abajo (tras leer el detalle).
+  const cta = (marginTop: number) => (
+    <button type="button" onClick={() => setAssignOpen(true)} style={{ ...assignBtn, marginTop }}>
+      + Asignar a un atleta
+    </button>
+  );
+
   return (
     <div style={page}>
       <BackButton onClick={() => navigate(catalogHref)} />
@@ -99,6 +110,8 @@ export function MacroDetail() {
           : <span style={lvTag}>sin pico</span>}
       </div>
       <p style={descStyle}>{macro.desc}</p>
+
+      {cta(16)}
 
       {dna != null && (
         <>
@@ -147,11 +160,7 @@ export function MacroDetail() {
       <div style={sec}>Ideal para</div>
       <p style={{ fontSize: 12, lineHeight: 1.5, color: "var(--wl-text)", margin: 0 }}>{macro.bestFor}</p>
 
-      <button type="button" onClick={() => setAssignOpen(true)}
-        style={{ width: "100%", marginTop: 20, padding: 14, borderRadius: 14, border: 0, cursor: "pointer",
-          background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15 }}>
-        + Asignar a un atleta
-      </button>
+      {cta(20)}
 
       <AssignSheet open={assignOpen} onClose={() => setAssignOpen(false)} macro={macro} athletes={athletes} onAssign={onAssign}
         rosterError={rosterError} onRetryRoster={() => setRosterReload((r) => r + 1)} preselectAtletaId={preselectAtletaId} />

@@ -74,6 +74,16 @@ test("preselectAtletaId: arranca con ese atleta elegido — asigna sin re-elegir
   );
 });
 
+test("preselectAtletaId: muestra SOLO ese atleta (no el plantel); 'Cambiar atleta' revela el resto", () => {
+  render(<AssignSheet open macro={ruso} athletes={athletes} onClose={() => {}} onAssign={vi.fn()} today={TODAY} preselectAtletaId="ds" />);
+  // Sólo Diego (ds, el atleta del que vino el coach) — Mara NO se lista.
+  expect(screen.getByRole("button", { name: "Diego S." })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Mara V." })).not.toBeInTheDocument();
+  // "Cambiar atleta" revela el plantel completo por si se equivocó.
+  fireEvent.click(screen.getByRole("button", { name: /cambiar atleta/i }));
+  expect(screen.getByRole("button", { name: "Mara V." })).toBeInTheDocument();
+});
+
 test("modo «Fecha de inicio» (toggle): el flujo clásico sigue, sin comp", () => {
   const onAssign = vi.fn().mockResolvedValue(undefined);
   render(<AssignSheet open macro={ruso} athletes={athletes} onClose={() => {}} onAssign={onAssign} today={TODAY} />);

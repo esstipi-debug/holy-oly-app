@@ -63,6 +63,12 @@ export function AssignSheet({
   const [rms, setRms] = useState<RmDraft>(EMPTY_RMS);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAllAthletes, setShowAllAthletes] = useState(false);
+
+  // Vino desde un atleta (drill-down → "Asignar macro"): se muestra SOLO ese, no el plantel entero
+  // (con un "cambiar" por si el coach se equivocó de atleta). Sin preselect → la lista completa.
+  const preselected = preselectAtletaId ? athletes.find((a) => a.id === preselectAtletaId) : undefined;
+  const visibleAthletes = preselected && !showAllAthletes ? [preselected] : athletes;
 
   const totalWeeks = macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
   // La compe se cuadra con el PICO del macro; sin pico declarado, con la última semana.
@@ -114,21 +120,31 @@ export function AssignSheet({
         ) : athletes.length === 0 ? (
           <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>No tenés atletas vinculados.</div>
         ) : (
-          athletes.map((a) => {
-            const on = a.id === atletaId;
-            return (
-              <button key={a.id} type="button" aria-label={a.nombre} onClick={() => setAtletaId(a.id)}
-                style={{
-                  textAlign: "left", padding: "10px 12px", borderRadius: 10, cursor: "pointer",
-                  fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14,
-                  color: on ? "var(--wl-bg)" : "var(--wl-text)",
-                  background: on ? "var(--wl-accent)" : "transparent",
-                  border: `1px solid ${on ? "var(--wl-accent)" : "color-mix(in srgb,var(--wl-text) 14%,transparent)"}`,
-                }}>
-                {a.nombre} <span style={{ fontFamily: "var(--mono)", fontSize: 10, opacity: 0.7 }}>· {a.iniciales}</span>
+          <>
+            {visibleAthletes.map((a) => {
+              const on = a.id === atletaId;
+              return (
+                <button key={a.id} type="button" aria-label={a.nombre} onClick={() => setAtletaId(a.id)}
+                  style={{
+                    textAlign: "left", padding: "10px 12px", borderRadius: 10, cursor: "pointer",
+                    fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14,
+                    color: on ? "var(--wl-bg)" : "var(--wl-text)",
+                    background: on ? "var(--wl-accent)" : "transparent",
+                    border: `1px solid ${on ? "var(--wl-accent)" : "color-mix(in srgb,var(--wl-text) 14%,transparent)"}`,
+                  }}>
+                  {a.nombre} <span style={{ fontFamily: "var(--mono)", fontSize: 10, opacity: 0.7 }}>· {a.iniciales}</span>
+                </button>
+              );
+            })}
+            {/* Vino desde un atleta → se ve sólo ese; "cambiar" revela el plantel por si se equivocó. */}
+            {preselected && !showAllAthletes && athletes.length > 1 && (
+              <button type="button" onClick={() => setShowAllAthletes(true)}
+                style={{ textAlign: "left", padding: "4px 2px", border: 0, background: "transparent",
+                  color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer" }}>
+                Cambiar atleta ›
               </button>
-            );
-          })
+            )}
+          </>
         )}
       </div>
 
