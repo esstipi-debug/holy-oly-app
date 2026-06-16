@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MACROCYCLES } from "@holy-oly/core";
 import { Chip } from "../../../ui/Chip";
 import { MacroCard } from "./MacroCard";
@@ -30,6 +30,11 @@ const grid: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", g
 
 export function MacroCatalog() {
   const navigate = useNavigate();
+  // Si el coach vino desde un atleta (drill-down → "Asignar macro" pasa `?atleta=`), se conserva al
+  // abrir un macro para que el AssignSheet lo pre-seleccione y no haya que re-elegirlo de la lista.
+  const [params] = useSearchParams();
+  const atleta = params.get("atleta");
+  const macroHref = (mid: string): string => `/coach/macros/${mid}${atleta ? `?atleta=${encodeURIComponent(atleta)}` : ""}`;
   const [family, setFamily] = useState("Todos");
   const [days, setDays] = useState("Todos");
   const [query, setQuery] = useState("");
@@ -58,7 +63,7 @@ export function MacroCatalog() {
         </div>
       ) : (
         <div style={grid}>
-          {list.map((m) => <MacroCard key={m.id} macro={m} onOpen={(id) => navigate(`/coach/macros/${id}`)} />)}
+          {list.map((m) => <MacroCard key={m.id} macro={m} onOpen={(id) => navigate(macroHref(id))} />)}
         </div>
       )}
     </div>

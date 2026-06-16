@@ -49,7 +49,7 @@ export function PlanTab({
           <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 6, lineHeight: 1.5 }}>
             Asignale un macrociclo para cargar sus RM y armar el plan.
           </div>
-          <button type="button" onClick={() => navigate("/coach/macros")}
+          <button type="button" onClick={() => navigate(`/coach/macros?atleta=${encodeURIComponent(athleteId)}`)}
             style={{ marginTop: 12, padding: "10px 16px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 13.5, cursor: "pointer" }}>
             Asignar macro ›
           </button>
