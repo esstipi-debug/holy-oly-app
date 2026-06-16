@@ -60,6 +60,20 @@ test("compe en el pasado → aviso honesto y submit bloqueado", () => {
   expect(screen.getByRole("button", { name: /asignar plan/i })).toBeDisabled();
 });
 
+test("preselectAtletaId: arranca con ese atleta elegido — asigna sin re-elegir de la lista", () => {
+  const onAssign = vi.fn().mockResolvedValue(undefined);
+  render(<AssignSheet open macro={ruso} athletes={athletes} onClose={() => {}} onAssign={onAssign} today={TODAY} preselectAtletaId="ds" />);
+  fireEvent.click(screen.getByRole("button", { name: "Fecha de inicio" }));
+  fireEvent.change(screen.getByLabelText(/fecha de inicio/i), { target: { value: "2026-03-09" } });
+  fillRms();
+  // NO se clickea ningún atleta: Diego (ds) ya viene pre-seleccionado desde el drill-down.
+  fireEvent.click(screen.getByRole("button", { name: /asignar plan/i }));
+  expect(onAssign).toHaveBeenCalledWith(
+    { atletaId: "ds", macroId: "ruso-5d", startWeek: 1, startDate: "2026-03-09", rms: RMS, comps: [] },
+    undefined,
+  );
+});
+
 test("modo «Fecha de inicio» (toggle): el flujo clásico sigue, sin comp", () => {
   const onAssign = vi.fn().mockResolvedValue(undefined);
   render(<AssignSheet open macro={ruso} athletes={athletes} onClose={() => {}} onAssign={onAssign} today={TODAY} />);

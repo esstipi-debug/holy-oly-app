@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { useParams, useNavigate, Navigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { MACROCYCLES, weekOfDate, dnaForFamily, type Atleta, type Plan } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { BackButton } from "../../../ui/BackButton";
@@ -41,6 +41,11 @@ const sec: CSSProperties = {
 export function MacroDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  // Atleta del que vino el coach (drill-down → "Asignar macro" pasa `?atleta=`). Pre-selecciona el
+  // sheet y se conserva al volver al catálogo, así no se pierde el contexto al elegir otro macro.
+  const preselectAtletaId = params.get("atleta") ?? undefined;
+  const catalogHref = preselectAtletaId ? `/coach/macros?atleta=${encodeURIComponent(preselectAtletaId)}` : "/coach/macros";
   const repo = useRepository();
   const [assignOpen, setAssignOpen] = useState(false);
   const [athletes, setAthletes] = useState<Atleta[]>([]);
@@ -58,7 +63,7 @@ export function MacroDetail() {
   }, [repo, rosterReload]);
 
   const macro = MACROCYCLES.find((m) => m.id === id);
-  if (!macro) return <Navigate to="/coach/macros" replace />;
+  if (!macro) return <Navigate to={catalogHref} replace />;
   const m = macro;
   const dna = dnaForFamily(macro.family);
 
@@ -83,7 +88,7 @@ export function MacroDetail() {
 
   return (
     <div style={page}>
-      <BackButton onClick={() => navigate("/coach/macros")} />
+      <BackButton onClick={() => navigate(catalogHref)} />
 
       <h1 style={titleStyle}>{macro.name}</h1>
       <div style={tagsRow}>
@@ -149,7 +154,7 @@ export function MacroDetail() {
       </button>
 
       <AssignSheet open={assignOpen} onClose={() => setAssignOpen(false)} macro={macro} athletes={athletes} onAssign={onAssign}
-        rosterError={rosterError} onRetryRoster={() => setRosterReload((r) => r + 1)} />
+        rosterError={rosterError} onRetryRoster={() => setRosterReload((r) => r + 1)} preselectAtletaId={preselectAtletaId} />
       <Toast message={toast ?? ""} show={toast != null} />
     </div>
   );

@@ -39,7 +39,7 @@ export interface AssignComp { name: string; date: string; week: number }
  * semana X salteando acumulación) o por fecha de inicio (hacia adelante, el modo clásico).
  */
 export function AssignSheet({
-  open, onClose, macro, athletes, onAssign, today = todayISO(), rosterError = false, onRetryRoster,
+  open, onClose, macro, athletes, onAssign, today = todayISO(), rosterError = false, onRetryRoster, preselectAtletaId,
 }: {
   open: boolean;
   onClose: () => void;
@@ -51,9 +51,12 @@ export function AssignSheet({
   /** D5: el dueño no pudo cargar el roster → mostrar error + retry, jamás "sin atletas". */
   rosterError?: boolean;
   onRetryRoster?: () => void;
+  /** Atleta del que vino el coach (drill-down → "Asignar macro"): arranca pre-seleccionado para no
+   *  re-elegirlo de la lista (y no asignarle a otro por error). El coach puede cambiarlo igual. */
+  preselectAtletaId?: string;
 }) {
   const [mode, setMode] = useState<"competencia" | "inicio">("competencia");
-  const [atletaId, setAtletaId] = useState<string | null>(null);
+  const [atletaId, setAtletaId] = useState<string | null>(preselectAtletaId ?? null);
   const [startDate, setStartDate] = useState(today);
   const [compName, setCompName] = useState("");
   const [compDate, setCompDate] = useState("");
