@@ -12,7 +12,7 @@ import {
 import { isAccountLocked, recordLoginFailure, clearLoginFailures } from "./lockout";
 import { recordAudit } from "../audit";
 import { generateOneTimeToken, tokenIdFromRaw } from "./one-time-token";
-import { sendCoachVerificationEmail, provisionUserRecords } from "./provision-user";
+import { sendVerificationEmail, provisionUserRecords } from "./provision-user";
 import { sendEmail, appOrigin } from "../email";
 
 export const SESSION_COOKIE = "session";
@@ -55,7 +55,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(409).send({ error: "email already registered" });
     }
     const passwordHash = await hashPassword(password);
-    const emailVerified = role !== "coach";
+    // Toda alta por email/password nace SIN verificar (coach y atleta) y recibe el link de verificación.
+    const emailVerified = false;
     const user = await prisma.$transaction(async (tx) =>
       provisionUserRecords(tx, { email, role, name, emailVerified, passwordHash, sexo, weightKg }),
     );
@@ -64,13 +65,11 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     // (y el reintento chocaba con 409 "email already registered").
     const { token, expiresAt } = await createSession(prisma, user.id);
     reply.setCookie(SESSION_COOKIE, token, cookieOpts(expiresAt));
-    if (role === "coach") {
-      // Best-effort: el coach ya quedó logueado y puede reenviar el link desde el banner de verificación.
-      try {
-        await sendCoachVerificationEmail(prisma, user.id, email);
-      } catch (err) {
-        req.log.error(err, "coach verification email failed at signup; user can resend from banner");
-      }
+    // Best-effort: el usuario ya quedó logueado y puede reenviar el link desde el banner de verificación.
+    try {
+      await sendVerificationEmail(prisma, user.id, email);
+    } catch (err) {
+      req.log.error(err, "verification email failed at signup; user can resend from banner");
     }
     await recordAudit(prisma, { action: "signup", actorUserId: user.id, actorRole: role, ip: req.ip });
     return reply.code(201).send({ id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified });
@@ -180,7 +179,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   });
 
   app.post("/auth/email/resend", async (req, reply) => {
-    if (!req.userId || req.role !== "coach") return reply.code(401).send({ error: "coach session required" });
+    if (!req.userId) return reply.code(401).send({ error: "not authenticated" });
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user || user.emailVerified) return { ok: true };
     const raw = generateOneTimeToken();

@@ -7,7 +7,7 @@ import { recordAudit } from "../audit";
 import { createSession } from "./session";
 import { SESSION_COOKIE, cookieOpts } from "./routes";
 import { signCookiePayload, verifyCookiePayload } from "./signed-cookie";
-import { provisionUserRecords, sendCoachVerificationEmail } from "./provision-user";
+import { provisionUserRecords, sendVerificationEmail } from "./provision-user";
 import { GoogleCompleteSchema } from "./schemas";
 import {
   GOOGLE_PROVIDER,
@@ -149,7 +149,8 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
     // fall through to the pending → /login/google-complete flow, where the checkbox is enforced.
     const role = ctx.intent === "signup" && ctx.acceptTerms === true ? ctx.role : undefined;
     if (role) {
-      const emailVerified = role !== "coach" || profile.emailVerified;
+      // Google ya verificó el email para todo rol: si su flag es true, queda verificado; si no, se envía link.
+      const emailVerified = profile.emailVerified;
       let user;
       try {
         user = await prisma.$transaction(async (tx) => {
@@ -173,8 +174,8 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
         }
         throw err;
       }
-      if (role === "coach" && !emailVerified) {
-        await sendCoachVerificationEmail(prisma, user.id, user.email);
+      if (!emailVerified) {
+        await sendVerificationEmail(prisma, user.id, user.email);
       }
       await issueSession(reply, user.id);
       await recordAudit(prisma, { action: "signup", actorUserId: user.id, actorRole: role, ip: req.ip });
@@ -215,7 +216,7 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
 
     const { role, name, sexo, weightKg } = parsed.data;
     // Onboarding del atleta: el FORM (GoogleCompleteScreen) exige sexo; la API es tolerante (default "M").
-    const emailVerified = role !== "coach" || pending.emailVerified;
+    const emailVerified = pending.emailVerified;
     let user;
     try {
       user = await prisma.$transaction(async (tx) => {
@@ -240,8 +241,8 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
       throw err;
     }
 
-    if (role === "coach" && !emailVerified) {
-      await sendCoachVerificationEmail(prisma, user.id, user.email);
+    if (!emailVerified) {
+      await sendVerificationEmail(prisma, user.id, user.email);
     }
     await issueSession(reply, user.id);
     await recordAudit(prisma, { action: "signup", actorUserId: user.id, actorRole: role, ip: req.ip });

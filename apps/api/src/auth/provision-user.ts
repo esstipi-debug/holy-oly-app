@@ -63,8 +63,8 @@ export async function provisionUserRecords(
   return u;
 }
 
-/** Coach email verification email when signup did not auto-verify (password signup). */
-export async function sendCoachVerificationEmail(prisma: PrismaClient, userId: string, email: string): Promise<void> {
+/** Send the email-verification link for any role whose account was created unverified. */
+export async function sendVerificationEmail(prisma: PrismaClient, userId: string, email: string): Promise<void> {
   const raw = generateOneTimeToken();
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   await prisma.emailVerificationToken.create({

@@ -11,6 +11,7 @@ import { RetryButton } from "../../ui/RetryButton";
 import { SegmentedTabs } from "../../ui/SegmentedTabs";
 import { LanguageToggle } from "../../i18n/LanguageToggle";
 import { MovementLangToggle } from "../../i18n/MovementLangToggle";
+import { VerifyEmailBanner } from "../../ui/VerifyEmailBanner";
 
 const HO_SKINS: Array<{ id: string; nm: string; sw: [string, string, string] }> = [
   { id: "neon", nm: "Neon PR", sw: ["#07070f", "#c8ff2d", "#1fe7ff"] },
@@ -233,6 +234,7 @@ export function CuentaMin() {
             <b style={{ fontFamily: "var(--wl-display)", overflowWrap: "anywhere" }}>{user.email ?? "Sin email"}</b>
             <div className="ho-acct__rowsub" style={{ marginTop: 4 }}>Sesión activa · atleta</div>
           </div>
+          {user.emailVerified === false && <VerifyEmailBanner sub={t("verifyEmail.athleteSub")} />}
         </div>
       )}
 

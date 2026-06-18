@@ -27,8 +27,30 @@ jobs:
       - run: pnpm -r build
 
   integration:
-    name: api integration (embedded postgres)
+    name: api integration (postgres service)
     runs-on: ubuntu-latest
+    # Real Postgres 16 via a service container (matches the production major). We used to spin up
+    # embedded-postgres (pnpm verify) but its bundled binary links against libicuuc.so.60, which the
+    # ubuntu-latest runner no longer ships — initdb fails to load. The service container is robust and
+    # mirrors prod. db-verify.ts stays as the no-Docker path for local dev.
+    services:
+      postgres:
+        image: postgres:16
+        # Ephemeral throwaway DB on localhost, alive only for this job → trust auth, no password
+        # literal in the repo (keeps secret scanners quiet; there is no secret to leak here).
+        env:
+          POSTGRES_USER: holyoly
+          POSTGRES_DB: holyoly
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U holyoly"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://holyoly@localhost:5433/holyoly?schema=public
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -38,7 +60,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @holy-oly/api prisma:generate
-      - run: pnpm --filter @holy-oly/api verify
+      - run: pnpm --filter @holy-oly/api exec prisma migrate deploy
+      - run: pnpm --filter @holy-oly/api exec tsx prisma/seed.ts
+      - run: pnpm --filter @holy-oly/api test:int
 
   audit:
     name: dependency audit (fail on high/critical)

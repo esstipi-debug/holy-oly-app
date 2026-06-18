@@ -22,6 +22,7 @@
   "verifyEmail": {
     "title": "Verify your email",
     "defaultSub": "Without verification you can’t confirm athletes in the roster.",
+    "athleteSub": "Confirm your email to secure your account and keep access.",
     "sending": "Sending…",
     "sent": "Sent ✓ — check spam",
     "resend": "Resend email",
