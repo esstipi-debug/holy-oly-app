@@ -68,6 +68,37 @@ describe("Coach-authorized writes (integration)", () => {
     expect(got.comps).toEqual([]); // body comps ignored; Competencia table is the only comp store
   });
 
+  it("PUT plan con compe a 7 semanas → la prescripción se COMPRIME a 7 (periodización adaptativa)", async () => {
+    const u = `${Date.now()}-adapt`;
+    const coach = await app.inject({
+      method: "POST", url: "/auth/signup",
+      payload: { email: `ac-${u}@x.dev`, password: "adapt-pass-1", role: "coach", acceptTerms: true },
+    });
+    const cH = cookieOf(coach);
+    const cRow = await prisma.coach.findUnique({ where: { userId: (coach.json() as { id: string }).id } });
+
+    // Atleta CON compe a 7 semanas del start → coreano (12) comprimido a 7, pico en la fecha.
+    const aId = `aa-${u}`;
+    await prisma.athlete.create({ data: { id: aId, nombre: "Adapt A", iniciales: "AA", nivel: "intermediate", compite: true } });
+    await prisma.vinculo.create({ data: { coachId: cRow!.id, athleteId: aId, estado: "activo" } });
+    // setComps PRIMERO (la instanciación lee las compes persistidas), luego el plan.
+    await app.inject({ method: "PUT", url: `/athletes/${aId}/comps`, headers: cH, payload: [{ name: "Nacional", date: "2026-02-16", week: 7 }] });
+    const plan = { atletaId: aId, macroId: "coreano-5d", startWeek: 1, startDate: "2026-01-05", rms: { arranque: 80, envion: 100, sentadilla: 140, frente: 110 }, comps: [] };
+    expect((await app.inject({ method: "PUT", url: `/athletes/${aId}/plan`, headers: cH, payload: plan })).statusCode).toBe(200);
+    const rows = await prisma.prescribedExercise.findMany({ where: { athleteId: aId } });
+    expect(rows.length).toBeGreaterThan(0);
+    expect(Math.max(...rows.map((r) => r.week))).toBe(7); // 12 → comprimido a 7
+
+    // Control: atleta SIN compe → coreano queda en su largo natural (12). Compatibilidad.
+    const bId = `ab-${u}`;
+    await prisma.athlete.create({ data: { id: bId, nombre: "Adapt B", iniciales: "AB", nivel: "intermediate", compite: true } });
+    await prisma.vinculo.create({ data: { coachId: cRow!.id, athleteId: bId, estado: "activo" } });
+    const planB = { atletaId: bId, macroId: "coreano-5d", startWeek: 1, startDate: "2026-01-05", rms: { arranque: 80, envion: 100, sentadilla: 140, frente: 110 }, comps: [] };
+    expect((await app.inject({ method: "PUT", url: `/athletes/${bId}/plan`, headers: cH, payload: planB })).statusCode).toBe(200);
+    const rowsB = await prisma.prescribedExercise.findMany({ where: { athleteId: bId } });
+    expect(Math.max(...rowsB.map((r) => r.week))).toBe(12); // sin compe = natural
+  });
+
   it("POST /athletes/:id/medals appends a medal", async () => {
     const before = await app.inject({ method: "GET", url: `/athletes/${athleteId}/medals`, headers: coachH });
     const n = (before.json() as unknown[]).length;

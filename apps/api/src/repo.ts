@@ -7,7 +7,7 @@ import type {
   MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf, MacroHistoryView, MacroHistoryRow, MeHeatDays,
   Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryView, CompetitionEntryInput,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildAdaptivePlan, effectiveTotalWeeks, availableWeeksToComp, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -285,8 +285,18 @@ export async function upsertDayLog(prisma: PrismaClient, athleteId: string, toda
  *  scratch). Runs on the given (transaction) client so it can join savePlan's atomic transaction. */
 export async function instantiateForPlan(tx: Prisma.TransactionClient, athleteId: string, plan: Plan): Promise<void> {
   const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
-  const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
-  const rows: PrescriptionRow[] = macro ? instantiatePrescription(ALL_RECIPES, macro, totalWeeks) : [];
+  // Periodización ADAPTATIVA: las competencias persistidas (verdad anclada a fecha, tabla Competencia)
+  // definen la forma del plan. Las semanas-hasta-cada-compe se DERIVAN contra el startDate del plan
+  // (no se confía en el `week` guardado). Sin compes → plan natural (compatibilidad). Es instanciación
+  // de ASIGNACIÓN (aún sin actuals/ediciones); re-periodizar al CAMBIAR compes luego queda para v2.
+  const start = plan.startDate;
+  const compRows = start != null ? await tx.competencia.findMany({ where: { athleteId } }) : [];
+  const compWeeks = start != null
+    ? compRows.map((c) => c.date).filter((d): d is string => d != null).map((d) => availableWeeksToComp(start, d))
+    : [];
+  const totalWeeks = macro ? effectiveTotalWeeks(macro, compWeeks) : 0;
+  const phasePlan = macro ? buildAdaptivePlan(macro, compWeeks) : [];
+  const rows: PrescriptionRow[] = macro ? instantiatePrescription(ALL_RECIPES, macro, totalWeeks, phasePlan) : [];
   await tx.prescribedExercise.deleteMany({ where: { athleteId } });
   if (rows.length > 0) {
     await tx.prescribedExercise.createMany({
