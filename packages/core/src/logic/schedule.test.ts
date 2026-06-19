@@ -1,5 +1,32 @@
 import { describe, it, expect } from "vitest";
-import { weekOfDate, dateOfWeek, defaultStartDate, sessionsPerWeek, computeStreak, calendarWeeks, mondayOf, anchorPlanToComp, availableWeeksToComp } from "./schedule";
+import { weekOfDate, dateOfWeek, defaultStartDate, sessionsPerWeek, computeStreak, calendarWeeks, mondayOf, anchorPlanToComp, availableWeeksToComp, weekIndexUnclamped } from "./schedule";
+
+describe("weekIndexUnclamped", () => {
+  const start = "2026-01-05"; // un lunes
+  it("misma semana del start → 1", () => {
+    expect(weekIndexUnclamped(start, "2026-01-05")).toBe(1);
+    expect(weekIndexUnclamped(start, "2026-01-11")).toBe(1); // +6 días, semana 1
+  });
+  it("avanza una semana cada 7 días", () => {
+    expect(weekIndexUnclamped(start, "2026-01-12")).toBe(2); // +7 días
+    expect(weekIndexUnclamped(start, "2026-01-26")).toBe(4); // +21 días
+  });
+  it("antes del start → 1 (piso, jamás 0 ni negativo)", () => {
+    expect(weekIndexUnclamped(start, "2025-12-01")).toBe(1);
+  });
+  it("NO recorta por arriba (a diferencia de weekOfDate): cuánto avanzó de verdad el atleta", () => {
+    // weekOfDate(start, "2027-01-05", 16) recortaría a 16; sin clamp = 53.
+    expect(weekIndexUnclamped(start, "2027-01-05")).toBe(53); // +365 días → floor(365/7)+1
+    expect(weekOfDate(start, "2027-01-05", 16)).toBe(16); // contraste: el clamp de weekOfDate
+  });
+  it("alinea a lunes (mismo frame que availableWeeksToComp) → startDate NO-lunes no corre el borde D8", () => {
+    const wed = "2026-01-07"; // miércoles
+    // La semana en curso DEBE contarse en el MISMO frame Monday-aligned que ubica las compes; si no,
+    // con un startDate no-lunes la semana que el atleta vive se clasificaría como "futura" → D8 roto.
+    expect(weekIndexUnclamped(wed, "2026-01-13")).toBe(availableWeeksToComp(wed, "2026-01-13"));
+    expect(weekIndexUnclamped(wed, "2026-01-13")).toBe(2); // martes de la 2ª semana calendario
+  });
+});
 
 describe("availableWeeksToComp", () => {
   const start = "2026-01-05"; // un lunes

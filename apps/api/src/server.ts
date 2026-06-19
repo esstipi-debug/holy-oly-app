@@ -251,7 +251,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     if (!(await guardAthleteWrite(req, reply, req.params.id))) return;
     const parsed = CompsSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid comps" });
-    await repo.setComps(prisma, req.params.id, parsed.data);
+    await repo.setComps(prisma, req.params.id, parsed.data, todayISO());
     await recordAudit(prisma, { action: "comps.write", actorUserId: req.userId, actorRole: req.role, targetAthleteId: req.params.id, ip: req.ip });
     return reply.code(200).send({ ok: true });
   });

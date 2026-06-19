@@ -106,6 +106,23 @@ Valores **verificados contra `packages/core/src/logic/`**. Si el código cambió
   los dos turnos del día deben agregarse como una sola jornada (no doble-contar) — hoy el
   ACWR es estático del seed y no se ve afectado. El calentamiento sigue fuera del monitor.
 
+### §Re-periodización por cambio de competencia (futura-only, D8 — CRITICAL)
+Al **asignar** un macro con compe, la prescripción se instancia con la periodización adaptativa
+(`instantiateForPlan` → `buildAdaptivePlan`). Al **cambiar/agregar** la compe con el atleta YA en
+marcha (`setComps`), la prescripción se **re-periodiza a la forma nueva**, pero con un invariante duro:
+- **Sólo semanas estrictamente futuras** (`week > weekIndexUnclamped(startDate, hoy)`) — jamás la
+  semana en curso ni el pasado. El índice **NO se recorta** al largo nuevo del plan (si la compe se
+  acercó, recortar ocultaría semanas ya vividas y re-escribiría el pasado). `repo.ts reperiodizeFuture`.
+- **NUNCA** una semana con rastro inmutable: ≥1 `SessionActual` (pueden ser **backdated**, §2b), ≥1
+  `SessionRegistro`, o una **edición manual del coach** (`coachEdited` → se preserva la semana entera;
+  jamás se pisa en silencio). Núcleo puro auditable: `core reinstantiableWeeks`.
+- **Jamás un `deleteMany` global** de la prescripción — el pasado y lo tocado se preservan byte a byte.
+- **La fase de cada semana es ESTADO PERSISTIDO** (`PrescribedExercise.phaseKey`) = **única fuente de
+  verdad** del read-path (heat/dayLayout). Una semana del pasado preservada conserva SU fase aunque la
+  compe cambie; el read-path **NO recalcula** la fase del pasado desde las compes actuales.
+- Coherente con la doctrina de `updateRms` (no re-instancia; las ediciones sobreviven; el kg se deriva
+  en lectura). Quitar todas las compes **estira** el futuro de vuelta al largo natural del macro.
+
 ---
 
 ## §2c · Contenido programático — escuelas, scores y complejos (2026-06-11)

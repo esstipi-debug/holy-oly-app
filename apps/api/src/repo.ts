@@ -7,7 +7,7 @@ import type {
   MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf, MacroHistoryView, MacroHistoryRow, MeHeatDays,
   Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryView, CompetitionEntryInput,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildAdaptivePlan, effectiveTotalWeeks, availableWeeksToComp, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildAdaptivePlan, effectiveTotalWeeks, availableWeeksToComp, weekIndexUnclamped, reinstantiableWeeks, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -211,12 +211,67 @@ export async function addMedal(prisma: PrismaClient, athleteId: string, medal: M
   });
 }
 
-/** Replace the whole competition list transactionally — a partial failure must not truncate it. */
-export async function setComps(prisma: PrismaClient, athleteId: string, comps: Competencia[]): Promise<void> {
-  await prisma.$transaction([
-    prisma.competencia.deleteMany({ where: { athleteId } }),
-    prisma.competencia.createMany({ data: comps.map((c) => ({ athleteId, name: c.name, week: c.week, date: c.date ?? null })) }),
+/** Replace the whole competition list transactionally — a partial failure must not truncate it. Tras
+ *  reemplazarlas, RE-PERIODIZA la prescripción a las compes nuevas (v2), pero SÓLO el futuro intocado
+ *  (invariante D8 — `reperiodizeFuture`). Todo en una transacción: compes y prescripción nunca divergen. */
+export async function setComps(prisma: PrismaClient, athleteId: string, comps: Competencia[], today: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    await tx.competencia.deleteMany({ where: { athleteId } });
+    if (comps.length > 0) {
+      await tx.competencia.createMany({ data: comps.map((c) => ({ athleteId, name: c.name, week: c.week, date: c.date ?? null })) });
+    }
+    await reperiodizeFuture(tx, athleteId, comps, today);
+  });
+}
+
+/**
+ * v2 — re-periodización FUTURA-ONLY (invariante D8, CRITICAL). Cuando el coach cambia/agrega compes con
+ * el atleta YA en marcha, re-instancia la prescripción a la forma nueva PERO sólo las semanas que es
+ * seguro reescribir: estrictamente futuras y sin rastro inmutable. JAMÁS el `deleteMany` global —
+ * el pasado, lo registrado y lo editado por el coach se preservan byte a byte (su `phaseKey` persistido
+ * es su verdad). Coherente con la doctrina de `updateRms` (no re-instancia; el kg se deriva en lectura).
+ * Sin plan / sin macro / sin `startDate` → no-op (no hay periodización anclada a fecha que recalcular).
+ * Corre dentro de la transacción de `setComps` (lectura coherente de actuals/registros/ediciones).
+ */
+async function reperiodizeFuture(tx: Prisma.TransactionClient, athleteId: string, comps: Competencia[], today: string): Promise<void> {
+  const planRow = await tx.plan.findUnique({ where: { athleteId } });
+  if (!planRow) return;
+  const macro = MACROCYCLES.find((m) => m.id === planRow.macroId);
+  const start = planRow.startDate;
+  if (!macro || start == null) return;
+
+  // Forma nueva: semanas-hasta-cada-compe DERIVADAS de la fecha (verdad anclada a fecha), no del `week`.
+  // Sin compes → buildAdaptivePlan natural → el futuro se ESTIRA de vuelta al largo del macro.
+  const compWeeks = comps.map((c) => c.date).filter((d): d is string => d != null).map((d) => availableWeeksToComp(start, d));
+  const totalWeeks = effectiveTotalWeeks(macro, compWeeks);
+  const phasePlan = buildAdaptivePlan(macro, compWeeks);
+  const phaseByWeek = new Map(phasePlan.map((p) => [p.week, p.phaseKey]));
+  const newRowsByWeek = groupByWeek(instantiatePrescription(ALL_RECIPES, macro, totalWeeks, phasePlan));
+
+  // currentWeek SIN clamp superior: recortar al largo NUEVO (más corto si la compe se acercó) ocultaría
+  // semanas ya vividas → re-escribiría el pasado. `weekIndexUnclamped` = cuánto avanzó de verdad el atleta.
+  const currentWeek = weekIndexUnclamped(start, today);
+
+  // Rastro inmutable (D8): semanas con ≥1 actual (pueden ser backdated, §2b), ≥1 registro, o edición
+  // manual del coach (cualquier sesión de la semana editada → se preserva la semana entera).
+  const existing = await tx.prescribedExercise.findMany({ where: { athleteId }, select: { week: true, coachEdited: true } });
+  const actualRows = await tx.sessionActual.findMany({ where: { athleteId }, select: { week: true } });
+  const registroRows = await tx.sessionRegistro.findMany({ where: { athleteId }, select: { week: true } });
+  const protectedWeeks = new Set<number>([
+    ...actualRows.map((r) => r.week),
+    ...registroRows.map((r) => r.week),
+    ...existing.filter((r) => r.coachEdited).map((r) => r.week),
   ]);
+  const candidateWeeks = [...new Set<number>([...existing.map((r) => r.week), ...newRowsByWeek.keys()])];
+
+  // La regla pura (core) decide qué reescribir; acá sólo aplicamos delete+recreate sobre esas semanas.
+  for (const week of reinstantiableWeeks({ candidateWeeks, currentWeek, protectedWeeks })) {
+    await tx.prescribedExercise.deleteMany({ where: { athleteId, week } });
+    const rows = newRowsByWeek.get(week) ?? []; // [] → semana más allá del plan nuevo: queda borrada (plan encogido).
+    if (rows.length > 0) {
+      await tx.prescribedExercise.createMany({ data: rows.map((r) => toPrescribedCreate(athleteId, r, phaseByWeek.get(week) ?? null)) });
+    }
+  }
 }
 
 export async function getSessionLog(prisma: PrismaClient, athleteId: string): Promise<SessionLog> {
@@ -288,7 +343,7 @@ export async function instantiateForPlan(tx: Prisma.TransactionClient, athleteId
   // Periodización ADAPTATIVA: las competencias persistidas (verdad anclada a fecha, tabla Competencia)
   // definen la forma del plan. Las semanas-hasta-cada-compe se DERIVAN contra el startDate del plan
   // (no se confía en el `week` guardado). Sin compes → plan natural (compatibilidad). Es instanciación
-  // de ASIGNACIÓN (aún sin actuals/ediciones); re-periodizar al CAMBIAR compes luego queda para v2.
+  // de ASIGNACIÓN (reset deliberado); re-periodizar al CAMBIAR compes luego = `reperiodizeFuture` (v2).
   const start = plan.startDate;
   const compRows = start != null ? await tx.competencia.findMany({ where: { athleteId } }) : [];
   const compWeeks = start != null
@@ -296,17 +351,24 @@ export async function instantiateForPlan(tx: Prisma.TransactionClient, athleteId
     : [];
   const totalWeeks = macro ? effectiveTotalWeeks(macro, compWeeks) : 0;
   const phasePlan = macro ? buildAdaptivePlan(macro, compWeeks) : [];
+  const phaseByWeek = new Map(phasePlan.map((p) => [p.week, p.phaseKey]));
   const rows: PrescriptionRow[] = macro ? instantiatePrescription(ALL_RECIPES, macro, totalWeeks, phasePlan) : [];
   await tx.prescribedExercise.deleteMany({ where: { athleteId } });
   if (rows.length > 0) {
     await tx.prescribedExercise.createMany({
-      data: rows.map((r) => ({
-        athleteId, week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId,
-        sets: r.sets, reps: r.reps, pct: r.pct ?? null, kgOverride: r.kgOverride ?? null,
-        flags: r.flags ?? [], notes: r.notes ?? null,
-      })),
+      data: rows.map((r) => toPrescribedCreate(athleteId, r, phaseByWeek.get(r.week) ?? null)),
     });
   }
+}
+
+/** Fila PrescribedExercise lista para `createMany`, con la fase persistida (única fuente de verdad del
+ *  read-path) y `coachEdited:false` (la instanciación/re-periodización jamás nace como edición manual). */
+function toPrescribedCreate(athleteId: string, r: PrescriptionRow, phaseKey: string | null) {
+  return {
+    athleteId, week: r.week, sessionIdx: r.sessionIdx, order: r.order, movementId: r.movementId,
+    sets: r.sets, reps: r.reps, pct: r.pct ?? null, kgOverride: r.kgOverride ?? null,
+    flags: r.flags ?? [], notes: r.notes ?? null, phaseKey, coachEdited: false,
+  };
 }
 
 /** Fila cruda de SessionActual → tipo de core (compartido por getPrescriptionWeek y SP5). */
@@ -339,10 +401,10 @@ function toPrescriptionRow(r: PrescribedExerciseRow): PrescriptionRow {
   };
 }
 
-/** Resolutor de fase-por-semana del PLAN ADAPTATIVO — misma fuente que `instantiateForPlan`, para que
- *  `dayLayoutFor`/heat usen la fase REAL de cada semana (no el `phaseProfile` natural). Usa `plan.comps`
- *  (ya cargadas por getPlan), derivando semanas por fecha. v1: refleja las compes actuales; tras un
- *  cambio de compe sin re-asignar puede divergir de la prescripción persistida (limitación v1 conocida). */
+/** Plan de fase-por-semana RECALCULADO desde las compes ACTUALES (`plan.comps`, ya cargadas por getPlan).
+ *  v2: es sólo el FALLBACK del read-path — la verdad es el `phaseKey` PERSISTIDO de la prescripción
+ *  (`phasePlanFromRows` para vistas multi-semana, `weekPhaseKey` para una semana). Este recálculo cubre
+ *  únicamente las semanas sin phaseKey persistido (filas pre-migración 99). */
 function adaptivePhasePlan(macro: Macrocycle | undefined, plan: Plan | undefined): { phaseKeyAt: (week: number) => string | undefined; totalWeeks: number } {
   if (!macro || !plan) return { phaseKeyAt: () => undefined, totalWeeks: 0 };
   const start = plan.startDate;
@@ -351,6 +413,35 @@ function adaptivePhasePlan(macro: Macrocycle | undefined, plan: Plan | undefined
     : [];
   const byWeek = new Map(buildAdaptivePlan(macro, compWeeks).map((p) => [p.week, p.phaseKey]));
   return { phaseKeyAt: (week) => byWeek.get(week), totalWeeks: effectiveTotalWeeks(macro, compWeeks) };
+}
+
+/** Fuente ÚNICA de la fase por semana para el read-path (heat/dayLayout): el `phaseKey` PERSISTIDO de
+ *  las filas de cada semana (fijado al instanciar/re-periodizar). Así una semana del pasado PRESERVADA
+ *  conserva SU fase aunque cambien las compes — cierra la brecha read-path↔prescripción de v1. Recae a
+ *  `adaptivePhasePlan` (recalculado) sólo para semanas sin phaseKey persistido (filas pre-migración 99).
+ *  `totalWeeks` = el mayor entre el rango persistido y el recalculado (cubre encoger/estirar coherente). */
+function phasePlanFromRows(
+  rows: readonly { week: number; phaseKey: string | null }[],
+  macro: Macrocycle | undefined, plan: Plan | undefined,
+): { phaseKeyAt: (week: number) => string | undefined; totalWeeks: number } {
+  const persisted = new Map<number, string>();
+  let maxWeek = 0;
+  for (const r of rows) {
+    if (r.phaseKey != null && !persisted.has(r.week)) persisted.set(r.week, r.phaseKey);
+    if (r.week > maxWeek) maxWeek = r.week;
+  }
+  const fallback = adaptivePhasePlan(macro, plan);
+  return {
+    phaseKeyAt: (week) => persisted.get(week) ?? fallback.phaseKeyAt(week),
+    totalWeeks: Math.max(maxWeek, fallback.totalWeeks),
+  };
+}
+
+/** `phaseKey` PERSISTIDO de una semana (única fuente; null en filas pre-migración 99 → el caller recae
+ *  al plan recalculado). Para los write-paths que necesitan el dayLayout AM/PM de UNA semana. */
+async function weekPhaseKey(db: PrismaClient | Prisma.TransactionClient, athleteId: string, week: number): Promise<string | null> {
+  const r = await db.prescribedExercise.findFirst({ where: { athleteId, week }, select: { phaseKey: true } });
+  return r?.phaseKey ?? null;
 }
 
 /** A week's sessions with kg derived from the athlete's plan RMs, merged with any athlete actuals.
@@ -370,7 +461,11 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
   const athlete = await prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } });
   const barKg = barKgForSexo((athlete?.sexo as "M" | "F" | undefined) ?? "M");
   const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
-  const layout = macro ? dayLayoutFor(macro, week, adaptivePhasePlan(macro, plan).phaseKeyAt(week)) : null;
+  // Fase de la semana = `phaseKey` PERSISTIDO de sus filas (única fuente de verdad); recae al plan
+  // recalculado sólo si la fila es pre-migración 99 (phaseKey null).
+  const persistedKey = dbRows.find((r) => r.phaseKey != null)?.phaseKey ?? undefined;
+  const phaseKey = persistedKey ?? adaptivePhasePlan(macro, plan).phaseKeyAt(week);
+  const layout = macro ? dayLayoutFor(macro, week, phaseKey) : null;
   const registros = await prisma.sessionRegistro.findMany({ where: { athleteId, week } });
   // Secuencia de días: un día ANULADO no lleva fecha (no se entrenó) — sólo el flag `anulado`.
   const fechaByIdx = new Map(registros.filter((r) => r.estado !== "anulado").map((r) => [r.sessionIdx, r.fecha]));
@@ -554,12 +649,14 @@ export async function getPlanHeat(prisma: PrismaClient, athleteId: string): Prom
   const plan = await getPlan(prisma, athleteId);
   if (!plan) return [];
   const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
-  const { phaseKeyAt, totalWeeks } = adaptivePhasePlan(macro, plan);
-  if (totalWeeks === 0) return [];
   const rows = await prisma.prescribedExercise.findMany({
     where: { athleteId },
-    select: { week: true, sessionIdx: true, sets: true, reps: true, pct: true },
+    select: { week: true, sessionIdx: true, sets: true, reps: true, pct: true, phaseKey: true },
   });
+  // Fase + rango salen del `phaseKey` PERSISTIDO de las filas (única fuente): el heat sigue la
+  // prescripción real, no las compes (que podrían haber cambiado sin re-instanciar todo el pasado).
+  const { phaseKeyAt, totalWeeks } = phasePlanFromRows(rows, macro, plan);
+  if (totalWeeks === 0) return [];
   const layoutCache = new Map<number, ReturnType<typeof dayLayoutFor>>();
   const layoutOf = (week: number) => {
     if (!layoutCache.has(week)) layoutCache.set(week, macro ? dayLayoutFor(macro, week, phaseKeyAt(week)) : null);
@@ -616,7 +713,10 @@ export async function setSessionActuals(
 ): Promise<void> {
   const plan = await getPlan(prisma, athleteId);
   const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
-  const layout = macro ? dayLayoutFor(macro, week, adaptivePhasePlan(macro, plan).phaseKeyAt(week)) : null;
+  // Layout AM/PM desde el phaseKey PERSISTIDO de la semana (única fuente, §2b); recae al recalculado
+  // sólo si la fila es pre-migración 99.
+  const phaseKey = (await weekPhaseKey(prisma, athleteId, week)) ?? adaptivePhasePlan(macro, plan).phaseKeyAt(week);
+  const layout = macro ? dayLayoutFor(macro, week, phaseKey) : null;
   // dayOf se deriva antes de la tx: TOCTOU inofensivo — si el coach re-asigna el macro en
   // vuelo, a lo sumo la excepción AM/PM de ESTA escritura usa el layout viejo (no corrompe).
   const dayOf: DayOf = (idx) => layout?.[idx]?.day ?? idx + 1;
@@ -672,7 +772,10 @@ export async function anularSession(
 ): Promise<void> {
   const plan = await getPlan(prisma, athleteId);
   const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
-  const layout = macro ? dayLayoutFor(macro, week, adaptivePhasePlan(macro, plan).phaseKeyAt(week)) : null;
+  // Layout AM/PM desde el phaseKey PERSISTIDO de la semana (única fuente, §2b); recae al recalculado
+  // sólo si la fila es pre-migración 99.
+  const phaseKey = (await weekPhaseKey(prisma, athleteId, week)) ?? adaptivePhasePlan(macro, plan).phaseKeyAt(week);
+  const layout = macro ? dayLayoutFor(macro, week, phaseKey) : null;
   // dayOf se deriva antes de la tx: TOCTOU inofensivo (mismo trato que setSessionActuals) — si el
   // coach re-asigna el macro en vuelo, a lo sumo la agrupación de días de ESTE anular usa el layout viejo.
   const dayOf: DayOf = (idx) => layout?.[idx]?.day ?? idx + 1;
@@ -695,17 +798,22 @@ export async function desanularSession(
   await prisma.sessionRegistro.deleteMany({ where: { athleteId, week, sessionIdx, estado: "anulado" } });
 }
 
-/** Replace one session's exercises (coach edit). Transactional. */
+/** Replace one session's exercises (coach edit). Transactional. Preserva el `phaseKey` persistido de la
+ *  semana (tocar los ejercicios no cambia QUÉ fase es la semana) y MARCA `coachEdited` → la
+ *  re-periodización futura-only no la pisa en silencio (invariante D8.3). */
 export async function setSession(prisma: PrismaClient, athleteId: string, week: number, sessionIdx: number, exercises: PrescribedExercise[]): Promise<void> {
-  await prisma.$transaction([
-    prisma.prescribedExercise.deleteMany({ where: { athleteId, week, sessionIdx } }),
-    prisma.prescribedExercise.createMany({
+  await prisma.$transaction(async (tx) => {
+    const sibling = await tx.prescribedExercise.findFirst({ where: { athleteId, week }, select: { phaseKey: true } });
+    const phaseKey = sibling?.phaseKey ?? null;
+    await tx.prescribedExercise.deleteMany({ where: { athleteId, week, sessionIdx } });
+    await tx.prescribedExercise.createMany({
       data: exercises.map((ex, order) => ({
         athleteId, week, sessionIdx, order, movementId: ex.movementId, sets: ex.sets, reps: ex.reps,
         pct: ex.pct ?? null, kgOverride: ex.kgOverride ?? null, flags: ex.flags ?? [], notes: ex.notes ?? null,
+        phaseKey, coachEdited: true,
       })),
-    }),
-  ]);
+    });
+  });
 }
 
 // ── SP5: RMs a mitad de ciclo. updateRms NO re-instancia (las ediciones del coach sobreviven);

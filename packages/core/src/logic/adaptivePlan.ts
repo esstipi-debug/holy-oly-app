@@ -56,6 +56,26 @@ export function rescaleSchoolPhases(phases: readonly MacrocyclePhase[], weeks: n
 }
 
 /**
+ * Invariante D8 (CRITICAL) — qué semanas PUEDE reescribir una re-periodización cuando el coach cambia
+ * la compe DESPUÉS de que el atleta arrancó. Decisión PURA y determinística (la lógica de dominio; el
+ * repo sólo junta los datos de Prisma y la aplica):
+ *   - SÓLO semanas estrictamente futuras (`week > currentWeek`) — jamás la semana en curso ni el pasado;
+ *   - NUNCA una semana protegida = con ≥1 SessionActual (pueden ser backdated, §2b), ≥1 SessionRegistro,
+ *     o una edición manual del coach (jamás se pisa en silencio).
+ * `candidateWeeks` = unión de las semanas que existen en la prescripción ∪ las del plan nuevo (para
+ * cubrir crecer/encoger). Devuelve la lista ordenada y sin duplicados de semanas seguras de reescribir.
+ */
+export function reinstantiableWeeks(args: {
+  candidateWeeks: readonly number[];
+  currentWeek: number;
+  protectedWeeks: ReadonlySet<number>;
+}): number[] {
+  return [...new Set(args.candidateWeeks)]
+    .filter((w) => w > args.currentWeek && !args.protectedWeeks.has(w))
+    .sort((a, b) => a - b);
+}
+
+/**
  * Plan de fases por semana para toda la línea de tiempo del atleta, fiel a la escuela y anclado
  * a las competencias. `compWeeks` = semanas (1-based, relativas al startDate) de las compes objetivo.
  *  - Sin comps → `phaseProfile` natural del macro, semana a semana (comportamiento clásico).

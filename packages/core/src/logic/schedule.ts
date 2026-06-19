@@ -60,6 +60,18 @@ export function anchorPlanToComp(compDate: string, anchorWeek: number, totalWeek
   return { startDate, entryWeek, daysToStart: 0, status: entryWeek > 1 ? "recortado" : "completo" };
 }
 
+/** Semana del macro (1-based) en la que cae `date`, SIN recorte por arriba (mínimo 1). Dos propiedades
+ *  clave para el borde D8 ("estrictamente futura vs vivida"):
+ *   - **Sin clamp superior** (a diferencia de `weekOfDate`): recortar al largo NUEVO del plan ocultaría
+ *     semanas ya transcurridas si la compe se acercó → re-escribiría el pasado.
+ *   - **Alineado a lunes**, el MISMO frame que `availableWeeksToComp` (que ubica las compes y, por ende,
+ *     indexa las semanas del plan). Si se contara desde el `startDate` crudo, un plan con startDate
+ *     no-lunes clasificaría como "futura" la semana que el atleta está VIVIENDO → D8 roto. */
+export function weekIndexUnclamped(startDate: string, date: string): number {
+  const span = Math.floor((ms(mondayOf(date)) - ms(mondayOf(startDate))) / (7 * DAY));
+  return Math.max(1, span + 1);
+}
+
 /** Semanas reales disponibles desde `startDate` (incl. su semana) hasta la fecha de la compe, 1-based.
  *  Alinea ambas fechas a su lunes y cuenta semanas calendario inclusive. Mínimo 1 (misma semana).
  *  Es la base del anclaje ADAPTATIVO: el plan se reescala a estas semanas (no se cuenta hacia atrás). */
