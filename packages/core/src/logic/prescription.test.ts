@@ -37,6 +37,16 @@ describe("instantiatePrescription (Ruso 5D)", () => {
   it("a macro with no recipe → []", () => {
     expect(instantiatePrescription([], ruso, 16)).toEqual([]);
   });
+
+  it("con plan adaptado: cada semana usa la fase del plan, no phaseForWeek", () => {
+    // Plan que arranca DIRECTO en peaking (compe muy cerca) → la semana 1 trae la sesión de peaking,
+    // idéntica (salvo el nº de semana) a una semana de peaking natural (sem 13 del fixture).
+    const planW1 = instantiatePrescription(MACRO_RECIPES_FIXTURE, ruso, 16, [{ week: 1, phaseKey: "peaking" }]);
+    const naturalW13 = instantiatePrescription(MACRO_RECIPES_FIXTURE, ruso, 16).filter((r) => r.week === 13);
+    expect(planW1.length).toBeGreaterThan(0);
+    expect(planW1.every((r) => r.week === 1)).toBe(true);
+    expect(planW1.map((r) => ({ ...r, week: 0 }))).toEqual(naturalW13.map((r) => ({ ...r, week: 0 })));
+  });
 });
 
 describe("buildSessionViews", () => {

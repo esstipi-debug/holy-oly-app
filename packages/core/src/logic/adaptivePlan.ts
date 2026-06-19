@@ -6,6 +6,14 @@ export interface PlanWeek { week: number; phaseKey: string }
 
 const natLen = (p: MacrocyclePhase): number => p.weeks[1] - p.weeks[0] + 1;
 
+/** Largo efectivo del plan en semanas: la semana de la última compe si hay; si no, el largo natural
+ *  del macro (última semana del phaseProfile). Una sola fuente para clamp/instanciación/timeline. */
+export function effectiveTotalWeeks(macro: Macrocycle, compWeeks: readonly number[]): number {
+  const valid = compWeeks.filter((w) => Number.isFinite(w) && w > 0);
+  if (valid.length > 0) return Math.max(...valid);
+  return macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
+}
+
 function expand(blocks: { key: string; n: number }[]): PlanWeek[] {
   const out: PlanWeek[] = [];
   let w = 1;

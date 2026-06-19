@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { rescaleSchoolPhases, buildAdaptivePlan } from "./adaptivePlan";
+import { rescaleSchoolPhases, buildAdaptivePlan, effectiveTotalWeeks } from "./adaptivePlan";
 import { MACROCYCLES } from "../data/macrocycles";
 import type { MacrocyclePhase } from "../types";
 
@@ -88,5 +88,17 @@ describe("buildAdaptivePlan", () => {
     expect(block2).toEqual(["transformacion", "transformacion", "realizacion", "realizacion"]);
     expect(p.filter((w) => w.phaseKey === "cimentacion")).toHaveLength(2); // sólo en el bloque 1
     expect(p[10]!.phaseKey).toBe("realizacion"); // pica en la 2ª compe
+  });
+});
+
+describe("effectiveTotalWeeks", () => {
+  const coreano = MACROCYCLES.find((m) => m.id === "coreano-5d")!;
+  it("usa la semana de la última compe", () => {
+    expect(effectiveTotalWeeks(coreano, [7])).toBe(7);
+    expect(effectiveTotalWeeks(coreano, [7, 11])).toBe(11);
+    expect(effectiveTotalWeeks(coreano, [16])).toBe(16); // estiramiento (compe más lejos que el macro)
+  });
+  it("sin compes → largo natural del macro", () => {
+    expect(effectiveTotalWeeks(coreano, [])).toBe(12);
   });
 });

@@ -6,6 +6,7 @@ import { getMovement } from "./movements";
 import { getComplex, complexWeakRmKg, isComplexId } from "./complexes";
 import { warmupForExercise } from "./warmup";
 import { recipeFor } from "../data/recipesAll";
+import type { PlanWeek } from "./adaptivePlan";
 
 /** Target kg of a prescribed exercise: explicit override wins; else %1RM × the movement's reference RM
  *  (rounded to 1 kg). Complejos ("cx.*"): %×RM del eslabón MÁS DÉBIL (D6 — una barra, el techo lo
@@ -39,13 +40,24 @@ export function sessionTemplateFor(recipe: MacroRecipe | undefined, macro: Macro
 }
 
 /** Instantiate the whole prescription: every week → its phase's session templates → flat rows.
- *  `readonly`: sólo lee — ALL_RECIPES (congelado) entra directo, sin spreads defensivos. */
-export function instantiatePrescription(recipes: readonly MacroRecipe[], macro: Macrocycle, totalWeeks: number): PrescriptionRow[] {
+ *  `readonly`: sólo lee — ALL_RECIPES (congelado) entra directo, sin spreads defensivos.
+ *  Con `plan` (periodización adaptativa): cada semana usa la fase que el plan le asigna (su `phaseKey`)
+ *  en vez del `phaseProfile` fijo — así la prescripción real refleja la compresión/expansión hacia la
+ *  compe. Sin `plan`: comportamiento clásico (fase por `phaseForWeek`, semanas 1..totalWeeks). */
+export function instantiatePrescription(
+  recipes: readonly MacroRecipe[],
+  macro: Macrocycle,
+  totalWeeks: number,
+  plan?: readonly PlanWeek[],
+): PrescriptionRow[] {
   const recipe = recipes.find((r) => r.macroId === macro.id);
   if (!recipe) return [];
+  const weeks: readonly PlanWeek[] = plan && plan.length > 0
+    ? plan
+    : Array.from({ length: totalWeeks }, (_, i) => ({ week: i + 1, phaseKey: phaseForWeek(macro, i + 1)?.key ?? "" }));
   const rows: PrescriptionRow[] = [];
-  for (let week = 1; week <= totalWeeks; week++) {
-    const sessions = sessionTemplateFor(recipe, macro, week);
+  for (const { week, phaseKey } of weeks) {
+    const sessions = recipe.phases.find((p) => p.phaseKey === phaseKey)?.sessions ?? [];
     sessions.forEach((session, sessionIdx) => {
       session.exercises.forEach((ex, order) => rows.push({ ...ex, week, sessionIdx, order }));
     });

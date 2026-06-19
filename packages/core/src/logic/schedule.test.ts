@@ -1,5 +1,20 @@
 import { describe, it, expect } from "vitest";
-import { weekOfDate, dateOfWeek, defaultStartDate, sessionsPerWeek, computeStreak, calendarWeeks, mondayOf, anchorPlanToComp } from "./schedule";
+import { weekOfDate, dateOfWeek, defaultStartDate, sessionsPerWeek, computeStreak, calendarWeeks, mondayOf, anchorPlanToComp, availableWeeksToComp } from "./schedule";
+
+describe("availableWeeksToComp", () => {
+  const start = "2026-01-05"; // un lunes
+  it("misma semana → 1", () => {
+    expect(availableWeeksToComp(start, "2026-01-05")).toBe(1);
+    expect(availableWeeksToComp(start, "2026-01-11")).toBe(1); // +6 días, misma semana
+  });
+  it("cuenta semanas calendario inclusive", () => {
+    expect(availableWeeksToComp(start, "2026-01-12")).toBe(2); // +1 semana
+    expect(availableWeeksToComp(start, "2026-02-16")).toBe(7); // +6 semanas (42 días)
+  });
+  it("normaliza la fecha de compe a su lunes", () => {
+    expect(availableWeeksToComp(start, "2026-02-18")).toBe(7); // miércoles de la 7ª semana
+  });
+});
 
 describe("weekOfDate", () => {
   const start = "2026-01-05"; // a Monday
