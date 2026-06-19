@@ -4,7 +4,7 @@ import { afterEach } from "vitest";
 import { RepositoryProvider } from "../../../data/RepositoryProvider";
 import { LocalRepository } from "../../../data/LocalRepository";
 import { MemStorage } from "../../../test-utils/MemStorage";
-import type { Atleta } from "@holy-oly/core";
+import type { Atleta, Plan, MonitorSeries, Competencia, SessionLog, WeekHeat, SessionView } from "@holy-oly/core";
 import { Drilldown } from "../Drilldown";
 
 afterEach(() => localStorage.clear());
@@ -144,4 +144,35 @@ test("shows an error state when the athlete fails to load", async () => {
     </RepositoryProvider>,
   );
   expect(await screen.findByText(/no se pudo cargar el atleta/i)).toBeInTheDocument();
+});
+
+test("atleta real con plan pero SIN Athlete.macroId: el drill-down muestra el macro (no 'sin macro')", async () => {
+  // Regresión: savePlan escribe Plan.macroId pero NUNCA Athlete.macroId (esa columna sólo la llena el
+  // seed). Un atleta real recién asignado tiene athlete.macroId vacío + un plan con macroId válido →
+  // el macro debe derivarse del PLAN. Antes el drill-down leía athlete.macroId y mostraba "sin macro".
+  const RMS = { arranque: 120, envion: 150, sentadilla: 180, frente: 160 };
+  class AssignedNoAthleteMacroRepo extends LocalRepository {
+    async getAthlete(): Promise<Atleta> {
+      return { id: "np", nombre: "Nahuel P.", iniciales: "NP", nivel: "intermediate", compite: true, sexo: "M" }; // sin macroId
+    }
+    async getSeries(): Promise<MonitorSeries | undefined> { return undefined; } // atleta real: sin Monitor → Plan directo
+    async getComps(): Promise<Competencia[]> { return []; }
+    async getSessionLog(): Promise<SessionLog> { return []; }
+    async getPlan(): Promise<Plan> {
+      return { atletaId: "np", macroId: "ruso-5d", startWeek: 1, startDate: "2026-04-06", rms: RMS, comps: [] };
+    }
+    async getPlanHeat(): Promise<WeekHeat[]> { return []; }
+    async getPrescriptionWeek(): Promise<SessionView[]> { return []; }
+  }
+  render(
+    <RepositoryProvider repo={new AssignedNoAthleteMacroRepo(new MemStorage())}>
+      <MemoryRouter initialEntries={["/coach/a/np"]}>
+        <Routes><Route path="/coach/a/:id" element={<Drilldown />} /></Routes>
+      </MemoryRouter>
+    </RepositoryProvider>,
+  );
+  await waitFor(() => expect(screen.getByText("Nahuel P.")).toBeInTheDocument());
+  // El macro se reconoce desde plan.macroId → Calendario visible, sin el empty-state de onboarding.
+  expect(await screen.findByText("Calendario")).toBeInTheDocument();
+  expect(screen.queryByText("Todavía sin macro asignado")).not.toBeInTheDocument();
 });
