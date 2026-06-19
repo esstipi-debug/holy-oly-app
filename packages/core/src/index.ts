@@ -14,6 +14,7 @@ export * from "./logic/mePlan";
 export * from "./logic/movements";
 export * from "./repository";
 export * from "./logic/prescription";
+export * from "./logic/adaptivePlan";
 export * from "./logic/sessionsByDay";
 export * from "./data/recipes";
 export * from "./data/recipesAll";
