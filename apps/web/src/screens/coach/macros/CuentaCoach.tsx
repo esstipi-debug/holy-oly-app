@@ -5,6 +5,8 @@ import { useAuth } from "../../../auth/AuthContext";
 import { VerifyEmailBanner } from "../../../ui/VerifyEmailBanner";
 import { LanguageToggle } from "../../../i18n/LanguageToggle";
 import { MovementLangToggle } from "../../../i18n/MovementLangToggle";
+import { useCoachCtx } from "./CoachShell";
+import { COACH_SKINS } from "./coachPrefs";
 
 const page: CSSProperties = {
   padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)",
@@ -31,6 +33,7 @@ const label: CSSProperties = {
 export function CuentaCoach() {
   const { apiEnabled, user, logout } = useAuth();
   const { t } = useTranslation();
+  const { skin, setSkin } = useCoachCtx();
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
   function onLogout(): void {
@@ -96,6 +99,27 @@ export function CuentaCoach() {
           )}
         </>
       )}
+
+      {/* Apariencia: el coach también elige skin (default legend). Pref local → no gateada por API. */}
+      <div style={label}>Apariencia · skin</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 8 }}>
+        {COACH_SKINS.map((s) => {
+          const on = skin === s.id;
+          return (
+            <button key={s.id} type="button" aria-label={`Skin ${s.nm}`} onClick={() => setSkin(s.id)}
+              style={{
+                display: "flex", flexDirection: "column", gap: 6, padding: 8, borderRadius: 12, cursor: "pointer",
+                background: "var(--wl-surface)",
+                border: on ? "2px solid var(--wl-accent)" : "1px solid color-mix(in srgb,var(--wl-text) 12%,transparent)",
+              }}>
+              <span aria-hidden="true" style={{ display: "flex", height: 26, borderRadius: 6, overflow: "hidden" }}>
+                {s.sw.map((c, i) => <span key={i} style={{ flex: 1, background: c }} />)}
+              </span>
+              <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, lineHeight: 1.2, textAlign: "center", color: on ? "var(--wl-text)" : "var(--wl-muted)" }}>{s.nm}</span>
+            </button>
+          );
+        })}
+      </div>
 
       <div style={label}>{t("language")}</div>
       <LanguageToggle style={{ marginTop: 8 }} />
