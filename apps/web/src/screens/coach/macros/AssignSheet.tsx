@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import type { Atleta, Macrocycle, Plan } from "@holy-oly/core";
-import { anchorPlanToComp } from "@holy-oly/core";
+import { availableWeeksToComp, mondayOf } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 import { RetryButton } from "../../../ui/RetryButton";
 import { SegmentedToggle } from "../../../ui/SegmentedToggle";
@@ -70,30 +70,30 @@ export function AssignSheet({
   const preselected = preselectAtletaId ? athletes.find((a) => a.id === preselectAtletaId) : undefined;
   const visibleAthletes = preselected && !showAllAthletes ? [preselected] : athletes;
 
-  const totalWeeks = macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
-  // La compe se cuadra con el PICO del macro; sin pico declarado, con la última semana.
-  const anchorWeek = macro.peaks && macro.peakWeek != null ? macro.peakWeek : totalWeeks;
-  const anchor = mode === "competencia" && compDate !== "" && totalWeeks > 0
-    ? anchorPlanToComp(compDate, anchorWeek, totalWeeks, today)
-    : null;
+  // Anclaje ADAPTATIVO: el plan arranca HOY (lunes) y la escuela se comprime/expande para que el pico
+  // caiga en la fecha. Semanas disponibles = de hoy a la compe (core.availableWeeksToComp). El motor
+  // (buildAdaptivePlan en el backend) reescala el phaseProfile propio de la escuela a estas semanas.
+  const planStartMonday = mondayOf(today);
+  const compPast = compDate !== "" && compDate < today;
+  const availWeeks = mode === "competencia" && compDate !== "" && !compPast ? availableWeeksToComp(planStartMonday, compDate) : 0;
 
   const rmsValid = RM_FIELDS.every((f) => validKg(rms[f.key]));
-  const compReady = compName.trim().length > 0 && anchor !== null && anchor.status !== "pasada";
+  const compReady = compName.trim().length > 0 && compDate !== "" && !compPast;
   const canSubmit = atletaId != null && rmsValid && !busy && (mode === "inicio" || compReady);
 
   async function submit(): Promise<void> {
-    if (!atletaId || (mode === "competencia" && anchor === null)) return;
+    if (!atletaId || (mode === "competencia" && !compReady)) return;
     setError(null);
     setBusy(true);
     try {
-      const planStart = mode === "competencia" ? anchor!.startDate : startDate;
+      const planStart = mode === "competencia" ? planStartMonday : startDate;
       await onAssign(
         {
           atletaId, macroId: macro.id, startWeek: 1, startDate: planStart,
           rms: { arranque: Number(rms.arranque), envion: Number(rms.envion), sentadilla: Number(rms.sentadilla), frente: Number(rms.frente) },
           comps: [],
         },
-        mode === "competencia" ? { name: compName.trim(), date: compDate, week: anchorWeek } : undefined,
+        mode === "competencia" ? { name: compName.trim(), date: compDate, week: availWeeks } : undefined,
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo asignar");
@@ -101,8 +101,6 @@ export function AssignSheet({
       setBusy(false);
     }
   }
-
-  const picoLabel = anchorWeek !== totalWeeks ? ` (pico del macro)` : "";
 
   return (
     <BottomSheet open={open} onClose={onClose} ariaLabel="Asignar plan">
@@ -167,22 +165,17 @@ export function AssignSheet({
           <input id="assign-comp-date" type="date" aria-label="Fecha de la competencia" style={input}
             value={compDate} onChange={(e) => setCompDate(e.target.value)} />
 
-          {anchor && (
+          {compDate !== "" && (
             <div role="status" style={{
               marginTop: 10, padding: "9px 11px", borderRadius: 10, background: "var(--wl-surface)",
               border: "1px solid color-mix(in srgb,var(--wl-text) 10%,transparent)",
               fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.6,
-              color: anchor.status === "pasada" ? "var(--wl-danger)" : "var(--wl-muted)",
+              color: compPast ? "var(--wl-danger)" : "var(--wl-muted)",
             }}>
-              {anchor.status === "pasada" && <>Esa fecha ya pasó — elegí una futura.</>}
-              {anchor.status === "completo" && (
-                <>Arranca el lunes <b style={strong}>{anchor.startDate}</b> · macro completo · la compe cae en la <b style={strong}>semana {anchorWeek}</b>{picoLabel}.</>
-              )}
-              {anchor.status === "recortado" && (
-                <>No alcanza el macro completo: hoy = <b style={strong}>semana {anchor.entryWeek}</b> de {totalWeeks} → entrás con <b style={strong}>{anchorWeek - anchor.entryWeek + 1} semana{anchorWeek - anchor.entryWeek + 1 === 1 ? "" : "s"}</b> hasta la compe (semana {anchorWeek}{picoLabel}) y te salteás la acumulación 1–{anchor.entryWeek - 1}.</>
-              )}
-              {anchor.status === "futuro" && (
-                <>El plan arranca el lunes <b style={strong}>{anchor.startDate}</b> (en {anchor.daysToStart} días) · la compe cae en la <b style={strong}>semana {anchorWeek}</b>{picoLabel}.</>
+              {compPast ? (
+                <>Esa fecha ya pasó — elegí una futura.</>
+              ) : (
+                <>Arranca el lunes <b style={strong}>{planStartMonday}</b> · <b style={strong}>{availWeeks} semana{availWeeks === 1 ? "" : "s"}</b> hasta la compe · el plan de la escuela se ajusta para picar en la fecha.</>
               )}
             </div>
           )}

@@ -1,13 +1,13 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import type {
-  Atleta, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
+  Atleta, Macrocycle, MacrocycleLevel, MonitorSeries, Medal, Competencia, Plan, CycleContext, SessionLog,
   DayLog, DayLogView, DayLogResult, MePlanView, DayLogInput,
   PrescribedExercise, PrescriptionRow, SessionView, MovementFlag, SessionActual, ExerciseActualInput,
   CycleShare, CycleState, CycleData, MeCycleView, WeekHeat, RM, RmLift, RmReason, RmUpdate, PrCandidate,
   MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf, MacroHistoryView, MacroHistoryRow, MeHeatDays,
   Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryView, CompetitionEntryInput,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildAdaptivePlan, effectiveTotalWeeks, availableWeeksToComp, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -285,8 +285,18 @@ export async function upsertDayLog(prisma: PrismaClient, athleteId: string, toda
  *  scratch). Runs on the given (transaction) client so it can join savePlan's atomic transaction. */
 export async function instantiateForPlan(tx: Prisma.TransactionClient, athleteId: string, plan: Plan): Promise<void> {
   const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
-  const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
-  const rows: PrescriptionRow[] = macro ? instantiatePrescription(ALL_RECIPES, macro, totalWeeks) : [];
+  // Periodización ADAPTATIVA: las competencias persistidas (verdad anclada a fecha, tabla Competencia)
+  // definen la forma del plan. Las semanas-hasta-cada-compe se DERIVAN contra el startDate del plan
+  // (no se confía en el `week` guardado). Sin compes → plan natural (compatibilidad). Es instanciación
+  // de ASIGNACIÓN (aún sin actuals/ediciones); re-periodizar al CAMBIAR compes luego queda para v2.
+  const start = plan.startDate;
+  const compRows = start != null ? await tx.competencia.findMany({ where: { athleteId } }) : [];
+  const compWeeks = start != null
+    ? compRows.map((c) => c.date).filter((d): d is string => d != null).map((d) => availableWeeksToComp(start, d))
+    : [];
+  const totalWeeks = macro ? effectiveTotalWeeks(macro, compWeeks) : 0;
+  const phasePlan = macro ? buildAdaptivePlan(macro, compWeeks) : [];
+  const rows: PrescriptionRow[] = macro ? instantiatePrescription(ALL_RECIPES, macro, totalWeeks, phasePlan) : [];
   await tx.prescribedExercise.deleteMany({ where: { athleteId } });
   if (rows.length > 0) {
     await tx.prescribedExercise.createMany({
@@ -329,6 +339,20 @@ function toPrescriptionRow(r: PrescribedExerciseRow): PrescriptionRow {
   };
 }
 
+/** Resolutor de fase-por-semana del PLAN ADAPTATIVO — misma fuente que `instantiateForPlan`, para que
+ *  `dayLayoutFor`/heat usen la fase REAL de cada semana (no el `phaseProfile` natural). Usa `plan.comps`
+ *  (ya cargadas por getPlan), derivando semanas por fecha. v1: refleja las compes actuales; tras un
+ *  cambio de compe sin re-asignar puede divergir de la prescripción persistida (limitación v1 conocida). */
+function adaptivePhasePlan(macro: Macrocycle | undefined, plan: Plan | undefined): { phaseKeyAt: (week: number) => string | undefined; totalWeeks: number } {
+  if (!macro || !plan) return { phaseKeyAt: () => undefined, totalWeeks: 0 };
+  const start = plan.startDate;
+  const compWeeks = start != null
+    ? plan.comps.map((c) => c.date).filter((d): d is string => d != null).map((d) => availableWeeksToComp(start, d))
+    : [];
+  const byWeek = new Map(buildAdaptivePlan(macro, compWeeks).map((p) => [p.week, p.phaseKey]));
+  return { phaseKeyAt: (week) => byWeek.get(week), totalWeeks: effectiveTotalWeeks(macro, compWeeks) };
+}
+
 /** A week's sessions with kg derived from the athlete's plan RMs, merged with any athlete actuals.
  *  [] if no plan. Serves both the coach (`guardAthlete`) and athlete self (`/me/sessions`).
  *  Spec 2026-06-12: cada vista lleva `day`/`turno` del layout de la receta (D8) y la `fecha`
@@ -346,7 +370,7 @@ export async function getPrescriptionWeek(prisma: PrismaClient, athleteId: strin
   const athlete = await prisma.athlete.findUnique({ where: { id: athleteId }, select: { sexo: true } });
   const barKg = barKgForSexo((athlete?.sexo as "M" | "F" | undefined) ?? "M");
   const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
-  const layout = macro ? dayLayoutFor(macro, week) : null;
+  const layout = macro ? dayLayoutFor(macro, week, adaptivePhasePlan(macro, plan).phaseKeyAt(week)) : null;
   const registros = await prisma.sessionRegistro.findMany({ where: { athleteId, week } });
   // Secuencia de días: un día ANULADO no lleva fecha (no se entrenó) — sólo el flag `anulado`.
   const fechaByIdx = new Map(registros.filter((r) => r.estado !== "anulado").map((r) => [r.sessionIdx, r.fecha]));
@@ -530,7 +554,7 @@ export async function getPlanHeat(prisma: PrismaClient, athleteId: string): Prom
   const plan = await getPlan(prisma, athleteId);
   if (!plan) return [];
   const macro = MACROCYCLES.find((m) => m.id === plan.macroId);
-  const totalWeeks = macro ? (macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0) : 0;
+  const { phaseKeyAt, totalWeeks } = adaptivePhasePlan(macro, plan);
   if (totalWeeks === 0) return [];
   const rows = await prisma.prescribedExercise.findMany({
     where: { athleteId },
@@ -538,7 +562,7 @@ export async function getPlanHeat(prisma: PrismaClient, athleteId: string): Prom
   });
   const layoutCache = new Map<number, ReturnType<typeof dayLayoutFor>>();
   const layoutOf = (week: number) => {
-    if (!layoutCache.has(week)) layoutCache.set(week, macro ? dayLayoutFor(macro, week) : null);
+    if (!layoutCache.has(week)) layoutCache.set(week, macro ? dayLayoutFor(macro, week, phaseKeyAt(week)) : null);
     return layoutCache.get(week)!;
   };
   return planHeat(rows.map((r) => ({
@@ -592,7 +616,7 @@ export async function setSessionActuals(
 ): Promise<void> {
   const plan = await getPlan(prisma, athleteId);
   const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
-  const layout = macro ? dayLayoutFor(macro, week) : null;
+  const layout = macro ? dayLayoutFor(macro, week, adaptivePhasePlan(macro, plan).phaseKeyAt(week)) : null;
   // dayOf se deriva antes de la tx: TOCTOU inofensivo — si el coach re-asigna el macro en
   // vuelo, a lo sumo la excepción AM/PM de ESTA escritura usa el layout viejo (no corrompe).
   const dayOf: DayOf = (idx) => layout?.[idx]?.day ?? idx + 1;
@@ -648,7 +672,7 @@ export async function anularSession(
 ): Promise<void> {
   const plan = await getPlan(prisma, athleteId);
   const macro = plan ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
-  const layout = macro ? dayLayoutFor(macro, week) : null;
+  const layout = macro ? dayLayoutFor(macro, week, adaptivePhasePlan(macro, plan).phaseKeyAt(week)) : null;
   // dayOf se deriva antes de la tx: TOCTOU inofensivo (mismo trato que setSessionActuals) — si el
   // coach re-asigna el macro en vuelo, a lo sumo la agrupación de días de ESTE anular usa el layout viejo.
   const dayOf: DayOf = (idx) => layout?.[idx]?.day ?? idx + 1;

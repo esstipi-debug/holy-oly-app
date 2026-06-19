@@ -60,6 +60,14 @@ export function anchorPlanToComp(compDate: string, anchorWeek: number, totalWeek
   return { startDate, entryWeek, daysToStart: 0, status: entryWeek > 1 ? "recortado" : "completo" };
 }
 
+/** Semanas reales disponibles desde `startDate` (incl. su semana) hasta la fecha de la compe, 1-based.
+ *  Alinea ambas fechas a su lunes y cuenta semanas calendario inclusive. Mínimo 1 (misma semana).
+ *  Es la base del anclaje ADAPTATIVO: el plan se reescala a estas semanas (no se cuenta hacia atrás). */
+export function availableWeeksToComp(startDate: string, compDate: string): number {
+  const span = Math.floor((ms(mondayOf(compDate)) - ms(mondayOf(startDate))) / (7 * DAY));
+  return Math.max(1, span + 1);
+}
+
 /** Planned sessions per week, read from a macro's `frequency` (e.g. "5d/sem" → 5). 0 if none. */
 export function sessionsPerWeek(frequency: string): number {
   const m = frequency.match(/\d+/);

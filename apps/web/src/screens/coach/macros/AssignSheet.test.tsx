@@ -1,10 +1,8 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { MACROCYCLES, anchorPlanToComp, type Atleta } from "@holy-oly/core";
+import { MACROCYCLES, availableWeeksToComp, mondayOf, type Atleta } from "@holy-oly/core";
 import { AssignSheet } from "./AssignSheet";
 
 const ruso = MACROCYCLES.find((m) => m.id === "ruso-5d")!;
-const TOTAL = ruso.phaseProfile[ruso.phaseProfile.length - 1]!.weeks[1];
-const ANCHOR_WEEK = ruso.peaks && ruso.peakWeek != null ? ruso.peakWeek : TOTAL;
 const TODAY = "2026-06-10";
 const RMS = { arranque: 90, envion: 115, sentadilla: 150, frente: 120 };
 
@@ -31,7 +29,7 @@ test("default = anclar por COMPETENCIA: pide nombre+fecha y no habilita sin ello
   expect(screen.getByRole("button", { name: /asignar plan/i })).toBeEnabled();
 });
 
-test("por competencia: calcula el inicio hacia atrás (pico en la semana de la compe) y crea la comp", () => {
+test("por competencia: arranca HOY (lunes) y crea la comp en las semanas disponibles (adaptativo)", () => {
   const onAssign = vi.fn().mockResolvedValue(undefined);
   render(<AssignSheet open macro={ruso} athletes={athletes} onClose={() => {}} onAssign={onAssign} today={TODAY} />);
   fireEvent.click(screen.getByRole("button", { name: "Mara V." }));
@@ -39,14 +37,15 @@ test("por competencia: calcula el inicio hacia atrás (pico en la semana de la c
   fireEvent.change(screen.getByLabelText(/nombre de la competencia/i), { target: { value: "Nacional" } });
   fireEvent.change(screen.getByLabelText(/fecha de la competencia/i), { target: { value: "2026-09-19" } });
 
-  const expected = anchorPlanToComp("2026-09-19", ANCHOR_WEEK, TOTAL, TODAY);
-  // preview honesto visible (semana ancla de la compe)
-  expect(screen.getByRole("status").textContent).toMatch(new RegExp(`semana ${ANCHOR_WEEK}`));
+  const start = mondayOf(TODAY);
+  const weeks = availableWeeksToComp(start, "2026-09-19");
+  // preview adaptativo: muestra las semanas disponibles hasta la compe (no la cuenta-hacia-atrás)
+  expect(screen.getByRole("status").textContent).toMatch(new RegExp(`${weeks} semanas`));
 
   fireEvent.click(screen.getByRole("button", { name: /asignar plan/i }));
   expect(onAssign).toHaveBeenCalledWith(
-    { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: expected.startDate, rms: RMS, comps: [] },
-    { name: "Nacional", date: "2026-09-19", week: ANCHOR_WEEK },
+    { atletaId: "mv", macroId: "ruso-5d", startWeek: 1, startDate: start, rms: RMS, comps: [] },
+    { name: "Nacional", date: "2026-09-19", week: weeks },
   );
 });
 

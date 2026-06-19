@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useParams, useNavigate, useSearchParams, Navigate } from "react-router-dom";
-import { MACROCYCLES, weekOfDate, dnaForFamily, type Atleta, type Plan } from "@holy-oly/core";
+import { MACROCYCLES, availableWeeksToComp, dnaForFamily, type Atleta, type Plan } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { BackButton } from "../../../ui/BackButton";
 import { Toast } from "../../../ui/Toast";
@@ -72,19 +72,18 @@ export function MacroDetail() {
   const dna = dnaForFamily(macro.family);
 
   async function onAssign(plan: Plan, comp?: AssignComp): Promise<void> {
-    await repo.savePlan(plan); // throws propagate to the sheet's submit handler
-    // Las semanas de las comps se DERIVAN del startDate: al (re)anclar el plan hay que
-    // recalcularlas (si no quedan desincronizadas), y la asignación por competencia crea la
-    // suya — timeline, calendario-mapa y taper la ven al instante.
-    const totalWeeks = m.phaseProfile[m.phaseProfile.length - 1]?.weeks[1] ?? 0;
+    // Las compes deben PERSISTIR antes de instanciar: el backend periodiza leyendo las compes
+    // guardadas (verdad anclada a fecha) → setComps va ANTES que savePlan. Las semanas se DERIVAN
+    // del startDate con availableWeeksToComp (modelo adaptativo: el plan arranca hoy y se ajusta).
     const existing = await repo.getComps(plan.atletaId);
-    const recomputed = plan.startDate != null && totalWeeks > 0
-      ? existing.map((c) => (c.date != null ? { ...c, week: weekOfDate(plan.startDate!, c.date, totalWeeks) } : c))
+    const recomputed = plan.startDate != null
+      ? existing.map((c) => (c.date != null ? { ...c, week: availableWeeksToComp(plan.startDate!, c.date) } : c))
       : existing;
     const next = comp
       ? [...recomputed.filter((c) => !(c.date === comp.date && c.name === comp.name)), comp]
       : recomputed;
     await repo.setComps(plan.atletaId, next);
+    await repo.savePlan(plan); // ahora instancia adaptativo con las compes ya persistidas
     setAssignOpen(false);
     setToast(`✓ ${m.name} asignado a ${athletes.find((a) => a.id === plan.atletaId)?.nombre ?? "el atleta"}`);
     window.setTimeout(() => setToast(null), 2800);
