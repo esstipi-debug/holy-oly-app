@@ -22,3 +22,14 @@ test("modo demo: identidad + legal, SIN logout ni invitaciones ni Tus datos (gat
   expect(screen.getByRole("link", { name: /privacidad/i })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: /términos/i })).toBeInTheDocument();
 });
+
+test("el selector de apariencia/skin está disponible (pref local, también en demo)", () => {
+  render(
+    <MemoryRouter>
+      <AuthProvider><CuentaCoach /></AuthProvider>
+    </MemoryRouter>,
+  );
+  expect(screen.getByText("Apariencia · skin")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Skin Legend" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Skin Plates" })).toBeInTheDocument();
+});
