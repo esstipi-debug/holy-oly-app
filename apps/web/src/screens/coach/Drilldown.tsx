@@ -83,7 +83,11 @@ export function Drilldown() {
   }
   if (!athlete) return <div style={{ padding: 24, color: "var(--wl-text)" }}>Atleta no encontrado.</div>;
 
-  const macro: Macrocycle | undefined = athlete.macroId ? MACROCYCLES.find((m) => m.id === athlete.macroId) : undefined;
+  // El macro asignado se deriva del PLAN (su `macroId` lo escribe savePlan en cada asignación), NO de
+  // `athlete.macroId` — esa columna sólo la llena el seed, nunca el write path → un atleta real recién
+  // asignado la tiene vacía y el drill-down mostraba "sin macro" pese a tener plan+RM guardados. La app
+  // del atleta ya lee `plan.macroId` (PhaseAtletaDetail/PlanDetailSheet); acá unificamos la fuente.
+  const macro: Macrocycle | undefined = plan?.macroId ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
   const metodo = ROSTER_META[athlete.id]?.metodo ?? "";
   const cell = rosterStatus(series);
   const estadoLabel = cell === "alert" ? "Alerta" : cell === "warn" ? "Vigilar" : cell === "ok" ? "OK" : "Sin datos";
