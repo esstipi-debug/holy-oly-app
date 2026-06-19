@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { rescaleSchoolPhases, buildAdaptivePlan, effectiveTotalWeeks } from "./adaptivePlan";
+import { rescaleSchoolPhases, buildAdaptivePlan, effectiveTotalWeeks, reinstantiableWeeks } from "./adaptivePlan";
 import { MACROCYCLES } from "../data/macrocycles";
 import type { MacrocyclePhase } from "../types";
 
@@ -88,6 +88,32 @@ describe("buildAdaptivePlan", () => {
     expect(block2).toEqual(["transformacion", "transformacion", "realizacion", "realizacion"]);
     expect(p.filter((w) => w.phaseKey === "cimentacion")).toHaveLength(2); // sólo en el bloque 1
     expect(p[10]!.phaseKey).toBe("realizacion"); // pica en la 2ª compe
+  });
+});
+
+describe("reinstantiableWeeks (invariante D8 — re-periodización futura-only)", () => {
+  it("sólo semanas ESTRICTAMENTE futuras (> currentWeek)", () => {
+    expect(reinstantiableWeeks({ candidateWeeks: [1, 2, 3, 4, 5, 6, 7, 8], currentWeek: 4, protectedWeeks: new Set() }))
+      .toEqual([5, 6, 7, 8]);
+  });
+  it("jamás la semana en curso ni el pasado (currentWeek queda intocable)", () => {
+    expect(reinstantiableWeeks({ candidateWeeks: [3, 4, 5], currentWeek: 4, protectedWeeks: new Set() }))
+      .toEqual([5]);
+  });
+  it("excluye semanas protegidas (actuals/registros/edición del coach), aun futuras", () => {
+    expect(reinstantiableWeeks({ candidateWeeks: [5, 6, 7, 8], currentWeek: 4, protectedWeeks: new Set([6, 8]) }))
+      .toEqual([5, 7]);
+  });
+  it("dedup + orden ascendente sobre candidatos sucios", () => {
+    expect(reinstantiableWeeks({ candidateWeeks: [8, 5, 6, 5, 7, 6], currentWeek: 4, protectedWeeks: new Set() }))
+      .toEqual([5, 6, 7, 8]);
+  });
+  it("sin candidatos → []", () => {
+    expect(reinstantiableWeeks({ candidateWeeks: [], currentWeek: 4, protectedWeeks: new Set() })).toEqual([]);
+  });
+  it("una semana protegida en el pasado es irrelevante (ya la excluye el borde futuro)", () => {
+    expect(reinstantiableWeeks({ candidateWeeks: [2, 5], currentWeek: 4, protectedWeeks: new Set([2]) }))
+      .toEqual([5]);
   });
 });
 

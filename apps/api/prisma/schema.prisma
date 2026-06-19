@@ -415,6 +415,14 @@ model PrescribedExercise {
   kgOverride  Float?
   flags       String[]
   notes       String?
+  /// Periodización adaptativa v2: la fase de ESTA semana (key del phaseProfile de la escuela). ESTADO
+  /// PERSISTIDO = única fuente de verdad para el read-path (heat/dayLayout), así una semana preservada
+  /// del pasado conserva SU fase aunque cambie la compe. Se fija al instanciar/re-periodizar; null en
+  /// filas pre-migración 24 → el read-path recae al plan recalculado (compat).
+  phaseKey    String?
+  /// Edición manual del coach (setSession): la re-periodización futura-only NO la pisa (invariante D8).
+  /// Las filas de receta (instanciación / re-periodización) quedan en false.
+  coachEdited Boolean  @default(false)
 
   @@unique([athleteId, week, sessionIdx, order])
   @@index([athleteId, week])
