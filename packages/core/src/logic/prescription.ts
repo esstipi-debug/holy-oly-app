@@ -70,13 +70,15 @@ export function instantiatePrescription(
  *  day = idx+1. Semana fuera del rango del macro o sin templates → null (sin-dato honesto;
  *  el caller decide el fallback legacy). A diferencia de phaseForWeek, NO hay fallback a la
  *  última fase — week 999 es semana inválida, no peaking. */
-export function dayLayoutFor(macro: Macrocycle, week: number): { day: number; turno?: "AM" | "PM" }[] | null {
+export function dayLayoutFor(macro: Macrocycle, week: number, phaseKey?: string): { day: number; turno?: "AM" | "PM" }[] | null {
   const recipe = recipeFor(macro.id);
   if (!recipe) return null;
-  // strict phase lookup: the week must fall within an explicitly-defined phase range
-  const phase = macro.phaseProfile.find((p) => week >= p.weeks[0] && week <= p.weeks[1]);
-  if (!phase) return null;
-  const sessions = recipe.phases.find((p) => p.phaseKey === phase.key)?.sessions ?? [];
+  // La fase la manda el plan ADAPTATIVO (`phaseKey`) cuando se provee; si no, lookup estricto por el
+  // phaseProfile natural (compat). Sin el override, una semana comprimida/estirada resolvería la fase
+  // equivocada (o null fuera del rango natural) → layout de días AM/PM desalineado con la prescripción.
+  const key = phaseKey ?? macro.phaseProfile.find((p) => week >= p.weeks[0] && week <= p.weeks[1])?.key;
+  if (key == null) return null;
+  const sessions = recipe.phases.find((p) => p.phaseKey === key)?.sessions ?? [];
   if (sessions.length === 0) return null;
   return sessions.map((s, i) => ({ day: s.day ?? i + 1, ...(s.turno ? { turno: s.turno } : {}) }));
 }

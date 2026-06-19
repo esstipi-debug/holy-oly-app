@@ -85,7 +85,9 @@ export function buildAdaptivePlan(macro: Macrocycle, compWeeks: readonly number[
     return rescaleSchoolPhases(phases, lastComp);
   }
 
-  // Multi-pico fiel: el primer bloque trae la progresión completa; los siguientes saltean la base.
+  // Multi-pico fiel: el primer bloque trae la progresión completa; los siguientes saltean SÓLO la fase
+  // más temprana (phases.slice(1)). Convención v1: escuelas de base larga (varias fases iniciales)
+  // re-acumulan parcialmente entre compes — afinar el corte por escuela es criterio del coach (spec §9).
   const out: PlanWeek[] = [];
   let prev = 0;
   comps.forEach((cw, idx) => {

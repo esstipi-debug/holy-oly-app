@@ -118,6 +118,20 @@ describe("dayLayoutFor (layout día/turno derivado de la receta — D8, no se pe
     expect(layout[1]).toEqual({ day: 1, turno: "PM" });
     expect(layout.filter((l) => l.day === 2)).toEqual([{ day: 2 }]);
   });
+  it("fase ADAPTATIVA: sin phaseKey, una semana fuera del rango natural → null (caso estiramiento)", () => {
+    const coreano = MACROCYCLES.find((m) => m.id === "coreano-5d")!;
+    expect(dayLayoutFor(coreano, 15)).toBeNull(); // el phaseProfile natural sólo cubre 1..12
+  });
+  it("fase ADAPTATIVA: con phaseKey usa esa fase aunque la semana esté fuera del rango natural", () => {
+    const coreano = MACROCYCLES.find((m) => m.id === "coreano-5d")!;
+    // sem 15 estirada que el plan asigna a cimentación → layout de cimentación, no null
+    expect(dayLayoutFor(coreano, 15, "cimentacion")).toEqual(dayLayoutFor(coreano, 1));
+  });
+  it("fase ADAPTATIVA: una semana comprimida usa la fase del plan, no la natural", () => {
+    const coreano = MACROCYCLES.find((m) => m.id === "coreano-5d")!;
+    // sem 7 comprimida a realización → mismo layout que una realización natural (sem 11)
+    expect(dayLayoutFor(coreano, 7, "realizacion")).toEqual(dayLayoutFor(coreano, 11));
+  });
 });
 
 // minimal fixture so the test doesn't depend on the full curated recipe
