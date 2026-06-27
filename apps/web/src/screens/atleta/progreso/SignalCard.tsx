@@ -4,6 +4,7 @@
  * El chart aporta solo su gráfico; el nombre/hero/ⓘ los provee esta card (evita el título duplicado).
  */
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../../../ui/Card";
 import { BottomSheet } from "../../../ui/BottomSheet";
 import { ChartExplainSheet, type Explain } from "../../../ui/charts/chartkit";
@@ -43,6 +44,7 @@ export interface SignalCardProps {
 }
 
 export function SignalCard({ name, sub, display, explain, children }: SignalCardProps) {
+  const { t } = useTranslation("atleta");
   const [open, setOpen] = useState(false);
   return (
     <Card>
@@ -54,7 +56,7 @@ export function SignalCard({ name, sub, display, explain, children }: SignalCard
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label={`Cómo se lee: ${name}`}
+          aria-label={t("sigcHowToReadAria", { name })}
           aria-haspopup="dialog"
           aria-expanded={open}
           style={{ width: 24, height: 24, borderRadius: 12, border: "1px solid var(--wl-muted)", background: "transparent", color: "var(--wl-text)", fontSize: 13, lineHeight: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0, cursor: "pointer", fontFamily: "var(--mono)", flex: "0 0 auto" }}

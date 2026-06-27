@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { CycleData, CycleMark, MePlanView, SessionView, WeekHeat } from "@holy-oly/core";
 import { barKgForSexo, cycleMarkFor, dateOfWeek, nextCycleWindow, CYCLE_PERIOD_DAYS, CYCLE_PRE_DAYS, CYCLE_HORIZON_CYCLES } from "@holy-oly/core";
 import type { MeClient } from "../../data/meClient";
@@ -23,6 +24,7 @@ const isoAt = (base: string, plusDays: number): string => new Date(ms(base) + pl
  * Sin `startDate` no hay verdad de fechas: ni anillo HOY ni títulos con fecha (honesto).
  */
 export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client: MeClient; sexo?: "M" | "F" }) {
+  const { t } = useTranslation("atleta");
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
   const [heat, setHeat] = useState<WeekHeat[] | null>(null);
   const [heatError, setHeatError] = useState(false);
@@ -131,15 +133,15 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
     : [];
   const title = sel === null ? "" : plan.startDate
     ? `${dayDateLabel(plan.startDate, sel.week, sel.day)} · S${sel.week}`
-    : `Semana ${sel.week} · día ${sel.day + 1}`;
+    : t("pmapTitleFallback", { week: sel.week, day: sel.day + 1 });
   // Contexto del día seleccionado cuando cae en ventana proyectada (sólo superficie de la atleta).
   const selMark = sel != null && cycleStart != null && cycleLen != null && plan.startDate != null
     ? cycleMarkFor(cycleStart, cycleLen, isoAt(dateOfWeek(plan.startDate, sel.week), sel.day))
     : null;
   const contextLine = selMark === "periodo"
-    ? "Período (proyección según tu registro) — contexto, no regla."
+    ? t("pmapContextPeriodo")
     : selMark === "preperiodo"
-      ? "Pre-período (proyección según tu registro) — contexto, no regla."
+      ? t("pmapContextPreperiodo")
       : undefined;
   // Denominador honesto: las sesiones reales de la semana cargada; el heat sólo estima mientras carga.
   const heatCount = sel && heat ? (heat[sel.week - 1]?.days.filter((d) => d !== null).length ?? 0) : 0;
@@ -155,43 +157,49 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
     )
     : dayError ? (
       <div role="alert" style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
-        No se pudo cargar el día. {retryLink(() => setDayError(false))}
+        {t("pmapDayError")} {retryLink(() => setDayError(false))}
       </div>
     )
     : selViews === undefined ? (
-      <Loading style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 11 }}>Cargando día…</Loading>
+      <Loading style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 11 }}>{t("pmapLoadingDay")}</Loading>
     )
     : (
       <PlanDayDetail key={`${sel.week}-${sel.day}`} title={title}
-        sub={`Sesión ${sel.day + 1}${den > 0 ? ` de ${den}` : ""}${selCell.topPct != null ? ` · tope ${selCell.topPct}%` : ""}`}
+        sub={t("pmapDaySub", {
+          n: sel.day + 1,
+          hasDen: den > 0 ? "yes" : "no", den,
+          hasTop: selCell.topPct != null ? "yes" : "no", top: selCell.topPct ?? 0,
+        })}
         phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))} focus={selPhase.focus}
         exercises={exercises} barKg={barKg} {...(contextLine != null ? { contextLine } : {})} />
     );
 
   return (
     <div style={{ marginTop: 16 }}>
-      <div className="ho-plan__periodlabel">Mapa del plan · intensidad por día</div>
+      <div className="ho-plan__periodlabel">{t("pmapHeader")}</div>
       <div style={{ marginTop: 6 }}><HeatLegend showCycle={cycleMarks != null} /></div>
       {cycleMarks != null && cycleLen != null && (
         // HR-2: el cómo-se-forma de la proyección, visible junto a la señal (no sólo el qué).
         <div style={{ marginTop: 4, fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", lineHeight: 1.5 }}>
-          Proyección asumiendo ciclos de {cycleLen} días desde tu última fecha — período = primeros {CYCLE_PERIOD_DAYS} días,
-          pre-período = últimos {CYCLE_PRE_DAYS}; se apaga a los {CYCLE_HORIZON_CYCLES} ciclos sin actualizar.
+          {t("pmapProjectionExplain", { len: cycleLen, periodDays: CYCLE_PERIOD_DAYS, preDays: CYCLE_PRE_DAYS, horizon: CYCLE_HORIZON_CYCLES })}
         </div>
       )}
       {nextWindow != null && (
         // La línea que el mapa solo no cuenta: aunque HOY no tenga marca, la ventana que viene.
         <div role="status" style={{ marginTop: 4, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
-          Tu próxima ventana: pre-período {isoRangeLabel(nextWindow.preStart, nextWindow.preEnd)} · período {isoRangeLabel(nextWindow.periodStart, nextWindow.periodEnd)}
+          {t("pmapNextWindow", {
+            pre: isoRangeLabel(nextWindow.preStart, nextWindow.preEnd),
+            period: isoRangeLabel(nextWindow.periodStart, nextWindow.periodEnd),
+          })}
         </div>
       )}
       <div style={{ marginTop: 8 }}>
         {heatError ? (
           <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
-            No se pudo cargar el mapa. {retryLink(() => setHeatError(false))}
+            {t("pmapMapError")} {retryLink(() => setHeatError(false))}
           </div>
         ) : heat === null ? (
-          <Loading style={{ fontFamily: "var(--mono)", fontSize: 11 }}>Cargando mapa…</Loading>
+          <Loading style={{ fontFamily: "var(--mono)", fontSize: 11 }}>{t("pmapLoadingMap")}</Loading>
         ) : (
           <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal"
             onSelectDay={selectDay} phaseIndexFor={phaseIdx} comps={comps}
@@ -200,7 +208,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
       </div>
       {collision != null && (
         <div role="status" style={{ marginTop: 8, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", lineHeight: 1.5 }}>
-          Tu semana más pesada (S{collision.week}) cae en tu ventana {collision.kind === "periodo" ? "de período" : "pre-período"} (proyección).
+          {t("pmapCollision", { week: collision.week, kind: collision.kind })}
         </div>
       )}
       {heat !== null && panel}

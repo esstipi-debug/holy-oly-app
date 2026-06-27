@@ -4,6 +4,7 @@
  * en localStorage por `key`. El track desliza con transform/translate (compositor-friendly).
  */
 import { useCallback, useRef, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 export interface CarouselSlide {
   key: string;
@@ -23,6 +24,7 @@ function arrowStyle(side: "left" | "right"): React.CSSProperties {
 }
 
 export function ProgresoCarousel({ slides, storageKey }: { slides: CarouselSlide[]; storageKey?: string }) {
+  const { t } = useTranslation("atleta");
   const n = slides.length;
   const [idx, setIdxRaw] = useState(() => {
     if (!storageKey) return 0;
@@ -107,8 +109,8 @@ export function ProgresoCarousel({ slides, storageKey }: { slides: CarouselSlide
         </div>
         {n > 1 && (
           <>
-            <button type="button" aria-label="Anterior" onClick={() => commit(-1)} style={arrowStyle("left")}>‹</button>
-            <button type="button" aria-label="Siguiente" onClick={() => commit(1)} style={arrowStyle("right")}>›</button>
+            <button type="button" aria-label={t("pcarPrev")} onClick={() => commit(-1)} style={arrowStyle("left")}>‹</button>
+            <button type="button" aria-label={t("pcarNext")} onClick={() => commit(1)} style={arrowStyle("right")}>›</button>
           </>
         )}
       </div>

@@ -4,6 +4,7 @@
  * el HeatSpec de la señal (nivel/valor/leyenda). Presentacional puro. NUNCA muestra RPE.
  */
 import { useState, useMemo, useCallback, useEffect, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { MeHeatDays, HeatWeekRow, HeatDayCell } from "@holy-oly/core";
 import { heatSpecFor, type SignalKey } from "./heatSpecs";
 import "./heatmap.css";
@@ -46,13 +47,14 @@ function MonthLabels({ weeks }: { weeks: HeatWeekRow[] }) {
 }
 
 export function SignalHeat({ data, signal, active = true }: { data: MeHeatDays; signal: SignalKey; active?: boolean }) {
+  const { t } = useTranslation("atleta");
   const spec = useMemo(() => heatSpecFor(signal, data), [signal, data]);
   const windows = useMemo<WinDef[]>(() => {
-    const w: WinDef[] = [{ key: "ano", label: "Año" }];
-    if (data.macroFromIdx >= 0) w.push({ key: "macro", label: "Macro" });
-    w.push({ key: "12", label: "12 sem" });
+    const w: WinDef[] = [{ key: "ano", label: t("sighWindowYear") }];
+    if (data.macroFromIdx >= 0) w.push({ key: "macro", label: t("sighWindowMacro") });
+    w.push({ key: "12", label: t("sighWindow12Weeks") });
     return w;
-  }, [data.macroFromIdx]);
+  }, [data.macroFromIdx, t]);
   const defaultWin = data.macroFromIdx >= 0 ? "macro" : "12";
 
   const [win, setWin] = useState<string>(() => {
@@ -91,7 +93,7 @@ export function SignalHeat({ data, signal, active = true }: { data: MeHeatDays; 
 
   return (
     <div className="hm">
-      <div className="hm-windows" role="tablist" aria-label="Ventana de tiempo">
+      <div className="hm-windows" role="tablist" aria-label={t("sighTimeWindow")}>
         {windows.map((w) => (
           <button key={w.key} type="button" role="tab" aria-selected={winKey === w.key}
             className={"hm-win" + (winKey === w.key ? " is-on" : "")} onClick={() => chooseWin(w.key)}>{w.label}</button>
@@ -133,13 +135,13 @@ export function SignalHeat({ data, signal, active = true }: { data: MeHeatDays; 
         <span>{spec.legendLo}</span>
         <span className="hm-scale">{[0, 1, 2, 3, 4].map((l) => <span key={l} className={"hm-swatch l" + l} />)}</span>
         <span>{spec.legendHi}</span>
-        <span className="hm-legend__comp"><span className="hm-legend__diam" />competencia</span>
+        <span className="hm-legend__comp"><span className="hm-legend__diam" />{t("sighCompetition")}</span>
       </div>
 
       <div className={"hm-detail" + (sel?.comp ? " is-comp" : "")} key={selIso ?? "none"}>
         {sel ? (
           <>
-            <div className="hm-detail__date">{fmtDate(sel.iso)}{sel.today ? " · hoy" : ""}</div>
+            <div className="hm-detail__date">{fmtDate(sel.iso)}{sel.today ? ` · ${t("sighToday")}` : ""}</div>
             <div className="hm-detail__val">{spec.value(sel)}</div>
             {sel.comp && <div className="hm-detail__comp">{sel.comp.name} · {sel.comp.note}</div>}
           </>

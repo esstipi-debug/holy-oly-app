@@ -1,12 +1,11 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { useTranslation, Trans } from "react-i18next";
 import type { MeCycleView } from "@holy-oly/core";
 import type { MeClient } from "../../../data/meClient";
 import { buildCycleView } from "./cycleView";
 import { CycleTimeline } from "./CycleTimeline";
 import { CycleRing } from "./CycleRing";
 import { CyclePhaseCard } from "./CyclePhaseCard";
-
-const FORMATS = ["Línea de tiempo", "Anillo", "Tarjeta"] as const;
 
 const head: CSSProperties = { display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 8 };
 const title: CSSProperties = { fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 14, color: "var(--wl-text)" };
@@ -27,6 +26,8 @@ const fmtName: CSSProperties = { fontFamily: "var(--mono)", fontSize: 10, color:
  * mensaje honesto). Paleta NEUTRA, jamás semáforo; es contexto, nunca una alerta ni un logro.
  */
 export function CicloCarousel({ client, today = new Date().toISOString().slice(0, 10), hideWhenEmpty = false }: { client: MeClient; today?: string; hideWhenEmpty?: boolean }) {
+  const { t } = useTranslation(["atleta", "common"]);
+  const FORMATS = [t("ccarFormatTimeline"), t("ccarFormatRing"), t("ccarFormatCard")] as const;
   const [cycle, setCycle] = useState<MeCycleView | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [idx, setIdx] = useState(0);
@@ -42,7 +43,7 @@ export function CicloCarousel({ client, today = new Date().toISOString().slice(0
 
   // hideWhenEmpty (Home): mientras carga o si no hay ciclo proyectable, no rendira nada — el opt-in
   // vive en Cuenta y no se naggea en la portada. En «Detalle del plan» (sin el flag) sí avisa.
-  if (!loaded) return hideWhenEmpty ? null : <div role="status" style={{ ...muted, marginTop: 16 }}>Cargando…</div>;
+  if (!loaded) return hideWhenEmpty ? null : <div role="status" style={{ ...muted, marginTop: 16 }}>{t("common:loading")}</div>;
   // Female-only (owner 2026-06-14): un hombre nunca ve «Tu ciclo». Error de carga (cycle=null) → tampoco.
   if (cycle?.sexo !== "F") return null;
 
@@ -52,12 +53,12 @@ export function CicloCarousel({ client, today = new Date().toISOString().slice(0
   return (
     <div style={{ marginTop: 16 }}>
       <div style={head}>
-        <span style={title}>Tu ciclo</span>
-        <span style={sub}>contexto, no una señal de estado</span>
+        <span style={title}>{t("ccarTitle")}</span>
+        <span style={sub}>{t("ccarSubtitle")}</span>
       </div>
       {view == null ? (
         <div style={empty}>
-          Registrá tu ciclo en <b style={{ color: "var(--wl-text)" }}>Cuenta</b> (regular + fecha del último período + duración) para verlo graficado acá.
+          <Trans t={t} i18nKey="ccarEmpty" components={{ b: <b style={{ color: "var(--wl-text)" }} /> }} />
         </div>
       ) : (
         <div style={card}>
@@ -65,16 +66,16 @@ export function CicloCarousel({ client, today = new Date().toISOString().slice(0
           {idx === 1 && <CycleRing view={view} />}
           {idx === 2 && <CyclePhaseCard view={view} />}
           <div style={nav}>
-            <button type="button" aria-label="Formato anterior" onClick={() => setIdx((i) => (i + FORMATS.length - 1) % FORMATS.length)} style={arrow}>‹</button>
+            <button type="button" aria-label={t("ccarFormatPrev")} onClick={() => setIdx((i) => (i + FORMATS.length - 1) % FORMATS.length)} style={arrow}>‹</button>
             <div style={dots}>
               {FORMATS.map((f, i) => (
-                <button key={f} type="button" aria-label={`Ver ${f}`} aria-current={i === idx}
+                <button key={f} type="button" aria-label={t("ccarFormatView", { format: f })} aria-current={i === idx}
                   onClick={() => setIdx(i)}
                   style={{ ...dot, background: i === idx ? "var(--wl-text)" : "color-mix(in srgb, var(--wl-text) 24%, transparent)" }} />
               ))}
             </div>
             <span style={fmtName}>{FORMATS[idx]}</span>
-            <button type="button" aria-label="Formato siguiente" onClick={() => setIdx((i) => (i + 1) % FORMATS.length)} style={arrow}>›</button>
+            <button type="button" aria-label={t("ccarFormatNext")} onClick={() => setIdx((i) => (i + 1) % FORMATS.length)} style={arrow}>›</button>
           </div>
         </div>
       )}

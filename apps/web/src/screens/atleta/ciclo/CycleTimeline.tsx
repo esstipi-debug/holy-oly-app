@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useTranslation, Trans } from "react-i18next";
 import type { CycleView } from "./cycleView";
 import { PHASE_FILL, phaseLabel } from "./cycleView";
 import { isoRangeLabel } from "../../../ui/charts/planDates";
@@ -11,6 +12,7 @@ const strong: CSSProperties = { color: "var(--wl-text)", fontWeight: 700 };
  * folicular · lútea), la marca de HOY encima, y la próxima ventana de período debajo. Presentacional.
  */
 export function CycleTimeline({ view }: { view: CycleView }) {
+  const { t } = useTranslation("atleta");
   const { lengthDays, dayInCycle, phaseToday, segments, nextWindow } = view;
   const pct = (d: number): number => (d / lengthDays) * 100;
   const hoyPct = ((dayInCycle + 0.5) / lengthDays) * 100;
@@ -18,7 +20,7 @@ export function CycleTimeline({ view }: { view: CycleView }) {
     <div>
       <div style={{ position: "relative", marginTop: 20 }}>
         <div style={{ position: "absolute", left: `${hoyPct}%`, top: -16, transform: "translateX(-50%)", textAlign: "center", pointerEvents: "none" }}>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 8.5, fontWeight: 700, color: "var(--wl-text)" }}>HOY</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 8.5, fontWeight: 700, color: "var(--wl-text)" }}>{t("ctlToday")}</div>
           <div style={{ width: 0, height: 0, margin: "1px auto 0", borderLeft: "4px solid transparent", borderRight: "4px solid transparent", borderTop: "5px solid var(--wl-text)" }} />
         </div>
         <div style={{ position: "relative", display: "flex", height: 26, borderRadius: 6, overflow: "hidden" }}>
@@ -36,8 +38,23 @@ export function CycleTimeline({ view }: { view: CycleView }) {
         </div>
       </div>
       <div style={summary}>
-        Día <span style={strong}>{dayInCycle + 1}</span> de {lengthDays} · fase <span style={strong}>{phaseLabel(phaseToday)}</span>
-        {nextWindow && <><br />Tu próximo período: <span style={strong}>{isoRangeLabel(nextWindow.periodStart, nextWindow.periodEnd)}</span></>}
+        <Trans
+          t={t}
+          i18nKey="ctlSummary"
+          values={{ day: dayInCycle + 1, total: lengthDays, phase: phaseLabel(phaseToday) }}
+          components={{ strong: <span style={strong} /> }}
+        />
+        {nextWindow && (
+          <>
+            <br />
+            <Trans
+              t={t}
+              i18nKey="ctlNextPeriod"
+              values={{ range: isoRangeLabel(nextWindow.periodStart, nextWindow.periodEnd) }}
+              components={{ strong: <span style={strong} /> }}
+            />
+          </>
+        )}
       </div>
     </div>
   );
