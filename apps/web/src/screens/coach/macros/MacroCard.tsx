@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { Macrocycle } from "@holy-oly/core";
 import { LoadMeters } from "./LoadMeters";
 import { focusTag, levelLabel } from "./macroFilter";
@@ -31,6 +32,7 @@ const best: CSSProperties = { fontSize: 10, lineHeight: 1.35, color: "var(--wl-m
 
 /** One catalog card for a macrocycle (ports the mockup's `mcard`). Whole card is the open affordance. */
 export function MacroCard({ macro, onOpen }: { macro: Macrocycle; onOpen: (id: string) => void }) {
+  const { t } = useTranslation("macros");
   return (
     <button type="button" style={card} onClick={() => onOpen(macro.id)}>
       {macro.peaks && macro.peakWeek != null && <span style={pk}>▲ S{macro.peakWeek}</span>}
@@ -42,7 +44,7 @@ export function MacroCard({ macro, onOpen }: { macro: Macrocycle; onOpen: (id: s
       </div>
       <LoadMeters macro={macro} />
       <div style={tag}>"{macro.family} · {focusTag(macro)}"</div>
-      <div style={best}><b style={{ color: "var(--wl-text)" }}>Nivel</b> <span style={{ color: "var(--wl-accent)" }}>{levelLabel(macro.level)}</span></div>
+      <div style={best}><b style={{ color: "var(--wl-text)" }}>{t("mcCardLevel")}</b> <span style={{ color: "var(--wl-accent)" }}>{levelLabel(macro.level)}</span></div>
     </button>
   );
 }

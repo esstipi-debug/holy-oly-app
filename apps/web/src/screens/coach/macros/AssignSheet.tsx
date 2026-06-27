@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { Atleta, Macrocycle, Plan } from "@holy-oly/core";
 import { availableWeeksToComp, mondayOf } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
@@ -17,10 +18,10 @@ const input: CSSProperties = {
 const strong: CSSProperties = { color: "var(--wl-text)", fontWeight: 700 };
 
 const RM_FIELDS = [
-  { key: "arranque", label: "Arranque" },
-  { key: "envion", label: "Envión" },
-  { key: "sentadilla", label: "Sentadilla" },
-  { key: "frente", label: "Frente" },
+  { key: "arranque", labelKey: "rmLiftArranque" },
+  { key: "envion", labelKey: "rmLiftEnvion" },
+  { key: "sentadilla", labelKey: "rmLiftSentadilla" },
+  { key: "frente", labelKey: "rmLiftFrente" },
 ] as const;
 type RmKey = (typeof RM_FIELDS)[number]["key"];
 type RmDraft = Record<RmKey, string>;
@@ -55,6 +56,7 @@ export function AssignSheet({
    *  re-elegirlo de la lista (y no asignarle a otro por error). El coach puede cambiarlo igual. */
   preselectAtletaId?: string;
 }) {
+  const { t } = useTranslation(["macros", "coach", "common"]);
   const [mode, setMode] = useState<"competencia" | "inicio">("competencia");
   const [atletaId, setAtletaId] = useState<string | null>(preselectAtletaId ?? null);
   const [startDate, setStartDate] = useState(today);
@@ -96,27 +98,27 @@ export function AssignSheet({
         mode === "competencia" ? { name: compName.trim(), date: compDate, week: availWeeks } : undefined,
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo asignar");
+      setError(e instanceof Error ? e.message : t("asAssignError"));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} ariaLabel="Asignar plan">
-      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Asignar {macro.name}</div>
+    <BottomSheet open={open} onClose={onClose} ariaLabel={t("asAssignPlan")}>
+      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>{t("asTitle", { name: macro.name })}</div>
 
-      <label style={label}>Atleta</label>
+      <label style={label}>{t("asAthlete")}</label>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 6 }}>
         {rosterError ? (
           <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
-            No se pudo cargar tu plantel.{" "}
+            {t("asRosterError")}{" "}
             {onRetryRoster && (
               <RetryButton onClick={onRetryRoster} />
             )}
           </div>
         ) : athletes.length === 0 ? (
-          <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>No tenés atletas vinculados.</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>{t("asNoAthletes")}</div>
         ) : (
           <>
             {visibleAthletes.map((a) => {
@@ -139,17 +141,17 @@ export function AssignSheet({
               <button type="button" onClick={() => setShowAllAthletes(true)}
                 style={{ textAlign: "left", padding: "4px 2px", border: 0, background: "transparent",
                   color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 11, cursor: "pointer" }}>
-                Cambiar atleta ›
+                {t("asChangeAthlete")}
               </button>
             )}
           </>
         )}
       </div>
 
-      <label style={label}>Anclar por</label>
+      <label style={label}>{t("asAnchorBy")}</label>
       <SegmentedToggle
-        ariaLabel="Anclar por"
-        options={[["competencia", "Competencia"], ["inicio", "Fecha de inicio"]] as const}
+        ariaLabel={t("asAnchorBy")}
+        options={[["competencia", t("asCompLabel")], ["inicio", t("asStartDate")]] as const}
         value={mode}
         onChange={setMode}
         size="sm"
@@ -158,11 +160,11 @@ export function AssignSheet({
 
       {mode === "competencia" ? (
         <>
-          <label style={label} htmlFor="assign-comp-name">Competencia</label>
-          <input id="assign-comp-name" aria-label="Nombre de la competencia" placeholder="Nacional, Sudamericano…"
+          <label style={label} htmlFor="assign-comp-name">{t("asCompLabel")}</label>
+          <input id="assign-comp-name" aria-label={t("asCompNameAria")} placeholder={t("asCompPlaceholder")}
             style={input} value={compName} onChange={(e) => setCompName(e.target.value)} />
-          <label style={label} htmlFor="assign-comp-date">Fecha de la competencia</label>
-          <input id="assign-comp-date" type="date" aria-label="Fecha de la competencia" style={input}
+          <label style={label} htmlFor="assign-comp-date">{t("asCompDate")}</label>
+          <input id="assign-comp-date" type="date" aria-label={t("asCompDate")} style={input}
             value={compDate} onChange={(e) => setCompDate(e.target.value)} />
 
           {compDate !== "" && (
@@ -173,29 +175,32 @@ export function AssignSheet({
               color: compPast ? "var(--wl-danger)" : "var(--wl-muted)",
             }}>
               {compPast ? (
-                <>Esa fecha ya pasó — elegí una futura.</>
+                <>{t("asDatePast")}</>
               ) : (
-                <>Arranca el lunes <b style={strong}>{planStartMonday}</b> · <b style={strong}>{availWeeks} semana{availWeeks === 1 ? "" : "s"}</b> hasta la compe · el plan de la escuela se ajusta para picar en la fecha.</>
+                <>{t("asStartMondayPre")} <b style={strong}>{planStartMonday}</b> · <b style={strong}>{t("asWeeksToComp", { weeks: availWeeks })}</b> · {t("asAdjustNote")}</>
               )}
             </div>
           )}
         </>
       ) : (
         <>
-          <label style={label} htmlFor="assign-date">Fecha de inicio</label>
-          <input id="assign-date" type="date" aria-label="Fecha de inicio" style={input} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <label style={label} htmlFor="assign-date">{t("asStartDate")}</label>
+          <input id="assign-date" type="date" aria-label={t("asStartDate")} style={input} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
         </>
       )}
 
-      <label style={label}>RMs (kg)</label>
+      <label style={label}>{t("asRmsLabel")}</label>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 6 }}>
-        {RM_FIELDS.map((f) => (
-          <div key={f.key}>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", marginBottom: 3 }}>{f.label}</div>
-            <input type="number" inputMode="numeric" aria-label={f.label} style={{ ...input, marginTop: 0 }}
-              value={rms[f.key]} onChange={(e) => setRms((r) => ({ ...r, [f.key]: e.target.value }))} />
-          </div>
-        ))}
+        {RM_FIELDS.map((f) => {
+          const fieldLabel = t(`coach:${f.labelKey}`);
+          return (
+            <div key={f.key}>
+              <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", marginBottom: 3 }}>{fieldLabel}</div>
+              <input type="number" inputMode="numeric" aria-label={fieldLabel} style={{ ...input, marginTop: 0 }}
+                value={rms[f.key]} onChange={(e) => setRms((r) => ({ ...r, [f.key]: e.target.value }))} />
+            </div>
+          );
+        })}
       </div>
 
       {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
@@ -203,11 +208,11 @@ export function AssignSheet({
       <button type="button" disabled={!canSubmit} onClick={() => void submit()}
         style={{ width: "100%", marginTop: 16, padding: 13, borderRadius: 12, border: 0, cursor: canSubmit ? "pointer" : "default",
           background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, opacity: canSubmit ? 1 : 0.45 }}>
-        {busy ? "Asignando…" : "Asignar plan"}
+        {busy ? t("asAssigning") : t("asAssignPlan")}
       </button>
       <button type="button" onClick={onClose}
         style={{ width: "100%", marginTop: 8, padding: 10, border: 0, background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 12, cursor: "pointer" }}>
-        Cancelar
+        {t("common:cancel")}
       </button>
     </BottomSheet>
   );

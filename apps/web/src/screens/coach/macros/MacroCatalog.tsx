@@ -1,5 +1,6 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { MACROCYCLES } from "@holy-oly/core";
 import { Chip } from "../../../ui/Chip";
 import { MacroCard } from "./MacroCard";
@@ -30,6 +31,7 @@ const grid: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", g
 
 export function MacroCatalog() {
   const navigate = useNavigate();
+  const { t } = useTranslation("macros");
   // Si el coach vino desde un atleta (drill-down → "Asignar macro" pasa `?atleta=`), se conserva al
   // abrir un macro para que el AssignSheet lo pre-seleccione y no haya que re-elegirlo de la lista.
   const [params] = useSearchParams();
@@ -43,23 +45,23 @@ export function MacroCatalog() {
 
   return (
     <div style={page}>
-      <div style={eyebrow}>CATÁLOGO · {list.length} {list.length === 1 ? "MACROCICLO" : "MACROCICLOS"}</div>
-      <h1 style={title}>Macrociclos</h1>
+      <div style={eyebrow}>{t("mcEyebrow", { count: list.length })}</div>
+      <h1 style={title}>{t("mcTitle")}</h1>
 
-      <input style={search} value={query} placeholder="Buscar macrociclo…" onChange={(e) => setQuery(e.target.value)} />
+      <input style={search} value={query} placeholder={t("mcSearchPlaceholder")} onChange={(e) => setQuery(e.target.value)} />
 
-      <div style={filterLabel}>Escuela</div>
+      <div style={filterLabel}>{t("mcFilterSchool")}</div>
       <div style={chipRow}>
-        {FAMILIES.map((f) => <Chip key={f} selected={family === f} onClick={() => setFamily(f)}>{f}</Chip>)}
+        {FAMILIES.map((f) => <Chip key={f} selected={family === f} onClick={() => setFamily(f)}>{f === "Todos" ? t("mcFilterAll") : f}</Chip>)}
       </div>
-      <div style={filterLabel}>Días / semana</div>
+      <div style={filterLabel}>{t("mcFilterDays")}</div>
       <div style={chipRow}>
-        {DAYS.map((d) => <Chip key={d} selected={days === d} onClick={() => setDays(d)}>{d}</Chip>)}
+        {DAYS.map((d) => <Chip key={d} selected={days === d} onClick={() => setDays(d)}>{d === "Todos" ? t("mcFilterAll") : d}</Chip>)}
       </div>
 
       {list.length === 0 ? (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "22px 4px", textAlign: "center" }}>
-          Ningún programa con esos filtros.
+          {t("mcNoResults")}
         </div>
       ) : (
         <div style={grid}>
