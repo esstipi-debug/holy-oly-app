@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import { BottomSheet } from "../../../ui/BottomSheet";
 
 const addDays = (iso: string, d: number): string =>
@@ -33,13 +34,14 @@ export function FechaSheet({
   onPick: (fecha: string) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation("atleta");
   const [manual, setManual] = useState<string>("");
   const ayer = addDays(hoy, -1);
   const ocupada = manual !== "" && ocupadas.includes(manual);
   const fuera = manual !== "" && !ocupada && (fueraDeSemana?.(manual) ?? false);
 
   return (
-    <BottomSheet open={open} onClose={onClose} ariaLabel="Fecha del entreno">
+    <BottomSheet open={open} onClose={onClose} ariaLabel={t("fsAria")}>
       <div
         style={{
           fontFamily: "var(--wl-display)",
@@ -48,14 +50,10 @@ export function FechaSheet({
           color: "var(--wl-text)",
         }}
       >
-        {motivo === "conflicto"
-          ? "Ya registraste un entreno hoy"
-          : "¿Cuándo hiciste este entreno?"}
+        {motivo === "conflicto" ? t("fsTitleConflicto") : t("fsTitleEditar")}
       </div>
       <div style={{ ...mono, marginTop: 6 }}>
-        {motivo === "conflicto"
-          ? "Este registro necesita su propia fecha — ¿cuándo lo hiciste?"
-          : "El registro queda con la fecha real del entreno."}
+        {motivo === "conflicto" ? t("fsSubConflicto") : t("fsSubEditar")}
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
         {!ocupadas.includes(hoy) && (
@@ -65,7 +63,7 @@ export function FechaSheet({
             style={{ flex: 1 }}
             onClick={() => onPick(hoy)}
           >
-            Hoy
+            {t("fsToday")}
           </button>
         )}
         {!ocupadas.includes(ayer) && (
@@ -75,12 +73,12 @@ export function FechaSheet({
             style={{ flex: 1 }}
             onClick={() => onPick(ayer)}
           >
-            Ayer
+            {t("fsYesterday")}
           </button>
         )}
       </div>
       <label style={{ ...mono, display: "block", marginTop: 14 }}>
-        Elegir fecha
+        {t("fsPickDate")}
         <input
           type="date"
           max={hoy}
@@ -107,12 +105,12 @@ export function FechaSheet({
           role="alert"
           style={{ ...mono, color: "var(--wl-danger)", marginTop: 8 }}
         >
-          Esa fecha ya tiene un entreno registrado.
+          {t("fsTaken")}
         </div>
       )}
       {fuera && (
         <div role="status" style={{ ...mono, marginTop: 8 }}>
-          Ojo: queda fuera de la semana del plan — se permite igual.
+          {t("fsOutOfWeek")}
         </div>
       )}
       <button
@@ -128,7 +126,7 @@ export function FechaSheet({
           if (manual !== "" && !ocupada) onPick(manual);
         }}
       >
-        Usar esta fecha
+        {t("fsUseDate")}
       </button>
     </BottomSheet>
   );

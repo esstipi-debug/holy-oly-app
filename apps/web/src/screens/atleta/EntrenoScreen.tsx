@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import type { SessionView, ExerciseActualInput, MePlanView } from "@holy-oly/core";
 import { getMovement, barKgForSexo, fueraDeSemana, priorDaysResolved } from "@holy-oly/core";
 import * as me from "../../data/meClient";
@@ -15,6 +16,7 @@ import type { SetRow } from "./entreno/WorkSetsSection";
 export function EntrenoScreen() {
   const { week: weekP, idx: idxP } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation(["atleta", "common"]);
   const week = Number(weekP);
   const idx = Number(idxP);
   const [rows, setRows] = useState<PlayerRow[] | null>(null);
@@ -124,24 +126,24 @@ export function EntrenoScreen() {
       // tomada recién al guardar → reabrimos el sheet en vez de un error opaco.
       if (e instanceof FechaOcupadaError) { setFechaSheet("conflicto"); return; }
       // Secuencia de días: el gate server-side rechazó por días anteriores sin resolver.
-      if (e instanceof DiaBloqueadoError) { setError("Completá el día anterior antes de registrar este."); return; }
-      setError(e instanceof Error ? e.message : "No se pudo guardar");
+      if (e instanceof DiaBloqueadoError) { setError(t("enBlockedRegister")); return; }
+      setError(e instanceof Error ? e.message : t("saveError"));
     }
     finally { setBusy(false); }
-  }, [rows, week, idx, navigate, fecha, hoy]);
+  }, [rows, week, idx, navigate, fecha, hoy, t]);
 
   // Secuencia de días (2026-06-13): anular el entreno (falló/canceló) → vuelve al inicio.
   const doAnular = useCallback(async () => {
-    if (!window.confirm("¿Anular este entreno? Queda marcado como saltado (sin volumen). Podés reactivarlo después.")) return;
+    if (!window.confirm(t("enAnularConfirm"))) return;
     setActionBusy(true); setError(null);
     try {
       await me.anularMeSession(week, idx);
       navigate("/atleta");
     } catch (e) {
-      if (e instanceof DiaBloqueadoError) { setError("Completá el día anterior antes de anular este."); return; }
-      setError(e instanceof Error ? e.message : "No se pudo anular");
+      if (e instanceof DiaBloqueadoError) { setError(t("enBlockedAnular")); return; }
+      setError(e instanceof Error ? e.message : t("enAnularError"));
     } finally { setActionBusy(false); }
-  }, [week, idx, navigate]);
+  }, [week, idx, navigate, t]);
 
   // Reactivar (des-anular) → el día vuelve a pendiente; recargamos para registrarlo normal.
   const doReactivar = useCallback(async () => {
@@ -150,41 +152,41 @@ export function EntrenoScreen() {
       await me.desanularMeSession(week, idx);
       setReload((r) => r + 1);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo reactivar");
+      setError(e instanceof Error ? e.message : t("enReactivarError"));
     } finally { setActionBusy(false); }
-  }, [week, idx]);
+  }, [week, idx, t]);
 
-  if (rows === null) return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
+  if (rows === null) return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>{t("common:loading")}</div>;
 
   // NOTE: rendered inside AthleteShell's `<main className="ho-scroll">` — no agregar otro wrapper ho-scroll.
   return (
     <div>
-      <BackButton ariaLabel="Volver" onClick={() => (started ? setStarted(false) : navigate("/atleta"))} style={{ marginBottom: 6 }} />
-      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>Entreno · sem {week} · día {myDay}{myTurno ? ` · ${myTurno}` : ""}</div>
+      <BackButton ariaLabel={t("common:back")} onClick={() => (started ? setStarted(false) : navigate("/atleta"))} style={{ marginBottom: 6 }} />
+      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>{t("enTitle", { week, day: myDay })}{myTurno ? ` · ${myTurno}` : ""}</div>
 
       {loadError ? (
         <div role="alert" style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
-          No se pudo cargar la sesión.{" "}
+          {t("enLoadError")}{" "}
           <RetryButton onClick={() => setReload((r) => r + 1)} />
         </div>
       ) : locked ? (
         // Secuencia de días: no se puede registrar este día sin resolver los anteriores.
         <div style={{ marginTop: 18, textAlign: "center", fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>
           <div style={{ fontSize: 30, marginBottom: 8 }} aria-hidden>🔒</div>
-          Completá el día anterior para desbloquear este.
+          {t("enLockedMsg")}
         </div>
       ) : anulado ? (
         // Día anulado: sin volumen; ofrecemos reactivarlo (des-anular) para registrarlo normal.
         <div style={{ marginTop: 14 }}>
           <div style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)", marginBottom: 12 }}>
-            Este entreno está <strong style={{ color: "var(--wl-text)" }}>anulado</strong> (lo saltaste). No suma volumen.
+            <Trans t={t} i18nKey="enAnuladoMsg" components={{ strong: <strong style={{ color: "var(--wl-text)" }} /> }} />
           </div>
           <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%" }} disabled={actionBusy} onClick={() => void doReactivar()}>
-            Reactivar este entreno
+            {t("enReactivar")}
           </button>
         </div>
       ) : rows.length === 0 ? (
-        <div style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>No hay sesión para este día.</div>
+        <div style={{ marginTop: 14, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>{t("enNoSession")}</div>
       ) : !started ? (
         <div style={{ marginTop: 12 }}>
           <ResumenDia

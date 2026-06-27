@@ -8,7 +8,7 @@ test("variante dial: avanza por los 6 ítems + peso y guarda (defaults 3)", asyn
   for (let i = 0; i < 6; i++) {
     fireEvent.click(screen.getByRole("button", { name: "Siguiente" }));
   }
-  expect(screen.getByText("¿Cuánto pesás hoy?")).toBeInTheDocument();
+  expect(screen.getByText("¿Cuánto pesas hoy?")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Guardar check-in" }));
   await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
   expect(onDone.mock.calls[0]![0]).toMatchObject({ fatiga: 3, dolor: 3, estres: 3, humor: 3, motivacion: 3, sueno: 3, weight: 80 });
