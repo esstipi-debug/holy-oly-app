@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { SchoolDNA } from "@holy-oly/core";
 import { signatureGroups, excludedNames, intensitySignature } from "./composition";
 
@@ -31,13 +32,14 @@ const exChip: CSSProperties = {
  * datos salen del ADN de la escuela (packages/core/data/schools.ts) vía `composition.ts`.
  */
 export function MacroComposition({ dna }: { dna: SchoolDNA }) {
+  const { t } = useTranslation("macros");
   const groups = signatureGroups(dna);
   const excluded = excludedNames(dna);
 
   return (
     <div>
       <div style={intensityBox}>
-        <span style={kicker}>Sello de intensidad</span>
+        <span style={kicker}>{t("mcompSeal")}</span>
         <span style={intensityText}>{intensitySignature(dna)}</span>
       </div>
 
@@ -54,8 +56,8 @@ export function MacroComposition({ dna }: { dna: SchoolDNA }) {
 
       {excluded.length > 0 && (
         <div style={{ marginTop: 15 }}>
-          <div style={groupLabel}>Deja fuera</div>
-          <div style={exNote}>Lo que esta escuela excluye a propósito.</div>
+          <div style={groupLabel}>{t("mcompExcludes")}</div>
+          <div style={exNote}>{t("mcompExcludesNote")}</div>
           <div style={chipWrap}>
             {excluded.map((n, i) => <span key={`ex-${i}`} style={exChip}>{n}</span>)}
           </div>

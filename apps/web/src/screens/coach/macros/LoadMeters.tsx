@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { Macrocycle } from "@holy-oly/core";
 import { deriveRecovery } from "./macroFilter";
 
@@ -31,11 +32,12 @@ function Meter({ name, val, color }: { name: string; val: number; color: string 
 
 /** The three load meters (intensity, volume, derived recovery) — ports the mockup's `meter` row. */
 export function LoadMeters({ macro }: { macro: Macrocycle }) {
+  const { t } = useTranslation("macros");
   return (
     <div>
-      <Meter name="INTENSIDAD" val={macro.intensity} color={METER.intensidad} />
-      <Meter name="VOLUMEN" val={macro.volume} color={METER.volumen} />
-      <Meter name="RECOVERY" val={deriveRecovery(macro)} color={METER.recuperacion} />
+      <Meter name={t("lmIntensity")} val={macro.intensity} color={METER.intensidad} />
+      <Meter name={t("lmVolume")} val={macro.volume} color={METER.volumen} />
+      <Meter name={t("lmRecovery")} val={deriveRecovery(macro)} color={METER.recuperacion} />
     </div>
   );
 }

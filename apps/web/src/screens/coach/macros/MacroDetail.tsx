@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useParams, useNavigate, useSearchParams, Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { MACROCYCLES, availableWeeksToComp, dnaForFamily, type Atleta, type Plan } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { BackButton } from "../../../ui/BackButton";
@@ -45,6 +46,7 @@ const assignBtn: CSSProperties = {
 export function MacroDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation("macros");
   const [params] = useSearchParams();
   // Atleta del que vino el coach (drill-down → "Asignar macro" pasa `?atleta=`). Pre-selecciona el
   // sheet y se conserva al volver al catálogo, así no se pierde el contexto al elegir otro macro.
@@ -85,14 +87,14 @@ export function MacroDetail() {
     await repo.setComps(plan.atletaId, next);
     await repo.savePlan(plan); // ahora instancia adaptativo con las compes ya persistidas
     setAssignOpen(false);
-    setToast(`✓ ${m.name} asignado a ${athletes.find((a) => a.id === plan.atletaId)?.nombre ?? "el atleta"}`);
+    setToast(t("mdAssignToast", { macro: m.name, athlete: athletes.find((a) => a.id === plan.atletaId)?.nombre ?? t("mdAssignToastFallback") }));
     window.setTimeout(() => setToast(null), 2800);
   }
 
   // Mismo CTA arriba (al entrar al macro, sin scrollear) y abajo (tras leer el detalle).
   const cta = (marginTop: number) => (
     <button type="button" onClick={() => setAssignOpen(true)} style={{ ...assignBtn, marginTop }}>
-      + Asignar a un atleta
+      {t("mdAssignCta")}
     </button>
   );
 
@@ -105,8 +107,8 @@ export function MacroDetail() {
         <span style={famTag}>{macro.family}</span>
         <span style={lvTag}>{levelLabel(macro.level)}</span>
         {macro.peaks && macro.peakWeek != null
-          ? <span style={pkTag}>▲ pico sem {macro.peakWeek}</span>
-          : <span style={lvTag}>sin pico</span>}
+          ? <span style={pkTag}>{t("mdPeakWeek", { week: macro.peakWeek })}</span>
+          : <span style={lvTag}>{t("mdNoPeak")}</span>}
       </div>
       <p style={descStyle}>{macro.desc}</p>
 
@@ -114,7 +116,7 @@ export function MacroDetail() {
 
       {dna != null && (
         <>
-          <div style={sec}>Metodología</div>
+          <div style={sec}>{t("mdSecMethod")}</div>
           <div style={{ background: "var(--wl-surface)", borderRadius: "var(--wl-radius)", padding: "12px 13px", border: "1px solid color-mix(in srgb,var(--wl-accent) 18%,transparent)" }}>
             <p style={{ fontFamily: "var(--wl-display)", fontSize: 13, lineHeight: 1.5, color: "var(--wl-text)", margin: 0, fontStyle: "italic" }}>
               &ldquo;{dna.character}&rdquo;
@@ -130,33 +132,33 @@ export function MacroDetail() {
 
       {dna != null && (
         <>
-          <div style={sec}>Composición · movimientos firma</div>
+          <div style={sec}>{t("mdSecComposition")}</div>
           <MacroComposition dna={dna} />
         </>
       )}
 
       {hasTypicalWeek(macro) && (
         <>
-          <div style={sec}>Semana tipo · sesión por sesión</div>
+          <div style={sec}>{t("mdSecTypicalWeek")}</div>
           <MacroTypicalWeek macro={macro} />
         </>
       )}
 
       <div style={statsRow}>
-        <div style={statBox}><b style={statN}>{macro.duration.replace(/\s*semanas?/i, "")}</b><span style={statL}>semanas</span></div>
-        <div style={statBox}><b style={statN}>{macro.frequency.replace(/d\/sem/i, "")}</b><span style={statL}>días/sem</span></div>
-        <div style={statBox}><b style={statN}>{macro.phaseProfile.length}</b><span style={statL}>fases</span></div>
+        <div style={statBox}><b style={statN}>{macro.duration.replace(/\s*semanas?/i, "")}</b><span style={statL}>{t("mdStatWeeks")}</span></div>
+        <div style={statBox}><b style={statN}>{macro.frequency.replace(/d\/sem/i, "")}</b><span style={statL}>{t("mdStatDays")}</span></div>
+        <div style={statBox}><b style={statN}>{macro.phaseProfile.length}</b><span style={statL}>{t("mdStatPhases")}</span></div>
       </div>
 
-      <div style={sec}>Carga</div>
+      <div style={sec}>{t("mdSecLoad")}</div>
       <LoadMeters macro={macro} />
 
       <MacroPeriodization macro={macro} />
 
-      <div style={sec}>Adentro del plan · intensidad por día</div>
+      <div style={sec}>{t("mdSecInside")}</div>
       <MacroTemplateMap macro={macro} />
 
-      <div style={sec}>Ideal para</div>
+      <div style={sec}>{t("mdSecBestFor")}</div>
       <p style={{ fontSize: 12, lineHeight: 1.5, color: "var(--wl-text)", margin: 0 }}>{macro.bestFor}</p>
 
       {cta(20)}

@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Macrocycle } from "@holy-oly/core";
 import { ALL_RECIPES, instantiatePrescription, planHeat, phaseForWeek, programmableName } from "@holy-oly/core";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../../ui/charts/PlanHeatMap";
@@ -13,6 +14,7 @@ const EMPTY_COMPS: ReadonlyMap<number, { name: string; day?: number }> = new Map
  * con sus ejercicios. La misma pieza visual del calendario del atleta/coach (PlanHeatMap).
  */
 export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
+  const { t } = useTranslation("macros");
   const totalWeeks = macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
   const rows = useMemo(() => instantiatePrescription(ALL_RECIPES, macro, totalWeeks), [macro, totalWeeks]);
   const heat = useMemo(() => (rows.length > 0 ? planHeat(rows, totalWeeks) : null), [rows, totalWeeks]);
@@ -28,8 +30,7 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
   if (heat === null) {
     return (
       <p style={{ fontFamily: "var(--mono)", fontSize: 11, lineHeight: 1.6, color: "var(--wl-muted)", margin: 0 }}>
-        Este programa aún no tiene el detalle sesión-por-sesión — guiate por el reparto de fases
-        de arriba.
+        {t("mtmEmpty")}
       </p>
     );
   }
@@ -55,18 +56,16 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
           onSelectDay={selectDay} phaseIndexFor={phaseIdx} />
       </div>
       {sel && selPhase && (selCell === null ? (
-        <PlanDayDetail title={`Semana ${sel.week} · día ${sel.day + 1}`} phaseName={selPhase.name}
+        <PlanDayDetail title={t("mtmDayTitle", { week: sel.week, day: sel.day + 1 })} phaseName={selPhase.name}
           phaseTint={phaseColor(phaseIdx(sel.week))} focus={selPhase.focus} isRest exercises={[]} barKg={20} />
       ) : (
-        <PlanDayDetail title={`Semana ${sel.week} · sesión ${sel.day + 1}`}
-          sub={`${selCell.lifts} levant.${selCell.topPct != null ? ` · tope ${selCell.topPct}%` : ""}`}
+        <PlanDayDetail title={t("mtmSessionTitle", { week: sel.week, session: sel.day + 1 })}
+          sub={`${t("mtmLifts", { count: selCell.lifts })}${selCell.topPct != null ? ` · ${t("mtmTop", { pct: selCell.topPct })}` : ""}`}
           phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))} focus={selPhase.focus}
           exercises={exercises} barKg={20} />
       ))}
       <div style={{ marginTop: 6, fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>
-        {sel === null
-          ? "Tocá un día para ver su sesión completa."
-          : "Los kg aparecen al asignar — se derivan de los RMs del atleta."}
+        {sel === null ? t("mtmTapDay") : t("kgOnAssign")}
       </div>
     </div>
   );

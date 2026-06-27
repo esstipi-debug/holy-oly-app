@@ -1,4 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { Macrocycle } from "@holy-oly/core";
 import { typicalWeek } from "./composition";
 
@@ -36,6 +37,7 @@ const kgNote: CSSProperties = { fontFamily: "var(--mono)", fontSize: 9.5, color:
  * ya muestra su empty-state).
  */
 export function MacroTypicalWeek({ macro }: { macro: Macrocycle }) {
+  const { t } = useTranslation("macros");
   const phases = macro.phaseProfile;
   const [sel, setSel] = useState(() => phases[0]?.key ?? "");
   const sessions = useMemo(() => typicalWeek(macro, sel), [macro, sel]);
@@ -55,11 +57,11 @@ export function MacroTypicalWeek({ macro }: { macro: Macrocycle }) {
           ))}
         </div>
       )}
-      <div style={note}>Semana representativa{selPhase ? ` · ${selPhase.name} · sem ${span}` : ""}</div>
+      <div style={note}>{t("mtwRepWeek")}{selPhase ? ` · ${selPhase.name} · ${t("mtwWeekSpan", { span })}` : ""}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {sessions.map((s) => (
           <div key={s.day} style={card}>
-            <div style={dayHead}>Día {s.day + 1}</div>
+            <div style={dayHead}>{t("mtwDay", { day: s.day + 1 })}</div>
             {s.exercises.map((e, i) => (
               <div key={`${s.day}-${i}`} style={exRow}>
                 <span style={exName}>{e.name}</span>
@@ -72,7 +74,7 @@ export function MacroTypicalWeek({ macro }: { macro: Macrocycle }) {
           </div>
         ))}
       </div>
-      <div style={kgNote}>Los kg aparecen al asignar — se derivan de los RMs del atleta.</div>
+      <div style={kgNote}>{t("kgOnAssign")}</div>
     </div>
   );
 }
