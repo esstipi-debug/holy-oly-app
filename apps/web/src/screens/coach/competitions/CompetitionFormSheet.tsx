@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { CompetitionInput } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 
@@ -20,6 +21,7 @@ export function CompetitionFormSheet({ open, onClose, initial, onSubmit }: {
   initial?: CompetitionInput;
   onSubmit: (input: CompetitionInput) => Promise<void>;
 }) {
+  const { t } = useTranslation(["coach", "common"]);
   const [name, setName] = useState(initial?.name ?? "");
   const [date, setDate] = useState(initial?.date ?? "");
   const [place, setPlace] = useState(initial?.place ?? "");
@@ -29,42 +31,42 @@ export function CompetitionFormSheet({ open, onClose, initial, onSubmit }: {
   const canSave = name.trim().length > 0 && /^\d{4}-\d{2}-\d{2}$/.test(date);
 
   async function save(): Promise<void> {
-    if (!canSave) { setError("Poné un nombre y una fecha."); return; }
+    if (!canSave) { setError(t("formNeedNameDate")); return; }
     setError(null); setBusy(true);
     try {
       await onSubmit({ name: name.trim(), date, place: place.trim() || undefined });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo guardar");
+      setError(e instanceof Error ? e.message : t("compSaveError"));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} ariaLabel={initial ? "Editar competencia" : "Nueva competencia"}>
+    <BottomSheet open={open} onClose={onClose} ariaLabel={initial ? t("formEdit") : t("formNew")}>
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>
-        {initial ? "Editar competencia" : "Nueva competencia"}
+        {initial ? t("formEdit") : t("formNew")}
       </div>
 
-      <label style={label} htmlFor="comp-name">Nombre</label>
-      <input id="comp-name" style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Nacional Absoluto" />
+      <label style={label} htmlFor="comp-name">{t("formName")}</label>
+      <input id="comp-name" style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("formNamePlaceholder")} />
 
-      <label style={label} htmlFor="comp-date">Fecha</label>
-      <input id="comp-date" type="date" aria-label="Fecha de la competencia" style={input} value={date} onChange={(e) => setDate(e.target.value)} />
+      <label style={label} htmlFor="comp-date">{t("formDate")}</label>
+      <input id="comp-date" type="date" aria-label={t("compDateLabel")} style={input} value={date} onChange={(e) => setDate(e.target.value)} />
 
-      <label style={label} htmlFor="comp-place">Lugar (opcional)</label>
-      <input id="comp-place" style={input} value={place} onChange={(e) => setPlace(e.target.value)} placeholder="Santiago" />
+      <label style={label} htmlFor="comp-place">{t("formPlace")}</label>
+      <input id="comp-place" style={input} value={place} onChange={(e) => setPlace(e.target.value)} placeholder={t("formPlacePlaceholder")} />
 
       {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
       <button type="button" disabled={busy || !canSave} onClick={() => void save()}
         style={{ width: "100%", marginTop: 14, padding: 12, borderRadius: 12, border: 0, cursor: busy || !canSave ? "default" : "pointer",
           background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 14, opacity: busy || !canSave ? 0.6 : 1 }}>
-        {busy ? "..." : initial ? "Guardar cambios" : "Crear competencia"}
+        {busy ? "..." : initial ? t("formSaveChanges") : t("formCreate")}
       </button>
       <button type="button" onClick={onClose}
         style={{ width: "100%", marginTop: 10, padding: 10, border: 0, background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 12, cursor: "pointer" }}>
-        Cancelar
+        {t("common:cancel")}
       </button>
     </BottomSheet>
   );
