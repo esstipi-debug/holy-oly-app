@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { Macrocycle, MonitorSeries } from "@holy-oly/core";
 import { AcwrChart } from "../../../ui/charts/AcwrChart";
 import { LoadChart } from "../../../ui/charts/LoadChart";
@@ -16,10 +17,11 @@ type Props = {
  *  salió (depende de datos HRV/FC que los atletas no registran). NUNCA fluyen a una superficie del
  *  atleta. Empty-state honesto cuando aún no hay monitoreo. */
 export function MonitorTab({ series, macro, onPointClick }: Props) {
+  const { t } = useTranslation("coach");
   if (!series) {
     return (
       <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", margin: "16px 0" }}>
-        Este atleta aún sin datos de monitoreo. Cuando registre su carga, aparecerán acá.
+        {t("monitorEmpty")}
       </div>
     );
   }
