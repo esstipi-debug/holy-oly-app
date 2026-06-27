@@ -9,6 +9,7 @@
  * (the toggle only renders when `!API_ENABLED`).
  */
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { barKgForSexo, type SessionView } from "@holy-oly/core";
 import { Loading } from "../../ui/Loading";
 import { LocalMeClient } from "../../data/LocalMeClient";
@@ -33,6 +34,7 @@ export function AtletaPreview({
   sexo?: "M" | "F";
   client?: AthletePreviewClient;
 }) {
+  const { t } = useTranslation("coach");
   const me = useMemo<AthletePreviewClient>(() => client ?? new LocalMeClient(athleteId), [client, athleteId]);
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
   const [load, setLoad] = useState<Load>("loading");
@@ -49,26 +51,26 @@ export function AtletaPreview({
   const barKg = barKgForSexo(sexo ?? "M");
 
   if (load === "loading") {
-    return <Loading style={{ padding: 20 }}>Cargando vista del atleta…</Loading>;
+    return <Loading style={{ padding: 20 }}>{t("previewLoading")}</Loading>;
   }
   if (load === "error") {
-    return <div role="alert" style={{ padding: 20, color: "var(--wl-muted)" }}>No se pudo cargar la vista del atleta.</div>;
+    return <div role="alert" style={{ padding: 20, color: "var(--wl-muted)" }}>{t("previewError")}</div>;
   }
   if (!sessions || sessions.length === 0) {
     return (
       <div className="wls" data-testid="atleta-preview">
-        <p className="wls__sectiontitle">Vista del atleta</p>
-        <p className="wls__hint">Sin sesión esta semana — el atleta vería su estado vacío. Asigná o ajustá el plan.</p>
+        <p className="wls__sectiontitle">{t("previewTitle")}</p>
+        <p className="wls__hint">{t("previewEmpty")}</p>
       </div>
     );
   }
 
   return (
     <div className="wls" data-testid="atleta-preview">
-      <p className="wls__sectiontitle">Vista del atleta · semana {week}</p>
+      <p className="wls__sectiontitle">{t("previewTitleWeek", { week })}</p>
       {sessions.map((s) => (
         <section key={s.sessionIdx} className="ho-card">
-          <div className="ho-card__head"><span className="ho-card__t">Día {s.sessionIdx + 1}</span></div>
+          <div className="ho-card__head"><span className="ho-card__t">{t("previewDay", { n: s.sessionIdx + 1 })}</span></div>
           {s.exercises.map((e, i) => (
             <div key={`${s.sessionIdx}-${i}`} className="wls__row" style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
               <span className="wls__rowlabel">{e.movementName}</span>
@@ -80,7 +82,7 @@ export function AtletaPreview({
           ))}
         </section>
       ))}
-      <p style={{ fontSize: 12.5, color: "var(--wl-muted)", margin: "14px 0 0", textAlign: "center" }}>Esto es lo que recibe tu atleta, con los discos. ¿Lo querés para tu equipo?</p>
+      <p style={{ fontSize: 12.5, color: "var(--wl-muted)", margin: "14px 0 0", textAlign: "center" }}>{t("previewFooter")}</p>
       <LeadCaptureButton variant="primary" />
     </div>
   );

@@ -1,5 +1,6 @@
 import { type ComponentProps } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { Competencia, Macrocycle, Plan, SessionLog } from "@holy-oly/core";
 import { Section } from "../../../ui/Section";
 import { PlanCalendar } from "../calendar/PlanCalendar";
@@ -39,25 +40,26 @@ export function PlanTab({
   today, sexo, loadHeat, loadWeek, onRmsChange, rmsStamp,
 }: Props) {
   const navigate = useNavigate();
+  const { t } = useTranslation("coach");
   return (
     <div style={{ display: "grid", gap: 10 }}>
       {/* Sin macro asignado: cerrar el lazo de onboarding. Los RM se cargan al asignar un macro
           (AssignSheet en el catálogo), no en el drill-down → CTA directo a /coach/macros. */}
       {!macro && (
         <div style={{ padding: "16px 14px", borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)", textAlign: "center" }}>
-          <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, color: "var(--wl-text)" }}>Todavía sin macro asignado</div>
+          <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, color: "var(--wl-text)" }}>{t("noMacro")}</div>
           <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 6, lineHeight: 1.5 }}>
-            Asignale un macrociclo para cargar sus RM y armar el plan.
+            {t("noMacroSub")}
           </div>
           <button type="button" onClick={() => navigate(`/coach/macros?atleta=${encodeURIComponent(athleteId)}`)}
             style={{ marginTop: 12, padding: "10px 16px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 13.5, cursor: "pointer" }}>
-            Asignar macro ›
+            {t("assignMacro")}
           </button>
         </div>
       )}
 
       {macro && (
-        <Section title="Calendario" eyebrow={`${maxWeek} semanas · HOY sem ${hoyWeek}`}>
+        <Section title={t("secCalendar")} eyebrow={t("secCalendarEyebrow", { weeks: maxWeek, hoy: hoyWeek })}>
           <PlanCalendar
             key={`cal-${rmsStamp}`}
             macro={macro}
@@ -75,13 +77,13 @@ export function PlanTab({
       )}
 
       {macro && (
-        <Section title="Sesiones">
+        <Section title={t("secSessions")}>
           <SessionsSection key={`ses-${rmsStamp}`} athleteId={athleteId} hoyWeek={hoyWeek} totalWeeks={maxWeek} />
         </Section>
       )}
 
       {plan && (
-        <Section title="RM y referencias" collapsible defaultOpen={false}>
+        <Section title={t("secRm")} collapsible defaultOpen={false}>
           <RmSection athleteId={athleteId} plan={plan} today={today} onRmsChange={onRmsChange} />
         </Section>
       )}
@@ -89,7 +91,7 @@ export function PlanTab({
       {/* Vista Prilepin (preview): el motor genera la semana del lift desde los datos reales —
           read-only, coach-only (% + zonas), NO reemplaza el plan de recetas. Requiere plan (RM). */}
       {plan && (
-        <Section title="Prilepin · vista previa" collapsible defaultOpen={false}>
+        <Section title={t("secPrilepin")} collapsible defaultOpen={false}>
           <PrilepinSection athleteId={athleteId} hoyWeek={hoyWeek} sexo={sexo} />
         </Section>
       )}

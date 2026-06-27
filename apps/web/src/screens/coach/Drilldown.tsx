@@ -19,7 +19,7 @@ import { LocalMeClient } from "../../data/LocalMeClient";
 import { API_ENABLED } from "../../data/apiConfig";
 import { MonitorTab } from "./drilldown/MonitorTab";
 import { PlanTab } from "./drilldown/PlanTab";
-import { TABS, toTab, type TabKey } from "./drilldown/tabs";
+import { toTab, type TabKey } from "./drilldown/tabs";
 
 export function Drilldown() {
   const { id = "" } = useParams();
@@ -28,7 +28,7 @@ export function Drilldown() {
   // P1: la tab activa vive en `?tab=` (URL-as-state). Se deriva de la URL en cada render — sin estado
   // espejo — y se valida con toTab para que valores desconocidos caigan a Plan sin romper.
   const [params, setParams] = useSearchParams();
-  const { t } = useTranslation();
+  const { t } = useTranslation(["coach", "common"]);
   const tab = toTab(params.get("tab"));
   const setTab = (next: TabKey): void => {
     const p = new URLSearchParams(params);
@@ -74,16 +74,16 @@ export function Drilldown() {
     return () => { on = false; };
   }, [repo, id, reload]);
 
-  if (!loaded) return <Loading style={{ padding: 24 }}>Cargando…</Loading>;
+  if (!loaded) return <Loading style={{ padding: 24 }}>{t("common:loading")}</Loading>;
   if (error) {
     return (
       <div role="alert" style={{ padding: 24, color: "var(--wl-text)" }}>
-        No se pudo cargar el atleta.{" "}
+        {t("loadAthleteError")}{" "}
         <RetryButton onClick={() => setReload((r) => r + 1)} fontSize={12} />
       </div>
     );
   }
-  if (!athlete) return <div style={{ padding: 24, color: "var(--wl-text)" }}>Atleta no encontrado.</div>;
+  if (!athlete) return <div style={{ padding: 24, color: "var(--wl-text)" }}>{t("athleteNotFound")}</div>;
 
   // El macro asignado se deriva del PLAN (su `macroId` lo escribe savePlan en cada asignación), NO de
   // `athlete.macroId` — esa columna sólo la llena el seed, nunca el write path → un atleta real recién
@@ -92,7 +92,7 @@ export function Drilldown() {
   const macro: Macrocycle | undefined = plan?.macroId ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
   const metodo = ROSTER_META[athlete.id]?.metodo ?? "";
   const cell = rosterStatus(series);
-  const estadoLabel = cell === "alert" ? t("readiness.alert") : cell === "warn" ? t("readiness.warn") : cell === "ok" ? t("readiness.ok") : t("readiness.none");
+  const estadoLabel = cell === "alert" ? t("common:readiness.alert") : cell === "warn" ? t("common:readiness.warn") : cell === "ok" ? t("common:readiness.ok") : t("common:readiness.none");
 
   const maxWeek = macro?.phaseProfile.at(-1)?.weeks[1] ?? 16;
   // Effective plan start date: real one once M5 sets it; until then anchor today to the current
@@ -120,13 +120,13 @@ export function Drilldown() {
       setSessionLog(await repo.getSessionLog(id)); // revert to the persisted truth
     }
   }
-  const compLabel = (c: Competencia): string => c.date ?? `sem ${c.week}`;
+  const compLabel = (c: Competencia): string => c.date ?? t("compWeekLabel", { week: c.week });
   const compSummary =
     comps.length === 0
-      ? "Sin competencia asignada"
+      ? t("compSummaryNone")
       : comps.length === 1
-        ? `${comps[0]!.name} · ${compLabel(comps[0]!)}`
-        : `${comps.length} competencias · ${[...comps].sort((a, b) => a.week - b.week).map(compLabel).join(", ")}`;
+        ? t("compSummaryOne", { name: comps[0]!.name, label: compLabel(comps[0]!) })
+        : t("compSummaryMany", { count: comps.length, list: [...comps].sort((a, b) => a.week - b.week).map(compLabel).join(", ") });
 
   // Monitor sólo tiene datos para atletas seed (no hay writer de MonitorSeries en runtime); para un
   // atleta real `series` es undefined → ocultamos la tab Monitor y mostramos Plan directo, sin un tab
@@ -136,7 +136,7 @@ export function Drilldown() {
 
   return (
     <div style={{ padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)", minHeight: "100vh", maxWidth: 390, margin: "0 auto", position: "relative" }}>
-      <BackButton ariaLabel="Volver a Atletas" onClick={() => navigate("/coach")} style={{ marginBottom: 5 }} />
+      <BackButton ariaLabel={t("backToAthletes")} onClick={() => navigate("/coach")} style={{ marginBottom: 5 }} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
         <div>
           <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 22, lineHeight: 1 }}>{athlete.nombre}</div>
@@ -151,17 +151,17 @@ export function Drilldown() {
 
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Competencia{comps.length > 1 ? "s" : ""} objetivo</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)" }}>{t("compTarget", { count: comps.length })}</div>
           <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: "var(--wl-text)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{compSummary}</div>
         </div>
         <button type="button" onClick={() => setCompOpen(true)}
-          style={{ flex: "0 0 auto", padding: "7px 14px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Asignar</button>
+          style={{ flex: "0 0 auto", padding: "7px 14px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{t("assign")}</button>
       </div>
 
       {!API_ENABLED && (
         <SegmentedToggle
-          ariaLabel="Ver como"
-          options={[["coach", "Coach"], ["atleta", "Atleta"]] as const}
+          ariaLabel={t("viewAs")}
+          options={[["coach", t("viewAsCoach")], ["atleta", t("viewAsAthlete")]] as const}
           value={asAthlete ? "atleta" : "coach"}
           onChange={(v) => setAsAthlete(v === "atleta")}
           size="lg"
@@ -182,7 +182,7 @@ export function Drilldown() {
               un tab strip con una tab que no puede poblarse. zIndex 10 < BottomNav (20). */}
           {showMonitor && (
             <div style={{ position: "sticky", top: 0, zIndex: 10, margin: "12px -13px 0", padding: "8px 13px", background: "var(--wl-bg)", borderBottom: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
-              <SegmentedToggle ariaLabel="Sección del atleta" options={TABS} value={effectiveTab} onChange={setTab} size="lg" />
+              <SegmentedToggle ariaLabel={t("athleteSection")} options={[["plan", t("tabPlan")], ["monitor", t("tabMonitor")]] as const} value={effectiveTab} onChange={setTab} size="lg" />
             </div>
           )}
 
