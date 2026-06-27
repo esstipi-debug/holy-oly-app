@@ -1,0 +1,35 @@
+name: Deploy (Render)
+
+# Continuous deploy: every push to `main` (i.e. every merged PR) triggers a Render
+# deploy of the latest commit via a Render Deploy Hook. This makes deploys reliable
+# from the repo side, independent of Render's own GitHub auto-deploy toggle.
+#
+# ONE-TIME SETUP (repo owner): in Render → service `holy-oly` → Settings → Deploy Hook,
+# copy the hook URL, then add it in GitHub → repo Settings → Secrets and variables →
+# Actions → New repository secret:  name = RENDER_DEPLOY_HOOK_URL,  value = <hook URL>.
+# Until that secret exists this job is a harmless no-op (it warns and succeeds).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Never run two deploys at once; let an in-flight one finish (Render deploys latest commit).
+concurrency:
+  group: render-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning title=Render deploy skipped::RENDER_DEPLOY_HOOK_URL secret not set. Add it in repo Settings → Secrets to enable auto-deploy."
+            exit 0
+          fi
+          code=$(curl -fsS -o /dev/null -w '%{http_code}' -X POST "$HOOK")
+          echo "Render deploy hook responded: HTTP $code"
