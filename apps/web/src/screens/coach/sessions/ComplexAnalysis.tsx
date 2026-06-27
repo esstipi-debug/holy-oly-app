@@ -1,17 +1,15 @@
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import {
   isComplexId, getComplex, complexLoads, complexComplexity, complexPctCeiling,
-  complexWeakRmRef, complexWeakRmKg, type RM, type RmRef,
+  complexWeakRmRef, complexWeakRmKg, type RM,
 } from "@holy-oly/core";
 import { DiscRow } from "../../../ui/Disc";
+import { useRmLabels } from "../rm/RmEditSheet";
 
 /** Análisis de carga neural de un complejo (COACH-ONLY): lo que el core ya computa pero hasta hoy
  *  no se veía. SNC/axial/metabólica + complejidad técnica + tope % programable + eslabón débil.
  *  Sólo aparece cuando el movimiento es un `cx.*` real; cualquier otro id → null (oculto honesto). */
-
-const RM_LABEL: Record<RmRef, string> = {
-  arranque: "Arranque", envion: "Envión", sentadilla: "Sentadilla", frente: "Frente", none: "—",
-};
 
 const wrap: CSSProperties = {
   marginTop: 6, padding: "6px 8px", borderRadius: 8,
@@ -31,6 +29,8 @@ function Metric({ name, value }: { name: string; value: number | string }) {
 }
 
 export function ComplexAnalysis({ movementId, rms }: { movementId: string; rms?: RM }) {
+  const { t } = useTranslation("coach");
+  const RM_LABELS = useRmLabels();
   if (!isComplexId(movementId)) return null;
   const c = getComplex(movementId);
   if (!c) return null;
@@ -42,21 +42,21 @@ export function ComplexAnalysis({ movementId, rms }: { movementId: string; rms?:
   const weakKg = rms ? complexWeakRmKg(c, rms) : undefined;
 
   return (
-    <div style={wrap} aria-label={`análisis del complejo ${c.name}`}>
+    <div style={wrap} aria-label={t("caAria", { name: c.name })}>
       <div style={row}>
-        <span style={{ ...label, color: "var(--wl-accent)" }}>Carga neural</span>
-        <Metric name="SNC" value={`${loads.snc}/10`} />
-        <Metric name="Axial" value={`${loads.axial}/10`} />
-        <Metric name="Metab" value={`${loads.metabolica}/10`} />
+        <span style={{ ...label, color: "var(--wl-accent)" }}>{t("caNeural")}</span>
+        <Metric name={t("caSnc")} value={`${loads.snc}/10`} />
+        <Metric name={t("caAxial")} value={`${loads.axial}/10`} />
+        <Metric name={t("caMetab")} value={`${loads.metabolica}/10`} />
       </div>
       <div style={{ ...row, marginTop: 4 }}>
-        <Metric name="Complej" value={`${cx}/12`} />
-        <Metric name="Tope" value={`${ceiling}%`} />
+        <Metric name={t("caComplex")} value={`${cx}/12`} />
+        <Metric name={t("caCeiling")} value={`${ceiling}%`} />
       </div>
       {weakRef !== "none" && (
         <div style={{ ...row, marginTop: 4, alignItems: "center" }}>
-          <span style={label}>Eslabón débil</span>
-          <span style={val}>{RM_LABEL[weakRef]}</span>
+          <span style={label}>{t("caWeakLink")}</span>
+          <span style={val}>{RM_LABELS[weakRef]}</span>
           {weakKg != null && (
             <>
               <span style={val}>{weakKg} kg</span>
