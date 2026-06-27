@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { CycleData, CycleShare, CycleState } from "@holy-oly/core";
 import { CYCLE_LEN_MAX, CYCLE_LEN_MIN, CYCLE_HORIZON_CYCLES } from "@holy-oly/core";
@@ -7,16 +8,8 @@ import { RetryButton } from "../../ui/RetryButton";
 import { SegmentedTabs } from "../../ui/SegmentedTabs";
 import { Loading } from "../../ui/Loading";
 
-const SHARE_OPTS: Array<[CycleShare, string, string]> = [
-  ["none", "Nada", "El coach no ve nada del ciclo."],
-  ["min", "Mínimo", "El coach sólo sabe que registrás (fiabilidad y salud) — sin detalle."],
-  ["full", "Contexto", "Además ve si HOY estás en ventana lútea. Nunca fecha, fase ni síntomas."],
-];
-const STATE_OPTS: Array<[CycleState, string]> = [
-  ["regular", "Regular"],
-  ["unreliable", "Irregular"],
-  ["amenorrhea", "Sin período"],
-];
+const SHARE_VALUES: CycleShare[] = ["none", "min", "full"];
+const STATE_VALUES: CycleState[] = ["regular", "unreliable", "amenorrhea"];
 
 const validLen = (s: string): boolean => {
   if (s === "") return true; // opcional
@@ -35,6 +28,7 @@ const pastHorizon = (startIso: string, lenDays: number): boolean => {
  *  Recién tras consentir aparece el registro. Compartir con el coach es aparte y SIEMPRE redactado.
  *  Paleta neutra (jamás semáforo verde/amarillo/rojo del estado del ciclo). */
 export function CicloSection({ client = meClient }: { client?: MeClient }) {
+  const { t } = useTranslation(["atleta", "common"]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   // Female-only (owner 2026-06-14): un hombre JAMÁS ve la sección del ciclo. null = aún cargando.
@@ -147,24 +141,40 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
   };
   const noteStyle = { fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", lineHeight: 1.5, marginTop: 6 };
 
+  const shareLabel: Record<CycleShare, string> = {
+    none: t("cicShareNoneLabel"),
+    min: t("cicShareMinLabel"),
+    full: t("cicShareFullLabel"),
+  };
+  const shareDesc: Record<CycleShare, string> = {
+    none: t("cicShareNoneDesc"),
+    min: t("cicShareMinDesc"),
+    full: t("cicShareFullDesc"),
+  };
+  const stateLabel: Record<CycleState, string> = {
+    regular: t("cicStateRegular"),
+    unreliable: t("cicStateUnreliable"),
+    amenorrhea: t("cicStateAmenorrhea"),
+  };
+  const SHARE_OPTS = SHARE_VALUES.map((v) => [v, shareLabel[v]] as const);
+  const STATE_OPTS = STATE_VALUES.map((v) => [v, stateLabel[v]] as const);
+
   return (
     <div className="ho-acct__group">
-      <div className="ho-acct__label">Ciclo · registro opcional</div>
+      <div className="ho-acct__label">{t("cicSectionLabel")}</div>
       <div className="ho-card">
         {loading ? (
-          <Loading style={noteStyle}>Cargando…</Loading>
+          <Loading style={noteStyle}>{t("common:loading")}</Loading>
         ) : loadError ? (
           <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>
-            No se pudo cargar tu registro.{" "}
+            {t("cicLoadError")}{" "}
             <RetryButton onClick={() => { setLoading(true); void load(); }} fontSize={10.5} />
           </div>
         ) : !consented ? (
           // ── Gate de activación (PR-L2): el módulo no existe para la atleta hasta que opta. ──
           <>
             <div className="ho-acct__rowsub">
-              Tu ciclo es tuyo. Si lo activás, proyectás sus ventanas sobre TU calendario del plan y
-              podés —si querés— compartir con tu coach un contexto siempre redactado. No es un
-              semáforo ni cambia tu plan: sólo te da contexto.
+              {t("cicGateIntro")}
             </div>
             <label style={{ ...noteStyle, display: "flex", gap: 8, alignItems: "flex-start", marginTop: 12, cursor: "pointer" }}>
               <input
@@ -174,92 +184,93 @@ export function CicloSection({ client = meClient }: { client?: MeClient }) {
                 style={{ marginTop: 1, accentColor: "var(--wl-text)", flex: "0 0 auto" }}
               />
               <span>
-                Entiendo que esto no reemplaza el consejo de un profesional de la salud. Más detalle en la{" "}
-                <Link to="/privacidad" style={{ color: "inherit" }}>política de privacidad</Link>.
+                <Trans
+                  t={t}
+                  i18nKey="cicAckLabel"
+                  components={{ privacy: <Link to="/privacidad" style={{ color: "inherit" }} /> }}
+                />
               </span>
             </label>
             {activateError && (
-              <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>No se pudo activar. Reintentá.</div>
+              <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>{t("cicActivateError")}</div>
             )}
             <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 12 }}
               disabled={!ack || activating} onClick={() => void activate()}>
-              {activating ? "Activando…" : "Activar registro"}
+              {activating ? t("cicActivating") : t("cicActivate")}
             </button>
           </>
         ) : (
           // ── Registro (tras consentir): compartir + estado + fechas + revocar. ──
           <>
             <div className="ho-acct__rowsub">
-              Tu ciclo es tuyo. Registrarlo proyecta sus ventanas sobre TU calendario del plan;
-              compartir con tu coach es aparte y siempre va redactado.
+              {t("cicRegistryIntro")}
             </div>
 
-            <div style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Compartir con el coach</div>
+            <div style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>{t("cicShareHeading")}</div>
             <SegmentedTabs
-              ariaLabel="Compartir con el coach"
-              options={SHARE_OPTS.map((o) => [o[0], o[1]] as const)}
+              ariaLabel={t("cicShareHeading")}
+              options={SHARE_OPTS}
               value={share}
               onChange={(v) => { setShare(v); setSaved(false); }}
               style={{ marginTop: 6 }}
             />
-            <div style={noteStyle}>{SHARE_OPTS.find(([v]) => v === share)![2]}</div>
+            <div style={noteStyle}>{shareDesc[share]}</div>
 
-            <div style={{ marginTop: 12, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>Mi ciclo</div>
+            <div style={{ marginTop: 12, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--wl-muted)" }}>{t("cicStateHeading")}</div>
             <SegmentedTabs
-              ariaLabel="Mi ciclo"
+              ariaLabel={t("cicStateHeading")}
               options={STATE_OPTS}
               value={state}
               onChange={(v) => { setState(v); setSaved(false); }}
               style={{ marginTop: 6 }}
             />
             {state === "unreliable" && (
-              <div style={noteStyle}>Con ciclo irregular no proyectamos ventanas (sería precisión falsa). El registro igual aporta contexto.</div>
+              <div style={noteStyle}>{t("cicStateUnreliableNote")}</div>
             )}
             {state === "amenorrhea" && (
-              <div style={noteStyle}>Sin período hace meses: conviene conversarlo con un profesional de la salud. No es un logro deportivo.</div>
+              <div style={noteStyle}>{t("cicStateAmenorrheaNote")}</div>
             )}
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
               <label style={{ display: "grid", gap: 4, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>
-                Inicio del último período
+                {t("cicStartLabel")}
                 <input type="date" value={start} onChange={(e) => { setStart(e.target.value); setSaved(false); }} style={inputStyle} />
               </label>
               <label style={{ display: "grid", gap: 4, fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>
-                Duración típica (días, {CYCLE_LEN_MIN}–{CYCLE_LEN_MAX})
+                {t("cicLenLabel", { min: CYCLE_LEN_MIN, max: CYCLE_LEN_MAX })}
                 <input type="text" inputMode="numeric" value={len}
                   aria-invalid={!validLen(len) || undefined}
                   aria-describedby={!validLen(len) ? "ciclo-len-error" : undefined}
                   onChange={(e) => { setLen(e.target.value); setSaved(false); }} style={inputStyle} />
                 {!validLen(len) && (
                   <span id="ciclo-len-error" role="alert" style={{ fontSize: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)" }}>
-                    Debe ser un entero entre {CYCLE_LEN_MIN} y {CYCLE_LEN_MAX}.
+                    {t("cicLenError", { min: CYCLE_LEN_MIN, max: CYCLE_LEN_MAX })}
                   </span>
                 )}
               </label>
             </div>
             {state === "regular" && start !== "" && len !== "" && validLen(len) && pastHorizon(start, Number(len)) && (
               <div style={noteStyle}>
-                Tu fecha de inicio tiene más de {CYCLE_HORIZON_CYCLES} ciclos — actualizala para que la
-                proyección vuelva a tu calendario.
+                {t("cicHorizonNote", { count: CYCLE_HORIZON_CYCLES })}
               </div>
             )}
 
             {saveError && (
-              <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>No se pudo guardar. Reintentá.</div>
+              <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>{t("cicSaveError")}</div>
             )}
             <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 12 }}
               disabled={!canSave} onClick={() => void save()}>
-              {saving ? "Guardando…" : saved ? "Guardado ✓" : "Guardar"}
+              {saving ? t("common:saving") : saved ? t("cicSaved") : t("common:save")}
             </button>
 
             <button type="button" className="wl-btn wl-btn--ghost" style={{ width: "100%", marginTop: 10 }}
               disabled={revoking} onClick={() => void revoke()}>
-              {revoking ? "Desactivando…" : "Desactivar registro del ciclo"}
+              {revoking ? t("cicRevoking") : t("cicRevoke")}
             </button>
             {revokeError && (
-              <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>No se pudo desactivar. Reintentá.</div>
+              <div role="alert" style={{ ...noteStyle, color: "var(--wl-danger)" }}>{t("cicRevokeError")}</div>
             )}
-            <div style={noteStyle}>Desactivar borra tu registro del ciclo y tu coach deja de ver cualquier contexto.</div>
+            <div style={noteStyle}>{t("cicRevokeNote")}</div>
           </>
         )}
       </div>

@@ -24,5 +24,17 @@
   "wsAdjustSet": "ajustá serie {index}",
   "wsShowDone": "{count, plural, one {ver # hecha} other {ver # hechas}}",
   "vicNoSetsMarked": " — sin series marcadas. Cuando marqués tus series, las celebramos.",
-  "celRadarEmpty": "Registrá tu día a día y acá vas a ver tu bienestar de hoy vs tu promedio."
+  "celRadarEmpty": "Registrá tu día a día y acá vas a ver tu bienestar de hoy vs tu promedio.",
+  "cicGateIntro": "Tu ciclo es tuyo. Si lo activás, proyectás sus ventanas sobre TU calendario del plan y podés —si querés— compartir con tu coach un contexto siempre redactado. No es un semáforo ni cambia tu plan: sólo te da contexto.",
+  "cicActivateError": "No se pudo activar. Reintentá.",
+  "cicShareMinDesc": "El coach sólo sabe que registrás (fiabilidad y salud) — sin detalle.",
+  "cicHorizonNote": "Tu fecha de inicio tiene más de {count, plural, one {# ciclo} other {# ciclos}} — actualizala para que la proyección vuelva a tu calendario.",
+  "cicSaveError": "No se pudo guardar. Reintentá.",
+  "cicRevokeError": "No se pudo desactivar. Reintentá.",
+  "ccarEmpty": "Registrá tu ciclo en <b>Cuenta</b> (regular + fecha del último período + duración) para verlo graficado acá.",
+  "progLoadError": "No se pudo cargar tu progreso. Probá de nuevo más tarde.",
+  "progExplainRecuperacionSirve": "Leer cómo venís recuperando, más allá de cómo entrenaste.",
+  "progExplainBienestarSirve": "Ver cómo te venís sintiendo, más allá de los números fisiológicos.",
+  "progNoDataBody": "Cuando registrés HRV, FC y carga, tus tendencias aparecen acá — con el contexto de cómo leer cada gráfico.",
+  "padPlanWeekNote": "Semana {week} del plan — tus kg salen de tus marcas actuales."
 }

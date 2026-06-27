@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { Macrocycle, SessionView } from "@holy-oly/core";
 import { barKgForSexo, dnaForFamily } from "@holy-oly/core";
 import { DiscRow } from "../../ui/Disc";
@@ -33,6 +34,7 @@ export function PhaseAtletaDetail({ phase, macro, client, sexo, currentWeek }: {
   sexo?: "M" | "F";
   currentWeek: number;
 }) {
+  const { t } = useTranslation(["atleta", "common"]);
   const dna = macro ? dnaForFamily(macro.family) : undefined;
   const groups = dna ? signatureGroups(dna) : [];
   const excluded = dna ? excludedNames(dna) : [];
@@ -61,13 +63,13 @@ export function PhaseAtletaDetail({ phase, macro, client, sexo, currentWeek }: {
 
   return (
     <div className="ho-plan__phasedetail wl-daydetail-in">
-      <div className="ho-plan__detlabel">Sobre esta fase</div>
+      <div className="ho-plan__detlabel">{t("padAboutPhase")}</div>
 
       {dna != null && groups.length > 0 && (
         <div style={{ marginBottom: 12 }}>
           {/* El `dna.character` es léxico de COACH (espejo del rulebook §Escuelas) — NO va en la
               superficie del atleta (El Carnicero §1, lente). Los chips de abajo ya comunican el método. */}
-          <div className="ho-plan__deth">Qué vas a trabajar</div>
+          <div className="ho-plan__deth">{t("padWhatYouWillWork")}</div>
           {groups.map((g) => (
             <div key={g.slot} style={{ display: "flex", flexWrap: "wrap", gap: 5, alignItems: "baseline", marginTop: 5 }}>
               <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", minWidth: 80 }}>{g.label}</span>
@@ -76,7 +78,7 @@ export function PhaseAtletaDetail({ phase, macro, client, sexo, currentWeek }: {
           ))}
           {excluded.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, alignItems: "baseline", marginTop: 8 }}>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", minWidth: 80 }}>Deja fuera</span>
+              <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", minWidth: 80 }}>{t("padLeavesOut")}</span>
               {excluded.map((n) => <span key={n} className="ho-plan__chip ho-plan__chip--out">{n}</span>)}
             </div>
           )}
@@ -85,18 +87,18 @@ export function PhaseAtletaDetail({ phase, macro, client, sexo, currentWeek }: {
 
       {client != null && !loadedEmpty && (
         <div style={{ marginBottom: 12 }}>
-          <div className="ho-plan__deth">Cómo se ve un entreno típico</div>
+          <div className="ho-plan__deth">{t("padTypicalTrainingLook")}</div>
           {sessErr ? (
             <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 4 }}>
-              No se pudo cargar la semana. <button type="button" onClick={() => setTries((t) => t + 1)} style={retryStyle}>Reintentar</button>
+              {t("padWeekLoadError")} <button type="button" onClick={() => setTries((t) => t + 1)} style={retryStyle}>{t("common:retry")}</button>
             </div>
           ) : sessions === null ? (
-            <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 4 }}>Cargando sesiones…</div>
+            <div role="status" aria-busy="true" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 4 }}>{t("padLoadingSessions")}</div>
           ) : (
             <>
               {sessions.map((s) => (
                 <div key={s.sessionIdx} style={{ marginTop: 7 }}>
-                  <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>Día {s.sessionIdx + 1}</div>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>{t("padDayN", { n: s.sessionIdx + 1 })}</div>
                   {s.exercises.map((e, i) => (
                     <div key={`${e.movementName}-${i}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 0", borderTop: i === 0 ? "none" : "1px solid color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -115,7 +117,7 @@ export function PhaseAtletaDetail({ phase, macro, client, sexo, currentWeek }: {
                 </div>
               ))}
               <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", marginTop: 7, lineHeight: 1.5 }}>
-                Semana {phase.from} del plan — tus kg salen de tus marcas actuales.
+                {t("padPlanWeekNote", { week: phase.from })}
               </div>
             </>
           )}
@@ -123,18 +125,17 @@ export function PhaseAtletaDetail({ phase, macro, client, sexo, currentWeek }: {
       )}
 
       <button type="button" onClick={() => setShowWhy((v) => !v)} style={whyStyle} aria-expanded={showWhy}>
-        qué significa {phase.imrLo}–{phase.imrHi}% de tus marcas
+        {t("padWhatItMeans", { lo: phase.imrLo, hi: phase.imrHi })}
       </button>
       {showWhy && (
         <div role="status" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 5, lineHeight: 1.55 }}>
-          Es el porcentaje de tus marcas (RM) que mueven las barras en esta fase. Lo calcula tu coach sobre tus RMs registrados.
-          La banda es el rango que el plan espera acá; si tu entrenamiento cae afuera, tu coach lo evalúa.
+          {t("padWhatItMeansExplain")}
         </div>
       )}
 
       {inPhase && (
         <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 10 }}>
-          Estás en la semana {currentWeek} de esta fase{left > 0 ? ` — quedan ${left}` : " — última semana"}.
+          {t("padInPhaseWeek", { week: currentWeek, left })}
         </div>
       )}
     </div>
