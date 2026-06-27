@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import { getMovement, type WarmupSet } from "@holy-oly/core";
 import { ExerciseHero } from "./ExerciseHero";
 import { WarmupSection } from "./WarmupSection";
@@ -29,6 +30,7 @@ function ExerciseCard({
   onPatchSet: (setIdx: number, p: Partial<SetRow>) => void;
   onSubstitute: () => void; onMovementNotDone: () => void;
 }) {
+  const { t } = useTranslation("atleta");
   const nDone = r.series.filter((s) => s.done).length;
   const all = isComplete(r);
   const substituted = r.movementId !== r.prescribedMovementId;
@@ -64,8 +66,8 @@ function ExerciseCard({
             onCollapse={() => onOpen(-1)}
           />
 
-          {substituted && <div className="et-ex__prescr">prescripto: {getMovement(r.prescribedMovementId)?.name ?? r.prescribedMovementId}</div>}
-          {r.notes && !substituted && <div className="et-coach"><span className="et-coach__tag">Coach</span>{r.notes}</div>}
+          {substituted && <div className="et-ex__prescr">{t("saPrescribed")}: {getMovement(r.prescribedMovementId)?.name ?? r.prescribedMovementId}</div>}
+          {r.notes && !substituted && <div className="et-coach"><span className="et-coach__tag">{t("saCoachTag")}</span>{r.notes}</div>}
 
           {hasWarmup && <WarmupSection sets={r.warmup} barKg={barKg} doneSet={warmSet} onToggle={toggleWarm} />}
 
@@ -78,18 +80,18 @@ function ExerciseCard({
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="4.5" y="11" width="15" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
                 </span>
                 <div className="et-locked__txt">
-                  <div className="et-locked__t">Series de trabajo</div>
-                  <div className="et-locked__s">Calentá primero — prepará el cuerpo para el peso fuerte.</div>
+                  <div className="et-locked__t">{t("saWorkSets")}</div>
+                  <div className="et-locked__s">{t("saWarmupFirst")}</div>
                 </div>
                 <span className="et-locked__count">{warmSet.size}/{r.warmup.length}</span>
               </div>
-              <button type="button" className="et-locked__skip" onClick={() => setSkipWarm(true)}>saltar calentamiento</button>
+              <button type="button" className="et-locked__skip" onClick={() => setSkipWarm(true)}>{t("saSkipWarmup")}</button>
             </div>
           )}
 
           <div className="et-ex__actions">
-            <button type="button" className="et-action" onClick={onSubstitute} aria-label={`cambiar movimiento de ${r.movementName}`}>⇄ cambiar</button>
-            <button type="button" className="et-action" onClick={onMovementNotDone}>no la hice (todo)</button>
+            <button type="button" className="et-action" onClick={onSubstitute} aria-label={t("saChangeMovementAria", { name: r.movementName })}>⇄ {t("saChange")}</button>
+            <button type="button" className="et-action" onClick={onMovementNotDone}>{t("saNotDoneAll")}</button>
           </div>
         </div>
       )}
@@ -104,6 +106,7 @@ export function SessionAccordion({
   onPatchSet: (setIdx: number, p: Partial<SetRow>) => void;
   onSubstitute: () => void; onMovementNotDone: () => void; onFinish: () => void;
 }) {
+  const { t } = useTranslation("atleta");
   const exDone = rows.filter(isComplete).length;
   const totalDone = rows.reduce((a, r) => a + r.series.filter((s) => s.done).length, 0);
   const totalSets = rows.reduce((a, r) => a + r.series.length, 0);
@@ -142,7 +145,7 @@ export function SessionAccordion({
 
   return (
     <div style={{ ["--et-glow" as string]: 0.15 } as CSSProperties}>
-      <div className="et-sublead">Tocá una serie para marcarla · ajustá con ✎</div>
+      <div className="et-sublead">{t("saSublead")}</div>
       <div className="et-ex-list">
         {rows.map((r, i) => (
           <ExerciseCard
@@ -152,7 +155,7 @@ export function SessionAccordion({
         ))}
       </div>
       <FinishButton onFinish={onFinish} busy={busy} glowing={nextIdx === -1} />
-      <div className="et-finish__meta">{exDone}/{rows.length} ejercicios · {totalDone}/{totalSets} series hechas</div>
+      <div className="et-finish__meta">{t("saFinishMeta", { exDone, exTotal: rows.length, setsDone: totalDone, setsTotal: totalSets })}</div>
     </div>
   );
 }

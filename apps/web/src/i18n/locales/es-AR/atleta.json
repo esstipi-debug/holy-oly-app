@@ -18,5 +18,11 @@
   "enBlockedRegister": "Completá el día anterior antes de registrar este.",
   "enAnularConfirm": "¿Anular este entreno? Queda marcado como saltado (sin volumen). Podés reactivarlo después.",
   "enBlockedAnular": "Completá el día anterior antes de anular este.",
-  "enLockedMsg": "Completá el día anterior para desbloquear este."
+  "enLockedMsg": "Completá el día anterior para desbloquear este.",
+  "saWarmupFirst": "Calentá primero — prepará el cuerpo para el peso fuerte.",
+  "saSublead": "Tocá una serie para marcarla · ajustá con ✎",
+  "wsAdjustSet": "ajustá serie {index}",
+  "wsShowDone": "{count, plural, one {ver # hecha} other {ver # hechas}}",
+  "vicNoSetsMarked": " — sin series marcadas. Cuando marqués tus series, las celebramos.",
+  "celRadarEmpty": "Registrá tu día a día y acá vas a ver tu bienestar de hoy vs tu promedio."
 }
