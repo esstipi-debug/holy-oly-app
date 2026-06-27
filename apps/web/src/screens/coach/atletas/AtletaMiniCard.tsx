@@ -7,15 +7,17 @@ import { LEGEND_NOISE } from "./legendNoise";
 /** Tendencia de readiness (Δ vs. semana previa, signo+valor): ▲ sube · ▼ baja · → estable.
  *  Sin dato (trend == null) → no se pinta (sin-dato honesto, nunca una flecha inventada). */
 function TrendChip({ trend }: { trend: number | undefined }) {
+  const { t } = useTranslation("roster");
   if (trend == null) return null;
   const dir = trend > 0 ? "up" : trend < 0 ? "down" : "flat";
   const glyph = dir === "up" ? "▲" : dir === "down" ? "▼" : "→";
   const color = dir === "up" ? "var(--ok)" : dir === "down" ? "var(--alert)" : "var(--wl-muted)";
   const mag = Math.abs(trend);
+  const dirLabel = t(dir === "up" ? "trendUp" : dir === "down" ? "trendDown" : "trendFlat");
   return (
     <span
-      aria-label={`tendencia ${dir === "up" ? "sube" : dir === "down" ? "baja" : "estable"} ${mag}`}
-      title={`Δ readiness ${trend > 0 ? "+" : ""}${trend} vs. semana previa`}
+      aria-label={t("trendAria", { dir: dirLabel, mag })}
+      title={t("trendTitle", { delta: `${trend > 0 ? "+" : ""}${trend}` })}
       style={{ display: "inline-flex", alignItems: "center", gap: 2, fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, color, lineHeight: 1 }}
     >
       <span style={{ fontSize: 9 }}>{glyph}</span>{mag > 0 ? mag : ""}
@@ -41,12 +43,12 @@ function HeatStrip({ history }: { history: CellState[] }) {
 /** Mini-card de atleta (estilo FUT): initials + readiness + nombre + heat-strip. Tap → drill-down.
  *  El color de la barra/initials sale del estado (STATUS); sin-dato → "—" (nunca un número inventado). */
 export function AtletaMiniCard({ row, onPick }: { row: RosterRow; onPick: (id: string) => void }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["roster", "common"]);
   const nd = row.cell === "none";
   const st = STATUS[row.cell];
   return (
     <button type="button" onClick={() => onPick(row.id)}
-      aria-label={`${row.nombre} · readiness ${nd ? "sin dato" : row.readiness}`}
+      aria-label={t("miniAria", { name: row.nombre, readiness: nd ? t("miniNoData") : row.readiness })}
       style={{
         position: "relative", textAlign: "left", borderRadius: 16, overflow: "hidden", padding: "12px 13px",
         cursor: "pointer", color: "var(--wl-text)",
@@ -74,7 +76,7 @@ export function AtletaMiniCard({ row, onPick }: { row: RosterRow; onPick: (id: s
             border: "1px solid color-mix(in srgb, var(--wl-accent) 50%, transparent)",
             color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase",
           }}>
-            <span aria-hidden="true">⚠</span> {t("missingRm")}
+            <span aria-hidden="true">⚠</span> {t("common:missingRm")}
           </span>
         </div>
       )}

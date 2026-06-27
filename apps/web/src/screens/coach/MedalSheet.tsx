@@ -1,12 +1,13 @@
 import { useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { Medal } from "@holy-oly/core";
 import { Medal as MedalIcon } from "../../ui/Medal";
 import { BottomSheet } from "../../ui/BottomSheet";
 
 const METALS = [
-  { k: "oro", name: "Oro", place: "1º" },
-  { k: "plata", name: "Plata", place: "2º" },
-  { k: "bronce", name: "Bronce", place: "3º" },
+  { k: "oro", commonKey: "medalGold", place: "1º" },
+  { k: "plata", commonKey: "medalSilver", place: "2º" },
+  { k: "bronce", commonKey: "medalBronze", place: "3º" },
 ] as const;
 
 const input: CSSProperties = {
@@ -33,6 +34,7 @@ export function MedalSheet({
   onClose: () => void;
   onSubmit: (m: Medal) => Promise<void>;
 }) {
+  const { t } = useTranslation(["roster", "common"]);
   const [metal, setMetal] = useState<Medal["medal"]>("oro");
   const [comp, setComp] = useState("");
   const [date, setDate] = useState(() => currentYearMonth()); // YYYY-MM de hoy (local)
@@ -48,20 +50,20 @@ export function MedalSheet({
     setBusy(true);
     try {
       const place = METALS.find((m) => m.k === metal)!.place;
-      await onSubmit({ comp: comp || "Competencia", date: date || currentYearMonth(), cat: cat || "—", medal: metal, sn: Number(sn) || 0, cj: Number(cj) || 0, place });
+      await onSubmit({ comp: comp || t("medalDefaultComp"), date: date || currentYearMonth(), cat: cat || "—", medal: metal, sn: Number(sn) || 0, cj: Number(cj) || 0, place });
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo guardar la medalla");
+      setError(e instanceof Error ? e.message : t("medalSaveError"));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} ariaLabel="Añadir medalla">
-      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Añadir medalla</div>
+    <BottomSheet open={open} onClose={onClose} ariaLabel={t("medalAdd")}>
+      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>{t("medalAdd")}</div>
 
-      <label style={label}>Medalla</label>
+      <label style={label}>{t("medalLabel")}</label>
       <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
         {METALS.map((m) => (
           <button key={m.k} type="button" onClick={() => setMetal(m.k)}
@@ -72,36 +74,36 @@ export function MedalSheet({
               color: "var(--wl-text)", fontFamily: "var(--mono)", fontSize: 11,
             }}>
             <MedalIcon metal={m.k} size={30} />
-            <span>{m.name}</span>
+            <span>{t(`common:${m.commonKey}`)}</span>
           </button>
         ))}
       </div>
 
-      <label style={label}>Competencia</label>
-      <input style={input} value={comp} onChange={(e) => setComp(e.target.value)} placeholder="Ej. Nacional Absoluto" />
+      <label style={label}>{t("medalComp")}</label>
+      <input style={input} value={comp} onChange={(e) => setComp(e.target.value)} placeholder={t("medalCompPlaceholder")} />
 
       <div style={{ display: "flex", gap: 10 }}>
-        <div style={{ flex: 1 }}><label style={label}>Fecha</label><input style={input} type="month" value={date} onChange={(e) => setDate(e.target.value)} /></div>
-        <div style={{ flex: 1 }}><label style={label}>Categoría (kg)</label><input style={input} value={cat} onChange={(e) => setCat(e.target.value)} placeholder="81" /></div>
+        <div style={{ flex: 1 }}><label style={label}>{t("medalDate")}</label><input style={input} type="month" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+        <div style={{ flex: 1 }}><label style={label}>{t("medalCat")}</label><input style={input} value={cat} onChange={(e) => setCat(e.target.value)} placeholder="81" /></div>
       </div>
       <div style={{ display: "flex", gap: 10 }}>
-        <div style={{ flex: 1 }}><label style={label}>Arranque (kg)</label><input style={input} type="number" inputMode="numeric" value={sn} onChange={(e) => setSn(e.target.value)} placeholder="0" /></div>
-        <div style={{ flex: 1 }}><label style={label}>Envión (kg)</label><input style={input} type="number" inputMode="numeric" value={cj} onChange={(e) => setCj(e.target.value)} placeholder="0" /></div>
+        <div style={{ flex: 1 }}><label style={label}>{t("medalSnatch")}</label><input style={input} type="number" inputMode="numeric" value={sn} onChange={(e) => setSn(e.target.value)} placeholder="0" /></div>
+        <div style={{ flex: 1 }}><label style={label}>{t("medalCj")}</label><input style={input} type="number" inputMode="numeric" value={cj} onChange={(e) => setCj(e.target.value)} placeholder="0" /></div>
       </div>
 
       <div style={{ marginTop: 14, fontFamily: "var(--wl-display)", fontSize: 14, color: "var(--wl-muted)" }}>
-        Total <b style={{ color: "var(--wl-text)", fontSize: 18 }}>{total}</b> kg
+        {t("medalTotal")} <b style={{ color: "var(--wl-text)", fontSize: 18 }}>{total}</b> kg
       </div>
       {error && <div role="alert" style={{ marginTop: 10, color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11 }}>{error}</div>}
 
       <button type="button" onClick={() => void save()} disabled={busy}
         style={{ width: "100%", marginTop: 14, padding: 12, borderRadius: 12, border: 0, cursor: busy ? "default" : "pointer",
           background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, opacity: busy ? 0.6 : 1 }}>
-        {busy ? "..." : "Guardar medalla"}
+        {busy ? "..." : t("medalSave")}
       </button>
       <button type="button" onClick={onClose}
         style={{ width: "100%", marginTop: 8, padding: 10, border: 0, background: "transparent", color: "var(--wl-muted)", fontFamily: "var(--mono)", fontSize: 12, cursor: "pointer" }}>
-        Cancelar
+        {t("common:cancel")}
       </button>
     </BottomSheet>
   );
