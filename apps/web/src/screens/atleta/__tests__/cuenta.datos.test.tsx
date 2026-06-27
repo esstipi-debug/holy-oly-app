@@ -88,7 +88,7 @@ describe("TusDatosSection (export y borrado D3/D6)", () => {
     // Primer click: NO borra — muestra la confirmación.
     fireEvent.click(await screen.findByRole("button", { name: "Eliminar mi cuenta" }));
     expect(deleteMyAccount).not.toHaveBeenCalled();
-    expect(screen.getByText(/¿Segura\? Esto borra todo y no se puede deshacer\./)).toBeInTheDocument();
+    expect(screen.getByText(/¿Eliminar definitivamente\? Esto borra todo y no se puede deshacer\./)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Sí, eliminar definitivamente" }));
     await waitFor(() => expect(deleteMyAccount).toHaveBeenCalledTimes(1));
@@ -114,7 +114,7 @@ describe("TusDatosSection (export y borrado D3/D6)", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Eliminar mi cuenta" }));
     fireEvent.click(screen.getByRole("button", { name: "Sí, eliminar definitivamente" }));
 
-    const err = await screen.findByText("No se pudo eliminar la cuenta. Probá de nuevo.");
+    const err = await screen.findByText("No se pudo eliminar la cuenta. Inténtalo de nuevo.");
     expect(err).toHaveAttribute("role", "alert");
     expect(screen.queryByText("LOGIN")).not.toBeInTheDocument();
   });

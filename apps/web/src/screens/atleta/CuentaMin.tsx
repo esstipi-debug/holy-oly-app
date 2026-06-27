@@ -25,6 +25,7 @@ const HO_SKINS: Array<{ id: string; nm: string; sw: [string, string, string] }> 
  *  (activo / pendiente / sin vínculo → form). En demo no hay vínculo real → card estática. */
 function VincularSection() {
   const { apiEnabled } = useAuth();
+  const { t } = useTranslation(["account", "common"]);
   const [code, setCode] = useState("");
   const [estado, setEstado] = useState<VinculoEstado | null>(null);
   const [coachNombre, setCoachNombre] = useState<string | null>(null);
@@ -60,7 +61,7 @@ function VincularSection() {
       const r = await vc.acceptCode(code.trim().toUpperCase());
       setEstado(r.estado);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo enviar");
+      setError(err instanceof Error ? err.message : t("sendError"));
     } finally {
       setBusy(false);
     }
@@ -69,13 +70,13 @@ function VincularSection() {
   if (!apiEnabled) {
     return (
       <div className="ho-acct__group">
-        <div className="ho-acct__label">Mi coach</div>
+        <div className="ho-acct__label">{t("myCoach")}</div>
         <div className="ho-card">
           <b style={{ fontFamily: "var(--wl-display)" }}>
             <span aria-hidden="true" style={{ display: "inline-block", width: 8, height: 8, borderRadius: 999, background: "var(--ok)", marginRight: 7 }} />
-            Vinculada a tu coach (demo)
+            {t("linkedDemo")}
           </b>
-          <div className="ho-acct__rowsub" style={{ marginTop: 4 }}>En la app real acá ves el estado del vínculo.</div>
+          <div className="ho-acct__rowsub" style={{ marginTop: 4 }}>{t("linkedDemoSub")}</div>
         </div>
       </div>
     );
@@ -83,13 +84,13 @@ function VincularSection() {
 
   return (
     <div className="ho-acct__group">
-      <div className="ho-acct__label">Mi coach</div>
+      <div className="ho-acct__label">{t("myCoach")}</div>
       {!loaded ? (
-        <div className="ho-card"><div className="ho-acct__rowsub">Cargando…</div></div>
+        <div className="ho-card"><div className="ho-acct__rowsub">{t("common:loading")}</div></div>
       ) : fetchFailed ? (
         <div className="ho-card">
           <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
-            No se pudo cargar tu vínculo.{" "}
+            {t("linkLoadError")}{" "}
             <RetryButton onClick={() => setReload((r) => r + 1)} />
           </div>
         </div>
@@ -97,28 +98,28 @@ function VincularSection() {
         <div className="ho-card">
           <b style={{ fontFamily: "var(--wl-display)" }}>
             <span aria-hidden="true" style={{ display: "inline-block", width: 8, height: 8, borderRadius: 999, background: "var(--ok)", marginRight: 7 }} />
-            Tu coach: {coachNombre}
+            {t("coachIs", { name: coachNombre })}
           </b>
-          <div className="ho-acct__rowsub" style={{ marginTop: 4 }}>Vínculo activo — tu coach ve tu entrenamiento.</div>
+          <div className="ho-acct__rowsub" style={{ marginTop: 4 }}>{t("linkActiveSub")}</div>
         </div>
       ) : estado === "pendiente" ? (
         <div className="ho-card">
-          <b style={{ fontFamily: "var(--wl-display)" }}>Solicitud enviada ✓</b>
-          <div className="ho-acct__rowsub" style={{ marginTop: 4 }}>Esperando confirmación de tu coach.</div>
+          <b style={{ fontFamily: "var(--wl-display)" }}>{t("requestSent")}</b>
+          <div className="ho-acct__rowsub" style={{ marginTop: 4 }}>{t("requestSentSub")}</div>
         </div>
       ) : (
         <form onSubmit={onSubmit} className="ho-card">
-          <div className="ho-acct__rowsub" style={{ marginBottom: 10 }}>Ingresá el código que te pasó tu coach. Cuando lo confirme, queda hecho el vínculo.</div>
+          <div className="ho-acct__rowsub" style={{ marginBottom: 10 }}>{t("enterCode")}</div>
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="CÓDIGO"
-            aria-label="Código de invitación"
+            placeholder={t("codePlaceholder")}
+            aria-label={t("codeLabel")}
             style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: "var(--wl-radius)", border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 18, letterSpacing: ".18em", textAlign: "center" }}
           />
           {error && <div role="alert" style={{ color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11, marginTop: 10 }}>{error}</div>}
           <button type="submit" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 12 }} disabled={busy || !code.trim()}>
-            {busy ? "..." : "Enviar solicitud"}
+            {busy ? "..." : t("sendRequest")}
           </button>
         </form>
       )}
@@ -130,6 +131,7 @@ function VincularSection() {
  *  endpoints reales (GET /me/export · DELETE /me/account). 100% API: en demo NO se muestra. */
 function TusDatosSection() {
   const { logout } = useAuth();
+  const { t } = useTranslation(["account", "common"]);
   const navigate = useNavigate();
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -152,7 +154,7 @@ function TusDatosSection() {
       a.remove();
       URL.revokeObjectURL(url);
     } catch {
-      setExportError("No se pudo exportar. Probá de nuevo.");
+      setExportError(t("exportError"));
     } finally {
       setExporting(false);
     }
@@ -167,29 +169,29 @@ function TusDatosSection() {
       await logout().catch(() => undefined);
       navigate("/login");
     } catch {
-      setDeleteError("No se pudo eliminar la cuenta. Probá de nuevo.");
+      setDeleteError(t("deleteError"));
       setDeleting(false);
     }
   }
 
   return (
     <div className="ho-acct__group">
-      <div className="ho-acct__label">Tus datos</div>
+      <div className="ho-acct__label">{t("yourData")}</div>
       <div className="ho-card">
-        <div className="ho-acct__rowsub" style={{ marginBottom: 10 }}>Todo lo tuyo es tuyo: bajalo cuando quieras o borralo para siempre.</div>
+        <div className="ho-acct__rowsub" style={{ marginBottom: 10 }}>{t("dataIntro")}</div>
         <button type="button" className="wl-btn wl-btn--ghost" style={{ width: "100%" }} disabled={exporting} onClick={() => void onExport()}>
-          {exporting ? "Exportando…" : "Exportar mis datos"}
+          {exporting ? t("exporting") : t("exportData")}
         </button>
         {exportError && <div role="alert" style={{ color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11, marginTop: 8 }}>{exportError}</div>}
 
         {!confirming ? (
           <button type="button" className="wl-btn wl-btn--ghost" style={{ width: "100%", marginTop: 10, color: "var(--wl-danger)" }} onClick={() => setConfirming(true)}>
-            Eliminar mi cuenta
+            {t("deleteAccount")}
           </button>
         ) : (
           <div style={{ marginTop: 10 }}>
             <div role="alert" style={{ color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11, lineHeight: 1.5 }}>
-              ¿Segura? Esto borra todo y no se puede deshacer.
+              {t("deleteConfirm")}
             </div>
             <button
               type="button"
@@ -198,10 +200,10 @@ function TusDatosSection() {
               disabled={deleting}
               onClick={() => void onDelete()}
             >
-              {deleting ? "Eliminando…" : "Sí, eliminar definitivamente"}
+              {deleting ? t("deleting") : t("deleteConfirmBtn")}
             </button>
             <button type="button" className="wl-btn wl-btn--ghost" style={{ width: "100%", marginTop: 8 }} disabled={deleting} onClick={() => setConfirming(false)}>
-              Cancelar
+              {t("common:cancel")}
             </button>
             {deleteError && <div role="alert" style={{ color: "var(--wl-danger)", fontFamily: "var(--mono)", fontSize: 11, marginTop: 8 }}>{deleteError}</div>}
           </div>
@@ -214,24 +216,24 @@ function TusDatosSection() {
 export function CuentaMin() {
   const { apiEnabled, user, logout } = useAuth();
   const { skin, setSkin, variant, setVariant } = useAtletaCtx();
-  const { t } = useTranslation();
+  const { t } = useTranslation(["account", "common"]);
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
   function onLogout(): void {
     setLogoutError(null);
-    logout().catch(() => setLogoutError("No se pudo cerrar la sesión. Probá de nuevo."));
+    logout().catch(() => setLogoutError(t("logoutError")));
   }
   return (
     <>
-      <div className="ho-greet"><div className="ho-greet__h">Cuenta</div><div className="ho-greet__s">tus datos son tuyos</div></div>
+      <div className="ho-greet"><div className="ho-greet__h">{t("title")}</div><div className="ho-greet__s">{t("subtitle")}</div></div>
 
       {apiEnabled && user && (
         <div className="ho-acct__group">
-          <div className="ho-acct__label">Tu cuenta</div>
+          <div className="ho-acct__label">{t("yourAccount")}</div>
           <div className="ho-card">
             {/* /auth/me no expone el nombre de la atleta todavía — el email ES la identidad de la cuenta. */}
-            <b style={{ fontFamily: "var(--wl-display)", overflowWrap: "anywhere" }}>{user.email ?? "Sin email"}</b>
-            <div className="ho-acct__rowsub" style={{ marginTop: 4 }}>Sesión activa · atleta</div>
+            <b style={{ fontFamily: "var(--wl-display)", overflowWrap: "anywhere" }}>{user.email ?? t("noEmail")}</b>
+            <div className="ho-acct__rowsub" style={{ marginTop: 4 }}>{t("sessionAtleta")}</div>
           </div>
         </div>
       )}
@@ -239,20 +241,20 @@ export function CuentaMin() {
       <VincularSection />
 
       <div className="ho-acct__group">
-        <div className="ho-acct__label">Check-in · interacción</div>
+        <div className="ho-acct__label">{t("checkin")}</div>
         <SegmentedTabs
-          ariaLabel="Check-in · interacción"
-          options={[["tap", "Toque"], ["dial", "Dial"]] as const}
+          ariaLabel={t("checkin")}
+          options={[["tap", t("checkinTap")], ["dial", t("checkinDial")]] as const}
           value={variant}
           onChange={setVariant}
         />
       </div>
 
       <div className="ho-acct__group">
-        <div className="ho-acct__label">Apariencia · skin</div>
+        <div className="ho-acct__label">{t("appearance")}</div>
         <div className="ho-skins">
           {HO_SKINS.map((s) => (
-            <button key={s.id} className={"ho-skin" + (skin === s.id ? " on" : "")} onClick={() => setSkin(s.id)} aria-label={`Skin ${s.nm}`}>
+            <button key={s.id} className={"ho-skin" + (skin === s.id ? " on" : "")} onClick={() => setSkin(s.id)} aria-label={t("skinAria", { nm: s.nm })}>
               <div className="ho-skin__sw">{s.sw.map((c, i) => <i key={i} style={{ background: c }} />)}</div>
               <div className="ho-skin__nm">{s.nm}</div>
             </button>
@@ -266,7 +268,7 @@ export function CuentaMin() {
 
       {apiEnabled && (
         <div className="ho-acct__group">
-          <button type="button" onClick={onLogout} className="wl-btn wl-btn--ghost" style={{ width: "100%", color: "var(--wl-danger)" }}>Cerrar sesión</button>
+          <button type="button" onClick={onLogout} className="wl-btn wl-btn--ghost" style={{ width: "100%", color: "var(--wl-danger)" }}>{t("common:logout")}</button>
           {logoutError && (
             <div role="alert" style={{ marginTop: 8, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>{logoutError}</div>
           )}
@@ -275,22 +277,22 @@ export function CuentaMin() {
 
       <div className="ho-acct__group" style={{ marginTop: 18 }}>
         <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 8 }}>
-          {t("language")}
+          {t("common:language")}
         </div>
         <LanguageToggle />
       </div>
 
       <div className="ho-acct__group" style={{ marginTop: 12 }}>
         <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 8 }}>
-          {t("movementNames")}
+          {t("common:movementNames")}
         </div>
         <MovementLangToggle />
       </div>
 
       <div style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", margin: "22px 0 4px", lineHeight: 1.5 }}>
-        <Link to="/privacidad" style={{ color: "inherit" }}>Privacidad</Link>
+        <Link to="/privacidad" style={{ color: "inherit" }}>{t("legalPrivacy")}</Link>
         {" · "}
-        <Link to="/terminos" style={{ color: "inherit" }}>Términos</Link>
+        <Link to="/terminos" style={{ color: "inherit" }}>{t("legalTerms")}</Link>
       </div>
       <div style={{ textAlign: "center", fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", margin: "0 0 4px", letterSpacing: ".04em" }}>
         HOLY OLY · smart training · zero burnout

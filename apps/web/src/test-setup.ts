@@ -5,4 +5,4 @@ import i18n from "./i18n";
 // `useSuspense` never suspends without a <Suspense> boundary in a bare `render()`. Tests are free
 // to `await i18n.changeLanguage(...)` to exercise other locales. New namespaces get added here.
 await i18n.changeLanguage("es-419");
-await i18n.loadNamespaces(["common", "auth", "charts"]);
+await i18n.loadNamespaces(["common", "auth", "charts", "account"]);

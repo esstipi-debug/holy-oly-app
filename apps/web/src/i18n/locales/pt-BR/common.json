@@ -19,6 +19,31 @@
   "medalGold": "Ouro",
   "medalSilver": "Prata",
   "medalBronze": "Bronze",
+  "nav": {
+    "atletas": "Atletas",
+    "macros": "Macrociclos",
+    "cuenta": "Conta",
+    "coachAria": "Navegação do treinador",
+    "hoy": "Hoje",
+    "progreso": "Meu progresso",
+    "myAccount": "Minha conta"
+  },
+  "errorPage": {
+    "crashTitle": "Algo quebrou",
+    "crashSub": "Recarregue ou volte ao início.",
+    "reload": "Recarregar",
+    "docTitleError": "Erro — Holy Oly",
+    "notFoundTitle": "Esta página não existe",
+    "notFoundSub": "O link pode estar errado ou a página pode ter sido movida.",
+    "docTitleNotFound": "Página não encontrada — Holy Oly"
+  },
+  "readiness": {
+    "alert": "Alerta",
+    "warn": "Atenção",
+    "ok": "OK",
+    "none": "Sem dados"
+  },
+  "missingRm": "Falta 1RM",
   "verifyEmail": {
     "title": "Verifique seu e-mail",
     "defaultSub": "Sem a verificação, você não consegue confirmar atletas no elenco.",

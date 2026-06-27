@@ -1,14 +1,16 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 /** 404 del sistema (W5/D7): catch-all del router. Hereda el skin neon que index.html fija en
  *  <html class="wl wl--neon"> — no necesita wrapper .wl propio. */
 export function NotFound() {
+  const { t } = useTranslation();
   useEffect(() => {
     const prev = document.title;
-    document.title = "Página no encontrada — Holy Oly";
+    document.title = t("errorPage.docTitleNotFound");
     return () => { document.title = prev; };
-  }, []);
+  }, [t]);
 
   return (
     <div style={{
@@ -17,10 +19,10 @@ export function NotFound() {
       gap: 10, padding: "0 24px", textAlign: "center",
     }}>
       <h1 style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 26, lineHeight: 1.15, margin: 0 }}>
-        Esta página no existe
+        {t("errorPage.notFoundTitle")}
       </h1>
       <p style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)", margin: 0, lineHeight: 1.6 }}>
-        Puede que el link esté mal escrito o que la página se haya movido.
+        {t("errorPage.notFoundSub")}
       </p>
       <Link
         to="/"
@@ -30,7 +32,7 @@ export function NotFound() {
           fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 14,
         }}
       >
-        Volver al inicio
+        {t("backToHome")}
       </Link>
     </div>
   );

@@ -1,5 +1,8 @@
 {
   "tryAgain": "Probá de nuevo.",
+  "errorPage": {
+    "crashSub": "Recargá o volvé al inicio."
+  },
   "verifyEmail": {
     "title": "Verificá tu email",
     "defaultSub": "Sin verificación no podés confirmar atletas en el roster.",
