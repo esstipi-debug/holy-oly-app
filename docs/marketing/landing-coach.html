@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title data-i18n="meta_title">Holy Oly — Periodización para coaches de levantamiento</title>
+<meta name="description" data-i18n-attr="content" data-i18n="meta_desc" content="Indica la fecha de la competencia y Holy Oly arma los ciclos para que tu atleta llegue en pico. Periodización automática, carga y estrés de cada atleta, todo tu equipo en un panel." />
+<meta name="theme-color" content="#0A0B0E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@600;700;800;900&family=Saira+Condensed:wght@600;700;800&family=Space+Mono:wght@400;700&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#0A0B0E; --surface:#11151A; --surface-2:#20262E; --hair:rgba(255,255,255,.08);
+  --text:#EEF2F6; --muted:#6B7480; --gold:#E9C46A; --teal:#2EE6A0; --danger:#ff3b46;
+  --display:'Saira',sans-serif; --cond:'Saira Condensed',sans-serif; --body:'Archivo',sans-serif; --mono:'Space Mono',ui-monospace,monospace;
+  --maxw:1120px; --ease-out:cubic-bezier(.2,.7,.3,1); --ease-spring:cubic-bezier(.34,1.56,.64,1);
+}
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0; background:var(--bg); color:var(--text); font-family:var(--body); line-height:1.55;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+a{ color:inherit; text-decoration:none; }
+.wrap{ width:100%; max-width:var(--maxw); margin:0 auto; padding:0 clamp(18px,4vw,40px); }
+.mono{ font-family:var(--mono); }
+.gold{ color:var(--gold); }
+.teal{ color:var(--teal); }
+.grad{ background:linear-gradient(135deg,#F8E7AE,#E9C46A 45%,#C49A41); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+/* ===== Header ===== */
+header{
+  position:sticky; top:0; z-index:50; backdrop-filter:blur(12px);
+  background:rgba(10,11,14,.72); border-bottom:1px solid var(--hair);
+}
+.nav{ display:flex; align-items:center; gap:16px; height:64px; }
+.brand{ display:flex; align-items:center; gap:10px; font-family:var(--display); font-weight:900; letter-spacing:.02em; font-size:18px; }
+.brand .mark{ width:34px; height:34px; flex:0 0 34px; filter:drop-shadow(0 2px 6px rgba(216,38,45,.35)); }
+.nav .spacer{ flex:1; }
+.langsw{ display:inline-flex; border:1px solid var(--hair); border-radius:999px; padding:3px; background:rgba(255,255,255,.03); }
+.langsw button{
+  font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--muted);
+  background:none; border:none; cursor:pointer; padding:5px 9px; border-radius:999px; transition:color .15s, background .15s;
+}
+.langsw button.active{ color:#1a1205; background:linear-gradient(180deg,#F8E7AE,#E9C46A); }
+.btn{
+  font-family:var(--display); font-weight:800; letter-spacing:.02em; cursor:pointer; border:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; text-align:center;
+  transition:transform .12s var(--ease-spring), box-shadow .2s, filter .2s;
+}
+.btn--primary{
+  color:#1a1205; background:linear-gradient(180deg,#F8E7AE,#E9C46A 55%,#C49A41);
+  border-radius:12px; padding:13px 22px; font-size:16px;
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset, 0 10px 26px -8px rgba(233,196,106,.55);
+}
+.btn--primary:hover{ filter:brightness(1.05); transform:translateY(-1px); }
+.btn--primary:active{ transform:scale(.97); }
+.btn--sm{ padding:9px 16px; font-size:14px; border-radius:10px; }
+.btn--ghost{
+  color:var(--text); background:rgba(255,255,255,.05); border:1px solid var(--hair);
+  border-radius:12px; padding:13px 22px; font-size:16px;
+}
+.btn--ghost:hover{ background:rgba(255,255,255,.09); }
+
+/* ===== Reveal ===== */
+.rv{ opacity:0; transform:translateY(22px); transition:opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+.rv.in{ opacity:1; transform:none; }
+@media (prefers-reduced-motion:reduce){ .rv{ opacity:1; transform:none; transition:none; } html{ scroll-behavior:auto; } }
+
+/* ===== Hero ===== */
+.hero{ position:relative; padding:clamp(48px,9vw,104px) 0 clamp(40px,7vw,80px); overflow:hidden; }
+.hero::before{
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(60% 50% at 78% 18%, rgba(216,38,45,.16), transparent 60%),
+    radial-gradient(50% 45% at 12% 8%, rgba(46,230,160,.08), transparent 60%);
+}
+.hero .wrap{ position:relative; z-index:1; display:grid; grid-template-columns:1.15fr .85fr; gap:clamp(24px,4vw,56px); align-items:center; }
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11.5px; font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--gold);
+  border:1px solid rgba(233,196,106,.3); border-radius:999px; padding:6px 12px; background:rgba(233,196,106,.06);
+}
+.eyebrow i{ width:6px; height:6px; border-radius:50%; background:var(--teal); box-shadow:0 0 8px var(--teal); }
+h1{
+  font-family:var(--display); font-weight:900; letter-spacing:-.02em; line-height:1.02;
+  font-size:clamp(34px,5.4vw,60px); margin:18px 0 0;
+}
+.lead{ color:#c3cad3; font-size:clamp(16px,1.6vw,19px); max-width:54ch; margin:18px 0 0; }
+.cta-row{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin-top:28px; }
+.cta-note{ color:var(--muted); font-size:13px; margin-top:14px; display:flex; align-items:center; gap:8px; }
+.cta-note b{ color:var(--teal); font-weight:700; }
+.hero-art{ position:relative; display:flex; align-items:center; justify-content:center; }
+.hero-art .disc-icon{ width:min(100%,420px); aspect-ratio:1; filter:drop-shadow(0 40px 80px -20px rgba(216,38,45,.5)); animation:floaty 7s ease-in-out infinite; }
+@keyframes floaty{ 0%,100%{ transform:translateY(0) rotate(0); } 50%{ transform:translateY(-14px) rotate(-1.2deg); } }
+@media (prefers-reduced-motion:reduce){ .hero-art .disc-icon{ animation:none; } }
+
+/* ===== Section scaffolding ===== */
+section{ padding:clamp(48px,8vw,92px) 0; position:relative; }
+.kicker{ font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--teal); }
+h2{ font-family:var(--display); font-weight:800; letter-spacing:-.015em; line-height:1.06; font-size:clamp(26px,3.6vw,40px); margin:10px 0 0; }
+.section-lead{ color:#aab2bc; font-size:clamp(15px,1.5vw,18px); max-width:60ch; margin:14px 0 0; }
+.section-head{ margin-bottom:clamp(28px,4vw,48px); }
+
+/* ===== Problem ===== */
+.problem{ background:linear-gradient(180deg,transparent, rgba(255,255,255,.015)); }
+.pains{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.pain{ border:1px solid var(--hair); border-radius:16px; padding:24px; background:var(--surface); }
+.pain .x{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:18px; background:rgba(255,59,70,.12); color:var(--danger); border:1px solid rgba(255,59,70,.22); }
+.pain h3{ font-family:var(--display); font-weight:800; font-size:19px; margin:16px 0 6px; }
+.pain p{ color:var(--muted); font-size:14.5px; margin:0; }
+
+/* ===== Pillars (bento) ===== */
+.bento{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.pillar{
+  position:relative; border:1px solid var(--hair); border-radius:20px; padding:26px; overflow:hidden;
+  background:radial-gradient(120% 90% at 0% 0%, rgba(255,255,255,.05), transparent 60%), var(--surface);
+  transition:transform .25s var(--ease-out), border-color .25s, box-shadow .25s;
+}
+.pillar:hover{ transform:translateY(-4px); border-color:rgba(233,196,106,.35); box-shadow:0 24px 48px -28px rgba(0,0,0,.8); }
+.pillar .ic{ width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; background:rgba(233,196,106,.12); border:1px solid rgba(233,196,106,.25); }
+.pillar h3{ font-family:var(--display); font-weight:800; font-size:21px; margin:18px 0 8px; letter-spacing:-.01em; }
+.pillar p{ color:#aab2bc; font-size:15px; margin:0; }
+.pillar p b{ color:var(--text); font-weight:700; }
+
+/* ===== How it looks (mockups) ===== */
+.shots{ display:grid; grid-template-columns:1.25fr 1fr; gap:18px; align-items:stretch; }
+.shot{ border:1px solid var(--hair); border-radius:20px; background:var(--surface); padding:20px; }
+.shot--side{ display:grid; gap:18px; }
+.shot__hd{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.shot__title{ font-family:var(--cond); font-weight:800; font-size:18px; text-transform:uppercase; letter-spacing:.04em; }
+.shot__tag{ font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.06em; }
+/* prescription rows */
+.rx{ display:grid; gap:10px; }
+.rxrow{ border:1px solid var(--hair); border-radius:13px; padding:13px 14px; background:var(--surface-2); }
+.rxtop{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.rxname{ font-family:var(--cond); font-weight:700; font-size:17px; letter-spacing:.02em; }
+.rxsets{ font-family:var(--mono); font-size:12.5px; color:#cfd5dc; }
+.rxmeta{ display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
+.badge-int{ font-family:var(--mono); font-weight:700; font-size:12px; color:#1a1205; background:linear-gradient(180deg,#ffd34d,#e6a912); border-radius:7px; padding:4px 9px; box-shadow:0 2px 6px rgba(230,169,18,.3); }
+.kg{ font-family:var(--mono); font-weight:700; font-size:14px; color:var(--text); }
+.discs{ display:flex; align-items:center; gap:6px; margin-left:auto; }
+.discs .lbl{ font-family:var(--mono); font-size:10px; color:var(--muted); margin-right:2px; }
+.discs svg{ display:block; filter:drop-shadow(0 2px 4px rgba(0,0,0,.45)); }
+/* readiness gold card */
+.ready{ position:relative; border-radius:18px; overflow:hidden; padding:18px; color:#241A04; min-height:148px; box-shadow:0 18px 40px -16px rgba(233,196,106,.5), inset 0 0 0 1px rgba(255,240,200,.5); background:#C7A14C; }
+.ready .l-base{ position:absolute; inset:0; background:linear-gradient(135deg,#6E561F 0%,#C7A14C 24%,#F8E7AE 47%,#C49A41 66%,#8A6E2C 100%); }
+.ready .l-holo{ position:absolute; inset:0; mix-blend-mode:overlay; background:linear-gradient(115deg,transparent 30%,rgba(255,120,180,.28) 44%,rgba(120,200,255,.28) 52%,rgba(180,255,170,.24) 60%,transparent 72%); }
+.ready .l-shine{ position:absolute; inset:0; background:radial-gradient(120% 80% at 80% -10%,rgba(255,255,255,.55),transparent 50%); }
+.ready .l-in{ position:relative; }
+.ready .l-eyebrow{ font-family:var(--mono); font-size:9.5px; font-weight:700; letter-spacing:1px; padding:4px 9px; border-radius:999px; background:rgba(36,26,4,.16); display:inline-block; }
+.ready .l-big{ font-family:var(--display); font-weight:900; font-size:66px; line-height:.85; letter-spacing:-2px; margin-top:14px; }
+.ready .l-sub{ font-family:var(--cond); font-weight:700; text-transform:uppercase; letter-spacing:.05em; font-size:13px; margin-top:6px; opacity:.85; }
+/* heatmap */
+.heat{ display:grid; grid-template-columns:repeat(10,1fr); gap:5px; }
+.heat i{ aspect-ratio:1; border-radius:4px; background:rgba(255,255,255,.05); }
+.heat i.h1{ background:#13412c; } .heat i.h2{ background:#1b6e46; } .heat i.h3{ background:#1bc98a; }
+.heat i.hw{ background:#7a5410; } .heat i.ha{ background:#7a1f25; }
+.heat-legend{ display:flex; align-items:center; gap:8px; margin-top:12px; font-family:var(--mono); font-size:10px; color:var(--muted); }
+.heat-legend i{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+
+/* ===== Differentials ===== */
+.diffs{ display:flex; flex-wrap:wrap; gap:12px; }
+.chip{ display:inline-flex; align-items:center; gap:9px; border:1px solid var(--hair); border-radius:12px; padding:12px 16px; background:var(--surface); font-size:14.5px; font-weight:600; }
+.chip .dot{ color:var(--teal); font-size:15px; }
+
+/* ===== Final CTA ===== */
+.final{ position:relative; overflow:hidden; }
+.final .panel{
+  position:relative; border:1px solid rgba(233,196,106,.25); border-radius:26px; padding:clamp(34px,6vw,64px);
+  text-align:center; background:radial-gradient(110% 130% at 50% 0%, rgba(233,196,106,.1), transparent 55%), var(--surface);
+  overflow:hidden;
+}
+.final .panel::after{
+  content:""; position:absolute; left:50%; bottom:-46%; width:560px; height:560px; transform:translateX(-50%);
+  background:radial-gradient(circle, rgba(216,38,45,.18), transparent 62%); pointer-events:none;
+}
+.final h2{ font-size:clamp(28px,4.4vw,46px); }
+.final .section-lead{ margin-left:auto; margin-right:auto; }
+.final .cta-row{ justify-content:center; }
+.final .cta-note{ justify-content:center; }
+
+/* ===== Footer ===== */
+footer{ border-top:1px solid var(--hair); padding:32px 0; }
+.foot{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; justify-content:space-between; }
+.foot .left{ display:flex; align-items:center; gap:10px; }
+.foot .mark{ width:28px; height:28px; }
+.foot p{ margin:0; color:var(--muted); font-size:13px; }
+.foot a.mail{ color:var(--gold); font-family:var(--mono); font-size:13px; }
+
+/* ===== Macro catalog ===== */
+.macros{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.macro{
+  position:relative; text-align:left; cursor:pointer; border:1px solid var(--hair); border-radius:18px; padding:20px;
+  background:var(--surface); color:inherit; overflow:hidden; transition:transform .2s var(--ease-out), border-color .2s, box-shadow .2s;
+}
+.macro::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--mc,#888); }
+.macro:hover{ transform:translateY(-4px); box-shadow:0 22px 44px -28px rgba(0,0,0,.8); }
+.macro.sel{ border-color:var(--mc); box-shadow:0 0 0 1px var(--mc) inset, 0 22px 44px -28px rgba(0,0,0,.8); }
+.macro__top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.macro__fam{ font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--mc,#9aa3ad); font-weight:700; }
+.macro__peak{ font-family:var(--mono); font-size:10px; padding:3px 8px; border-radius:999px; background:rgba(233,196,106,.14); color:var(--gold); border:1px solid rgba(233,196,106,.3); }
+.macro__peak.flat{ background:rgba(255,255,255,.05); color:var(--muted); border-color:var(--hair); }
+.macro__name{ font-family:var(--display); font-weight:800; font-size:21px; margin:10px 0 6px; letter-spacing:-.01em; }
+.macro__desc{ color:var(--muted); font-size:13px; margin:0 0 14px; min-height:34px; }
+.macro__meta{ display:flex; gap:14px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:#aab2bc; }
+.macro__meta b{ color:var(--text); }
+.meters{ display:flex; gap:16px; margin-top:14px; }
+.meter{ flex:1; }
+.meter span{ font-family:var(--mono); font-size:10px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
+.dots{ display:flex; gap:3px; margin-top:5px; }
+.dots i{ flex:1; height:5px; border-radius:3px; background:rgba(255,255,255,.1); }
+.dots i.on{ background:var(--mc,var(--gold)); }
+.macro__open{ position:absolute; right:16px; bottom:14px; font-family:var(--mono); font-size:10.5px; color:var(--mc); opacity:.85; }
+
+/* ===== Macro detail ===== */
+.detail{ border:1px solid var(--hair); border-radius:22px; overflow:hidden; background:var(--surface); }
+.detail__hd{ padding:22px 24px; border-bottom:1px solid var(--hair); display:flex; align-items:flex-start; justify-content:space-between; gap:16px; background:linear-gradient(90deg, color-mix(in srgb, var(--mc) 12%, transparent), transparent 60%); }
+.detail__hd h3{ font-family:var(--display); font-weight:800; font-size:clamp(22px,3vw,30px); margin:0; letter-spacing:-.01em; }
+.detail__hd .sub{ color:#aab2bc; font-size:14px; margin:8px 0 0; max-width:60ch; }
+.detail__fam{ font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--mc); font-weight:700; }
+.detail__body{ padding:24px; }
+.map-cap{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 14px; display:flex; align-items:center; gap:10px; }
+.map-cap .pk{ color:var(--gold); }
+/* intensity bars */
+.imap{ display:flex; align-items:flex-end; gap:3px; height:130px; padding:14px 0 0; }
+.imap .col{ position:relative; flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; }
+.imap .bar{ width:100%; border-radius:3px 3px 0 0; background:var(--bc); min-height:6px; transition:height .5s var(--ease-out); }
+.imap .col.peak .bar{ background:linear-gradient(180deg,#F8E7AE,#E9C46A); box-shadow:0 0 14px rgba(233,196,106,.6); }
+.imap .col .flag{ position:absolute; top:-16px; font-size:11px; color:var(--gold); }
+.imap .wk{ font-family:var(--mono); font-size:8px; color:var(--muted); margin-top:5px; }
+/* phase ribbon */
+.ribbon{ display:flex; gap:3px; margin-top:8px; }
+.ribbon .seg{ height:8px; border-radius:3px; background:var(--bc); }
+/* phase cards */
+.phases{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:24px; }
+.phase{ border:1px solid var(--hair); border-radius:14px; padding:15px; background:var(--surface-2); border-top:3px solid var(--bc); }
+.phase__wk{ font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.05em; }
+.phase__nm{ font-family:var(--cond); font-weight:800; font-size:17px; text-transform:uppercase; letter-spacing:.02em; margin:4px 0 10px; }
+.phase__row{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:11.5px; margin-top:5px; }
+.phase__row span{ color:var(--muted); } .phase__row b{ color:var(--text); }
+.phase__bar{ height:5px; border-radius:3px; background:rgba(255,255,255,.1); margin-top:4px; overflow:hidden; }
+.phase__bar i{ display:block; height:100%; background:var(--bc); }
+.phase__focus{ color:#9aa3ad; font-size:12px; margin:10px 0 0; line-height:1.4; }
+/* composition */
+.compo{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px; }
+.compo__box{ border:1px solid var(--hair); border-radius:14px; padding:16px; background:var(--surface-2); }
+.compo__t{ font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+.compo__t.in{ color:var(--teal); } .compo__t.out{ color:var(--danger); }
+.tags{ display:flex; flex-wrap:wrap; gap:7px; }
+.tag-mv{ font-size:13px; font-weight:600; padding:6px 11px; border-radius:9px; background:rgba(46,230,160,.08); border:1px solid rgba(46,230,160,.2); }
+.compo__out p{ margin:0; color:#aab2bc; font-size:13.5px; line-height:1.45; }
+
+/* ===== Responsive ===== */
+@media (max-width:860px){
+  .macros{ grid-template-columns:1fr; }
+  .compo{ grid-template-columns:1fr; }
+  .imap{ height:110px; }
+  .imap .wk{ display:none; }
+  .detail__hd{ flex-direction:column; }
+  .hero .wrap{ grid-template-columns:1fr; }
+  .hero-art{ order:-1; }
+  .hero-art .disc-icon{ width:min(70%,300px); }
+  .pains{ grid-template-columns:1fr; }
+  .bento{ grid-template-columns:1fr; }
+  .shots{ grid-template-columns:1fr; }
+}
+@media (max-width:560px){
+  .nav{ gap:10px; }
+  .nav .brand span.word{ display:none; }
+  .btn--ghost{ display:none; }
+  .langsw button{ padding:5px 7px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top" aria-label="Holy Oly">
+      <span class="mark" id="markSmall"></span>
+      <span class="word">HOLY OLY</span>
+    </a>
+    <span class="spacer"></span>
+    <div class="langsw" role="group" aria-label="Language">
+      <button data-lang="es">ES</button>
+      <button data-lang="en">EN</button>
+      <button data-lang="pt">PT</button>
+    </div>
+    <a class="btn btn--primary btn--sm" data-i18n="nav_cta" href="https://holy-oly.onrender.com">Probar gratis</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow"><i></i><span data-i18n="hero_eyebrow">Periodización para levantamiento olímpico</span></span>
+        <h1 data-i18n="hero_h1">Indica la fecha de la competencia. <span class="grad">Holy Oly arma los ciclos</span> para que tu atleta llegue en pico.</h1>
+        <p class="lead" data-i18n="hero_lead">Periodización automática por escuela, carga y estrés de cada atleta, y todo tu equipo en un solo panel. Olvídate de las planillas.</p>
+        <div class="cta-row">
+          <a class="btn btn--primary" data-i18n="cta_main" href="https://holy-oly.onrender.com">Crea tu cuenta gratis</a>
+          <a class="btn btn--ghost" data-i18n="cta_secondary" href="#pilares">Ver cómo funciona</a>
+        </div>
+        <p class="cta-note"><b data-i18n="cta_note_b">Gratis</b><span data-i18n="cta_note">durante la fase de prueba · sin tarjeta</span></p>
+      </div>
+      <div class="hero-art">
+        <div class="disc-icon" id="heroIcon"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="problem">
+    <div class="wrap">
+      <div class="section-head rv">
+        <span class="kicker" data-i18n="prob_kicker">El problema</span>
+        <h2 data-i18n="prob_h2">El día a día del coach, hoy</h2>
+      </div>
+      <div class="pains">
+        <div class="pain rv">
+          <div class="x">✕</div>
+          <h3 data-i18n="pain1_h">Planillas que no terminan nunca</h3>
+          <p data-i18n="pain1_p">Cada atleta en una hoja de cálculo distinta. Copiar, pegar y rezar para no romper una fórmula.</p>
+        </div>
+        <div class="pain rv">
+          <div class="x">✕</div>
+          <h3 data-i18n="pain2_h">No sabes cómo llega cada uno</h3>
+          <p data-i18n="pain2_p">Sin un registro real, la fatiga y el estrés se notan cuando ya es demasiado tarde.</p>
+        </div>
+        <div class="pain rv">
+          <div class="x">✕</div>
+          <h3 data-i18n="pain3_h">Creces y pierdes el control</h3>
+          <p data-i18n="pain3_p">Más atletas, más caos. El seguimiento individual se vuelve imposible de sostener.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <section id="pilares">
+    <div class="wrap">
+      <div class="section-head rv">
+        <span class="kicker" data-i18n="pil_kicker">La solución</span>
+        <h2 data-i18n="pil_h2">Todo lo que necesitas, en un solo lugar</h2>
+        <p class="section-lead" data-i18n="pil_lead">Las tres cosas que más cuestan al coach, resueltas y conectadas entre sí.</p>
+      </div>
+      <div class="bento">
+        <div class="pillar rv">
+          <div class="ic">🎯</div>
+          <h3 data-i18n="p1_h">Periodización que pica en la fecha</h3>
+          <p data-i18n="p1_p">Elige la escuela —<b>Búlgaro, Ruso, Chino, Cubano…</b>— y la fecha de la competencia. Holy Oly calcula los ciclos para llegar al pico. ¿Cambió la fecha? <b>Se reperiodiza sola</b>, sin tocar lo ya entrenado.</p>
+        </div>
+        <div class="pillar rv">
+          <div class="ic">📊</div>
+          <h3 data-i18n="p2_h">Carga y estrés de cada atleta</h3>
+          <p data-i18n="p2_p">El atleta registra su sesión y tú ves <b>mapas de calor, adherencia y readiness</b>. Sabes quién viene fuerte y a quién bajarle la carga, <b>antes de que se lesione</b>.</p>
+        </div>
+        <div class="pillar rv">
+          <div class="ic">👥</div>
+          <h3 data-i18n="p3_h">Escala sin perder el control</h3>
+          <p data-i18n="p3_p">10, 20 o 50 atletas. Cada uno ve <b>solo su plan</b>, claro y sin distracciones. Tú ves a todo el equipo desde <b>un panel</b>, con alertas de quién necesita atención.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MACRO CATALOG -->
+  <section id="macrociclos">
+    <div class="wrap">
+      <div class="section-head rv">
+        <span class="kicker" data-i18n="mc_kicker">El catálogo</span>
+        <h2 data-i18n="mc_h2">Macrociclos con metodología real</h2>
+        <p class="section-lead" data-i18n="mc_lead">Cada escuela es un programa fundado en su literatura, no una plantilla genérica. Toca uno para ver su detalle.</p>
+      </div>
+      <div class="macros rv" id="macroCatalog"></div>
+    </div>
+  </section>
+
+  <!-- MACRO DETAIL -->
+  <section style="background:linear-gradient(180deg, rgba(255,255,255,.015), transparent);">
+    <div class="wrap">
+      <div class="section-head rv">
+        <span class="kicker" data-i18n="md_kicker">El detalle del macro</span>
+        <h2 data-i18n="md_h2">Fases, intensidad y composición</h2>
+        <p class="section-lead" data-i18n="md_lead">El mapa de intensidad semana a semana, las fases con su banda de porcentaje del máximo y volumen, y qué movimientos firma cada escuela.</p>
+      </div>
+      <div class="rv" id="macroDetail"></div>
+    </div>
+  </section>
+
+  <!-- HOW IT LOOKS -->
+  <section style="background:linear-gradient(180deg, rgba(255,255,255,.015), transparent);">
+    <div class="wrap">
+      <div class="section-head rv">
+        <span class="kicker" data-i18n="shot_kicker">Así se ve</span>
+        <h2 data-i18n="shot_h2">El plan, sin ambigüedad</h2>
+        <p class="section-lead" data-i18n="shot_lead">Porcentaje, kilos, series por repeticiones y los discos exactos a cargar. El atleta sabe qué hacer; tú sabes cómo viene.</p>
+      </div>
+      <div class="shots">
+        <div class="shot rv">
+          <div class="shot__hd">
+            <span class="shot__title" data-i18n="shot_today">Hoy · Fuerza</span>
+            <span class="shot__tag" data-i18n="shot_phase">FASE: ACUMULACIÓN</span>
+          </div>
+          <div class="rx">
+            <div class="rxrow">
+              <div class="rxtop">
+                <span class="rxname" data-i18n="ex_squat">Sentadilla</span>
+                <span class="rxsets">5 × 3</span>
+              </div>
+              <div class="rxmeta">
+                <span class="badge-int">80%</span>
+                <span class="kg">140 kg</span>
+                <span class="discs" data-kg="140" data-bar="20">
+                  <span class="lbl" data-i18n="per_side">por lado</span>
+                </span>
+              </div>
+            </div>
+            <div class="rxrow">
+              <div class="rxtop">
+                <span class="rxname" data-i18n="ex_snatch">Arranque</span>
+                <span class="rxsets">6 × 2</span>
+              </div>
+              <div class="rxmeta">
+                <span class="badge-int">75%</span>
+                <span class="kg">90 kg</span>
+                <span class="discs" data-kg="90" data-bar="20">
+                  <span class="lbl" data-i18n="per_side">por lado</span>
+                </span>
+              </div>
+            </div>
+            <div class="rxrow">
+              <div class="rxtop">
+                <span class="rxname" data-i18n="ex_pull">Tirón de arranque</span>
+                <span class="rxsets">4 × 3</span>
+              </div>
+              <div class="rxmeta">
+                <span class="badge-int">95%</span>
+                <span class="kg">114 kg</span>
+                <span class="discs" data-kg="114" data-bar="20">
+                  <span class="lbl" data-i18n="per_side">por lado</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="shot shot--side">
+          <div class="shot rv" style="border:none; padding:0;">
+            <div class="ready">
+              <div class="l-base"></div><div class="l-holo"></div><div class="l-shine"></div>
+              <div class="l-in">
+                <span class="l-eyebrow" data-i18n="ready_eyebrow">★ READINESS DE HOY</span>
+                <div class="l-big">94</div>
+                <div class="l-sub" data-i18n="ready_sub">Lista para cargar pesado</div>
+              </div>
+            </div>
+          </div>
+          <div class="shot rv">
+            <div class="shot__hd">
+              <span class="shot__title" data-i18n="heat_title">Adherencia · 10 semanas</span>
+            </div>
+            <div class="heat">
+              <i class="h2"></i><i class="h3"></i><i class="h3"></i><i class="h1"></i><i class="h3"></i><i class="h2"></i><i class="h3"></i><i class="hw"></i><i class="h3"></i><i class="h3"></i>
+              <i class="h3"></i><i class="h2"></i><i class="ha"></i><i class="h3"></i><i class="h3"></i><i class="h3"></i><i class="h2"></i><i class="h3"></i><i class="h1"></i><i class="h3"></i>
+              <i class="h3"></i><i class="h3"></i><i class="h2"></i><i class="h3"></i><i class="hw"></i><i class="h3"></i><i class="h3"></i><i class="h2"></i><i class="h3"></i><i class="h3"></i>
+            </div>
+            <div class="heat-legend">
+              <span data-i18n="heat_low">Bajo</span>
+              <i style="background:#13412c"></i><i style="background:#1b6e46"></i><i style="background:#1bc98a"></i>
+              <span data-i18n="heat_high">Alto</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIFFERENTIALS -->
+  <section>
+    <div class="wrap">
+      <div class="section-head rv">
+        <span class="kicker" data-i18n="diff_kicker">Por qué es distinto</span>
+        <h2 data-i18n="diff_h2">Pensado por y para el levantamiento</h2>
+      </div>
+      <div class="diffs rv">
+        <span class="chip"><span class="dot">◆</span><span data-i18n="diff1">ADN real de cada escuela</span></span>
+        <span class="chip"><span class="dot">◆</span><span data-i18n="diff2">Discos exactos (10·15·20·25)</span></span>
+        <span class="chip"><span class="dot">◆</span><span data-i18n="diff3">% + kg + series×reps por fila</span></span>
+        <span class="chip"><span class="dot">◆</span><span data-i18n="diff4">Kilos reales, no percepciones</span></span>
+        <span class="chip"><span class="dot">◆</span><span data-i18n="diff5">Ciclo menstrual para atletas mujeres</span></span>
+        <span class="chip"><span class="dot">◆</span><span data-i18n="diff6">Historial de ciclos y récords</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final">
+    <div class="wrap">
+      <div class="panel rv">
+        <span class="kicker" data-i18n="final_kicker">Empieza hoy</span>
+        <h2 data-i18n="final_h2">Tu próximo macrociclo, en minutos</h2>
+        <p class="section-lead" data-i18n="final_lead">Crea tu cuenta, agrega tu primer atleta y arma un ciclo completo hoy mismo. Sin instalar nada.</p>
+        <div class="cta-row">
+          <a class="btn btn--primary" data-i18n="cta_main" href="https://holy-oly.onrender.com">Crea tu cuenta gratis</a>
+        </div>
+        <p class="cta-note"><b data-i18n="cta_note_b">Gratis</b><span data-i18n="cta_note">durante la fase de prueba · sin tarjeta</span></p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div class="left">
+      <span class="mark" id="markFoot"></span>
+      <p data-i18n="foot_tag">Holy Oly · Hecho para coaches de levantamiento olímpico.</p>
+    </div>
+    <a class="mail" href="mailto:esstipi@gmail.com">esstipi@gmail.com</a>
+  </div>
+</footer>
+
+<script>
+/* ===== HOLY OLY app icon (faithful port of holyOlyIconSvg.ts) ===== */
+function holyOlyIcon(uid, withText){
+  var CX=256, CY=268, VB=512;
+  var PAL={color:"#d8262d",edge:"#9f1219",dark:"#680a10",light:"#f0726f"};
+  var CFG={topRadius:116,topSpan:110,botRadius:160,botSpan:78,fontSize:66,weight:800,tracking:1,botTracking:8};
+  function pt(deg,r){ var a=deg*Math.PI/180; return [CX+r*Math.cos(a), CY+r*Math.sin(a)]; }
+  function arcTop(r,span){ var h=span/2,a=pt(270-h,r),b=pt(270+h,r);
+    return "M"+a[0].toFixed(2)+" "+a[1].toFixed(2)+" A"+r+" "+r+" 0 0 1 "+b[0].toFixed(2)+" "+b[1].toFixed(2); }
+  function arcBottom(r,span){ var h=span/2,a=pt(90+h,r),b=pt(90-h,r);
+    return "M"+a[0].toFixed(2)+" "+a[1].toFixed(2)+" A"+r+" "+r+" 0 0 0 "+b[0].toFixed(2)+" "+b[1].toFixed(2); }
+  var defs=
+    '<radialGradient id="band'+uid+'" cx="40%" cy="33%" r="80%"><stop offset="0" stop-color="'+PAL.light+'"/><stop offset="50%" stop-color="'+PAL.color+'"/><stop offset="100%" stop-color="'+PAL.edge+'"/></radialGradient>'+
+    '<linearGradient id="rim'+uid+'" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="'+PAL.dark+'"/><stop offset="55%" stop-color="'+PAL.edge+'"/><stop offset="100%" stop-color="'+PAL.color+'"/></linearGradient>'+
+    '<radialGradient id="steel'+uid+'" cx="38%" cy="32%" r="84%"><stop offset="0" stop-color="#ffffff"/><stop offset="45%" stop-color="#dadde0"/><stop offset="100%" stop-color="#9da1a6"/></radialGradient>'+
+    '<radialGradient id="bore'+uid+'" cx="42%" cy="36%" r="80%"><stop offset="0" stop-color="#8c9096"/><stop offset="100%" stop-color="#303236"/></radialGradient>'+
+    '<radialGradient id="bg'+uid+'" cx="50%" cy="40%" r="78%"><stop offset="0" stop-color="#2c2f34"/><stop offset="58%" stop-color="#191b1e"/><stop offset="100%" stop-color="#0c0d0f"/></radialGradient>'+
+    '<radialGradient id="glow'+uid+'" cx="50%" cy="46%" r="50%"><stop offset="0" stop-color="'+PAL.color+'" stop-opacity=".34"/><stop offset="100%" stop-color="'+PAL.color+'" stop-opacity="0"/></radialGradient>';
+  function face(){
+    var s="";
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="192" fill="'+PAL.edge+'"/>';
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="186" fill="url(#band'+uid+')"/>';
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="186" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3"/>';
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="100" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="3"/>';
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="96" fill="url(#steel'+uid+')" stroke="rgba(0,0,0,.16)" stroke-width="1.5"/>';
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="88" fill="none" stroke="rgba(0,0,0,.10)" stroke-width="1.5"/>';
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="30" fill="url(#bore'+uid+')"/>';
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="30" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/>';
+    if(withText){
+      var common='font-family="\'Saira Condensed\',sans-serif" fill="#ffffff" font-size="'+CFG.fontSize+'" font-weight="'+CFG.weight+'"';
+      s+='<path id="top'+uid+'" d="'+arcTop(CFG.topRadius,CFG.topSpan)+'" fill="none"/>';
+      s+='<path id="bot'+uid+'" d="'+arcBottom(CFG.botRadius,CFG.botSpan)+'" fill="none"/>';
+      s+='<text '+common+' letter-spacing="'+CFG.tracking+'"><textPath href="#top'+uid+'" startOffset="50%" text-anchor="middle">HOLY</textPath></text>';
+      s+='<text '+common+' letter-spacing="'+CFG.botTracking+'"><textPath href="#bot'+uid+'" startOffset="50%" text-anchor="middle">OLY</textPath></text>';
+    }
+    return s;
+  }
+  var sx=0.82, sy=0.985, R=-5;
+  var T="translate("+CX+" "+CY+") rotate("+R+") scale("+sx+" "+sy+") translate("+(-CX)+" "+(-CY)+")";
+  var ox=-34, oy=7;
+  var wall=
+    '<g transform="translate('+ox+' '+oy+')"><g transform="'+T+'"><circle cx="'+CX+'" cy="'+CY+'" r="192" fill="url(#rim'+uid+')"/></g></g>'+
+    '<g transform="translate('+(ox-1)+' '+oy+')"><g transform="'+T+'"><circle cx="'+CX+'" cy="'+CY+'" r="192" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="3"/></g></g>';
+  var plate=wall+'<g transform="'+T+'"><circle cx="'+CX+'" cy="'+CY+'" r="192" fill="none" stroke="rgba(0,0,0,.22)" stroke-width="2"/>'+face()+'</g>';
+  var bg='<rect width="'+VB+'" height="'+VB+'" fill="url(#bg'+uid+')"/>'+
+    '<ellipse cx="'+(CX-6)+'" cy="'+(CY+2)+'" rx="220" ry="206" fill="url(#glow'+uid+')"/>'+
+    '<ellipse cx="'+(CX-10)+'" cy="'+(CY+196)+'" rx="176" ry="30" fill="rgba(0,0,0,.5)"/>';
+  return '<svg viewBox="0 0 '+VB+' '+VB+'" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="HOLY OLY"><defs>'+defs+'</defs>'+bg+plate+'</svg>';
+}
+document.getElementById('heroIcon').innerHTML = holyOlyIcon('hero', true);
+document.getElementById('markSmall').innerHTML = holyOlyIcon('sm', false);
+document.getElementById('markFoot').innerHTML = holyOlyIcon('ft', false);
+
+/* ===== App disc (faithful port of ui/Disc.tsx · ThreeQuarterDisc) ===== */
+var DISC_COLORS = { 10:["#3eb24a","#2c8a37","#7fd07f"], 15:["#f3c200","#c79c00","#ffe46b"], 20:["#2f6fa8","#1d4f7e","#6fa3cf"], 25:["#d5232b","#a4161d","#ec6b6f"] };
+var RIM_DARK = { 10:"#1c5c24", 15:"#8a6c00", 20:"#12365a", 25:"#6e0f14" };
+var DISCS_ORDER = [25,20,15,10];
+var DT = "translate(256 268) rotate(-5) scale(0.82 0.985) translate(-256 -268)";
+var discUid = 0;
+function perSide(total, bar){
+  bar = bar || 20;
+  var r = (total - bar) / 2, out = [];
+  if(r < 5) return out;
+  for(var i=0;i<DISCS_ORDER.length;i++){ var p=DISCS_ORDER[i]; while(r>=p){ out.push(p); r-=p; } }
+  return out;
+}
+function disc3q(w, size){
+  var c = DISC_COLORS[w], fill=c[0], edge=c[1], light=c[2], uid="d"+(discUid++);
+  return '<svg viewBox="34 66 410 410" width="'+size+'" height="'+size+'" xmlns="http://www.w3.org/2000/svg">'+
+    '<defs>'+
+      '<radialGradient id="b'+uid+'" cx="40%" cy="33%" r="80%"><stop offset="0" stop-color="'+light+'"/><stop offset="50%" stop-color="'+fill+'"/><stop offset="100%" stop-color="'+edge+'"/></radialGradient>'+
+      '<linearGradient id="r'+uid+'" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="'+RIM_DARK[w]+'"/><stop offset="55%" stop-color="'+edge+'"/><stop offset="100%" stop-color="'+fill+'"/></linearGradient>'+
+      '<radialGradient id="s'+uid+'" cx="38%" cy="32%" r="84%"><stop offset="0" stop-color="#ffffff"/><stop offset="45%" stop-color="#dadde0"/><stop offset="100%" stop-color="#9da1a6"/></radialGradient>'+
+      '<radialGradient id="o'+uid+'" cx="42%" cy="36%" r="80%"><stop offset="0" stop-color="#8c9096"/><stop offset="100%" stop-color="#303236"/></radialGradient>'+
+    '</defs>'+
+    '<g transform="translate(-34 7)"><g transform="'+DT+'"><circle cx="256" cy="268" r="192" fill="url(#r'+uid+')"/></g></g>'+
+    '<g transform="translate(-35 7)"><g transform="'+DT+'"><circle cx="256" cy="268" r="192" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="3"/></g></g>'+
+    '<g transform="'+DT+'">'+
+      '<circle cx="256" cy="268" r="192" fill="none" stroke="rgba(0,0,0,.22)" stroke-width="2"/>'+
+      '<circle cx="256" cy="268" r="192" fill="'+edge+'"/>'+
+      '<circle cx="256" cy="268" r="186" fill="url(#b'+uid+')"/>'+
+      '<circle cx="256" cy="268" r="186" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3"/>'+
+      '<circle cx="256" cy="268" r="100" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="3"/>'+
+      '<circle cx="256" cy="268" r="96" fill="url(#s'+uid+')" stroke="rgba(0,0,0,.16)" stroke-width="1.5"/>'+
+      '<circle cx="256" cy="268" r="88" fill="none" stroke="rgba(0,0,0,.10)" stroke-width="1.5"/>'+
+      '<circle cx="256" cy="268" r="30" fill="url(#o'+uid+')"/>'+
+      '<circle cx="256" cy="268" r="30" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/>'+
+      '<text x="256" y="158" text-anchor="middle" font-size="100" font-weight="800" fill="#fff" font-family="Saira Condensed, sans-serif">'+w+'</text>'+
+    '</g></svg>';
+}
+function fillDiscs(){
+  document.querySelectorAll('.discs[data-kg]').forEach(function(el){
+    if(el.getAttribute('data-filled')) return;
+    var kg = +el.getAttribute('data-kg'), bar = +(el.getAttribute('data-bar')||20);
+    var html = perSide(kg, bar).map(function(d){ return disc3q(d, 30); }).join('');
+    el.insertAdjacentHTML('beforeend', html);
+    el.setAttribute('data-filled','1');
+  });
+}
+
+/* ===== Macrocycle catalog (real phaseProfile from core/data/macrocycles.ts) ===== */
+function L(lang, k){ return (I18N[lang]||I18N.es)[k]; }
+function getL(o, lang){ return o ? (o[lang]||o.es) : ""; }
+function hexToRgba(hex, a){
+  var h=hex.replace('#',''); var n=parseInt(h,16);
+  return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+}
+function phaseColor(base, idx, n){ return n<=1 ? base : hexToRgba(base, 0.45 + 0.55*(idx/(n-1))); }
+
+var MACROS = [
+  { id:'ruso-5d', name:'Ruso 5D', family:'Ruso', color:'#06B6D4', freqDays:5, weeks:16, intensity:3, volume:5, peakWeek:16,
+    char:{ es:'Ondulación de volumen sobre una base general ancha, con peaking clásico al final.', en:'Volume waviness over a broad general base, with a classic final peak.', pt:'Ondulação de volume sobre uma base geral ampla, com peaking clássico no fim.' },
+    phases:[
+      { nm:{es:'Hipertrofia',en:'Hypertrophy',pt:'Hipertrofia'}, weeks:[1,4], pct:[65,72], vol:100, focus:{es:'hipertrofia · preparación física general',en:'hypertrophy · general physical preparation',pt:'hipertrofia · preparação física geral'} },
+      { nm:{es:'Fuerza básica',en:'Base strength',pt:'Força básica'}, weeks:[5,8], pct:[75,82], vol:85, focus:{es:'fuerza base',en:'base strength',pt:'força base'} },
+      { nm:{es:'Fuerza / Potencia',en:'Strength / Power',pt:'Força / Potência'}, weeks:[9,12], pct:[85,92], vol:65, focus:{es:'fuerza · potencia',en:'strength · power',pt:'força · potência'} },
+      { nm:{es:'Peaking',en:'Peaking',pt:'Peaking'}, weeks:[13,16], pct:[92,102], vol:45, focus:{es:'peaking · competencia',en:'peaking · competition',pt:'peaking · competição'} } ],
+    signature:{ es:['Arranque','Cargada y envión','Tirones 90–110%','Sentadilla','Complejos'], en:['Snatch','Clean & Jerk','Pulls 90–110%','Squat','Complexes'], pt:['Arranco','Arremesso','Puxadas 90–110%','Agachamento','Complexos'] },
+    leavesOut:{ es:'Base general amplia: no prohíbe nada, todo entra en la base.', en:'Broad general base: nothing is forbidden, it all fits in the base.', pt:'Base geral ampla: não proíbe nada, tudo cabe na base.' } },
+
+  { id:'bulgaro-6d', name:'Búlgaro 6D', family:'Búlgaro', color:'#EF4444', freqDays:6, weeks:12, intensity:5, volume:2, peakWeek:null,
+    char:{ es:'Daily Max: sólo los lifts de competencia y sentadillas, a singles pesados, todos los días.', en:'Daily Max: only the competition lifts and squats, heavy singles, every day.', pt:'Daily Max: só os lifts de competição e agachamentos, singles pesados, todo dia.' },
+    phases:[ { nm:{es:'Daily Max',en:'Daily Max',pt:'Daily Max'}, weeks:[1,12], pct:[95,110], vol:95, focus:{es:'daily max · descarga cada 4ª sem',en:'daily max · deload every 4th wk',pt:'daily max · descarga a cada 4ª sem'} } ],
+    signature:{ es:['Arranque','Cargada y envión','Sentadilla frontal','Sentadilla'], en:['Snatch','Clean & Jerk','Front Squat','Back Squat'], pt:['Arranco','Arremesso','Agachamento frontal','Agachamento'] },
+    leavesOut:{ es:'Tirones, presses y accesorios: el levantamiento ES el ejercicio.', en:'Pulls, presses and accessories: the lift IS the exercise.', pt:'Puxadas, presses e acessórios: o levantamento É o exercício.' } },
+
+  { id:'coreano-5d', name:'Coreano 5D', family:'Coreano', color:'#3B82F6', freqDays:5, weeks:12, intensity:4, volume:4, peakWeek:12,
+    char:{ es:'Estructura rígida con tirones pesados omnipresentes y trabajo de posiciones.', en:'Rigid structure with omnipresent heavy pulls and positional work.', pt:'Estrutura rígida com puxadas pesadas onipresentes e trabalho de posições.' },
+    phases:[
+      { nm:{es:'Cimentación',en:'Foundation',pt:'Cimentação'}, weeks:[1,4], pct:[70,76], vol:100, focus:{es:'hipertrofia · técnica',en:'hypertrophy · technique',pt:'hipertrofia · técnica'} },
+      { nm:{es:'Transformación',en:'Transformation',pt:'Transformação'}, weeks:[5,8], pct:[78,84], vol:80, focus:{es:'fuerza · pulls pesados',en:'strength · heavy pulls',pt:'força · puxadas pesadas'} },
+      { nm:{es:'Realización',en:'Realization',pt:'Realização'}, weeks:[9,12], pct:[85,95], vol:45, focus:{es:'peaking · competencia',en:'peaking · competition',pt:'peaking · competição'} } ],
+    signature:{ es:['Tirones (también desde bloques)','Arranque','Cargada','Sentadilla'], en:['Pulls (also from blocks)','Snatch','Clean','Squat'], pt:['Puxadas (também de blocos)','Arranco','Clean','Agachamento'] },
+    leavesOut:{ es:'Sin accesorios de culturismo: todo es fuerza posicional.', en:'No bodybuilding accessories: it is all positional strength.', pt:'Sem acessórios de musculação: tudo é força posicional.' } },
+
+  { id:'colombiano-5d', name:'Colombiano 5D', family:'Colombiano', color:'#A855F7', freqDays:5, weeks:12, intensity:4, volume:4, peakWeek:12,
+    char:{ es:'Prioridad absoluta al envión con volumen extremo de piernas; en el pico, las piernas van a cero.', en:'Absolute priority on the clean & jerk with extreme leg volume; at peak, legs go to zero.', pt:'Prioridade absoluta ao arremesso com volume extremo de pernas; no pico, as pernas vão a zero.' },
+    phases:[
+      { nm:{es:'Prep. General',en:'General Prep',pt:'Prep. Geral'}, weeks:[1,4], pct:[58,66], vol:100, focus:{es:'volumen extremo de piernas',en:'extreme leg volume',pt:'volume extremo de pernas'} },
+      { nm:{es:'Prep. Especial',en:'Special Prep',pt:'Prep. Especial'}, weeks:[5,8], pct:[65,72], vol:65, focus:{es:'balance técnica-fuerza',en:'technique-strength balance',pt:'equilíbrio técnica-força'} },
+      { nm:{es:'Precompetencia',en:'Pre-competition',pt:'Pré-competição'}, weeks:[9,10], pct:[72,82], vol:30, focus:{es:'intensidad · baja volumen',en:'intensity · low volume',pt:'intensidade · baixo volume'} },
+      { nm:{es:'Realización',en:'Realization',pt:'Realização'}, weeks:[11,12], pct:[82,100], vol:10, focus:{es:'pico · piernas a cero',en:'peak · legs to zero',pt:'pico · pernas a zero'} } ],
+    signature:{ es:['Cargada y envión','Sentadilla frontal','Tirones de cargada','Jerk'], en:['Clean & Jerk','Front Squat','Clean Pulls','Jerk'], pt:['Arremesso','Agachamento frontal','Puxadas de clean','Jerk'] },
+    leavesOut:{ es:'En el pico, las piernas van a cero: queda el gesto.', en:'At peak, legs go to zero: only the lift remains.', pt:'No pico, as pernas vão a zero: resta o gesto.' } },
+
+  { id:'chino-5d', name:'Chino 5D', family:'Chino', color:'#F59E0B', freqDays:5, weeks:4, intensity:4, volume:4, peakWeek:null,
+    char:{ es:'Híbrido técnica-fuerza squat-dominante; toda sesión cierra con culturismo funcional.', en:'Technique-strength squat-dominant hybrid; every session ends with functional bodybuilding.', pt:'Híbrido técnica-força squat-dominante; toda sessão fecha com musculação funcional.' },
+    phases:[
+      { nm:{es:'Base estructural',en:'Structural base',pt:'Base estrutural'}, weeks:[1,1], pct:[70,75], vol:100, focus:{es:'volumen · tendones · culturismo',en:'volume · tendons · bodybuilding',pt:'volume · tendões · musculação'} },
+      { nm:{es:'Acumulación',en:'Accumulation',pt:'Acumulação'}, weeks:[2,2], pct:[80,88], vol:90, focus:{es:'fuerza absoluta · pulls',en:'absolute strength · pulls',pt:'força absoluta · puxadas'} },
+      { nm:{es:'Choque',en:'Shock',pt:'Choque'}, weeks:[3,3], pct:[90,98], vol:65, focus:{es:'max out controlado',en:'controlled max out',pt:'max out controlado'} },
+      { nm:{es:'Descarga',en:'Deload',pt:'Descarga'}, weeks:[4,4], pct:[80,85], vol:35, focus:{es:'taper · recuperación',en:'taper · recovery',pt:'taper · recuperação'} } ],
+    signature:{ es:['Potencias y segmentos','Snatch balance','Sots press','Bloque de culturismo'], en:['Power variants & segments','Snatch balance','Sots press','Bodybuilding block'], pt:['Potências e segmentos','Snatch balance','Sots press','Bloco de musculação'] },
+    leavesOut:{ es:'Nada prohibido: cada sesión cierra con culturismo funcional.', en:'Nothing forbidden: each session closes with functional bodybuilding.', pt:'Nada proibido: cada sessão fecha com musculação funcional.' } },
+
+  { id:'ucraniano-3d', name:'Ucraniano 3D', family:'Ucraniano', color:'#FACC15', freqDays:3, weeks:12, intensity:4, volume:3, peakWeek:12,
+    char:{ es:'Densidad pura, una serie por minuto: pocas piezas por sesión, el descanso es lo que se entrena. Ideal para CrossFit.', en:'Pure density, one set per minute: few pieces per session, rest is what you train. Great for CrossFit.', pt:'Densidade pura, uma série por minuto: poucas peças por sessão, o descanso é o que se treina. Ótimo para CrossFit.' },
+    phases:[
+      { nm:{es:'Acumulación',en:'Accumulation',pt:'Acumulação'}, weeks:[1,6], pct:[70,85], vol:100, focus:{es:'una serie por minuto · densidad',en:'one set per minute · density',pt:'uma série por minuto · densidade'} },
+      { nm:{es:'Intensificación',en:'Intensification',pt:'Intensificação'}, weeks:[7,11], pct:[85,94], vol:55, focus:{es:'singles · intensificación + taper',en:'singles · intensification + taper',pt:'singles · intensificação + taper'} },
+      { nm:{es:'Test máximo',en:'Max test',pt:'Teste máximo'}, weeks:[12,12], pct:[90,100], vol:20, focus:{es:'pico · test',en:'peak · test',pt:'pico · teste'} } ],
+    signature:{ es:['Olímpicos (una serie por minuto)','Potencias','Sentadilla frontal'], en:['Olympic lifts (one set per minute)','Power variants','Front Squat'], pt:['Olímpicos (uma série por minuto)','Potências','Agachamento frontal'] },
+    leavesOut:{ es:'Sin accesorios lentos: rompen el reloj.', en:'No slow accessories: they break the clock.', pt:'Sem acessórios lentos: quebram o relógio.' } }
+];
+var currentMacroId = 'ruso-5d';
+
+function meterDots(val, color){
+  var h='';
+  for(var i=1;i<=5;i++){ h += '<i class="'+(i<=val?'on':'')+'"></i>'; }
+  return '<div class="dots" style="--mc:'+color+'">'+h+'</div>';
+}
+function renderCatalog(lang){
+  var host = document.getElementById('macroCatalog'); if(!host) return;
+  host.innerHTML = MACROS.map(function(m){
+    var peak = m.peakWeek
+      ? '<span class="macro__peak">'+L(lang,'lbl_peakAt').replace('{w}', m.peakWeek)+'</span>'
+      : '<span class="macro__peak flat">'+L(lang,'lbl_noPeak')+'</span>';
+    return '<button class="macro'+(m.id===currentMacroId?' sel':'')+'" data-id="'+m.id+'" style="--mc:'+m.color+'">'+
+      '<div class="macro__top"><span class="macro__fam">'+m.family+'</span>'+peak+'</div>'+
+      '<div class="macro__name">'+m.name+'</div>'+
+      '<p class="macro__desc">'+getL(m.char,lang)+'</p>'+
+      '<div class="macro__meta"><span>'+L(lang,'lbl_freq')+': <b>'+m.freqDays+' '+L(lang,'lbl_daysWk')+'</b></span>'+
+        '<span>'+L(lang,'lbl_dur')+': <b>'+m.weeks+' '+L(lang,'lbl_weeksWord')+'</b></span></div>'+
+      '<div class="meters">'+
+        '<div class="meter"><span>'+L(lang,'lbl_int')+'</span>'+meterDots(m.intensity,m.color)+'</div>'+
+        '<div class="meter"><span>'+L(lang,'lbl_vol')+'</span>'+meterDots(m.volume,m.color)+'</div>'+
+      '</div>'+
+      '<span class="macro__open">'+L(lang,'lbl_open')+'</span>'+
+    '</button>';
+  }).join('');
+  host.querySelectorAll('.macro').forEach(function(b){
+    b.addEventListener('click', function(){ selectMacro(b.getAttribute('data-id'), true); });
+  });
+}
+function phaseAt(m, w){
+  for(var i=0;i<m.phases.length;i++){ var p=m.phases[i]; if(w>=p.weeks[0] && w<=p.weeks[1]) return i; }
+  return 0;
+}
+function renderDetail(lang){
+  var host = document.getElementById('macroDetail'); if(!host) return;
+  var m = MACROS.filter(function(x){return x.id===currentMacroId;})[0] || MACROS[0];
+  var n = m.phases.length;
+  // intensity bars
+  var bars='';
+  for(var w=1; w<=m.weeks; w++){
+    var pi = phaseAt(m,w), p=m.phases[pi];
+    var mid=(p.pct[0]+p.pct[1])/2;
+    var h = Math.max(12, Math.min(100, ((mid-55)/(105-55))*78 + 22));
+    var isPeak = m.peakWeek===w;
+    bars += '<div class="col'+(isPeak?' peak':'')+'" style="--bc:'+phaseColor(m.color,pi,n)+'">'+
+      (isPeak?'<span class="flag">▲</span>':'')+
+      '<div class="bar" style="height:'+h.toFixed(0)+'%"></div>'+
+      '<div class="wk">'+w+'</div></div>';
+  }
+  // ribbon
+  var ribbon = m.phases.map(function(p,i){
+    var span=(p.weeks[1]-p.weeks[0]+1);
+    return '<div class="seg" style="flex:'+span+';--bc:'+phaseColor(m.color,i,n)+'"></div>';
+  }).join('');
+  // phase cards
+  var phaseCards = m.phases.map(function(p,i){
+    var wk = p.weeks[0]===p.weeks[1] ? (L(lang,'lbl_weekShort')+' '+p.weeks[0]) : (L(lang,'lbl_weekShort')+' '+p.weeks[0]+'–'+p.weeks[1]);
+    return '<div class="phase" style="--bc:'+phaseColor(m.color,i,n)+'">'+
+      '<div class="phase__wk">'+wk+'</div>'+
+      '<div class="phase__nm">'+getL(p.nm,lang)+'</div>'+
+      '<div class="phase__row"><span>'+L(lang,'lbl_int')+'</span><b>'+p.pct[0]+'–'+p.pct[1]+'%</b></div>'+
+      '<div class="phase__row"><span>'+L(lang,'lbl_vol')+'</span><b>'+p.vol+'%</b></div>'+
+      '<div class="phase__bar"><i style="width:'+p.vol+'%"></i></div>'+
+      '<p class="phase__focus">'+getL(p.focus,lang)+'</p>'+
+    '</div>';
+  }).join('');
+  // composition
+  var sig = getL(m.signature,lang).map(function(s){ return '<span class="tag-mv">'+s+'</span>'; }).join('');
+  var peakBadge = m.peakWeek
+    ? '<span class="macro__peak">'+L(lang,'lbl_peakAt').replace('{w}', m.peakWeek)+'</span>'
+    : '<span class="macro__peak flat">'+L(lang,'lbl_noPeak')+'</span>';
+
+  host.innerHTML =
+    '<div class="detail" style="--mc:'+m.color+'">'+
+      '<div class="detail__hd">'+
+        '<div><span class="detail__fam">'+m.family+'</span>'+
+          '<h3>'+m.name+'</h3>'+
+          '<p class="sub">'+getL(m.char,lang)+'</p></div>'+
+        '<div style="text-align:right; white-space:nowrap;">'+peakBadge+
+          '<div class="macro__meta" style="justify-content:flex-end; margin-top:10px;"><span><b>'+m.freqDays+' '+L(lang,'lbl_daysWk')+'</b></span><span><b>'+m.weeks+' '+L(lang,'lbl_weeksWord')+'</b></span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="detail__body">'+
+        '<p class="map-cap">'+L(lang,'map_intensity')+(m.peakWeek?' <span class="pk">· ▲ '+L(lang,'lbl_peakFlag')+'</span>':'')+'</p>'+
+        '<div class="imap">'+bars+'</div>'+
+        '<div class="ribbon">'+ribbon+'</div>'+
+        '<div class="phases">'+phaseCards+'</div>'+
+        '<div class="compo">'+
+          '<div class="compo__box"><p class="compo__t in">◆ '+L(lang,'lbl_signature')+'</p><div class="tags">'+sig+'</div></div>'+
+          '<div class="compo__box compo__out"><p class="compo__t out">✕ '+L(lang,'lbl_leavesout')+'</p><p>'+getL(m.leavesOut,lang)+'</p></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+}
+function currentLang(){ return document.documentElement.lang==='pt-BR' ? 'pt' : (document.documentElement.lang||'es'); }
+function renderMacros(lang){ renderCatalog(lang); renderDetail(lang); }
+function selectMacro(id, scroll){
+  currentMacroId = id;
+  var lang = currentLang();
+  renderCatalog(lang); renderDetail(lang);
+  if(scroll){ var el=document.getElementById('macroDetail'); if(el) el.scrollIntoView({behavior:'smooth', block:'center'}); }
+}
+
+/* ===== i18n ===== */
+var I18N = {
+  es: {
+    meta_title:"Holy Oly — Periodización para coaches de levantamiento",
+    meta_desc:"Indica la fecha de la competencia y Holy Oly arma los ciclos para que tu atleta llegue en pico. Periodización automática, carga y estrés de cada atleta, todo tu equipo en un panel.",
+    nav_cta:"Probar gratis",
+    hero_eyebrow:"Periodización para levantamiento olímpico",
+    hero_h1:'Indica la fecha de la competencia. <span class="grad">Holy Oly arma los ciclos</span> para que tu atleta llegue en pico.',
+    hero_lead:"Periodización automática por escuela, carga y estrés de cada atleta, y todo tu equipo en un solo panel. Olvídate de las planillas.",
+    cta_main:"Crea tu cuenta gratis",
+    cta_secondary:"Ver cómo funciona",
+    cta_note_b:"Gratis",
+    cta_note:"durante la fase de prueba · sin tarjeta",
+    prob_kicker:"El problema", prob_h2:"El día a día del coach, hoy",
+    pain1_h:"Planillas que no terminan nunca",
+    pain1_p:"Cada atleta en una hoja de cálculo distinta. Copiar, pegar y rezar para no romper una fórmula.",
+    pain2_h:"No sabes cómo llega cada uno",
+    pain2_p:"Sin un registro real, la fatiga y el estrés se notan cuando ya es demasiado tarde.",
+    pain3_h:"Creces y pierdes el control",
+    pain3_p:"Más atletas, más caos. El seguimiento individual se vuelve imposible de sostener.",
+    pil_kicker:"La solución", pil_h2:"Todo lo que necesitas, en un solo lugar",
+    pil_lead:"Las tres cosas que más cuestan al coach, resueltas y conectadas entre sí.",
+    p1_h:"Periodización que pica en la fecha",
+    p1_p:'Elige la escuela —<b>Búlgaro, Ruso, Chino, Cubano…</b>— y la fecha de la competencia. Holy Oly calcula los ciclos para llegar al pico. ¿Cambió la fecha? <b>Se reperiodiza sola</b>, sin tocar lo ya entrenado.',
+    p2_h:"Carga y estrés de cada atleta",
+    p2_p:'El atleta registra su sesión y tú ves <b>mapas de calor, adherencia y readiness</b>. Sabes quién viene fuerte y a quién bajarle la carga, <b>antes de que se lesione</b>.',
+    p3_h:"Escala sin perder el control",
+    p3_p:'10, 20 o 50 atletas. Cada uno ve <b>solo su plan</b>, claro y sin distracciones. Tú ves a todo el equipo desde <b>un panel</b>, con alertas de quién necesita atención.',
+    shot_kicker:"Así se ve", shot_h2:"El plan, sin ambigüedad",
+    shot_lead:"Porcentaje, kilos, series por repeticiones y los discos exactos a cargar. El atleta sabe qué hacer; tú sabes cómo viene.",
+    shot_today:"Hoy · Fuerza", shot_phase:"FASE: ACUMULACIÓN",
+    ex_squat:"Sentadilla", ex_snatch:"Arranque", ex_pull:"Tirón de arranque", per_side:"por lado",
+    ready_eyebrow:"★ READINESS DE HOY", ready_sub:"Lista para cargar pesado",
+    heat_title:"Adherencia · 10 semanas", heat_low:"Bajo", heat_high:"Alto",
+    diff_kicker:"Por qué es distinto", diff_h2:"Pensado por y para el levantamiento",
+    diff1:"ADN real de cada escuela", diff2:"Discos exactos (10·15·20·25)", diff3:"% + kg + series×reps por fila",
+    diff4:"Kilos reales, no percepciones", diff5:"Ciclo menstrual para atletas mujeres", diff6:"Historial de ciclos y récords",
+    final_kicker:"Empieza hoy", final_h2:"Tu próximo macrociclo, en minutos",
+    final_lead:"Crea tu cuenta, agrega tu primer atleta y arma un ciclo completo hoy mismo. Sin instalar nada.",
+    foot_tag:"Holy Oly · Hecho para coaches de levantamiento olímpico.",
+    mc_kicker:"El catálogo", mc_h2:"Macrociclos con metodología real",
+    mc_lead:"Cada escuela es un programa fundado en su literatura, no una plantilla genérica. Toca uno para ver su detalle.",
+    md_kicker:"El detalle del macro", md_h2:"Fases, intensidad y composición",
+    md_lead:"El mapa de intensidad semana a semana, las fases con su banda de porcentaje del máximo y volumen, y qué movimientos firma cada escuela.",
+    lbl_freq:"Frecuencia", lbl_dur:"Duración", lbl_int:"Intensidad", lbl_vol:"Volumen",
+    lbl_weeksWord:"semanas", lbl_daysWk:"días/sem",
+    lbl_peakAt:"Pica en sem. {w}", lbl_noPeak:"Sin pico", lbl_open:"Ver detalle ›", lbl_weekShort:"Sem",
+    map_intensity:"Intensidad (% del máximo) semana a semana", lbl_peakFlag:"PICO",
+    lbl_phases:"Fases", lbl_signature:"Movimientos firma", lbl_leavesout:"Deja fuera"
+  },
+  en: {
+    meta_title:"Holy Oly — Periodization for weightlifting coaches",
+    meta_desc:"Set the competition date and Holy Oly builds the cycles so your athlete peaks on the day. Automatic periodization, load and stress per athlete, your whole roster in one dashboard.",
+    nav_cta:"Try it free",
+    hero_eyebrow:"Periodization for Olympic weightlifting",
+    hero_h1:'Set the competition date. <span class="grad">Holy Oly builds the cycles</span> so your athlete peaks on the day.',
+    hero_lead:"Automatic periodization by methodology, load and stress for every athlete, and your whole roster in one dashboard. Leave the spreadsheets behind.",
+    cta_main:"Create your free account",
+    cta_secondary:"See how it works",
+    cta_note_b:"Free",
+    cta_note:"during the trial phase · no credit card",
+    prob_kicker:"The problem", prob_h2:"A coach's day-to-day, today",
+    pain1_h:"Spreadsheets that never end",
+    pain1_p:"Every athlete on a different sheet. Copy, paste, and pray you don't break a formula.",
+    pain2_h:"You can't tell how each one is doing",
+    pain2_p:"Without real logging, fatigue and stress only show up when it's already too late.",
+    pain3_h:"You grow and lose control",
+    pain3_p:"More athletes, more chaos. Individual follow-up becomes impossible to sustain.",
+    pil_kicker:"The solution", pil_h2:"Everything you need, in one place",
+    pil_lead:"The three hardest parts of coaching, solved and wired together.",
+    p1_h:"Periodization that peaks on the date",
+    p1_p:'Pick the methodology —<b>Bulgarian, Russian, Chinese, Cuban…</b>— and the competition date. Holy Oly computes the cycles to peak on time. Date changed? <b>It re-periodizes itself</b>, never touching what\'s already trained.',
+    p2_h:"Load and stress for every athlete",
+    p2_p:'Athletes log their sessions; you get <b>heat maps, adherence and readiness</b>. Know who\'s thriving and who needs a deload — <b>before an injury</b>.',
+    p3_h:"Scale without losing control",
+    p3_p:'10, 20, or 50 athletes. Each sees <b>only their own plan</b>, clean and focused. You see the whole roster from <b>one dashboard</b>, with alerts on who needs attention.',
+    shot_kicker:"Here's how it looks", shot_h2:"The plan, zero ambiguity",
+    shot_lead:"Percentage, kilos, sets × reps, and the exact plates to load. The athlete knows what to do; you know how they're tracking.",
+    shot_today:"Today · Strength", shot_phase:"PHASE: ACCUMULATION",
+    ex_squat:"Back Squat", ex_snatch:"Snatch", ex_pull:"Snatch Pull", per_side:"per side",
+    ready_eyebrow:"★ TODAY'S READINESS", ready_sub:"Ready to go heavy",
+    heat_title:"Adherence · 10 weeks", heat_low:"Low", heat_high:"High",
+    diff_kicker:"Why it's different", diff_h2:"Built by and for weightlifting",
+    diff1:"Each methodology's real DNA", diff2:"Exact plates (10·15·20·25)", diff3:"% + kg + sets×reps per line",
+    diff4:"Real kilos, not perceptions", diff5:"Menstrual cycle for female athletes", diff6:"Cycle & record history",
+    final_kicker:"Start today", final_h2:"Your next macrocycle, in minutes",
+    final_lead:"Create your account, add your first athlete, and build a full cycle today. Nothing to install.",
+    foot_tag:"Holy Oly · Made for Olympic weightlifting coaches.",
+    mc_kicker:"The catalog", mc_h2:"Macrocycles with real methodology",
+    mc_lead:"Each school is a program grounded in its own literature, not a generic template. Tap one to see its detail.",
+    md_kicker:"The macrocycle detail", md_h2:"Phases, intensity and composition",
+    md_lead:"The week-by-week intensity map, each phase with its percent-of-max band and volume, and which lifts each school is known for.",
+    lbl_freq:"Frequency", lbl_dur:"Duration", lbl_int:"Intensity", lbl_vol:"Volume",
+    lbl_weeksWord:"weeks", lbl_daysWk:"days/wk",
+    lbl_peakAt:"Peaks wk {w}", lbl_noPeak:"No peak", lbl_open:"See detail ›", lbl_weekShort:"Wk",
+    map_intensity:"Intensity (% of max) week by week", lbl_peakFlag:"PEAK",
+    lbl_phases:"Phases", lbl_signature:"Signature lifts", lbl_leavesout:"Leaves out"
+  },
+  pt: {
+    meta_title:"Holy Oly — Periodização para treinadores de levantamento",
+    meta_desc:"Defina a data da competição e o Holy Oly monta os ciclos para o seu atleta atingir o pico no dia. Periodização automática, carga e estresse de cada atleta, todo o elenco em um painel.",
+    nav_cta:"Testar grátis",
+    hero_eyebrow:"Periodização para levantamento olímpico",
+    hero_h1:'Defina a data da competição. <span class="grad">O Holy Oly monta os ciclos</span> para o seu atleta atingir o pico no dia.',
+    hero_lead:"Periodização automática por escola, carga e estresse de cada atleta, e todo o seu elenco em um só painel. Deixe as planilhas para trás.",
+    cta_main:"Crie sua conta grátis",
+    cta_secondary:"Ver como funciona",
+    cta_note_b:"Grátis",
+    cta_note:"durante a fase de testes · sem cartão",
+    prob_kicker:"O problema", prob_h2:"O dia a dia do treinador, hoje",
+    pain1_h:"Planilhas que não acabam nunca",
+    pain1_p:"Cada atleta em uma planilha diferente. Copiar, colar e rezar para não quebrar uma fórmula.",
+    pain2_h:"Você não sabe como cada um está",
+    pain2_p:"Sem um registro real, a fadiga e o estresse aparecem quando já é tarde demais.",
+    pain3_h:"Você cresce e perde o controle",
+    pain3_p:"Mais atletas, mais caos. O acompanhamento individual fica impossível de manter.",
+    pil_kicker:"A solução", pil_h2:"Tudo o que você precisa, num só lugar",
+    pil_lead:"As três partes mais difíceis do trabalho do treinador, resolvidas e conectadas.",
+    p1_h:"Periodização que atinge o pico na data",
+    p1_p:'Escolha a escola —<b>Búlgaro, Russo, Chinês, Cubano…</b>— e a data da competição. O Holy Oly calcula os ciclos para chegar ao pico. Mudou a data? <b>Ele re-periodiza sozinho</b>, sem mexer no que já foi treinado.',
+    p2_h:"Carga e estresse de cada atleta",
+    p2_p:'O atleta registra a sessão e você vê <b>mapas de calor, adesão e readiness</b>. Saiba quem está forte e de quem reduzir a carga, <b>antes da lesão</b>.',
+    p3_h:"Escale sem perder o controle",
+    p3_p:'10, 20 ou 50 atletas. Cada um vê <b>só o seu plano</b>, limpo e focado. Você vê todo o elenco em <b>um painel</b>, com alertas de quem precisa de atenção.',
+    shot_kicker:"Veja como é", shot_h2:"O plano, sem ambiguidade",
+    shot_lead:"Porcentagem, quilos, séries × repetições e as anilhas exatas. O atleta sabe o que fazer; você sabe como ele está.",
+    shot_today:"Hoje · Força", shot_phase:"FASE: ACUMULAÇÃO",
+    ex_squat:"Agachamento", ex_snatch:"Arranco", ex_pull:"Puxada de arranco", per_side:"por lado",
+    ready_eyebrow:"★ READINESS DE HOJE", ready_sub:"Pronta para pegar pesado",
+    heat_title:"Adesão · 10 semanas", heat_low:"Baixo", heat_high:"Alto",
+    diff_kicker:"Por que é diferente", diff_h2:"Feito por e para o levantamento",
+    diff1:"DNA real de cada escola", diff2:"Anilhas exatas (10·15·20·25)", diff3:"% + kg + séries×reps por linha",
+    diff4:"Quilos reais, não percepções", diff5:"Ciclo menstrual para atletas mulheres", diff6:"Histórico de ciclos e recordes",
+    final_kicker:"Comece hoje", final_h2:"Seu próximo macrociclo, em minutos",
+    final_lead:"Crie sua conta, adicione seu primeiro atleta e monte um ciclo completo hoje. Sem instalar nada.",
+    foot_tag:"Holy Oly · Feito para treinadores de levantamento olímpico.",
+    mc_kicker:"O catálogo", mc_h2:"Macrociclos com metodologia real",
+    mc_lead:"Cada escola é um programa fundamentado na sua literatura, não um template genérico. Toque em um para ver o detalhe.",
+    md_kicker:"O detalhe do macro", md_h2:"Fases, intensidade e composição",
+    md_lead:"O mapa de intensidade semana a semana, cada fase com sua faixa de percentual do máximo e volume, e quais movimentos cada escola assina.",
+    lbl_freq:"Frequência", lbl_dur:"Duração", lbl_int:"Intensidade", lbl_vol:"Volume",
+    lbl_weeksWord:"semanas", lbl_daysWk:"dias/sem",
+    lbl_peakAt:"Pico na sem. {w}", lbl_noPeak:"Sem pico", lbl_open:"Ver detalhe ›", lbl_weekShort:"Sem",
+    map_intensity:"Intensidade (% do máximo) semana a semana", lbl_peakFlag:"PICO",
+    lbl_phases:"Fases", lbl_signature:"Movimentos-assinatura", lbl_leavesout:"Deixa de fora"
+  }
+};
+
+function setLang(lang){
+  var dict = I18N[lang] || I18N.es;
+  document.documentElement.lang = (lang==='pt') ? 'pt-BR' : lang;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    if(dict[k]==null) return;
+    var attr = el.getAttribute('data-i18n-attr');
+    if(attr){ el.setAttribute(attr, dict[k]); }
+    else if(el.tagName==='TITLE'){ document.title = dict[k]; }
+    else { el.innerHTML = dict[k]; }
+  });
+  document.querySelectorAll('.langsw button').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-lang')===lang);
+  });
+  renderMacros(lang);
+  try{ localStorage.setItem('holyoly-lang', lang); }catch(e){}
+}
+
+(function initLang(){
+  var saved=null;
+  try{ saved = localStorage.getItem('holyoly-lang'); }catch(e){}
+  var nav = (navigator.language || navigator.userLanguage || 'es').toLowerCase();
+  var auto = saved || (nav.indexOf('pt')===0 ? 'pt' : nav.indexOf('en')===0 ? 'en' : 'es');
+  setLang(auto);
+  fillDiscs();
+  document.querySelectorAll('.langsw button').forEach(function(b){
+    b.addEventListener('click', function(){ setLang(b.getAttribute('data-lang')); });
+  });
+})();
+
+/* ===== Scroll reveal ===== */
+(function(){
+  var els = document.querySelectorAll('.rv');
+  if(!('IntersectionObserver' in window)){ els.forEach(function(e){ e.classList.add('in'); }); return; }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { threshold:0.12, rootMargin:"0px 0px -8% 0px" });
+  els.forEach(function(e){ io.observe(e); });
+})();
+</script>
+</body>
+</html>
