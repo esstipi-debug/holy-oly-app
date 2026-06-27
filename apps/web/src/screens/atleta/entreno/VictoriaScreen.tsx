@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import type { MePlanView, SessionView, MeRecorrido, DayLog, MonitorSeries } from "@holy-oly/core";
 import { sessionTonnage, completion } from "@holy-oly/core";
@@ -18,6 +19,7 @@ const costToReach = (level: number): number => 100 * level * (level - 1);
  * Macro). XP/nivel/racha calculados (sin backend). Sin trabajo marcado → "Sesión registrada" sobria.
  */
 export function VictoriaScreen() {
+  const { t } = useTranslation(["atleta", "common"]);
   const { week: weekP, idx: idxP } = useParams();
   const navigate = useNavigate();
   const week = Number(weekP);
@@ -51,12 +53,12 @@ export function VictoriaScreen() {
     return () => { on = false; };
   }, [week, idx, navigate]);
 
-  if (state === "loading") return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>Cargando…</div>;
+  if (state === "loading") return <div style={{ padding: 20, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>{t("common:loading")}</div>;
   if (state === "error" || !session || !plan) {
     return (
       <div style={{ padding: 20 }}>
-        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>No pudimos cargar el resumen</div>
-        <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 14 }} onClick={() => navigate("/atleta")}>Volver al inicio</button>
+        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>{t("vicLoadError")}</div>
+        <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 14 }} onClick={() => navigate("/atleta")}>{t("common:backToHome")}</button>
       </div>
     );
   }
@@ -73,10 +75,10 @@ export function VictoriaScreen() {
   if (!didWork) {
     return (
       <div style={{ padding: "4px 2px" }}>
-        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 26, textTransform: "uppercase", color: "var(--wl-text)" }}>Sesión registrada</div>
-        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.5 }}>Día {session.day ?? idx + 1}{session.turno ? ` · ${session.turno}` : ""} — sin series marcadas. Cuando marques tus series, las celebramos.</div>
-        <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 16 }} onClick={onClaim}>Listo</button>
-        <button type="button" className="wl-btn" style={{ width: "100%", marginTop: 10 }} onClick={() => navigate("/atleta", { state: { openCheckin: true } })}>Registrar bienestar</button>
+        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 26, textTransform: "uppercase", color: "var(--wl-text)" }}>{t("vicSessionLogged")}</div>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 8, lineHeight: 1.5 }}>{t("vicDay", { day: session.day ?? idx + 1 })}{session.turno ? ` · ${session.turno}` : ""}{t("vicNoSetsMarked")}</div>
+        <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%", marginTop: 16 }} onClick={onClaim}>{t("vicDone")}</button>
+        <button type="button" className="wl-btn" style={{ width: "100%", marginTop: 10 }} onClick={() => navigate("/atleta", { state: { openCheckin: true } })}>{t("vicLogWellness")}</button>
       </div>
     );
   }
@@ -100,7 +102,7 @@ export function VictoriaScreen() {
   const lvl = levelInfo(cumXp);
   const currentWeek = planV?.currentWeek ?? week;
   const streakWeeks = weekStreak(semanas, currentWeek);
-  const tag = streakWeeks >= 4 ? "Imparable" : streakWeeks >= 2 ? "Constante" : "En marcha";
+  const tag = streakWeeks >= 4 ? t("vicTagUnstoppable") : streakWeeks >= 2 ? t("vicTagConsistent") : t("vicTagOnTrack");
 
   const lvlStart = costToReach(lvl.level);
   const span = Math.max(1, costToReach(lvl.nextLevel) - lvlStart);
@@ -120,9 +122,9 @@ export function VictoriaScreen() {
   const weekXp = recWeek ? Math.floor(recWeek.trabajoKg / 50) : 0;
   const weekStats: CelStat[] = recWeek
     ? [
-        { v: `${recWeek.sesionesHechas}/${recWeek.sesionesTotales}`, l: "días" },
-        { v: `${recWeek.sesionesTotales > 0 ? Math.round((recWeek.sesionesHechas / recWeek.sesionesTotales) * 100) : 0}%`, l: "cumplimiento" },
-        { v: fmtTon(wkVol), l: "volumen" },
+        { v: `${recWeek.sesionesHechas}/${recWeek.sesionesTotales}`, l: t("vicStatDays") },
+        { v: `${recWeek.sesionesTotales > 0 ? Math.round((recWeek.sesionesHechas / recWeek.sesionesTotales) * 100) : 0}%`, l: t("vicStatCompliance") },
+        { v: fmtTon(wkVol), l: t("vicStatVolume") },
       ]
     : [];
 
@@ -131,12 +133,12 @@ export function VictoriaScreen() {
   const macroSesiones = semanas.reduce((a, s) => a + s.sesionesHechas, 0);
   const macroTotales = semanas.reduce((a, s) => a + s.sesionesTotales, 0);
   const macroStats: CelStat[] = [
-    { v: `${planV?.totalWeeks ?? semanas.length}/${planV?.totalWeeks ?? semanas.length}`, l: "semanas" },
-    { v: fmtTon(macroVol), l: "volumen" },
-    { v: `${planV?.phases.length ?? 0}`, l: "fases ✓" },
-    { v: `Nv ${lvl.level}`, l: "nivel" },
-    { v: `${macroSesiones}`, l: "sesiones" },
-    { v: `${macroTotales > 0 ? Math.round((macroSesiones / macroTotales) * 100) : 0}%`, l: "cumplim." },
+    { v: `${planV?.totalWeeks ?? semanas.length}/${planV?.totalWeeks ?? semanas.length}`, l: t("vicStatWeeks") },
+    { v: fmtTon(macroVol), l: t("vicStatVolume") },
+    { v: `${planV?.phases.length ?? 0}`, l: `${t("vicStatPhases")} ✓` },
+    { v: t("vicLevelAbbr", { level: lvl.level }), l: t("vicStatLevel") },
+    { v: `${macroSesiones}`, l: t("vicStatSessions") },
+    { v: `${macroTotales > 0 ? Math.round((macroSesiones / macroTotales) * 100) : 0}%`, l: t("vicStatComplianceShort") },
   ];
 
   const data: CelData = {
@@ -145,10 +147,10 @@ export function VictoriaScreen() {
     radar: buildWellnessRadar(dayLog, series), // hoy (check-in) vs promedio (ítems semanales); null → empty-state
     streakWeeks,
     level: lvl.level, nextLevel: lvl.nextLevel, xpToNext: lvl.xpToNext, xpFromPct: fromPct, xpToPct: toPct, tag,
-    diaMeta: `Semana ${week} · Día ${session.day ?? idx + 1}${session.turno ? ` · ${session.turno}` : ""}`,
+    diaMeta: `${t("vicDiaMeta", { week, day: session.day ?? idx + 1 })}${session.turno ? ` · ${session.turno}` : ""}`,
     lifts, diaXp, diaTotalKg: tonnage, diaSets,
-    week, weekMeta: `${planV?.currentPhase ?? ""}${planV?.currentPhase ? " · " : ""}${recWeek?.sesionesHechas ?? 0} entrenos registrados`, weekStats, weekXp,
-    macroName: planV?.macroName ?? "Macro", macroMeta: `${planV?.totalWeeks ?? semanas.length} semanas · listo para competir`,
+    week, weekMeta: `${planV?.currentPhase ?? ""}${planV?.currentPhase ? " · " : ""}${t("vicWeekMeta", { count: recWeek?.sesionesHechas ?? 0 })}`, weekStats, weekXp,
+    macroName: planV?.macroName ?? t("vicMacroFallback"), macroMeta: t("vicMacroMeta", { count: planV?.totalWeeks ?? semanas.length }),
     macroStats, phases: planV?.phases.map((p) => p.name) ?? [], macroXp: cumXp,
     onClaim,
   };
@@ -156,7 +158,7 @@ export function VictoriaScreen() {
   return (
     <div>
       <Celebracion data={data} />
-      <button type="button" className="wl-btn" style={{ width: "100%", marginTop: 10 }} onClick={() => navigate("/atleta", { state: { openCheckin: true } })}>Registrar bienestar</button>
+      <button type="button" className="wl-btn" style={{ width: "100%", marginTop: 10 }} onClick={() => navigate("/atleta", { state: { openCheckin: true } })}>{t("vicLogWellness")}</button>
     </div>
   );
 }

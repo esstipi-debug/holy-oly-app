@@ -1,15 +1,17 @@
+import { useTranslation } from "react-i18next";
 import { DiscRow } from "../../../ui/Disc";
 
 /** Medidor de INTENSIDAD = % de 1RM (NO es RPE — el atleta nunca ve RPE). Nivel base/media/alta/máxima. */
 export function IntensityMeter({ pct }: { pct: number }) {
+  const { t } = useTranslation("atleta");
   const seg = 5;
   const filled = Math.max(1, Math.min(seg, Math.round((pct / 100) * seg)));
-  const level = pct >= 90 ? "máxima" : pct >= 82 ? "alta" : pct >= 70 ? "media" : "base";
+  const level = pct >= 90 ? t("heroIntensityMax") : pct >= 82 ? t("heroIntensityHigh") : pct >= 70 ? t("heroIntensityMid") : t("heroIntensityBase");
   const tone = pct >= 90 ? "max" : pct >= 82 ? "high" : pct >= 70 ? "mid" : "low";
   return (
     <div className={"et-hero__int is-" + tone}>
       <div className="et-hero__int-head">
-        <span className="et-hero__int-lbl">Intensidad</span>
+        <span className="et-hero__int-lbl">{t("heroIntensityLabel")}</span>
         <span className="et-hero__int-lvl">{level}</span>
       </div>
       <div className="et-hero__int-val">{pct}<span className="et-hero__int-pct">%</span></div>
@@ -33,6 +35,7 @@ export function ExerciseHero({
   movementName: string; targetKg?: number; pct?: number; sets: number; reps: number;
   barKg: number; nDone: number; total: number; onCollapse: () => void;
 }) {
+  const { t } = useTranslation("atleta");
   return (
     <div className="et-hero">
       <div className="et-hero__bg" aria-hidden><span /><span /><span /><span className="et-hero__iri" /></div>
@@ -41,10 +44,10 @@ export function ExerciseHero({
       <div className="et-hero__content">
         <div className="et-hero__top">
           <div>
-            <span className="et-hero__kicker">Movimiento · {nDone}/{total} series</span>
+            <span className="et-hero__kicker">{t("heroKicker", { nDone, total })}</span>
             <span className="et-hero__name">{movementName}</span>
           </div>
-          <button type="button" className="et-hero__collapse" aria-label="Cerrar ejercicio" onClick={onCollapse}>
+          <button type="button" className="et-hero__collapse" aria-label={t("heroCollapseAria")} onClick={onCollapse}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 15l6-6 6 6" /></svg>
           </button>
         </div>
@@ -57,7 +60,7 @@ export function ExerciseHero({
           {pct != null && <IntensityMeter pct={pct} />}
         </div>
 
-        <div className="et-hero__meta">{sets} series × {reps} {reps === 1 ? "rep" : "reps"} · por lado · barra {barKg} kg</div>
+        <div className="et-hero__meta">{t("heroMeta", { sets, reps, barKg })}</div>
       </div>
     </div>
   );

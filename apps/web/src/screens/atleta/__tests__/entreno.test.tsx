@@ -55,7 +55,7 @@ test("entrada: resumen con iniciar; tras iniciar abre el primer ejercicio (hero 
   fireEvent.click(screen.getByRole("button", { name: /iniciar entrenamiento/i }));
   // la card abierta muestra el calentamiento (valorado como volumen) y BLOQUEA las series hasta calentar
   expect(screen.getByText(/técnica \+ volumen de base/i)).toBeInTheDocument();
-  expect(screen.getByText(/Calentá primero/i)).toBeInTheDocument();
+  expect(screen.getByText(/Calienta primero/i)).toBeInTheDocument();
   // saltar calentamiento revela las series de trabajo (nacen hechas — adherencia por defecto)
   fireEvent.click(screen.getByRole("button", { name: /saltar calentamiento/i }));
   expect(screen.getByRole("button", { name: /serie 1 de 3/i })).toBeInTheDocument();

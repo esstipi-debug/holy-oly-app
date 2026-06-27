@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { WarmupSet } from "@holy-oly/core";
 import { DiscRow } from "../../../ui/Disc";
 
@@ -9,14 +10,15 @@ import { DiscRow } from "../../../ui/Disc";
 function WarmupRow({ s, barKg, done, onToggle, hidden, isNext }: {
   s: WarmupSet; barKg: number; done: boolean; onToggle: () => void; hidden: boolean; isNext: boolean;
 }) {
-  const label = s.label === "barra" ? "Barra" : `${s.pct}%`;
+  const { t } = useTranslation("atleta");
+  const label = s.label === "barra" ? t("wuBar") : `${s.pct}%`;
   return (
     <button
       type="button"
       className={"et-wrow" + (done ? " is-done" : "") + (hidden ? " is-hidden" : "") + (isNext ? " is-next" : "")}
       onClick={onToggle}
       aria-pressed={done}
-      aria-label={`calentamiento ${label} ${s.kg} kilos por ${s.reps}, ${done ? "hecho" : "pendiente"}`}
+      aria-label={t("wuRowAria", { label, kg: s.kg, reps: s.reps, status: done ? t("wuStatusDone") : t("wuStatusPending") })}
     >
       <span className="et-wrow__check" aria-hidden>{done ? "✓" : ""}</span>
       <span className="et-wrow__pct">{label}</span>
@@ -29,6 +31,7 @@ function WarmupRow({ s, barKg, done, onToggle, hidden, isNext }: {
 export function WarmupSection({ sets, barKg, doneSet, onToggle }: {
   sets: WarmupSet[]; barKg: number; doneSet: Set<number>; onToggle: (i: number) => void;
 }) {
+  const { t } = useTranslation("atleta");
   const [open, setOpen] = useState(true);
   const total = sets.length;
   const allDone = total > 0 && doneSet.size === total;
@@ -40,8 +43,8 @@ export function WarmupSection({ sets, barKg, doneSet, onToggle }: {
     return (
       <button type="button" className="et-warmup-pill" onClick={() => setOpen(true)}>
         <span className="et-warmup-pill__ic" aria-hidden>✓</span>
-        Calentamiento completo · {total} series
-        <span className="et-warmup-pill__re">ver</span>
+        {t("wuComplete", { count: total })}
+        <span className="et-warmup-pill__re">{t("wuSee")}</span>
       </button>
     );
   }
@@ -50,7 +53,7 @@ export function WarmupSection({ sets, barKg, doneSet, onToggle }: {
   return (
     <div className="et-warmup">
       <button type="button" className="et-warmup__head" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-        <span className="et-warmup__title">Calentamiento · técnica + volumen de base</span>
+        <span className="et-warmup__title">{t("wuTitle")}</span>
         <span className="et-warmup__meta">
           <span className="et-warmup__count">{doneSet.size}/{total}</span>
           <span className="et-warmup__chev" aria-hidden>{open ? "▾" : "▸"}</span>
@@ -66,7 +69,7 @@ export function WarmupSection({ sets, barKg, doneSet, onToggle }: {
             })}
           </div>
           {doneSet.size > 0 && !allDone && (
-            <div className="et-warmup__hint">{doneSet.size} hecha{doneSet.size > 1 ? "s" : ""} · se ocultan al marcarlas</div>
+            <div className="et-warmup__hint">{t("wuHint", { count: doneSet.size })}</div>
           )}
         </>
       )}
