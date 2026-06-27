@@ -26,6 +26,6 @@ test("con plan: «ver detalle» abre el sheet con las mesos", () => {
 
 test("sin plan: estado vacío, sin disparador de detalle", () => {
   render(<CaminoCard plan={null} />);
-  expect(screen.getByText(/Todavía no tenés un plan asignado/)).toBeInTheDocument();
+  expect(screen.getByText(/Todavía no tienes un plan asignado/)).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /ver detalle/i })).not.toBeInTheDocument();
 });

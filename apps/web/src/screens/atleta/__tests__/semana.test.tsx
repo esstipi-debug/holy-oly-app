@@ -120,7 +120,7 @@ test("día con el anterior pendiente → bloqueado (🔒) y no navega", async ()
   ];
   vi.mocked(me.getMeSessions).mockResolvedValueOnce(sessions);
   renderCard();
-  expect(await screen.findByText(/completá el día anterior/i)).toBeInTheDocument();
+  expect(await screen.findByText(/completa el día anterior/i)).toBeInTheDocument();
   const dia2 = screen.getByRole("button", { name: "Día 2" });
   expect(dia2).toBeDisabled();
   fireEvent.click(dia2);

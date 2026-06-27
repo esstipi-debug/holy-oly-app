@@ -1,0 +1,15 @@
+{
+  "homeError": "No se pudo cargar tu inicio. Probá de nuevo más tarde.",
+  "homeLinkCuenta": "Vinculate con tu coach en Cuenta ›",
+  "homeCheckinDoneSub": "Gracias por registrarte · podés editarlo cuando quieras",
+  "titularWarnSt": "Cuidate hoy",
+  "titularAlertSt": "Pará la oreja",
+  "titularOkMsg": "Tu recuperación está <b>en tu rango normal</b>. Seguí el plan como viene.",
+  "titularWarnMsg": "Tu recuperación está algo por debajo de tu normal. Hoy bajá un escalón la intensidad y <b>priorizá dormir</b>.",
+  "titularAlertMsg": "Tu recuperación está bastante por debajo de tu normal. Hoy conviene <b>aflojar</b> — hablalo con tu coach.",
+  "caminoNoPlanTitle": "Todavía no tenés un plan asignado",
+  "semAllDone": "✓ Registraste toda la semana — tocá un día para editar.",
+  "semTapRegister": "tocá un día para registrar tu entreno",
+  "semInOrder": "Completá los días en orden para seguir.",
+  "semLocked": "🔒 completá el día anterior"
+}

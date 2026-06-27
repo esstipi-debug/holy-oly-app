@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { SessionView } from "@holy-oly/core";
 import { weekDoneSummary, sessionsByDay, priorDaysResolved } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../../data/meClient";
@@ -9,13 +10,13 @@ const doneOf = (s: SessionView) => s.exercises.filter((e) => e.actual?.done).len
 // (un registro existe ⇔ la sesión es hecho/anulado; completar siempre crea el registro con su fecha).
 const isResolved = (s: SessionView) => s.anulado === true || s.fecha != null;
 
-const labelOf = (s: SessionView) => {
-  const day = s.day ?? s.sessionIdx + 1;
-  return s.turno ? `Día ${day} · ${s.turno}` : `Día ${day}`;
-};
-
 export function SemanaCard({ week, client = meClient }: { week: number; client?: MeClient }) {
   const navigate = useNavigate();
+  const { t } = useTranslation("atleta");
+  const labelOf = (s: SessionView): string => {
+    const day = s.day ?? s.sessionIdx + 1;
+    return s.turno ? t("semDayTurno", { day, turno: s.turno }) : t("semDay", { day });
+  };
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
   useEffect(() => {
     let on = true;
@@ -42,9 +43,9 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
 
   return (
     <section className="ho-card">
-      <div className="ho-card__head"><span className="ho-card__t">Tu semana</span></div>
+      <div className="ho-card__head"><span className="ho-card__t">{t("semTitle")}</span></div>
       {allDone ? (
-        <div className="ho-card__sub">✓ Registraste toda la semana — tocá un día para editar.</div>
+        <div className="ho-card__sub">{t("semAllDone")}</div>
       ) : next ? (
         <>
           <button
@@ -53,12 +54,12 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
             style={{ width: "100%", marginTop: 10 }}
             onClick={() => navigate(`/atleta/entreno/${week}/${next.sessionIdx}`)}
           >
-            Registrar entreno · {labelOf(next)}
+            {t("semRegister", { label: labelOf(next) })}
           </button>
-          <div className="ho-card__sub">tocá un día para registrar tu entreno</div>
+          <div className="ho-card__sub">{t("semTapRegister")}</div>
         </>
       ) : (
-        <div className="ho-card__sub">Completá los días en orden para seguir.</div>
+        <div className="ho-card__sub">{t("semInOrder")}</div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 10 }}>
         {sessionsByDay(sessions).flatMap((g) => g.sesiones).map(({ session: s }) => {
@@ -70,10 +71,14 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
             : state === "anulado" ? "color-mix(in srgb,var(--wl-text) 30%,transparent)"
             : state === "en curso" ? "var(--wl-muted)"
             : "color-mix(in srgb,var(--wl-text) 22%,transparent)";
-          const meta = locked ? "🔒 completá el día anterior"
-            : state === "anulado" ? "anulado"
-            : state === "hecho" && s.fecha ? `${done}/${total} · hecho · ${s.fecha}`
-            : `${done}/${total} · ${state}`;
+          const stateLabel = state === "anulado" ? t("semAnulado")
+            : state === "hecho" ? t("semStateDone")
+            : state === "en curso" ? t("semStateInProgress")
+            : t("semStatePending");
+          const meta = locked ? t("semLocked")
+            : state === "anulado" ? t("semAnulado")
+            : state === "hecho" && s.fecha ? t("semMetaDoneDated", { done, total, date: s.fecha })
+            : t("semMetaState", { done, total, state: stateLabel });
           return (
             <button key={s.sessionIdx} type="button" aria-label={labelOf(s)} disabled={locked}
               onClick={() => navigate(`/atleta/entreno/${week}/${s.sessionIdx}`)}
@@ -88,7 +93,12 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
       {resumen.totalKg > 0 && (
         <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 10, fontVariantNumeric: "tabular-nums" }}>
           {/* «~» cuando el total incluye calentamiento: la rampa es ESTIMADA (prescrita, no registrada) — regla 06-11 */}
-          Esta semana: {resumen.calentamientoKg > 0 ? "~" : ""}{resumen.totalKg.toLocaleString("es-CL")} kg · {resumen.sesionesHechas}/{resumen.sesionesTotales} sesiones
+          {t("semWeekTotal", {
+            kg: `${resumen.calentamientoKg > 0 ? "~" : ""}${resumen.totalKg.toLocaleString("es-CL")}`,
+            done: resumen.sesionesHechas,
+            total: resumen.sesionesTotales,
+            count: resumen.sesionesTotales,
+          })}
         </div>
       )}
     </section>
