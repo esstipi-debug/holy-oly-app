@@ -1,5 +1,12 @@
 {
   "noMacroSub": "Asignale un macrociclo para cargar sus RM y armar el plan.",
   "previewEmpty": "Sin sesión esta semana — el atleta vería su estado vacío. Asigná o ajustá el plan.",
-  "previewFooter": "Esto es lo que recibe tu atleta, con los discos. ¿Lo querés para tu equipo?"
+  "previewFooter": "Esto es lo que recibe tu atleta, con los discos. ¿Lo querés para tu equipo?",
+  "listEmptySub1": "Creá una competencia y acoplá a varios atletas de una.",
+  "listEmptySub2": "A cada uno podés marcarle si es su pico o una compe de paso.",
+  "formNeedNameDate": "Poné un nombre y una fecha.",
+  "detailEmptyEntries": "Todavía no acoplaste a nadie. Tocá “Acoplar atletas”.",
+  "acoplarSub": "Elegí del plantel y marcá el rol de cada uno.",
+  "acoplarNoRoster": "Todavía no tenés atletas en tu plantel — invitalos desde Invitaciones para poder acoplarlos.",
+  "acoplarBtnEmpty": "Elegí atletas"
 }
