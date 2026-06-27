@@ -1,12 +1,21 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { PrCandidate, RM, RmLift } from "@holy-oly/core";
 import { RM_LIFTS } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 import { isoDateLabel } from "../../../ui/charts/planDates";
 
-export const RM_LABELS: Record<RmLift, string> = {
-  arranque: "Arranque", envion: "Envión", sentadilla: "Sentadilla", frente: "Frente",
-};
+/** Etiquetas de los 4 RM de la casa (ns coach). Hook para que sigan el idioma activo; lo reusan
+ *  RmSection, PrilepinSection y ComplexAnalysis (centraliza lo que antes era el const RM_LABELS). */
+export function useRmLabels(): Record<RmLift, string> {
+  const { t } = useTranslation("coach");
+  return {
+    arranque: t("rmLiftArranque"),
+    envion: t("rmLiftEnvion"),
+    sentadilla: t("rmLiftSentadilla"),
+    frente: t("rmLiftFrente"),
+  };
+}
 
 /** "manual": editar 1+ de los 4 · "pr": confirmar un candidato (un solo lift, kg precargado). */
 export type RmSheetMode = { kind: "manual" } | { kind: "pr"; candidate: PrCandidate };
@@ -33,6 +42,8 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
   onClose: () => void;
   onSave: (updates: { lift: RmLift; kg: number }[], reason: "manual" | "pr") => Promise<void>;
 }) {
+  const { t } = useTranslation(["coach", "common"]);
+  const RM_LABELS = useRmLabels();
   const [draft, setDraft] = useState<Draft>(() => toDraft(rms));
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
@@ -80,14 +91,14 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
   }
 
   return (
-    <BottomSheet open onClose={onClose} ariaLabel={mode.kind === "pr" ? "Confirmar PR" : "Editar RMs"}>
+    <BottomSheet open onClose={onClose} ariaLabel={mode.kind === "pr" ? t("rmSheetConfirmAria") : t("rmEditRms")}>
       <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>
-        {mode.kind === "pr" ? "Confirmar PR → subir RM" : "Editar RMs"}
+        {mode.kind === "pr" ? t("rmSheetTitle") : t("rmEditRms")}
       </div>
       {mode.kind === "pr" && (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 6 }}>
-          {mode.candidate.movementName} · levantó {mode.candidate.kg} kg · {mode.candidate.doneAt ? isoDateLabel(mode.candidate.doneAt) : `sem ${mode.candidate.week}`}
-          <br />El RM final lo ponés vos (si lo hizo por reps, el 1RM es más).
+          {mode.candidate.movementName} · {t("rmLifted", { kg: mode.candidate.kg, when: mode.candidate.doneAt ? isoDateLabel(mode.candidate.doneAt) : t("compWeekLabel", { week: mode.candidate.week }) })}
+          <br />{t("rmFinalNote")}
         </div>
       )}
       <div style={{ display: "grid", gridTemplateColumns: mode.kind === "pr" ? "1fr" : "1fr 1fr", gap: 10, marginTop: 12 }}>
@@ -106,17 +117,17 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
       </div>
       {saveError && (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 10 }}>
-          No se pudo guardar. Reintentá.
+          {t("rmSaveError")}
         </div>
       )}
       <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
         <button type="button" onClick={onClose}
           style={{ flex: 1, minHeight: 44, borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-text) 15%,transparent)", background: "transparent", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-          Cancelar
+          {t("common:cancel")}
         </button>
         <button type="button" disabled={!canSave} onClick={() => void submit()}
           style={{ flex: 1, minHeight: 44, borderRadius: 10, border: 0, background: canSave ? "var(--wl-accent)" : "color-mix(in srgb,var(--wl-text) 12%,transparent)", color: canSave ? "var(--wl-bg)" : "var(--wl-muted)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, cursor: canSave ? "pointer" : "default" }}>
-          {saving ? "Guardando…" : "Guardar"}
+          {saving ? t("common:saving") : t("common:save")}
         </button>
       </div>
     </BottomSheet>

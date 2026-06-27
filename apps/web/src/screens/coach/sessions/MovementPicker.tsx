@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import { searchMovements, MOVEMENTS } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 
@@ -12,13 +13,14 @@ const item: CSSProperties = {
 export function MovementPicker({ open, onClose, onPick }: {
   open: boolean; onClose: () => void; onPick: (movementId: string) => void;
 }) {
+  const { t } = useTranslation("coach");
   const [q, setQ] = useState("");
   const results = q.trim() ? searchMovements(q).slice(0, 30) : MOVEMENTS.filter((m) => m.id === m.baseId).slice(0, 30);
   return (
-    <BottomSheet open={open} onClose={onClose} ariaLabel="Elegir un movimiento">
-      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>Elegí un movimiento</div>
-      <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar movimiento…"
-        aria-label="Buscar movimiento"
+    <BottomSheet open={open} onClose={onClose} ariaLabel={t("mpAria")}>
+      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, color: "var(--wl-text)" }}>{t("mpTitle")}</div>
+      <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("mpSearchPlaceholder")}
+        aria-label={t("mpSearchAria")}
         style={{ width: "100%", boxSizing: "border-box", marginTop: 10, padding: "10px 12px", borderRadius: 10,
           border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", background: "var(--wl-bg)", color: "var(--wl-text)",
           fontFamily: "var(--wl-display)", fontSize: 15 }} />
@@ -26,9 +28,9 @@ export function MovementPicker({ open, onClose, onPick }: {
         {results.map((m) => (
           <button key={m.id} type="button" style={item} onClick={() => { onPick(m.id); onClose(); }}>{m.name}</button>
         ))}
-        {results.length === 0 && <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 10 }}>Sin resultados.</div>}
+        {results.length === 0 && <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 10 }}>{t("mpNoResults")}</div>}
         {q.trim() && results.length >= 30 && (
-          <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 10 }}>Mostrando 30 — refiná la búsqueda para ver más.</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 10 }}>{t("mpShowing30")}</div>
         )}
       </div>
     </BottomSheet>

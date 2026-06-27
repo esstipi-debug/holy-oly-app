@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { PrescribedExercise, RM, SessionView } from "@holy-oly/core";
 import { kgDeviation } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
 import { SessionEditor } from "./SessionEditor";
 import { ComplexAnalysis } from "./ComplexAnalysis";
 import { RetryButton } from "../../../ui/RetryButton";
+import { Loading } from "../../../ui/Loading";
 
 const sec: CSSProperties = { fontFamily: "var(--wl-display)", fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--wl-muted)", margin: "22px 0 10px" };
 const card: CSSProperties = { background: "var(--wl-surface)", borderRadius: "var(--wl-radius)", padding: "10px 12px", marginTop: 8 };
@@ -23,6 +25,7 @@ function load(targetKg: number | undefined): string {
 
 export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId: string; hoyWeek: number; totalWeeks: number }) {
   const repo = useRepository();
+  const { t } = useTranslation("coach");
   const [week, setWeek] = useState(Math.min(Math.max(hoyWeek, 1), totalWeeks));
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
   // RMs vigentes del plan — base del eslabón débil del complejo (sin plan → sin kg, oculto honesto).
@@ -64,33 +67,33 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={sec}>Sesiones</div>
+        <div style={sec}>{t("secSessions")}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
-          <button type="button" aria-label="semana anterior" onClick={() => setWeek((w) => Math.max(1, w - 1))} style={{ border: 0, background: "transparent", color: "var(--wl-text)", cursor: "pointer", fontSize: 16 }}>‹</button>
-          Sem {week}
-          <button type="button" aria-label="semana siguiente" onClick={() => setWeek((w) => Math.min(totalWeeks, w + 1))} style={{ border: 0, background: "transparent", color: "var(--wl-text)", cursor: "pointer", fontSize: 16 }}>›</button>
+          <button type="button" aria-label={t("sesPrevWeek")} onClick={() => setWeek((w) => Math.max(1, w - 1))} style={{ border: 0, background: "transparent", color: "var(--wl-text)", cursor: "pointer", fontSize: 16 }}>‹</button>
+          {t("sesWeekShort", { week })}
+          <button type="button" aria-label={t("sesNextWeek")} onClick={() => setWeek((w) => Math.min(totalWeeks, w + 1))} style={{ border: 0, background: "transparent", color: "var(--wl-text)", cursor: "pointer", fontSize: 16 }}>›</button>
         </div>
       </div>
       {error ? (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-danger)" }}>
-          No se pudieron cargar las sesiones.{" "}
+          {t("sesLoadError")}{" "}
           <RetryButton onClick={refresh} />
         </div>
       ) : sessions === null ? (
-        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Cargando…</div>
+        <Loading style={{ fontFamily: "var(--mono)", fontSize: 11 }} />
       ) : sessions.length === 0 ? (
-        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>Sin sesiones para esta semana (asigná un macro con receta o armalas a mano).</div>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>{t("sesEmpty")}</div>
       ) : (
         sessions.map((s) => (
           <div key={s.sessionIdx} style={card}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 0 }}>
-                <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: "var(--wl-text)" }}>Día {s.day ?? s.sessionIdx + 1}{s.turno ? ` · ${s.turno}` : ""}</span>
+                <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13, color: "var(--wl-text)" }}>{t("sesDay", { n: s.day ?? s.sessionIdx + 1 })}{s.turno ? ` · ${s.turno}` : ""}</span>
                 {s.fecha && (
-                  <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginLeft: 8 }}>registrado el {s.fecha}</span>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginLeft: 8 }}>{t("sesRegisteredOn", { date: s.fecha })}</span>
                 )}
               </div>
-              <button type="button" aria-label={`editar sesión día ${s.sessionIdx + 1}`} onClick={() => setEditing(s)} style={{ border: 0, background: "transparent", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11 }}>editar ›</button>
+              <button type="button" aria-label={t("sesEditAria", { n: s.sessionIdx + 1 })} onClick={() => setEditing(s)} style={{ border: 0, background: "transparent", color: "var(--wl-accent)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11 }}>{t("sesEdit")}</button>
             </div>
             {s.exercises.map((e, i) => {
               const dev = e.actual?.done ? kgDeviation(e.targetKg, e.actual.kg) : "none";
@@ -102,13 +105,13 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
                     <span>
                       {e.sets}×{e.reps} · {load(e.targetKg)}
                       {e.actual?.desfasado ? (
-                        <span style={{ color: "var(--wl-muted)" }}>{" · ⚠ desfasado · registró "}{e.actual.movementName}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}</span>
+                        <span style={{ color: "var(--wl-muted)" }}>{" · ⚠ "}{t("sesDesfasado")}{" "}{e.actual.movementName}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}</span>
                       ) : e.actual?.substituted ? (
-                        <span style={{ color: "var(--wl-accent)" }}>{" · real "}{e.actual.movementName}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}{" (sustituido)"}</span>
+                        <span style={{ color: "var(--wl-accent)" }}>{" · "}{t("sesReal")}{" "}{e.actual.movementName}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}{" "}{t("sesSubstituted")}</span>
                       ) : e.actual?.done && e.actual.kg != null ? (
-                        <span style={{ color: "var(--wl-accent)" }}>{" · real "}{e.actual.kg} kg {marker}</span>
+                        <span style={{ color: "var(--wl-accent)" }}>{" · "}{t("sesReal")} {e.actual.kg} kg {marker}</span>
                       ) : e.actual && !e.actual.done ? (
-                        <span style={{ color: "var(--wl-muted)" }}>{" · no hecho"}</span>
+                        <span style={{ color: "var(--wl-muted)" }}>{" · "}{t("sesNotDone")}</span>
                       ) : null}
                     </span>
                   </div>
