@@ -11,5 +11,12 @@
   "semAllDone": "✓ Registraste toda la semana — tocá un día para editar.",
   "semTapRegister": "tocá un día para registrar tu entreno",
   "semInOrder": "Completá los días en orden para seguir.",
-  "semLocked": "🔒 completá el día anterior"
+  "semLocked": "🔒 completá el día anterior",
+  "ciDoneBody": "Registramos tu día. Esto alimenta tu tendencia — no un puntaje para competir. Volvé mañana, sin presión.",
+  "ciWeightQ": "¿Cuánto pesás hoy?",
+  "ciTapFace": "Tocá una carita",
+  "enBlockedRegister": "Completá el día anterior antes de registrar este.",
+  "enAnularConfirm": "¿Anular este entreno? Queda marcado como saltado (sin volumen). Podés reactivarlo después.",
+  "enBlockedAnular": "Completá el día anterior antes de anular este.",
+  "enLockedMsg": "Completá el día anterior para desbloquear este."
 }

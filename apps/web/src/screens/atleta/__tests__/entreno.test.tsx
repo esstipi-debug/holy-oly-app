@@ -150,7 +150,7 @@ test("día bloqueado (día anterior pendiente): muestra 🔒 y no deja iniciar",
       </Routes>
     </MemoryRouter>,
   );
-  expect(await screen.findByText(/completá el día anterior/i)).toBeInTheDocument();
+  expect(await screen.findByText(/completa el día anterior/i)).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /iniciar entrenamiento/i })).not.toBeInTheDocument();
 });
 

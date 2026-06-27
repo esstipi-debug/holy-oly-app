@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { DiscRow } from "../../../ui/Disc";
 
 export interface ResumenRow { movementName: string; sets: number; reps: number; kg?: number; pct?: number; }
@@ -21,6 +22,7 @@ export function ResumenDia({
   /** Secuencia de días (2026-06-13): anular el entreno (falló/canceló). Ausente → sin botón. */
   onAnular?: () => void;
 }) {
+  const { t } = useTranslation("atleta");
   const setDot = { width: 5, height: 14, borderRadius: 3, background: "color-mix(in srgb,var(--wl-text) 15%,transparent)" };
   return (
     <div>
@@ -30,17 +32,17 @@ export function ResumenDia({
           onClick={onFechaTap}
           style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", padding: "0 0 10px", display: "block" }}
         >
-          Entreno del {fecha} <span aria-hidden>▾</span>
+          {t("resDateLabel", { date: fecha })} <span aria-hidden>▾</span>
         </button>
       )}
-      <button type="button" className="wl-btn wl-btn--primary" onClick={onStart} style={{ width: "100%" }}>▶ Iniciar entrenamiento</button>
+      <button type="button" className="wl-btn wl-btn--primary" onClick={onStart} style={{ width: "100%" }}>{t("resStart")}</button>
       {onAnular && (
         <button
           type="button"
           onClick={onAnular}
           style={{ width: "100%", marginTop: 8, background: "none", border: "1px solid color-mix(in srgb,var(--wl-text) 14%,transparent)", borderRadius: "var(--wl-radius)", padding: "9px 0", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}
         >
-          Anular este entreno
+          {t("resAnular")}
         </button>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
