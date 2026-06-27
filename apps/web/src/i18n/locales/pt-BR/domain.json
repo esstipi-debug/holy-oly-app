@@ -1,0 +1,78 @@
+{
+  "tip": {
+    "sueno-higiene": {
+      "topic": "Sono",
+      "title": "Prepare o descanso desde cedo",
+      "body": "Diminua as telas e a luz forte uma hora antes de dormir, e deixe o quarto fresco (~18-19 °C). O que mais organiza o sono é deitar e levantar em horários parecidos."
+    },
+    "sueno-nsdr": {
+      "topic": "Recuperação",
+      "title": "Dormiu pouco? Recupere à tarde",
+      "body": "10-20 minutos de descanso profundo sem dormir (NSDR / yoga nidra) à tarde ajudam a repor parte do descanso que faltou, sem substituir o sono noturno."
+    },
+    "estres-suspiro": {
+      "topic": "Estresse",
+      "title": "Suspiro fisiológico para baixar a marcha",
+      "body": "Duas inspirações curtas seguidas pelo nariz e depois uma expiração longa pela boca. Repita 3-4 vezes: baixa as batidas em segundos."
+    },
+    "estres-luz": {
+      "topic": "Luz e humor",
+      "title": "Luz natural de manhã",
+      "body": "Cerca de 10-30 minutos de luz natural cedo ajudam a organizar seu relógio interno e suavizam a sensação de estresse ao longo do dia."
+    },
+    "fatiga-estimulos": {
+      "topic": "Energia",
+      "title": "Não acumule estímulos todos os dias",
+      "body": "Cafeína forte + pré-treino + música intensa em toda sessão, com o tempo, achata sua motivação de base. Reserve esses estímulos para os dias em que você realmente precisa."
+    },
+    "dolor-frio": {
+      "topic": "Recuperação",
+      "title": "Frio para incômodos, mas não colado ao treino",
+      "body": "O frio suave pode aliviar, mas deixe-o várias horas separado do treino de volume: logo depois, ele freia parte da adaptação que você busca."
+    },
+    "dolor-coach": {
+      "topic": "Cuidado",
+      "title": "Dor que não passa → avise",
+      "body": "Se a dor é localizada ou não cede, conte ao seu coach antes de carregar pesado. Se cuidar hoje é treinar melhor amanhã."
+    },
+    "humor-movimiento": {
+      "topic": "Humor",
+      "title": "Mexa-se um pouco para levantar o humor",
+      "body": "Luz natural e algum movimento leve (mesmo uma caminhada curta) levantam o humor mais do que ficar parado."
+    },
+    "motivacion-arranca": {
+      "topic": "Motivação",
+      "title": "A motivação vem depois de começar",
+      "body": "Não espere ter vontade antes de começar: faça a primeira série leve e deixe o corpo entrar no ritmo. Quase sempre o resto vem sozinho."
+    },
+    "gen-ok": {
+      "topic": "Manter",
+      "title": "Você está na sua faixa — mantenha",
+      "body": "Bom dia para seguir o plano como vem. Mantenha o sono e a luz da manhã constantes para que essa sequência se sustente."
+    },
+    "gen-warn": {
+      "topic": "Sono",
+      "title": "Como dormir melhor esta noite",
+      "body": "Diminua a luz e as telas uma hora antes de deitar e deixe o quarto fresco (~18-19 °C). Manter o horário é o que mais melhora sua recuperação."
+    },
+    "gen-alert": {
+      "topic": "Baixar a marcha",
+      "title": "Reinicie o sistema nervoso",
+      "body": "Suspiro fisiológico: duas inspirações curtas pelo nariz e uma expiração longa pela boca, 3-4 vezes. Se puder, some 10-20 min de descanso profundo (NSDR) à tarde."
+    },
+    "gen-descanso-series": {
+      "topic": "Recuperação",
+      "title": "O descanso longo entre séries rende",
+      "body": "No trabalho pesado, descansar 3-5 minutos entre séries não é perder tempo: deixa você mover mais quilos com melhor técnica."
+    }
+  },
+  "tipSource": "Baseado em divulgação científica sobre sono, estresse e recuperação",
+  "wellnessItem": {
+    "fatiga": { "label": "Fadiga", "q": "Quanto cansaço você sente hoje?", "lo": "Com energia", "hi": "Esgotamento" },
+    "dolor": { "label": "Dor", "q": "Tem incômodos ou dor?", "lo": "Nada", "hi": "Muito" },
+    "estres": { "label": "Estresse", "q": "Como está sua cabeça hoje?", "lo": "Em calma", "hi": "Muito estresse" },
+    "humor": { "label": "Humor", "q": "Como está seu ânimo?", "lo": "Pra baixo", "hi": "Ótimo" },
+    "motivacion": { "label": "Motivação", "q": "Com quanta vontade você veio?", "lo": "Pouca", "hi": "A mil" },
+    "sueno": { "label": "Sono", "q": "Como você dormiu?", "lo": "Mal", "hi": "Like a baby" }
+  }
+}

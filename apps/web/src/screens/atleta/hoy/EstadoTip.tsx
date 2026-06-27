@@ -9,7 +9,7 @@ import { lowestWellnessItem, pickWellnessTip } from "@holy-oly/core";
  * `seed` (derivado de la fecha) hace que el tip varíe día a día de forma determinística.
  */
 export function EstadoTip({ state, entry, seed = 0 }: { state: CellState; entry: DayLog | null; seed?: number }) {
-  const { t } = useTranslation("atleta");
+  const { t } = useTranslation(["atleta", "domain"]);
   if (state === "none") return null;
   const item = lowestWellnessItem(entry);
   const tip = pickWellnessTip({ state, item, seed });
@@ -24,12 +24,12 @@ export function EstadoTip({ state, entry, seed = 0 }: { state: CellState; entry:
       }}
     >
       <div style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".04em", textTransform: "uppercase", color: "var(--wl-accent)" }}>
-        {t("tipEyebrow", { topic: tip.topic })}
+        {t("tipEyebrow", { topic: t(`domain:tip.${tip.id}.topic`) })}
       </div>
-      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, color: "var(--wl-text)", marginTop: 5 }}>{tip.title}</div>
-      <p style={{ fontSize: 13, lineHeight: 1.5, color: "var(--wl-text)", opacity: 0.9, margin: "6px 0 0" }}>{tip.body}</p>
+      <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 15, color: "var(--wl-text)", marginTop: 5 }}>{t(`domain:tip.${tip.id}.title`)}</div>
+      <p style={{ fontSize: 13, lineHeight: 1.5, color: "var(--wl-text)", opacity: 0.9, margin: "6px 0 0" }}>{t(`domain:tip.${tip.id}.body`)}</p>
       <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 8 }}>
-        {t("tipFooter", { source: tip.source })}
+        {t("tipFooter", { source: t("domain:tipSource") })}
       </div>
     </section>
   );

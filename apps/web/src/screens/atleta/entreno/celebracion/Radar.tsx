@@ -3,11 +3,11 @@ import { useTranslation } from "react-i18next";
 /** Radar poligonal de bienestar: Hoy (relleno) vs tu Promedio (punteado). Valores 0..1 por vértice.
  *  Si no hay datos del día (caso común — el autorreporte vive en DayLog), el caller muestra el
  *  empty-state. `avg: null` = no hay histórico semanal → se dibuja SÓLO Hoy (jamás un promedio falso). */
-export interface RadarData { labels: string[]; today: number[]; avg: number[] | null }
+export interface RadarData { labels: string[]; fields: string[]; today: number[]; avg: number[] | null }
 
 export function Radar({ size = 180, data }: { size?: number; data: RadarData }) {
-  const { t } = useTranslation("atleta");
-  const { labels, today, avg } = data;
+  const { t } = useTranslation(["atleta", "domain"]);
+  const { labels, fields, today, avg } = data;
   const cx = size / 2, cy = size / 2;
   const R = size / 2 - 30;
   const n = labels.length;
@@ -27,7 +27,8 @@ export function Radar({ size = 180, data }: { size?: number; data: RadarData }) 
         const [x, y] = pt(i, 1.22);
         const anchor = Math.abs(x - cx) < 6 ? "middle" : x > cx ? "start" : "end";
         const dy = y < cy - 6 ? -2 : y > cy + 6 ? 9 : 3;
-        return <text key={`l${i}`} className="rd-label" x={x.toFixed(1)} y={(y + dy).toFixed(1)} textAnchor={anchor}>{lab}</text>;
+        const display = fields[i] ? t(`domain:wellnessItem.${fields[i]}.label`) : lab;
+        return <text key={`l${i}`} className="rd-label" x={x.toFixed(1)} y={(y + dy).toFixed(1)} textAnchor={anchor}>{display}</text>;
       })}
     </svg>
   );
