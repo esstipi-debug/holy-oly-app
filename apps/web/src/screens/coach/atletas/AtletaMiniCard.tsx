@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { CellState } from "@holy-oly/core";
 import type { RosterRow } from "../roster";
 import { STATUS } from "../../../ui/status";
@@ -40,6 +41,7 @@ function HeatStrip({ history }: { history: CellState[] }) {
 /** Mini-card de atleta (estilo FUT): initials + readiness + nombre + heat-strip. Tap → drill-down.
  *  El color de la barra/initials sale del estado (STATUS); sin-dato → "—" (nunca un número inventado). */
 export function AtletaMiniCard({ row, onPick }: { row: RosterRow; onPick: (id: string) => void }) {
+  const { t } = useTranslation();
   const nd = row.cell === "none";
   const st = STATUS[row.cell];
   return (
@@ -72,7 +74,7 @@ export function AtletaMiniCard({ row, onPick }: { row: RosterRow; onPick: (id: s
             border: "1px solid color-mix(in srgb, var(--wl-accent) 50%, transparent)",
             color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase",
           }}>
-            <span aria-hidden="true">⚠</span> Falta RM
+            <span aria-hidden="true">⚠</span> {t("missingRm")}
           </span>
         </div>
       )}

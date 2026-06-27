@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 type TabKey = "atletas" | "macros" | "cuenta";
 
@@ -28,10 +29,10 @@ const ICON: Record<TabKey, ReactNode> = {
   ),
 };
 
-const TABS: { key: TabKey; to: string; label: string }[] = [
-  { key: "atletas", to: "/coach", label: "Atletas" },
-  { key: "macros", to: "/coach/macros", label: "Macrociclos" },
-  { key: "cuenta", to: "/coach/cuenta", label: "Cuenta" },
+const TABS: { key: TabKey; to: string }[] = [
+  { key: "atletas", to: "/coach" },
+  { key: "macros", to: "/coach/macros" },
+  { key: "cuenta", to: "/coach/cuenta" },
 ];
 
 const bar: CSSProperties = {
@@ -50,15 +51,16 @@ const item = (active: boolean): CSSProperties => ({
 });
 
 export function BottomNav() {
+  const { t } = useTranslation();
   const active = activeTab(useLocation().pathname);
   return (
-    <nav style={bar} aria-label="Navegación del coach">
-      {TABS.map((t) => {
-        const on = t.key === active;
+    <nav style={bar} aria-label={t("nav.coachAria")}>
+      {TABS.map((tab) => {
+        const on = tab.key === active;
         return (
-          <Link key={t.key} to={t.to} style={item(on)} aria-current={on ? "page" : undefined}>
-            {ICON[t.key]}
-            <span>{t.label}</span>
+          <Link key={tab.key} to={tab.to} style={item(on)} aria-current={on ? "page" : undefined}>
+            {ICON[tab.key]}
+            <span>{t(`nav.${tab.key}`)}</span>
           </Link>
         );
       })}

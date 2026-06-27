@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useRepository } from "../../data/RepositoryProvider";
 import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
@@ -27,6 +28,7 @@ export function Drilldown() {
   // P1: la tab activa vive en `?tab=` (URL-as-state). Se deriva de la URL en cada render — sin estado
   // espejo — y se valida con toTab para que valores desconocidos caigan a Plan sin romper.
   const [params, setParams] = useSearchParams();
+  const { t } = useTranslation();
   const tab = toTab(params.get("tab"));
   const setTab = (next: TabKey): void => {
     const p = new URLSearchParams(params);
@@ -90,7 +92,7 @@ export function Drilldown() {
   const macro: Macrocycle | undefined = plan?.macroId ? MACROCYCLES.find((m) => m.id === plan.macroId) : undefined;
   const metodo = ROSTER_META[athlete.id]?.metodo ?? "";
   const cell = rosterStatus(series);
-  const estadoLabel = cell === "alert" ? "Alerta" : cell === "warn" ? "Vigilar" : cell === "ok" ? "OK" : "Sin datos";
+  const estadoLabel = cell === "alert" ? t("readiness.alert") : cell === "warn" ? t("readiness.warn") : cell === "ok" ? t("readiness.ok") : t("readiness.none");
 
   const maxWeek = macro?.phaseProfile.at(-1)?.weeks[1] ?? 16;
   // Effective plan start date: real one once M5 sets it; until then anchor today to the current

@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getSkin, setSkin as persistSkin, getVariant, setVariant as persistVariant, type CheckinVariant } from "./prefs";
 import { NavIcon } from "./primitives";
 // Imported (not "/icon.svg"): Vite inlines it as a data URI, so the logo survives the single-file
@@ -21,13 +22,14 @@ export function useAtletaCtx(): AtletaOutletCtx {
   return useOutletContext<AtletaOutletCtx>();
 }
 
-const NAV: Array<{ to: string; label: string; icon: ReactNode; end?: boolean }> = [
-  { to: "/atleta", label: "Hoy", icon: NavIcon.hoy, end: true },
-  { to: "/atleta/progreso", label: "Mi progreso", icon: NavIcon.prog },
-  { to: "/atleta/cuenta", label: "Cuenta", icon: NavIcon.cuenta },
+const NAV: Array<{ to: string; labelKey: string; icon: ReactNode; end?: boolean }> = [
+  { to: "/atleta", labelKey: "nav.hoy", icon: NavIcon.hoy, end: true },
+  { to: "/atleta/progreso", labelKey: "nav.progreso", icon: NavIcon.prog },
+  { to: "/atleta/cuenta", labelKey: "nav.cuenta", icon: NavIcon.cuenta },
 ];
 
 export function AthleteShell() {
+  const { t } = useTranslation();
   const [skin, setSkinState] = useState<string>(() => getSkin());
   const [variant, setVariantState] = useState<CheckinVariant>(() => getVariant());
 
@@ -45,7 +47,7 @@ export function AthleteShell() {
           <span className="ho-hobar__motto">smart training · zero burnout</span>
         </div>
         <span className="ho-hobar__spacer" />
-        <Link to="/atleta/cuenta" className="ho-hobar__avatar" aria-label="Mi cuenta">
+        <Link to="/atleta/cuenta" className="ho-hobar__avatar" aria-label={t("nav.myAccount")}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="8" r="3.4" /><path d="M5.5 19a6.5 6.5 0 0 1 13 0" />
           </svg>
@@ -59,7 +61,7 @@ export function AthleteShell() {
       <nav className="ho-nav">
         {NAV.map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => "ho-nav__btn" + (isActive ? " is-on" : "")}>
-            {n.icon}<span>{n.label}</span>
+            {n.icon}<span>{t(n.labelKey)}</span>
           </NavLink>
         ))}
       </nav>

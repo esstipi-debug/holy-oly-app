@@ -19,6 +19,31 @@
   "medalGold": "Gold",
   "medalSilver": "Silver",
   "medalBronze": "Bronze",
+  "nav": {
+    "atletas": "Athletes",
+    "macros": "Macrocycles",
+    "cuenta": "Account",
+    "coachAria": "Coach navigation",
+    "hoy": "Today",
+    "progreso": "My progress",
+    "myAccount": "My account"
+  },
+  "errorPage": {
+    "crashTitle": "Something broke",
+    "crashSub": "Reload or go back home.",
+    "reload": "Reload",
+    "docTitleError": "Error — Holy Oly",
+    "notFoundTitle": "This page doesn’t exist",
+    "notFoundSub": "The link may be misspelled or the page may have moved.",
+    "docTitleNotFound": "Page not found — Holy Oly"
+  },
+  "readiness": {
+    "alert": "Alert",
+    "warn": "Watch",
+    "ok": "OK",
+    "none": "No data"
+  },
+  "missingRm": "Missing 1RM",
   "verifyEmail": {
     "title": "Verify your email",
     "defaultSub": "Without verification you can’t confirm athletes in the roster.",
