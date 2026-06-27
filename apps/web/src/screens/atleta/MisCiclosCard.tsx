@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { MacroHistoryView } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
 import { MacroHistoryList } from "../../ui/MacroHistoryList";
@@ -12,6 +13,7 @@ type Load = "loading" | "ready" | "error";
  * Sin ciclos cerrados → no renderiza (sin culpa, igual que RecorridoCard). Error → alert + reintentar.
  */
 export function MisCiclosCard({ client = meClient }: { client?: MeClient } = {}) {
+  const { t } = useTranslation("atleta");
   const [view, setView] = useState<MacroHistoryView | null>(null);
   const [load, setLoad] = useState<Load>("loading");
   const [stamp, setStamp] = useState(0);
@@ -30,12 +32,12 @@ export function MisCiclosCard({ client = meClient }: { client?: MeClient } = {})
     return (
       <div className="ho-card">
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
-          No se pudo cargar tus ciclos.{" "}
+          {t("misCiclosError")}{" "}
           <RetryButton onClick={() => setStamp((s) => s + 1)} />
         </div>
       </div>
     );
   }
   if (!view || view.cyclesDone === 0) return null; // sin ciclos cerrados todavía → sin card
-  return <MacroHistoryList view={view} audience="atleta" title="Tus ciclos" />;
+  return <MacroHistoryList view={view} audience="atleta" title={t("misCiclosTitle")} />;
 }

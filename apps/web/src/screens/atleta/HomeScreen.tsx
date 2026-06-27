@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { seriesState, type CellState, type DayLogInput, type DayLogView, type MePlanView, type MonitorSeries } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../data/meClient";
 import type { CheckinVariant } from "./prefs";
@@ -32,6 +33,7 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
   preview?: boolean;
 } = {}) {
   // Tolerate a missing Outlet (preview mode): useOutletContext returns null outside an <Outlet>.
+  const { t } = useTranslation("atleta");
   const ctx = useOutletContext<AtletaOutletCtx | null>();
   const variant: CheckinVariant = variantProp ?? ctx?.variant ?? "tap";
   const location = useLocation();
@@ -58,10 +60,10 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
   }, [client]);
 
   if (load === "loading") {
-    return <Loading style={{ padding: 24, fontFamily: "var(--mono)" }}>Cargando…</Loading>;
+    return <Loading style={{ padding: 24, fontFamily: "var(--mono)" }} />;
   }
   if (load === "error" || !plan || !daylog) {
-    return <div role="alert" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>No se pudo cargar tu inicio. Probá de nuevo más tarde.</div>;
+    return <div role="alert" style={{ padding: 24, color: "var(--wl-muted)", fontFamily: "var(--mono)" }}>{t("homeError")}</div>;
   }
 
   // Without an assigned plan there is no date anchor, so there is no honest "estado de hoy"
@@ -73,16 +75,16 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
   return (
     <>
       <div className="ho-greet">
-        <div className="ho-greet__h">Hola, {firstName}</div>
+        <div className="ho-greet__h">{t("homeGreet", { name: firstName })}</div>
         <div className="ho-greet__s">
           {plan.plan
-            ? `${plan.plan.macroName} · semana ${plan.plan.currentWeek} de ${plan.plan.totalWeeks} · ${plan.plan.currentPhase}`
-            : "tu coach todavía no te asignó un plan"}
+            ? t("homePlanLine", { macro: plan.plan.macroName, week: plan.plan.currentWeek, total: plan.plan.totalWeeks, phase: plan.plan.currentPhase })
+            : t("homeNoPlan")}
         </div>
         {/* Empty-state con salida: sin plan → el siguiente paso es vincularse (no en preview del coach). */}
         {!plan.plan && !preview && (
           <Link to="/atleta/cuenta" style={{ display: "inline-block", marginTop: 6, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-accent)", textDecoration: "none" }}>
-            Vinculate con tu coach en Cuenta ›
+            {t("homeLinkCuenta")}
           </Link>
         )}
       </div>
@@ -96,12 +98,12 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
         <button className="ho-cta__done" onClick={() => setCheckinOpen(true)}>
           <span className="ho-cta__check"><Check size={16} /></span>
           <span style={{ flex: 1 }}>
-            <b>Check-in de hoy, listo</b>
-            <span>Gracias por registrarte · podés editarlo cuando quieras</span>
+            <b>{t("homeCheckinDoneTitle")}</b>
+            <span>{t("homeCheckinDoneSub")}</span>
           </span>
         </button>
       ) : (
-        <button className="wl-btn wl-btn--primary ho-cta" onClick={() => setCheckinOpen(true)}>Hacer check-in de hoy</button>
+        <button className="wl-btn wl-btn--primary ho-cta" onClick={() => setCheckinOpen(true)}>{t("homeCheckinCta")}</button>
       )}
 
       {plan.plan && !preview && <SemanaCard week={plan.plan.currentWeek} client={client} />}

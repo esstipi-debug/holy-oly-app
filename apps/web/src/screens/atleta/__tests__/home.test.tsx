@@ -49,7 +49,7 @@ test("atleta nuevo: saludo sin plan, Titular sin datos, CTA primario", async () 
   expect(await screen.findByText("Hola, Demo")).toBeInTheDocument();
   expect(screen.getByText(/tu coach todavía no te asignó un plan/)).toBeInTheDocument();
   expect(screen.getByText("Sin datos aún")).toBeInTheDocument();
-  expect(screen.getByText(/Todavía no tenés un plan asignado/)).toBeInTheDocument();
+  expect(screen.getByText(/Todavía no tienes un plan asignado/)).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Hacer check-in de hoy" })).toBeInTheDocument();
 });
 
