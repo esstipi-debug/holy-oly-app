@@ -10,8 +10,8 @@ describe("DemoTourCard", () => {
     const onDismiss = vi.fn();
     render(<DemoTourCard storage={s} onDismiss={onDismiss} />);
     expect(screen.getByTestId("demo-tour-card")).toBeInTheDocument();
-    expect(screen.getByText(/mostrás el corazón del producto/i)).toBeInTheDocument();
-    expect(screen.getByText(/Tocá «Atleta»/)).toBeInTheDocument();
+    expect(screen.getByText(/muestras el corazón del producto/i)).toBeInTheDocument();
+    expect(screen.getByText(/Toca «Atleta»/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Entendido/i }));
     expect(screen.queryByTestId("demo-tour-card")).not.toBeInTheDocument();

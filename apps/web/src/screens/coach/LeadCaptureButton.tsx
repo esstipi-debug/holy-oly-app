@@ -5,6 +5,7 @@
  * `variant="primary"` for the post-aha CTA, `"discreet"` for the always-available chip.
  */
 import { useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import { saveLead, whatsappUrl, mailtoUrl } from "../../data/leads";
 
 const labelStyle: CSSProperties = { display: "block", fontFamily: "var(--wl-display)", fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "var(--wl-muted)", marginBottom: 4 };
@@ -19,6 +20,7 @@ export function LeadCaptureButton({
   storage?: Storage;
   now?: () => string;
 }) {
+  const { t } = useTranslation(["roster", "common"]);
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState(false);
   const [nombre, setNombre] = useState("");
@@ -43,29 +45,29 @@ export function LeadCaptureButton({
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} style={triggerStyle}>Me interesa para mi equipo</button>
+      <button type="button" onClick={() => setOpen(true)} style={triggerStyle}>{t("leadTrigger")}</button>
       {open && (
-        <div role="dialog" aria-modal="true" aria-label="Me interesa para mi equipo" onClick={close}
+        <div role="dialog" aria-modal="true" aria-label={t("leadTrigger")} onClick={close}
           style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(0,0,0,.5)" }}>
           <div onClick={(e) => e.stopPropagation()}
             style={{ width: "min(96vw, 420px)", background: "var(--wl-surface)", borderRadius: "14px 14px 0 0", padding: "18px 18px 24px", border: "1px solid color-mix(in srgb,var(--wl-text) 10%,transparent)" }}>
             {done ? (
               <>
-                <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18 }}>¡Gracias!</div>
-                <p style={{ fontSize: 13, color: "var(--wl-muted)", lineHeight: 1.4 }}>Te contactamos para sumar a tu equipo. Quedó guardado.</p>
-                <button type="button" onClick={close} style={{ ...primaryBtn, background: "var(--wl-accent)", cursor: "pointer" }}>Cerrar</button>
+                <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18 }}>{t("leadThanks")}</div>
+                <p style={{ fontSize: 13, color: "var(--wl-muted)", lineHeight: 1.4 }}>{t("leadThanksBody")}</p>
+                <button type="button" onClick={close} style={{ ...primaryBtn, background: "var(--wl-accent)", cursor: "pointer" }}>{t("common:close")}</button>
               </>
             ) : (
               <>
-                <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18 }}>Me interesa para mi equipo</div>
-                <p style={{ fontSize: 12.5, color: "var(--wl-muted)", margin: "4px 0 12px" }}>Dejanos tu contacto y te escribimos. Queda en tu equipo, sin spam.</p>
-                <label htmlFor="lead-nombre" style={labelStyle}>Nombre</label>
+                <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18 }}>{t("leadTrigger")}</div>
+                <p style={{ fontSize: 12.5, color: "var(--wl-muted)", margin: "4px 0 12px" }}>{t("leadIntro")}</p>
+                <label htmlFor="lead-nombre" style={labelStyle}>{t("leadName")}</label>
                 <input id="lead-nombre" style={inputStyle} value={nombre} onChange={(e) => setNombre(e.target.value)} />
-                <label htmlFor="lead-contacto" style={{ ...labelStyle, marginTop: 10 }}>WhatsApp o email</label>
+                <label htmlFor="lead-contacto" style={{ ...labelStyle, marginTop: 10 }}>{t("leadContact")}</label>
                 <input id="lead-contacto" style={inputStyle} value={contacto} onChange={(e) => setContacto(e.target.value)} />
                 <button type="button" disabled={!valid} onClick={submit}
                   style={{ ...primaryBtn, background: valid ? "var(--wl-accent)" : "color-mix(in srgb,var(--wl-accent) 35%,transparent)", cursor: valid ? "pointer" : "not-allowed" }}>
-                  Enviar
+                  {t("leadSend")}
                 </button>
               </>
             )}

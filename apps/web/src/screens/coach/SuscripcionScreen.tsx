@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { formatClp, MULTISEDE } from "@holy-oly/core";
 import { billingCheckout, billingPlans, billingStatus, mockActivate, type BillingPeriod, type BillingPlan, type BillingStatus } from "../../billing/billingClient";
 import { useAuth } from "../../auth/AuthContext";
@@ -8,19 +9,20 @@ import { RetryButton } from "../../ui/RetryButton";
 import { VerifyEmailBanner } from "../../ui/VerifyEmailBanner";
 
 const monthsFree = (p: BillingPlan): number => Math.round((p.priceClpMonthly * 6 - p.priceClpSemiannual) / p.priceClpMonthly);
-const coachesLabel = (n: number | null): string => (n == null ? "Coaches ilimitados" : n === 1 ? "1 coach" : `Hasta ${n} coaches`);
 
 const ALL_PERIODS: readonly BillingPeriod[] = ["monthly", "semiannual"];
 // Un combo plan+período se paga "por interno" cuando MP no lo puede cobrar (semestral de tiers altos > $350K).
 const isManualPayment = (p: BillingPlan, per: BillingPeriod): boolean =>
   !(p.mpCheckoutPeriods ?? ALL_PERIODS).includes(per);
-// Email para coordinar los pagos que no entran a MP (PayPal/transferencia).
-const coordinarPagoHref = (planName: string): string =>
-  `mailto:esstipi@gmail.com?subject=${encodeURIComponent(`Pago semestral — ${planName} (PayPal/transferencia)`)}`;
 
 export function SuscripcionScreen() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation("roster");
+  const coachesLabel = (n: number | null): string => (n == null ? t("subCoachesUnlimited") : t("subCoaches", { count: n }));
+  // Email para coordinar los pagos que no entran a MP (PayPal/transferencia).
+  const coordinarPagoHref = (planName: string): string =>
+    `mailto:esstipi@gmail.com?subject=${encodeURIComponent(t("subPayEmailSubject", { plan: planName }))}`;
   const [params] = useSearchParams();
   const [plans, setPlans] = useState<BillingPlan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<BillingPlan["id"]>("coach");
@@ -40,18 +42,18 @@ export function SuscripcionScreen() {
     void Promise.all([billingPlans(), refresh()])
       .then(([p]) => { if (on) setPlans(p); })
       // Error en español fijo (no el crudo del server, posible inglés). El reintento re-corre el load.
-      .catch(() => { if (on) setError("No se pudo cargar la información de la suscripción. Probá de nuevo."); });
+      .catch(() => { if (on) setError(t("subLoadError")); });
     return () => { on = false; };
-  }, [refresh, reload]);
+  }, [refresh, reload, t]);
 
   useEffect(() => {
     if (params.get("mockCheckout") !== "1") return;
     let on = true;
     mockActivate()
       .then(() => { if (on) return refresh(); })
-      .catch((e: unknown) => { if (on) setError(e instanceof Error ? e.message : "Error"); });
+      .catch((e: unknown) => { if (on) setError(e instanceof Error ? e.message : t("subError")); });
     return () => { on = false; };
-  }, [params, refresh]);
+  }, [params, refresh, t]);
 
   async function onCheckout(): Promise<void> {
     setBusy(true);
@@ -69,7 +71,7 @@ export function SuscripcionScreen() {
       if (isWebUrl) window.location.href = checkoutUrl;
       else await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error");
+      setError(e instanceof Error ? e.message : t("subError"));
     } finally {
       setBusy(false);
     }
@@ -96,26 +98,26 @@ export function SuscripcionScreen() {
 
   return (
     <div style={{ padding: "14px 13px 26px", maxWidth: 390, margin: "0 auto", minHeight: "100vh", background: "var(--wl-bg)", color: "var(--wl-text)" }}>
-      <BackButton ariaLabel="Volver a Cuenta" onClick={() => navigate("/coach/cuenta")} />
-      <h1 style={{ fontFamily: "var(--wl-display)", fontSize: 22, fontWeight: 800, margin: "10px 0 6px" }}>Suscripción</h1>
+      <BackButton ariaLabel={t("subBackAria")} onClick={() => navigate("/coach/cuenta")} />
+      <h1 style={{ fontFamily: "var(--wl-display)", fontSize: 22, fontWeight: 800, margin: "10px 0 6px" }}>{t("subTitle")}</h1>
       <p style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
-        Los atletas son gratis. El coach necesita plan activo para editar programas. Precios finales · IVA incluido.
+        {t("subIntro")}
       </p>
 
       {user && user.emailVerified === false && <VerifyEmailBanner />}
 
       {status && (
         <div style={{ marginTop: 16, padding: 14, borderRadius: 12, background: "var(--wl-surface)" }}>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>Estado</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginTop: 4 }}>{status.active ? "Activa" : status.status}</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)" }}>{t("subStatus")}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, marginTop: 4 }}>{status.active ? t("subActive") : status.status}</div>
           {activePlan && (
             <div style={{ fontSize: 13, marginTop: 6 }}>
-              Plan: {activePlan.name} (desde {formatClp(activePlan.priceClpMonthly)}/mes)
+              {t("subPlanLine", { name: activePlan.name, price: formatClp(activePlan.priceClpMonthly) })}
             </div>
           )}
           {status.currentPeriodEnd && (
             <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 6 }}>
-              Vence: {new Date(status.currentPeriodEnd).toLocaleDateString()}
+              {t("subExpires", { date: new Date(status.currentPeriodEnd).toLocaleDateString() })}
             </div>
           )}
         </div>
@@ -124,8 +126,8 @@ export function SuscripcionScreen() {
       {!status?.active && plans.length > 0 && (
         <>
           <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-            {periodBtn("semiannual", "Semestral · 1 mes gratis")}
-            {periodBtn("monthly", "Mensual")}
+            {periodBtn("semiannual", t("subSemiannual"))}
+            {periodBtn("monthly", t("subMonthly"))}
           </div>
 
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -152,23 +154,23 @@ export function SuscripcionScreen() {
                     <span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700 }}>
                       {/* Headline siempre por mes → escalera comparable entre planes (sem y mensual no se mezclan). */}
                       {period === "semiannual"
-                        ? `≈ ${formatClp(Math.round(plan.priceClpSemiannual / 6))}/mes`
-                        : `${formatClp(plan.priceClpMonthly)}/mes`}
+                        ? t("subPerMonthApprox", { price: formatClp(Math.round(plan.priceClpSemiannual / 6)) })
+                        : t("subPerMonth", { price: formatClp(plan.priceClpMonthly) })}
                     </span>
                   </div>
                   {period === "semiannual" && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-accent)", marginTop: 3 }}>
-                      {formatClp(plan.priceClpSemiannual)} cada 6 meses · {monthsFree(plan)} mes gratis
+                      {t("subSemiDetail", { price: formatClp(plan.priceClpSemiannual), months: monthsFree(plan) })}
                     </div>
                   )}
                   {manualSemi && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 3 }}>
-                      Pago semestral coordinado por interno (PayPal o transferencia)
+                      {t("subManualNote")}
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{plan.description}</div>
                   <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 6 }}>
-                    {plan.maxAthletes != null ? `Hasta ${plan.maxAthletes} atletas` : "Atletas ilimitados"} · {coachesLabel(plan.maxCoaches)}
+                    {plan.maxAthletes != null ? t("subAthletesMax", { count: plan.maxAthletes }) : t("subAthletesUnlimited")} · {coachesLabel(plan.maxCoaches)}
                   </div>
                 </button>
               );
@@ -178,11 +180,11 @@ export function SuscripcionScreen() {
             <div style={{ padding: 14, borderRadius: 12, border: "1px dashed color-mix(in srgb,var(--wl-muted) 35%,transparent)", background: "var(--wl-surface)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                 <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{MULTISEDE.name}</span>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>desde {formatClp(MULTISEDE.fromClpMonthly)}/mes</span>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>{t("subFromPerMonth", { price: formatClp(MULTISEDE.fromClpMonthly) })}</span>
               </div>
               <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{MULTISEDE.description}</div>
               <a href="mailto:esstipi@gmail.com?subject=Plan%20Multi-sede" style={{ display: "inline-block", marginTop: 8, fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-accent)", fontWeight: 700 }}>
-                Contactanos →
+                {t("subContact")}
               </a>
             </div>
           </div>
@@ -198,7 +200,7 @@ export function SuscripcionScreen() {
       {status?.active ? (
         // D6: suscripción activa → nada de CTA falso que re-dispare checkout. Cambios = contacto.
         <div style={{ marginTop: 16, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", lineHeight: 1.6 }}>
-          Para cambios de plan escribinos:{" "}
+          {t("subChangePlan")}{" "}
           <a href="mailto:esstipi@gmail.com?subject=Cambio%20de%20plan" style={{ color: "var(--wl-accent)", fontWeight: 700 }}>
             esstipi@gmail.com
           </a>
@@ -213,10 +215,10 @@ export function SuscripcionScreen() {
               background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 800,
             }}
           >
-            Coordinar pago por interno
+            {t("subCoordinatePay")}
           </a>
           <div style={{ marginTop: 8, fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", lineHeight: 1.5 }}>
-            El semestral de este plan supera el tope de Mercado Pago. Te coordinamos el pago por PayPal o transferencia.
+            {t("subManualBody")}
           </div>
         </>
       ) : (
@@ -231,7 +233,7 @@ export function SuscripcionScreen() {
             opacity: busy || plans.length === 0 ? 0.45 : 1,
           }}
         >
-          {busy ? "Abriendo el pago…" : isDemo ? `Activar ${plans.find((p) => p.id === selectedPlanId)?.name ?? "plan"} (demo)` : "Ir a pagar con Mercado Pago"}
+          {busy ? t("subOpening") : isDemo ? t("subActivateDemo", { name: plans.find((p) => p.id === selectedPlanId)?.name ?? "plan" }) : t("subPayMp")}
         </button>
       )}
     </div>

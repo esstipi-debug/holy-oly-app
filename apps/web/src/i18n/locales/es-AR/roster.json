@@ -1,0 +1,19 @@
+{
+  "emptyTitle": "Todavía no tenés atletas",
+  "emptyBody": "Generá tu código de invitación y compartilo para que tu primer atleta se vincule a tu plantel.",
+  "leadIntro": "Dejanos tu contacto y te escribimos. Queda en tu equipo, sin spam.",
+  "invErrCoachSession": "Necesitás entrar como coach para ver tus invitaciones.",
+  "invErrEmailVerify": "Verificá tu correo antes de confirmar atletas. Te enviamos un enlace al registrarte — podés reenviarlo desde Equipo.",
+  "invErrCopy": "No se pudo copiar automáticamente — copialo a mano.",
+  "invShare": "Compartilo con tu atleta para que se vincule.",
+  "subLoadError": "No se pudo cargar la información de la suscripción. Probá de nuevo.",
+  "subContact": "Contactanos →",
+  "subChangePlan": "Para cambios de plan escribinos: ",
+  "bannerBody": "Sin RM no se puede prescribir. Asignales un macro para cargar sus 1RM y arrancar el plan.",
+  "tourTitle": "En 5 pasos mostrás el corazón del producto",
+  "tourStep1": "Mirá el plantel y quién está en riesgo — la guía de arriba dice por qué mirar a cada uno.",
+  "tourStep2": "Tocá un atleta para abrir su detalle.",
+  "tourStep3": "Mirá su año de datos: carga, recuperación, IMR vs fase.",
+  "tourStep4": "Cambiale un peso o el plan, como coach.",
+  "tourStep5": "Tocá «Atleta» en el detalle y mirá cómo lo recibe, con los discos."
+}
