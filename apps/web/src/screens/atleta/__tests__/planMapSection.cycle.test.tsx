@@ -26,6 +26,7 @@ function client(cycle: CycleData): MeClient {
     getMeSeries: async () => undefined,
     getDayLog: async () => ({ entry: null, streak: 0, days: [], today: daysAgo(0) }),
     putDayLog: async () => ({ entry: { date: daysAgo(0), fatiga: 3, dolor: 1, estres: 2, humor: 4, motivacion: 4, sueno: 4 }, streak: 1 }),
+    createMyPlan: async () => {},
     getMeSessions: async () => [],
     getMeHeat: async () => HEAT,
     getMeRecorrido: async () => ({ semanas: [] }),
