@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Plan, PrCandidate, RmLift, RmUpdate } from "@holy-oly/core";
 import { RM_LIFTS, rmVigencia } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
@@ -8,7 +9,6 @@ import { RetryButton } from "../../../ui/RetryButton";
 import { Loading } from "../../../ui/Loading";
 
 const STALE_WEEKS = 12; // hint sutil, sin umbral duro (el spec manda mostrar la edad siempre)
-const STALE_HINT = `RM fijado hace ≥${STALE_WEEKS} sem: los % prescritos pierden precisión — re-testeá o confirmá un PR.`;
 
 /** Sección "RMs" del drill-down del coach (SP5). Carga sus propios datos (candidatos + historial)
  *  con error honesto + retry, como PlanMapSection. El atleta JAMÁS ve esta superficie. */
@@ -19,6 +19,7 @@ export function RmSection({ athleteId, plan, today, onRmsChange }: {
   onRmsChange: () => void;
 }) {
   const repo = useRepository();
+  const { t } = useTranslation(["coach", "common"]);
   const [candidates, setCandidates] = useState<PrCandidate[]>([]);
   const [history, setHistory] = useState<RmUpdate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +57,7 @@ export function RmSection({ athleteId, plan, today, onRmsChange }: {
   const vigLabel = (l: RmLift): string => {
     const w = vig?.[l].weeksAgo;
     if (w == null) return "—";
-    return w === 0 ? "fijado esta semana" : `fijado hace ${w} sem`;
+    return w === 0 ? t("rmFixedThisWeek") : t("rmFixedAgo", { weeks: w });
   };
 
   const save = useCallback(async (updates: { lift: RmLift; kg: number }[], reason: "manual" | "pr"): Promise<void> => {
@@ -67,22 +68,22 @@ export function RmSection({ athleteId, plan, today, onRmsChange }: {
   }, [repo, athleteId, load, onRmsChange]);
 
   return (
-    <section aria-label="RMs · base del plan" style={{ marginTop: 16 }}>
+    <section aria-label={t("rmTitle")} style={{ marginTop: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>RMs · base del plan</div>
-        <button type="button" aria-label="Editar RMs" onClick={() => setSheet({ kind: "manual" })}
+        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>{t("rmTitle")}</div>
+        <button type="button" aria-label={t("rmEdit")} onClick={() => setSheet({ kind: "manual" })}
           style={{ padding: "6px 14px", borderRadius: 10, border: "1px solid color-mix(in srgb,var(--wl-accent) 50%,transparent)", background: "color-mix(in srgb,var(--wl-accent) 12%,transparent)", color: "var(--wl-text)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-          Editar
+          {t("editShort")}
         </button>
       </div>
       {error && (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 8 }}>
-          No se pudieron cargar los PRs/historial.{" "}
+          {t("rmLoadError")}{" "}
           <RetryButton onClick={() => void load()} fontSize={10.5} />
         </div>
       )}
       {loading ? (
-        <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5, marginTop: 8 }}>Cargando RMs…</Loading>
+        <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5, marginTop: 8 }}>{t("rmLoading")}</Loading>
       ) : (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
@@ -92,9 +93,9 @@ export function RmSection({ athleteId, plan, today, onRmsChange }: {
                 <div key={l} style={{ padding: "10px 12px", borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
                   <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--wl-muted)" }}>{RM_LABELS[l]}</div>
                   <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 18, marginTop: 2 }}>{plan.rms[l]} kg</div>
-                  <div title={stale ? STALE_HINT : undefined}
+                  <div title={stale ? t("rmStaleHint", { weeks: STALE_WEEKS }) : undefined}
                     style={{ fontFamily: "var(--mono)", fontSize: 9.5, marginTop: 2, color: stale ? "var(--warn)" : "var(--wl-muted)" }}>
-                    {vigLabel(l)}{stale ? " · re-testear" : ""}
+                    {vigLabel(l)}{stale ? ` · ${t("rmRetest")}` : ""}
                   </div>
                 </div>
               );
@@ -102,19 +103,19 @@ export function RmSection({ athleteId, plan, today, onRmsChange }: {
           </div>
           {candidates.length > 0 && (
             <div style={{ marginTop: 12 }}>
-              <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5 }}>PRs por confirmar</div>
+              <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5 }}>{t("rmPrsPending")}</div>
               {/* key por lift: prCandidates garantiza ≤1 candidato por lift (invariante de core). */}
               {candidates.map((c) => (
                 <div key={c.lift} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, padding: "10px 12px", borderRadius: 12, background: "color-mix(in srgb,var(--wl-accent) 8%,var(--wl-surface))", border: "1px solid color-mix(in srgb,var(--wl-accent) 35%,transparent)" }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12.5 }}>{c.movementName}</div>
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 2 }}>
-                      levantó {c.kg} kg · {c.doneAt ? isoDateLabel(c.doneAt) : `sem ${c.week}`}
+                      {t("rmLifted", { kg: c.kg })} · {c.doneAt ? isoDateLabel(c.doneAt) : t("compWeekLabel", { week: c.week })}
                     </div>
                   </div>
-                  <button type="button" aria-label={`Confirmar PR de ${RM_LABELS[c.lift]}`} onClick={() => setSheet({ kind: "pr", candidate: c })}
+                  <button type="button" aria-label={t("rmConfirmPrAria", { lift: RM_LABELS[c.lift] })} onClick={() => setSheet({ kind: "pr", candidate: c })}
                     style={{ flex: "0 0 auto", minHeight: 40, padding: "0 12px", borderRadius: 10, border: 0, background: "var(--wl-accent)", color: "var(--wl-bg)", fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 11.5, cursor: "pointer" }}>
-                    Confirmar → subir RM
+                    {t("rmConfirmRaise")}
                   </button>
                 </div>
               ))}

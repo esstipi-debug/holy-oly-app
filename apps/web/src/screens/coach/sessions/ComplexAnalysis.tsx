@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import {
   isComplexId, getComplex, complexLoads, complexComplexity, complexPctCeiling,
   complexWeakRmRef, complexWeakRmKg, type RM, type RmRef,
@@ -31,6 +32,7 @@ function Metric({ name, value }: { name: string; value: number | string }) {
 }
 
 export function ComplexAnalysis({ movementId, rms }: { movementId: string; rms?: RM }) {
+  const { t } = useTranslation("coach");
   if (!isComplexId(movementId)) return null;
   const c = getComplex(movementId);
   if (!c) return null;
@@ -42,20 +44,20 @@ export function ComplexAnalysis({ movementId, rms }: { movementId: string; rms?:
   const weakKg = rms ? complexWeakRmKg(c, rms) : undefined;
 
   return (
-    <div style={wrap} aria-label={`análisis del complejo ${c.name}`}>
+    <div style={wrap} aria-label={t("cxAnalysisAria", { name: c.name })}>
       <div style={row}>
-        <span style={{ ...label, color: "var(--wl-accent)" }}>Carga neural</span>
-        <Metric name="SNC" value={`${loads.snc}/10`} />
-        <Metric name="Axial" value={`${loads.axial}/10`} />
-        <Metric name="Metab" value={`${loads.metabolica}/10`} />
+        <span style={{ ...label, color: "var(--wl-accent)" }}>{t("cxNeuralLoad")}</span>
+        <Metric name={t("cxSnc")} value={`${loads.snc}/10`} />
+        <Metric name={t("cxAxial")} value={`${loads.axial}/10`} />
+        <Metric name={t("cxMetab")} value={`${loads.metabolica}/10`} />
       </div>
       <div style={{ ...row, marginTop: 4 }}>
-        <Metric name="Complej" value={`${cx}/12`} />
-        <Metric name="Tope" value={`${ceiling}%`} />
+        <Metric name={t("cxComplexity")} value={`${cx}/12`} />
+        <Metric name={t("cxCeiling")} value={`${ceiling}%`} />
       </div>
       {weakRef !== "none" && (
         <div style={{ ...row, marginTop: 4, alignItems: "center" }}>
-          <span style={label}>Eslabón débil</span>
+          <span style={label}>{t("cxWeakLink")}</span>
           <span style={val}>{RM_LABEL[weakRef]}</span>
           {weakKg != null && (
             <>

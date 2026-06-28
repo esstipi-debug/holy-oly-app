@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { EngineWeek, RmLift } from "@holy-oly/core";
 import { RM_LIFTS, barKgForSexo, readinessModulation } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
@@ -32,6 +33,7 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
   sexo: "M" | "F";
 }) {
   const repo = useRepository();
+  const { t } = useTranslation("coach");
   const [lift, setLift] = useState<RmLift>("arranque");
   const [week, setWeek] = useState<EngineWeek | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,19 +62,19 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
   useEffect(() => { void load(); }, [load]);
 
   return (
-    <section aria-label="Vista Prilepin · preview del motor" style={{ marginTop: 16 }}>
+    <section aria-label={t("prilAria")} style={{ marginTop: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>Vista Prilepin (preview)</div>
-        <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>sem {hoyWeek} · sólo lectura</span>
+        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5 }}>{t("prilTitle")}</div>
+        <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>{t("compWeekLabel", { week: hoyWeek })} · {t("prilReadonly")}</span>
       </div>
       {/* Encuadre explícito: es el MOTOR, no el plan asignado del atleta. */}
       <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 4 }}>
-        Generado por el motor Prilepin — no es el plan asignado. No se guarda.
+        {t("prilFraming")}
       </div>
 
       {/* Selector de lift (los 4 RM de la casa). */}
       <SegmentedToggle
-        ariaLabel="Lift"
+        ariaLabel={t("prilLiftAria")}
         options={RM_LIFTS.map((l) => [l, RM_LABELS[l]] as const)}
         value={lift}
         onChange={setLift}
@@ -83,18 +85,18 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
 
       {error && (
         <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-danger)", marginTop: 8 }}>
-          No se pudo cargar el preview Prilepin.{" "}
+          {t("prilLoadError")}{" "}
           <RetryButton onClick={() => void load()} fontSize={10.5} />
         </div>
       )}
 
       {loading ? (
-        <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5, marginTop: 8 }}>Generando vista…</Loading>
+        <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5, marginTop: 8 }}>{t("prilGenerating")}</Loading>
       ) : !error && (
         week === null ? (
           // Sin datos honesto (sin RM vigente / semana fuera de rango / sin plan).
           <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 8 }}>
-            Sin datos para generar el preview (falta RM vigente del lift o el plan no cubre esta semana).
+            {t("prilNoData")}
           </div>
         ) : (
           <div style={{ marginTop: 8, padding: "12px", borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
@@ -102,7 +104,7 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
               <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{week.label}</div>
               {week.heavySinglesAdvisory && (
                 <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--warn)", border: "1px solid color-mix(in srgb,var(--warn) 50%,transparent)", padding: "2px 7px", borderRadius: 99 }}>
-                  mover singles
+                  {t("prilMoveSingles")}
                 </span>
               )}
             </div>
@@ -114,10 +116,10 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
               const mod = readinessModulation(week);
               const color = BAND_COLOR[mod.band ?? "none"];
               return (
-                <div aria-label="Ajuste por readiness" style={{ marginTop: 10, padding: "8px 10px", borderRadius: 10, background: "var(--wl-bg)", borderLeft: `3px solid ${color}`, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
+                <div aria-label={t("prilReadinessAdj")} style={{ marginTop: 10, padding: "8px 10px", borderRadius: 10, background: "var(--wl-bg)", borderLeft: `3px solid ${color}`, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8, justifyContent: "space-between" }}>
                     <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12 }}>
-                      Ajuste por readiness
+                      {t("prilReadinessAdj")}
                     </div>
                     <span style={{ fontFamily: "var(--mono)", fontSize: 9, color, border: `1px solid color-mix(in srgb,${color} 50%,transparent)`, padding: "2px 7px", borderRadius: 99 }}>
                       {mod.headline}
@@ -132,7 +134,7 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
 
             {week.sets.length === 0 ? (
               <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 8 }}>
-                Esta fase no prescribe trabajo para este lift en su sesión principal.
+                {t("prilNoWork")}
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
@@ -143,7 +145,7 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
                         {s.sets} × {s.reps} <span style={{ color: "var(--wl-muted)", fontWeight: 600 }}>@ {s.pct}%</span>
                       </div>
                       <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)", marginTop: 2 }}>
-                        zona {ZONE_LABEL[s.zone]} · {s.weightKg} kg
+                        {t("prilZoneLine", { zone: ZONE_LABEL[s.zone], kg: s.weightKg })}
                       </div>
                     </div>
                     {/* El kg manda; los discos aproximan. Reusa el componente Disc — nunca redibujar. */}
@@ -158,7 +160,7 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
                 {week.audits.map((a) => (
                   <span key={a.zone} style={{ fontFamily: "var(--mono)", fontSize: 9, color: a.withinRange ? "var(--wl-muted)" : "var(--warn)", padding: "2px 7px", borderRadius: 99, background: "color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
-                    {ZONE_LABEL[a.zone]}: {a.prescribedReps} reps {a.withinRange ? "· en rango" : "· fuera de rango"}
+                    {t("prilAuditChip", { zone: ZONE_LABEL[a.zone], reps: a.prescribedReps, range: a.withinRange ? t("prilInRange") : t("prilOutOfRange") })}
                   </span>
                 ))}
               </div>

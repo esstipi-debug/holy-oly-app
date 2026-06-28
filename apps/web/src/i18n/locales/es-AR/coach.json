@@ -8,5 +8,11 @@
   "detailEmptyEntries": "Todavía no acoplaste a nadie. Tocá “Acoplar atletas”.",
   "acoplarSub": "Elegí del plantel y marcá el rol de cada uno.",
   "acoplarNoRoster": "Todavía no tenés atletas en tu plantel — invitalos desde Invitaciones para poder acoplarlos.",
-  "acoplarBtnEmpty": "Elegí atletas"
+  "acoplarBtnEmpty": "Elegí atletas",
+  "rmStaleHint": "RM fijado hace ≥{weeks} sem: los % prescritos pierden precisión — re-testeá o confirmá un PR.",
+  "rmFinalNote": "El RM final lo ponés vos (si lo hizo por reps, el 1RM es más).",
+  "sesEmpty": "Sin sesiones para esta semana (asigná un macro con receta o armalas a mano).",
+  "mpTitle": "Elegí un movimiento",
+  "mpShowing30": "Mostrando 30 — refiná la búsqueda para ver más.",
+  "seValidationError": "Revisá los valores: sets y reps ≥ 1, % entre 1–120."
 }

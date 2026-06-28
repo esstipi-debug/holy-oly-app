@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Competencia, Macrocycle, SessionLog, SessionView, WeekHeat } from "@holy-oly/core";
 import { phaseForWeek, barKgForSexo, dateOfWeek } from "@holy-oly/core";
 import { dayDateLabel, dayOffsetInWeek, weekdayMonFirst, isoRangeLabel } from "../../../ui/charts/planDates";
@@ -30,6 +31,7 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
   today: string;
 }) {
   const { lang } = useLocale();
+  const { t } = useTranslation("coach");
   const [heat, setHeat] = useState<WeekHeat[] | null>(null);
   const [heatError, setHeatError] = useState(false);
   const [sel, setSel] = useState<HeatMapPos | null>(null);
@@ -110,7 +112,7 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
     ? (
       <PlanDayDetail
         key={`${sel.week}-${sel.day}`}
-        title={`${dayDateLabel(startDate, sel.week, sel.day)} · S${sel.week}`}
+        title={`${dayDateLabel(startDate, sel.week, sel.day)} · ${t("weekAbbr", { week: sel.week })}`}
         phaseName={selPhase.name} phaseTint={phaseColor(phaseIndexFor(sel.week))} focus={selPhase.focus}
         {...(isCompDay ? { compName: selComp!.name } : { isRest: true })}
         exercises={[]} barKg={barKgForSexo(sexo ?? "M")}
@@ -118,18 +120,18 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
     )
     : dayError ? (
       <div role="alert" style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
-        No se pudo cargar el día.{" "}
+        {t("calDayError")}{" "}
         <RetryButton onClick={() => setDayError(false)} fontSize={10.5} />
       </div>
     )
     : selSession === undefined && selViews === undefined ? (
-      <Loading style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10.5 }}>Cargando día…</Loading>
+      <Loading style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 10.5 }}>{t("calLoadingDay")}</Loading>
     )
     : (
       <PlanDayDetail
         key={`${sel.week}-${sel.day}`}
-        title={`${dayDateLabel(startDate, sel.week, sel.day)} · S${sel.week}`}
-        sub={`Sesión ${sel.day + 1} de ${perWeek}${selCell.topPct != null ? ` · tope ${selCell.topPct}%` : ""} · ${selCell.lifts} levant.`}
+        title={`${dayDateLabel(startDate, sel.week, sel.day)} · ${t("weekAbbr", { week: sel.week })}`}
+        sub={`${t("calSessionOf", { n: sel.day + 1, total: perWeek })}${selCell.topPct != null ? ` · ${t("calTop", { pct: selCell.topPct })}` : ""} · ${t("calLifts", { lifts: selCell.lifts })}`}
         phaseName={selPhase.name} phaseTint={phaseColor(phaseIndexFor(sel.week))} focus={selPhase.focus}
         estado={estado} exercises={exercises} barKg={barKgForSexo(sexo ?? "M")}
       />
@@ -148,8 +150,8 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
               border: current ? `1px solid ${phaseColor(i)}` : "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
               <span aria-hidden="true" style={{ width: 9, height: 9, borderRadius: 2, background: phaseColor(i), flex: "0 0 auto" }} />
               <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 11, color: "var(--wl-text)" }}>{p.name}</span>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>sem {p.weeks[0]}–{p.weeks[1]} · {range}</span>
-              {current && <span style={{ fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, color: "var(--wl-accent)" }}>HOY</span>}
+              <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>{t("calPhaseWeeks", { from: p.weeks[0], to: p.weeks[1] })} · {range}</span>
+              {current && <span style={{ fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, color: "var(--wl-accent)" }}>{t("calToday")}</span>}
             </div>
           );
         })}
@@ -159,11 +161,11 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
       <div style={{ marginTop: 8 }}>
         {heatError ? (
           <div role="alert" style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)" }}>
-            No se pudo cargar el mapa.{" "}
+            {t("calMapError")}{" "}
             <RetryButton onClick={() => setHeatError(false)} fontSize={10.5} />
           </div>
         ) : heat === null ? (
-          <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5 }}>Cargando mapa…</Loading>
+          <Loading style={{ fontFamily: "var(--mono)", fontSize: 10.5 }}>{t("calLoadingMap")}</Loading>
         ) : (
           <PlanHeatMap heat={heat} hoy={hoyPos} selected={sel} firstDow={firstDow} orientation="horizontal" singleRamp
             onSelectDay={selectDay} phaseIndexFor={phaseIndexFor} comps={compMap} />
