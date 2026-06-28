@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { SessionView } from "@holy-oly/core";
 import { weekDoneSummary, sessionsByDay, priorDaysResolved } from "@holy-oly/core";
 import { meClient, type MeClient } from "../../../data/meClient";
+import { useFormat } from "../../../lib/useFormat";
 
 const doneOf = (s: SessionView) => s.exercises.filter((e) => e.actual?.done).length;
 // Secuencia de días: resuelto = anulado o registrado (con fecha) — espejo EXACTO del backend
@@ -13,6 +14,7 @@ const isResolved = (s: SessionView) => s.anulado === true || s.fecha != null;
 export function SemanaCard({ week, client = meClient }: { week: number; client?: MeClient }) {
   const navigate = useNavigate();
   const { t } = useTranslation("atleta");
+  const fmt = useFormat();
   const labelOf = (s: SessionView): string => {
     const day = s.day ?? s.sessionIdx + 1;
     return s.turno ? t("semDayTurno", { day, turno: s.turno }) : t("semDay", { day });
@@ -94,7 +96,7 @@ export function SemanaCard({ week, client = meClient }: { week: number; client?:
         <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 10, fontVariantNumeric: "tabular-nums" }}>
           {/* «~» cuando el total incluye calentamiento: la rampa es ESTIMADA (prescrita, no registrada) — regla 06-11 */}
           {t("semWeekTotal", {
-            kg: `${resumen.calentamientoKg > 0 ? "~" : ""}${resumen.totalKg.toLocaleString("es-CL")}`,
+            kg: `${resumen.calentamientoKg > 0 ? "~" : ""}${fmt.number(resumen.totalKg)}`,
             done: resumen.sesionesHechas,
             total: resumen.sesionesTotales,
             count: resumen.sesionesTotales,

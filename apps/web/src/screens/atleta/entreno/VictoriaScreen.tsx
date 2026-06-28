@@ -9,7 +9,6 @@ import { buildWellnessRadar } from "./celebracion/radarData";
 import { Celebracion, type CelData, type CelLift, type CelStat } from "./celebracion/Celebracion";
 
 type LoadState = "loading" | "ready" | "error";
-const CL = (n: number): string => n.toLocaleString("es-CL");
 const fmtTon = (kg: number): string => (kg >= 1000 ? `${(kg / 1000).toFixed(1).replace(".", ",")} t` : `${Math.round(kg)} kg`);
 const costToReach = (level: number): number => 100 * level * (level - 1);
 

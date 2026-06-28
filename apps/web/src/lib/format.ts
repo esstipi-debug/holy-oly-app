@@ -6,9 +6,14 @@ import { PSEUDO_LANG } from "../i18n/config";
  * `formatClp` helper. Bind these to the active language with `useFormat` (see ./useFormat).
  */
 
-/** Map our locale codes to Intl-friendly BCP-47 tags. The QA pseudo-locale formats as English. */
+/** Map our locale codes to Intl-friendly BCP-47 tags. The QA pseudo-locale formats as English.
+ *  `es-419` (neutral LatAm) groups with commas under Intl (1,234,567); the app's convention —
+ *  and every catalog/test — is the Chilean dot grouping (1.234.567), so the neutral Spanish
+ *  default formats as `es-CL`. es-AR/pt-BR already group with dots; en with commas. */
 export function intlLocale(lang: string): string {
-  return lang === PSEUDO_LANG ? "en" : lang;
+  if (lang === PSEUDO_LANG) return "en";
+  if (lang === "es-419") return "es-CL";
+  return lang;
 }
 
 /** Format a number with locale grouping/decimals. */

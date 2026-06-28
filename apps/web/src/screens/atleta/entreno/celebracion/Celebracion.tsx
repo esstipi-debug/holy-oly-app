@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type ReactNode } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import { DiscRow } from "../../../../ui/Disc";
+import { useFormat } from "../../../../lib/useFormat";
 import { Confetti } from "./Confetti";
 import { Radar, type RadarData } from "./Radar";
 import type { CelebrationTier } from "./gamify";
@@ -32,7 +33,6 @@ const MiniCheck = (
 );
 const ABBR: Record<string, string> = { "Sentadilla trasera": "Sentadilla", "Sentadilla frontal": "Front" };
 const abbr = (nm: string): string => ABBR[nm] ?? nm;
-const CL = (n: number): string => n.toLocaleString("es-CL");
 
 function Hex({ x, y, w, cls = "", children }: { x: number; y: number; w: number; cls?: string; children: ReactNode }) {
   const h = Math.round(w * 0.866);
@@ -96,6 +96,7 @@ const POS3 = [{ x: 6, y: 205 }, { x: 102, y: 253 }, { x: 198, y: 205 }];
 
 function CelDia({ d }: { d: CelData }) {
   const { t } = useTranslation("atleta");
+  const fmt = useFormat();
   const lifts = d.lifts.slice(0, 3);
   return (
     <>
@@ -118,11 +119,11 @@ function CelDia({ d }: { d: CelData }) {
           </Hex>
         ))}
       </div>
-      {d.radar && <RadarLegend extra={t("celKgSeries", { kg: CL(d.diaTotalKg), count: d.diaSets })} hasAvg={d.radar.avg != null} />}
+      {d.radar && <RadarLegend extra={t("celKgSeries", { kg: fmt.number(d.diaTotalKg), count: d.diaSets })} hasAvg={d.radar.avg != null} />}
       <XPBlock level={d.level} nextLevel={d.nextLevel} xpToNext={d.xpToNext} pts={`+${d.diaXp} XP`} fromPct={d.xpFromPct} toPct={d.xpToPct} tag={d.tag} />
       {/* resumen del entreno (pedido owner 2026-06-11: cada ejercicio visible) */}
       <div className="cel-resumen-wrap">
-        <div className="cel-resumen__head"><span className="cel-resumen__title">{t("celResumenTitle")}</span><span className="cel-resumen__total">{t("celKgSeries", { kg: CL(d.diaTotalKg), count: d.diaSets })}</span></div>
+        <div className="cel-resumen__head"><span className="cel-resumen__title">{t("celResumenTitle")}</span><span className="cel-resumen__total">{t("celKgSeries", { kg: fmt.number(d.diaTotalKg), count: d.diaSets })}</span></div>
         <div className="cel-resumen">
           {d.lifts.map((l, i) => (
             <div className="cel-resumen__row" key={i}>
