@@ -23,10 +23,14 @@ export const SLOT_LABEL: Record<SlotKind, string> = {
   metabolico: "Accesorio funcional",
 };
 
+/** Resolver de nombre por defecto: el del core (ES). Las pantallas pasan el resolver localizado
+ *  (useMovementName) para que la nomenclatura siga el toggle de idioma de movimientos (es/en). */
+type NameOf = (id: string) => string;
+
 /** id legible: la librería resuelve variantes y complejos; si no la conoce, humaniza el id
  *  (separa por punto/guion y capitaliza) — nunca se filtra un id crudo a la UI. */
-export function displayName(id: string): string {
-  const n = programmableName(id);
+export function displayName(id: string, nameOf: NameOf = programmableName): string {
+  const n = nameOf(id);
   if (n !== id) return n;
   return id.replace(/[.\-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -35,20 +39,20 @@ export interface SignatureGroup { slot: SlotKind; label: string; names: string[]
 
 /** Movimientos firma de la escuela agrupados por slot (orden gesto→accesorio); cada grupo con
  *  sus nombres ordenados por preferencia de rotación (weight desc). Los slots vacíos se omiten. */
-export function signatureGroups(dna: SchoolDNA): SignatureGroup[] {
+export function signatureGroups(dna: SchoolDNA, nameOf: NameOf = programmableName): SignatureGroup[] {
   const groups: SignatureGroup[] = [];
   for (const slot of SLOT_ORDER) {
     const items = dna.repertoire[slot];
     if (!items || items.length === 0) continue;
-    const names = [...items].sort((a, b) => b.weight - a.weight).map((it) => displayName(it.id));
+    const names = [...items].sort((a, b) => b.weight - a.weight).map((it) => displayName(it.id, nameOf));
     groups.push({ slot, label: SLOT_LABEL[slot], names });
   }
   return groups;
 }
 
 /** Lo que la escuela DEJA FUERA a propósito (forbidden) → nombres legibles. */
-export function excludedNames(dna: SchoolDNA): string[] {
-  return dna.forbidden.map(displayName);
+export function excludedNames(dna: SchoolDNA, nameOf: NameOf = programmableName): string[] {
+  return dna.forbidden.map((id) => displayName(id, nameOf));
 }
 
 /** Carácter de dosis en una línea: dónde del corredor paran los % y cuándo aparecen los singles. */
@@ -73,7 +77,7 @@ export interface TypicalSession { day: number; exercises: TypicalExercise[] }
  * fase comparte plantilla, así que la primera la representa. Sin receta sesión-por-sesión → null
  * (empty-state honesto; jamás se inventa una sesión). Fase inexistente → null.
  */
-export function typicalWeek(macro: Macrocycle, phaseKey: string): TypicalSession[] | null {
+export function typicalWeek(macro: Macrocycle, phaseKey: string, nameOf: NameOf = programmableName): TypicalSession[] | null {
   const phase = macro.phaseProfile.find((p) => p.key === phaseKey);
   if (!phase) return null;
   const totalWeeks = macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
@@ -83,7 +87,7 @@ export function typicalWeek(macro: Macrocycle, phaseKey: string): TypicalSession
   for (const r of rows.filter((r) => r.week === week).sort((a, b) => a.order - b.order)) {
     if (!byDay.has(r.sessionIdx)) byDay.set(r.sessionIdx, []);
     byDay.get(r.sessionIdx)!.push({
-      name: programmableName(r.movementId), sets: r.sets, reps: r.reps,
+      name: nameOf(r.movementId), sets: r.sets, reps: r.reps,
       ...(r.pct != null ? { pct: r.pct } : {}),
     });
   }

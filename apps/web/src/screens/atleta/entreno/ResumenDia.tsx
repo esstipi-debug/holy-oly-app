@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
+import { useMovementName } from "../../../i18n/useMovementLang";
 import { DiscRow } from "../../../ui/Disc";
 
-export interface ResumenRow { movementName: string; sets: number; reps: number; kg?: number; pct?: number; }
+export interface ResumenRow { movementId: string; movementName: string; sets: number; reps: number; kg?: number; pct?: number; }
 
 /** Entrada del Entreno guiado: la lista del día + "▶ Iniciar entrenamiento". `fecha`/`onFechaTap`
  *  (spec 2026-06-12 D12) muestran «Entreno del … ▾» tocable para reabrir el selector de fecha.
@@ -23,6 +24,7 @@ export function ResumenDia({
   onAnular?: () => void;
 }) {
   const { t } = useTranslation("atleta");
+  const mn = useMovementName();
   const setDot = { width: 5, height: 14, borderRadius: 3, background: "color-mix(in srgb,var(--wl-text) 15%,transparent)" };
   return (
     <div>
@@ -49,7 +51,7 @@ export function ResumenDia({
         {rows.map((r, i) => (
           <div key={i} style={{ background: "var(--wl-surface)", borderRadius: 16, padding: "13px 15px", border: "1px solid color-mix(in srgb,var(--wl-text) 7%,transparent)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-              <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 16, color: "var(--wl-text)" }}>{r.movementName}</span>
+              <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 16, color: "var(--wl-text)" }}>{mn(r.movementId)}</span>
               <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 20, color: "var(--wl-text)" }}>{r.kg != null ? r.kg : "—"}<span style={{ fontSize: 11, color: "var(--wl-muted)", fontWeight: 600 }}> kg</span>{r.pct != null && <span style={{ fontSize: 12, color: "var(--wl-accent)", fontWeight: 700, marginLeft: 5 }}>{r.pct}%</span>}</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 11 }}>

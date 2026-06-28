@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { PrescribedExercise, RM, SessionView } from "@holy-oly/core";
 import { kgDeviation } from "@holy-oly/core";
 import { useRepository } from "../../../data/RepositoryProvider";
+import { useMovementName } from "../../../i18n/useMovementLang";
 import { SessionEditor } from "./SessionEditor";
 import { ComplexAnalysis } from "./ComplexAnalysis";
 import { RetryButton } from "../../../ui/RetryButton";
@@ -26,6 +27,7 @@ function load(targetKg: number | undefined): string {
 export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId: string; hoyWeek: number; totalWeeks: number }) {
   const repo = useRepository();
   const { t } = useTranslation("coach");
+  const mn = useMovementName();
   const [week, setWeek] = useState(Math.min(Math.max(hoyWeek, 1), totalWeeks));
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
   // RMs vigentes del plan — base del eslabón débil del complejo (sin plan → sin kg, oculto honesto).
@@ -101,13 +103,13 @@ export function SessionsSection({ athleteId, hoyWeek, totalWeeks }: { athleteId:
               return (
                 <div key={i} style={{ marginTop: 4 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
-                    <span style={{ color: "var(--wl-text)" }}>{e.movementName}</span>
+                    <span style={{ color: "var(--wl-text)" }}>{mn(e.movementId)}</span>
                     <span>
                       {e.sets}×{e.reps} · {load(e.targetKg)}
                       {e.actual?.desfasado ? (
-                        <span style={{ color: "var(--wl-muted)" }}>{" · ⚠ "}{t("sesDesfasado")}{" "}{e.actual.movementName}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}</span>
+                        <span style={{ color: "var(--wl-muted)" }}>{" · ⚠ "}{t("sesDesfasado")}{" "}{mn(e.actual.movementId)}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}</span>
                       ) : e.actual?.substituted ? (
-                        <span style={{ color: "var(--wl-accent)" }}>{" · "}{t("sesReal")}{" "}{e.actual.movementName}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}{" "}{t("sesSubstituted")}</span>
+                        <span style={{ color: "var(--wl-accent)" }}>{" · "}{t("sesReal")}{" "}{mn(e.actual.movementId)}{e.actual.kg != null ? ` ${e.actual.kg} kg` : ""}{" "}{t("sesSubstituted")}</span>
                       ) : e.actual?.done && e.actual.kg != null ? (
                         <span style={{ color: "var(--wl-accent)" }}>{" · "}{t("sesReal")} {e.actual.kg} kg {marker}</span>
                       ) : e.actual && !e.actual.done ? (
