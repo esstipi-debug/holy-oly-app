@@ -42,7 +42,7 @@ export function MacroTimeline({
   hoy: number;
   comps: Competencia[];
 }) {
-  const { t } = useTranslation("charts");
+  const { t } = useTranslation(["charts", "domain"]);
   const phases = macro.phaseProfile;
   const NW = phases.at(-1)?.weeks[1] ?? 1; // macro duration
   const phaseAt = (w: number): MacrocyclePhase =>
@@ -59,7 +59,7 @@ export function MacroTimeline({
         <rect x={x0} y={10} width={Math.max(0, x1 - x0 - 2)} height={20} rx={4}
           style={{ fill: phaseColor(i), opacity: 0.85 }} />
         <text x={(x0 + x1) / 2} y={24} textAnchor="middle" fontSize={8.5} fontWeight={700}
-          style={{ fill: "#0b0b11", fontFamily: "var(--wl-display)" }}>{p.name}</text>
+          style={{ fill: "#0b0b11", fontFamily: "var(--wl-display)" }}>{t(`domain:macro.${macro.id}.phase.${p.key}.name`)}</text>
       </g>
     );
   });
@@ -117,7 +117,7 @@ export function MacroTimeline({
         lectura: t("timeline.lectura"),
       }}
     >
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={t("timeline.aria", { name: macro.name, count: NW })}>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={t("timeline.aria", { name: t(`domain:macro.${macro.id}.name`), count: NW })}>
         {ribbon}
         {bars}
         {intensityLine}

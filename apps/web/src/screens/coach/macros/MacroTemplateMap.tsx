@@ -14,7 +14,7 @@ const EMPTY_COMPS: ReadonlyMap<number, { name: string; day?: number }> = new Map
  * con sus ejercicios. La misma pieza visual del calendario del atleta/coach (PlanHeatMap).
  */
 export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
-  const { t } = useTranslation("macros");
+  const { t } = useTranslation(["macros", "domain"]);
   const totalWeeks = macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
   const rows = useMemo(() => instantiatePrescription(ALL_RECIPES, macro, totalWeeks), [macro, totalWeeks]);
   const heat = useMemo(() => (rows.length > 0 ? planHeat(rows, totalWeeks) : null), [rows, totalWeeks]);
@@ -56,12 +56,12 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
           onSelectDay={selectDay} phaseIndexFor={phaseIdx} />
       </div>
       {sel && selPhase && (selCell === null ? (
-        <PlanDayDetail title={t("mtmDayTitle", { week: sel.week, day: sel.day + 1 })} phaseName={selPhase.name}
-          phaseTint={phaseColor(phaseIdx(sel.week))} focus={selPhase.focus} isRest exercises={[]} barKg={20} />
+        <PlanDayDetail title={t("mtmDayTitle", { week: sel.week, day: sel.day + 1 })} phaseName={t(`domain:macro.${macro.id}.phase.${selPhase.key}.name`)}
+          phaseTint={phaseColor(phaseIdx(sel.week))} focus={t(`domain:macro.${macro.id}.phase.${selPhase.key}.focus`)} isRest exercises={[]} barKg={20} />
       ) : (
         <PlanDayDetail title={t("mtmSessionTitle", { week: sel.week, session: sel.day + 1 })}
           sub={`${t("mtmLifts", { count: selCell.lifts })}${selCell.topPct != null ? ` · ${t("mtmTop", { pct: selCell.topPct })}` : ""}`}
-          phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))} focus={selPhase.focus}
+          phaseName={t(`domain:macro.${macro.id}.phase.${selPhase.key}.name`)} phaseTint={phaseColor(phaseIdx(sel.week))} focus={t(`domain:macro.${macro.id}.phase.${selPhase.key}.focus`)}
           exercises={exercises} barKg={20} />
       ))}
       <div style={{ marginTop: 6, fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>

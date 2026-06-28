@@ -76,16 +76,16 @@
     "sueno": { "label": "Sueño", "q": "¿Cómo dormiste?", "lo": "Mal", "hi": "Like a baby" }
   },
   "school": {
-    "Búlgaro": { "character": "Sólo los lifts de competencia y sentadillas, a singles pesados, todos los días. Cero variedad: la adaptación ES la especificidad." },
-    "Ruso": { "character": "Ondulación de volumen sobre una base general ancha: tirones 90–110%, mucha sentadilla, complejos en la base y peaking clásico." },
-    "Chino": { "character": "Híbrido técnica-fuerza squat-dominante: potencias y segmentos, snatch balance y sots, y TODA sesión cierra con bloque de culturismo funcional." },
-    "Cubano": { "character": "Velocidad-fuerza por complejos y variantes de potencia/colgado, a porcentajes moderados y calidad máxima por serie." },
-    "Colombiano": { "character": "Prioridad absoluta al envión con volumen extremo de piernas (frontal dominante); en realización las piernas van a cero y queda el gesto." },
-    "Coreano": { "character": "Estructura rígida con tirones pesados omnipresentes (también desde bloques) y trabajo de posiciones: la fuerza se construye en el tirón." },
-    "Polaco": { "character": "Calidad sobre cantidad en ciclos cortos: singles y dobles a % alto desde temprano, con tirones desde bloques como segundo pilar." },
-    "Ucraniano": { "character": "Densidad: pocas piezas por sesión, dobles y triples al estilo EMOM, cero accesorios lentos — el descanso es la variable que se entrena." },
-    "Híbrido": { "character": "Bloques acumulación→transmutación→realización con compuestos grandes y complejos por eficiencia de tiempo — máximo estímulo por sesión corta." },
-    "USA": { "character": "Lineal americana 50:50 fuerza general : especificidad olímpica — powers dominantes en la base, complejos en el desarrollo, accesorios de espalda siempre." }
+    "Búlgaro": { "name": "Búlgaro", "character": "Sólo los lifts de competencia y sentadillas, a singles pesados, todos los días. Cero variedad: la adaptación ES la especificidad." },
+    "Ruso": { "name": "Ruso", "character": "Ondulación de volumen sobre una base general ancha: tirones 90–110%, mucha sentadilla, complejos en la base y peaking clásico." },
+    "Chino": { "name": "Chino", "character": "Híbrido técnica-fuerza squat-dominante: potencias y segmentos, snatch balance y sots, y TODA sesión cierra con bloque de culturismo funcional." },
+    "Cubano": { "name": "Cubano", "character": "Velocidad-fuerza por complejos y variantes de potencia/colgado, a porcentajes moderados y calidad máxima por serie." },
+    "Colombiano": { "name": "Colombiano", "character": "Prioridad absoluta al envión con volumen extremo de piernas (frontal dominante); en realización las piernas van a cero y queda el gesto." },
+    "Coreano": { "name": "Coreano", "character": "Estructura rígida con tirones pesados omnipresentes (también desde bloques) y trabajo de posiciones: la fuerza se construye en el tirón." },
+    "Polaco": { "name": "Polaco", "character": "Calidad sobre cantidad en ciclos cortos: singles y dobles a % alto desde temprano, con tirones desde bloques como segundo pilar." },
+    "Ucraniano": { "name": "Ucraniano", "character": "Densidad: pocas piezas por sesión, dobles y triples al estilo EMOM, cero accesorios lentos — el descanso es la variable que se entrena." },
+    "Híbrido": { "name": "Híbrido", "character": "Bloques acumulación→transmutación→realización con compuestos grandes y complejos por eficiencia de tiempo — máximo estímulo por sesión corta." },
+    "USA": { "name": "USA", "character": "Lineal americana 50:50 fuerza general : especificidad olímpica — powers dominantes en la base, complejos en el desarrollo, accesorios de espalda siempre." }
   },
   "enginePhase": {
     "accumulation": { "label": "Acumulación", "rationale": "Semana de volumen alto: acá se acumula el estímulo que después se convierte en fuerza." },
@@ -101,5 +101,250 @@
     "red": { "headline": "Readiness roja", "rationale": "Poca recuperación: dosis recortada (~75% del volumen)." }
   },
   "readinessNone": { "headline": "Sin señal de readiness", "rationale": "No hay monitoreo reciente para modular esta semana." },
-  "readinessMoveSingles": "Mueve los singles pesados, no los borres."
+  "readinessMoveSingles": "Mueve los singles pesados, no los borres.",
+  "macro": {
+    "bulgaro-6d": {
+      "name": "Búlgaro 6D",
+      "desc": "Daily Max. Especificidad máxima, intensidad extrema, frecuencia alta.",
+      "bestFor": "Atletas avanzados con SNC adaptado a >90% diario.",
+      "phase": {
+        "dailymax": { "name": "Daily Max", "focus": "daily max · descarga cada 4ª sem (~70%)" }
+      }
+    },
+    "coreano-5d": {
+      "name": "Coreano 5D",
+      "desc": "Estructura rígida, fuerza posicional, disciplina. Sesión única.",
+      "bestFor": "Énfasis en tirones y posiciones de transición.",
+      "phase": {
+        "cimentacion": { "name": "Cimentación", "focus": "hipertrofia · técnica" },
+        "transformacion": { "name": "Transformación", "focus": "fuerza · pulls pesados" },
+        "realizacion": { "name": "Realización", "focus": "peaking · competencia" }
+      }
+    },
+    "coreano-6d": {
+      "name": "Coreano 6D",
+      "desc": "Coreano de alta densidad. Más volumen distribuido en 6 días.",
+      "bestFor": "Atletas full-time con buena capacidad de recuperación.",
+      "phase": {
+        "cimentacion": { "name": "Cimentación", "focus": "hipertrofia · alta densidad" },
+        "transformacion": { "name": "Transformación", "focus": "fuerza · pulls >100%" },
+        "realizacion": { "name": "Realización", "focus": "peaking · competencia" }
+      }
+    },
+    "chino-5d": {
+      "name": "Chino 5D",
+      "desc": "Hibridación fuerza-técnica + culturismo funcional. Pulls y squats.",
+      "bestFor": "Corrección de debilidades específicas, hipertrofia.",
+      "phase": {
+        "base": { "name": "Base estructural", "focus": "volumen · tendones · culturismo" },
+        "acumulacion": { "name": "Acumulación", "focus": "fuerza absoluta · pulls" },
+        "choque": { "name": "Choque", "focus": "max out controlado" },
+        "descarga": { "name": "Descarga", "focus": "taper · recuperación" }
+      }
+    },
+    "cubano-novicio-2d": {
+      "name": "Cubano Novicio 2D",
+      "desc": "Iniciación con 2 sesiones semanales. Foco técnico.",
+      "bestFor": "Principiantes absolutos, tiempo muy limitado.",
+      "phase": {
+        "cimentacion": { "name": "Cimentación", "focus": "iniciación · técnica" },
+        "desarrollo": { "name": "Desarrollo", "focus": "fuerza general" }
+      }
+    },
+    "cubano-novicio-3d": {
+      "name": "Cubano Novicio 3D",
+      "desc": "Distribución eficiente: volumen lunes, técnico miércoles, intensidad viernes.",
+      "bestFor": "Novato con disponibilidad media.",
+      "phase": {
+        "cimentacion": { "name": "Cimentación", "focus": "volumen · técnica" },
+        "desarrollo": { "name": "Desarrollo", "focus": "fuerza general" }
+      }
+    },
+    "cubano-int-5d": {
+      "name": "Cubano Intermedio 5D",
+      "desc": "Lun volumen · Mié intensidad media · Vie test. Estructura clásica.",
+      "bestFor": "Atleta con base técnica establecida.",
+      "phase": {
+        "cimentacion": { "name": "Cimentación", "focus": "base · volumen" },
+        "desarrollo": { "name": "Desarrollo", "focus": "fuerza general" },
+        "intensificacion": { "name": "Intensificación", "focus": "fuerza máxima · test" }
+      }
+    },
+    "cubano-avanzado-5d": {
+      "name": "Cubano Avanzado 5D",
+      "desc": "Mayor capacidad de trabajo. Volumen mensual 1.100-1.300 reps.",
+      "bestFor": "Avanzado con tolerancia alta al volumen.",
+      "phase": {
+        "cimentacion": { "name": "Cimentación", "focus": "volumen alto (1.100–1.300 reps/mes)" },
+        "desarrollo": { "name": "Desarrollo", "focus": "fuerza · volumen" },
+        "intensificacion": { "name": "Intensificación", "focus": "fuerza máxima" }
+      }
+    },
+    "cubano-competidor": {
+      "name": "Cubano Competidor",
+      "desc": "Macrociclo orientado a salida competitiva. Acumulación → realización.",
+      "bestFor": "Pre-competencia, picos planificados.",
+      "phase": {
+        "cimentacion": { "name": "Cimentación", "focus": "base · volumen" },
+        "desarrollo": { "name": "Desarrollo", "focus": "fuerza general" },
+        "intensificacion": { "name": "Intensificación", "focus": "fuerza máxima" },
+        "realizacion": { "name": "Realización", "focus": "peaking · competencia" }
+      }
+    },
+    "polaco-4d": {
+      "name": "Polaco 4D",
+      "desc": "Ciclo corto de choque. Progresión cauta + picos frecuentes.",
+      "bestFor": "Atletas que necesitan picar rápido sin saturar.",
+      "phase": {
+        "reps-altas": { "name": "Reps altas", "focus": "reps altas · técnica" },
+        "reps-medias": { "name": "Reps medias", "focus": "reps medias · fuerza" },
+        "singles": { "name": "Singles", "focus": "singles · peaking" }
+      }
+    },
+    "polaco-5d": {
+      "name": "Polaco 5D",
+      "desc": "Calidad sobre cantidad. Series cortas (1-3 reps), mucho pull desde bloques.",
+      "bestFor": "Recuperar sensaciones de competencia rápidamente.",
+      "phase": {
+        "reps-altas": { "name": "Reps altas", "focus": "reps altas · calidad" },
+        "reps-medias": { "name": "Reps medias", "focus": "reps medias · pulls desde bloque" },
+        "singles": { "name": "Singles", "focus": "singles · sensaciones de competencia" }
+      }
+    },
+    "ruso-5d": {
+      "name": "Ruso 5D",
+      "desc": "Waviness: ondulación diaria + semanal. GPP extensa.",
+      "bestFor": "Atleta clásico, ciclo largo con peaking final.",
+      "phase": {
+        "hipertrofia": { "name": "Hipertrofia", "focus": "hipertrofia · GPP" },
+        "fuerza-basica": { "name": "Fuerza básica", "focus": "fuerza base" },
+        "fuerza-potencia": { "name": "Fuerza / Potencia", "focus": "fuerza · potencia" },
+        "peaking": { "name": "Peaking", "focus": "peaking · competencia" }
+      }
+    },
+    "ucraniano-3d": {
+      "name": "Ucraniano 3D",
+      "desc": "Alta densidad pura. EMOM-heavy, ideal para CrossFitters.",
+      "bestFor": "Tiempo limitado, enfoque en densidad.",
+      "phase": {
+        "acumulacion": { "name": "Acumulación", "focus": "EMOM · densidad" },
+        "intensificacion": { "name": "Intensificación", "focus": "singles · intensificación + taper" },
+        "test": { "name": "Test máximo", "focus": "pico · test" }
+      }
+    },
+    "ucraniano-4d": {
+      "name": "Ucraniano 4D",
+      "desc": "Estándar. Más volumen accesorio y distribución de carga.",
+      "bestFor": "Balance entre densidad y accesorios.",
+      "phase": {
+        "acumulacion": { "name": "Acumulación", "focus": "EMOM · densidad · accesorios" },
+        "intensificacion": { "name": "Intensificación", "focus": "singles · intensificación + taper" },
+        "test": { "name": "Test máximo", "focus": "pico · test" }
+      }
+    },
+    "colombiano-5d": {
+      "name": "Colombiano 5D",
+      "desc": "Prioridad absoluta al C&J. Mesociclos con ondulación constante.",
+      "bestFor": "Atletas con Jerk débil que necesitan reforzar overhead.",
+      "phase": {
+        "prep-general": { "name": "Preparatorio General", "focus": "volumen extremo de piernas" },
+        "prep-especial": { "name": "Preparatorio Especial", "focus": "balance técnica-fuerza" },
+        "precompetencia": { "name": "Precompetencia", "focus": "intensidad · baja volumen" },
+        "realizacion": { "name": "Realización", "focus": "peak · piernas a cero" }
+      }
+    },
+    "hibrido-3d": {
+      "name": "Híbrido Moderno 3D",
+      "desc": "Alta densidad por sesión. Compuestos grandes, menos accesorios.",
+      "bestFor": "Atletas máster o time-constrained.",
+      "phase": {
+        "acumulacion": { "name": "Acumulación", "focus": "hipertrofia · complejos" },
+        "transmutacion": { "name": "Transmutación", "focus": "fuerza · densidad EMOM" },
+        "realizacion": { "name": "Realización", "focus": "peaking · test" }
+      }
+    },
+    "hibrido-4d": {
+      "name": "Híbrido Moderno 4D",
+      "desc": "Block periodization. Hipertrofia + fuerza + densidad EMOM.",
+      "bestFor": "Atleta con tiempo limitado, sostenibilidad largo plazo.",
+      "phase": {
+        "acumulacion": { "name": "Acumulación", "focus": "hipertrofia funcional" },
+        "transmutacion": { "name": "Transmutación", "focus": "fuerza · densidad EMOM" },
+        "realizacion": { "name": "Realización", "focus": "peaking · test" }
+      }
+    },
+    "hibrido-5d": {
+      "name": "Híbrido Moderno 5D",
+      "desc": "Acumulación → Transmutación → Realización. Sesiones ~90min.",
+      "bestFor": "Transición CrossFit → Weightlifting competitivo.",
+      "phase": {
+        "acumulacion": { "name": "Acumulación", "focus": "hipertrofia · capacidad" },
+        "transmutacion": { "name": "Transmutación", "focus": "fuerza · densidad EMOM" },
+        "realizacion": { "name": "Realización", "focus": "peaking · test" }
+      }
+    },
+    "hibrido-block": {
+      "name": "Híbrido Modular (BLOCK)",
+      "desc": "Variación coordinada. Bloques concentrados con ondulación semanal.",
+      "bestFor": "Evitar estancamiento, programación adaptable.",
+      "phase": {
+        "hipertrofia": { "name": "Bloque Hipertrofia", "focus": "acumulación · ondulación A-B-C-D" },
+        "fuerza": { "name": "Bloque Fuerza", "focus": "fuerza absoluta · CNS" },
+        "potencia": { "name": "Bloque Potencia", "focus": "potencia · peaking" }
+      }
+    },
+    "usa-school": {
+      "name": "USA Weightlifting",
+      "desc": "Periodización lineal americana. Balance volumen / intensidad.",
+      "bestFor": "Estándar competitivo norteamericano.",
+      "phase": {
+        "acumulacion": { "name": "Acumulación", "focus": "general strength · 50:50" },
+        "desarrollo": { "name": "Desarrollo", "focus": "olympic specificity · complexes" },
+        "realizacion": { "name": "Realización", "focus": "peaking & testing" }
+      }
+    },
+    "usa-principiante": {
+      "name": "USA Principiante",
+      "desc": "Periodización lineal de 16 semanas: preparación anatómica → fuerza base → integración → intensificación y test.",
+      "bestFor": "Principiantes (0-2 años) construyendo base técnica y de fuerza.",
+      "phase": {
+        "anatomica": { "name": "Preparación anatómica", "focus": "high hang · sentadillas ligeras · core" },
+        "fuerza-base": { "name": "Fuerza base", "focus": "desde suelo · pull correcto" },
+        "integracion": { "name": "Fuerza integrada", "focus": "snatch + C&J completos" },
+        "intensificacion": { "name": "Intensificación", "focus": "intensificación + test (Epley)" }
+      }
+    },
+    "usa-intermedio": {
+      "name": "USA Intermedio",
+      "desc": "Bloques ondulantes de 16 semanas: acumulación → transmutación → intensificación → realización, con deloads.",
+      "bestFor": "Intermedios (2-5 años) con base sólida.",
+      "phase": {
+        "acumulacion": { "name": "Acumulación (B1)", "focus": "sentadillas 5-8 · complexes · deload sem4" },
+        "transmutacion": { "name": "Transmutación (B2)", "focus": "front squat · push press · pausas" },
+        "intensificacion": { "name": "Intensificación (B3)", "focus": "balístico · pulls 105% · deload sem12" },
+        "realizacion": { "name": "Realización (B4)", "focus": "simulación comp · singles · max test" }
+      }
+    },
+    "usa-avanzado": {
+      "name": "USA Avanzado",
+      "desc": "Peaking de 8 semanas pre-competencia: sobrecarga transmutativa → choque neural → realización submáxima → tapering.",
+      "bestFor": "Avanzados afinando para una competencia.",
+      "phase": {
+        "sobrecarga": { "name": "Sobrecarga transmutativa", "focus": "frecuencia alta · squats post-OLY" },
+        "choque-neural": { "name": "Choque neural", "focus": "choque sem3 · supercompensación sem4 (70%)" },
+        "realizacion": { "name": "Realización submáxima", "focus": "últimos pulls max · OLY = aperturas" },
+        "taper": { "name": "Tapering", "focus": "tapering abrupto · competencia" }
+      }
+    },
+    "usa-master": {
+      "name": "USA Master 40+",
+      "desc": "Adaptado a 12 semanas para máster: estabilidad articular → fuerza preservada → realización, con descansos largos.",
+      "bestFor": "Atletas máster (40+) priorizando articulaciones y recuperación.",
+      "phase": {
+        "estabilidad": { "name": "Estabilidad articular", "focus": "unilateral · powers dominantes" },
+        "fuerza": { "name": "Fuerza preservada", "focus": "desde bloques · deload 2:1" },
+        "realizacion": { "name": "Realización Master", "focus": "front squat ligero · descansos largos" }
+      }
+    }
+  }
 }

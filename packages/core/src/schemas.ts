@@ -186,13 +186,15 @@ export const DayLogResultSchema = z.object({
 export const MePlanViewSchema = z.object({
   athlete: z.object({ nombre: z.string(), iniciales: z.string(), sexo: z.enum(["M", "F"]) }),
   plan: z.object({
+    macroId: z.string().optional(),
     macroName: z.string(),
     totalWeeks: z.number().int(),
     currentWeek: z.number().int(),
     currentPhase: z.string(),
+    currentPhaseKey: z.string(),
     startDate: IsoDateSchema.optional(),
     phases: z.array(z.object({
-      name: z.string(), from: z.number().int(), to: z.number().int(), imr: z.number(),
+      key: z.string(), name: z.string(), from: z.number().int(), to: z.number().int(), imr: z.number(),
       imrLo: z.number(), imrHi: z.number(), volRel: z.number(), focus: z.string().max(120),
     })).max(20),
     comps: z.array(z.object({ name: z.string(), week: z.number().int() })).max(50),

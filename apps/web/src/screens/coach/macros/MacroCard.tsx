@@ -32,18 +32,18 @@ const best: CSSProperties = { fontSize: 10, lineHeight: 1.35, color: "var(--wl-m
 
 /** One catalog card for a macrocycle (ports the mockup's `mcard`). Whole card is the open affordance. */
 export function MacroCard({ macro, onOpen }: { macro: Macrocycle; onOpen: (id: string) => void }) {
-  const { t } = useTranslation("macros");
+  const { t } = useTranslation(["macros", "domain"]);
   return (
     <button type="button" style={card} onClick={() => onOpen(macro.id)}>
       {macro.peaks && macro.peakWeek != null && <span style={pk}>▲ S{macro.peakWeek}</span>}
-      <h3 style={title}>{macro.name}</h3>
-      <p style={desc}>{macro.desc}</p>
+      <h3 style={title}>{t(`domain:macro.${macro.id}.name`)}</h3>
+      <p style={desc}>{t(`domain:macro.${macro.id}.desc`)}</p>
       <div style={meta}>
         <span>{macro.duration}</span>
         <span>{macro.frequency}</span>
       </div>
       <LoadMeters macro={macro} />
-      <div style={tag}>"{macro.family} · {focusTag(macro)}"</div>
+      <div style={tag}>"{t(`domain:school.${macro.family}.name`)} · {focusTag(macro)}"</div>
       <div style={best}><b style={{ color: "var(--wl-text)" }}>{t("mcCardLevel")}</b> <span style={{ color: "var(--wl-accent)" }}>{levelLabel(macro.level)}</span></div>
     </button>
   );

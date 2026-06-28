@@ -148,8 +148,11 @@ export interface MePlanView {
     totalWeeks: number;
     currentWeek: number;
     currentPhase: string;
+    /** Clave estable de la fase actual (= MacrocyclePhase.key). Habilita proyectar el nombre/foco
+     *  localizado en el web (domain:macro.{macroId}.phase.{key}.*) sin tocar el contrato persistido. */
+    currentPhaseKey: string;
     startDate?: string; // ISO — ancla real del plan (fechas del mapa); ausente en planes pre-M5
-    phases: { name: string; from: number; to: number; imr: number; imrLo: number; imrHi: number; volRel: number; focus: string }[];
+    phases: { key: string; name: string; from: number; to: number; imr: number; imrLo: number; imrHi: number; volRel: number; focus: string }[];
     comps: { name: string; week: number }[];
   } | null;
 }

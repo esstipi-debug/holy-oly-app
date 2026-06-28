@@ -37,7 +37,7 @@ const kgNote: CSSProperties = { fontFamily: "var(--mono)", fontSize: 9.5, color:
  * ya muestra su empty-state).
  */
 export function MacroTypicalWeek({ macro }: { macro: Macrocycle }) {
-  const { t } = useTranslation("macros");
+  const { t } = useTranslation(["macros", "domain"]);
   const phases = macro.phaseProfile;
   const [sel, setSel] = useState(() => phases[0]?.key ?? "");
   const sessions = useMemo(() => typicalWeek(macro, sel), [macro, sel]);
@@ -52,12 +52,12 @@ export function MacroTypicalWeek({ macro }: { macro: Macrocycle }) {
         <div style={chipRow}>
           {phases.map((p) => (
             <button key={p.key} type="button" onClick={() => setSel(p.key)} style={p.key === sel ? chipActive : chipIdle}>
-              {p.name}
+              {t(`domain:macro.${macro.id}.phase.${p.key}.name`)}
             </button>
           ))}
         </div>
       )}
-      <div style={note}>{t("mtwRepWeek")}{selPhase ? ` · ${selPhase.name} · ${t("mtwWeekSpan", { span })}` : ""}</div>
+      <div style={note}>{t("mtwRepWeek")}{selPhase ? ` · ${t(`domain:macro.${macro.id}.phase.${selPhase.key}.name`)} · ${t("mtwWeekSpan", { span })}` : ""}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {sessions.map((s) => (
           <div key={s.day} style={card}>

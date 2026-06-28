@@ -9,9 +9,9 @@ const daysAgo = (n: number): string => new Date(Date.now() - n * 86_400_000).toI
 
 // Plan de 4 semanas anclado: la semana 1 arrancó hace 7 días (HOY cae en la semana 2).
 const PLAN: PlanView = {
-  macroName: "Test", totalWeeks: 4, currentWeek: 2, currentPhase: "Fuerza",
+  macroName: "Test", totalWeeks: 4, currentWeek: 2, currentPhase: "Fuerza", currentPhaseKey: "fuerza",
   startDate: daysAgo(7),
-  phases: [{ name: "Fuerza", from: 1, to: 4, imr: 80, imrLo: 70, imrHi: 80, volRel: 100, focus: "fuerza" }],
+  phases: [{ key: "fuerza", name: "Fuerza", from: 1, to: 4, imr: 80, imrLo: 70, imrHi: 80, volRel: 100, focus: "fuerza" }],
   comps: [],
 };
 

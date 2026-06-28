@@ -19,7 +19,7 @@ const costToReach = (level: number): number => 100 * level * (level - 1);
  * Macro). XP/nivel/racha calculados (sin backend). Sin trabajo marcado → "Sesión registrada" sobria.
  */
 export function VictoriaScreen() {
-  const { t } = useTranslation(["atleta", "common"]);
+  const { t } = useTranslation(["atleta", "common", "domain"]);
   const { week: weekP, idx: idxP } = useParams();
   const navigate = useNavigate();
   const week = Number(weekP);
@@ -141,6 +141,15 @@ export function VictoriaScreen() {
     { v: `${macroTotales > 0 ? Math.round((macroSesiones / macroTotales) * 100) : 0}%`, l: t("vicStatComplianceShort") },
   ];
 
+  // Proyección del dominio por id estable (macroId + phase.key / currentPhaseKey). Fallback al texto
+  // horneado en el wire (ES) sólo sin macroId (buildMePlanView siempre lo setea).
+  const mid = planV?.macroId;
+  const macroNm = mid ? t(`domain:macro.${mid}.name`) : (planV?.macroName ?? t("vicMacroFallback"));
+  const currentPhaseName = mid ? t(`domain:macro.${mid}.phase.${planV?.currentPhaseKey ?? ""}.name`) : (planV?.currentPhase ?? "");
+  const phaseNames: string[] = mid
+    ? (planV?.phases ?? []).map((p) => t(`domain:macro.${mid}.phase.${p.key}.name`))
+    : (planV?.phases.map((p) => p.name) ?? []);
+
   const data: CelData = {
     tiers: [...tierList],
     barKg,
@@ -149,9 +158,9 @@ export function VictoriaScreen() {
     level: lvl.level, nextLevel: lvl.nextLevel, xpToNext: lvl.xpToNext, xpFromPct: fromPct, xpToPct: toPct, tag,
     diaMeta: `${t("vicDiaMeta", { week, day: session.day ?? idx + 1 })}${session.turno ? ` · ${session.turno}` : ""}`,
     lifts, diaXp, diaTotalKg: tonnage, diaSets,
-    week, weekMeta: `${planV?.currentPhase ?? ""}${planV?.currentPhase ? " · " : ""}${t("vicWeekMeta", { count: recWeek?.sesionesHechas ?? 0 })}`, weekStats, weekXp,
-    macroName: planV?.macroName ?? t("vicMacroFallback"), macroMeta: t("vicMacroMeta", { count: planV?.totalWeeks ?? semanas.length }),
-    macroStats, phases: planV?.phases.map((p) => p.name) ?? [], macroXp: cumXp,
+    week, weekMeta: `${currentPhaseName}${currentPhaseName ? " · " : ""}${t("vicWeekMeta", { count: recWeek?.sesionesHechas ?? 0 })}`, weekStats, weekXp,
+    macroName: macroNm, macroMeta: t("vicMacroMeta", { count: planV?.totalWeeks ?? semanas.length }),
+    macroStats, phases: phaseNames, macroXp: cumXp,
     onClaim,
   };
 

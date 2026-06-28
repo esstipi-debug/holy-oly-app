@@ -40,7 +40,7 @@ const H = padT + iH + gap + vH + labH; // 169
 const LO = 55, HI = 110, span = W - padL - padR;
 const vBase = padT + iH + gap + vH;
 
-function PeriodizationChart({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }) {
+function PeriodizationChart({ macro, t }: { macro: Macrocycle; t: TFunction<["charts", "domain"]> }) {
   const phases = macro.phaseProfile;
   const tot = phases.at(-1)?.weeks[1] ?? 1;
   const Lx = (w: number) => padL + ((w - 1) / tot) * span;
@@ -109,7 +109,7 @@ function PeriodizationChart({ macro, t }: { macro: Macrocycle; t: TFunction<"cha
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img"
-      aria-label={t("periodization.aria", { name: macro.name, count: tot })}>
+      aria-label={t("periodization.aria", { name: t(`domain:macro.${macro.id}.name`), count: tot })}>
       {grid}
       {corridor}
       <path d={mid} style={{ fill: "none", stroke: "var(--wl-accent)", strokeWidth: 2.6 }}
@@ -127,7 +127,7 @@ function PeriodizationChart({ macro, t }: { macro: Macrocycle; t: TFunction<"cha
 }
 
 // ---- 2. phase ribbon (ports phaseRibbon) ----
-function PhaseRibbon({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }) {
+function PhaseRibbon({ macro, t }: { macro: Macrocycle; t: TFunction<["charts", "domain"]> }) {
   return (
     <div style={{ display: "flex", gap: 4 }}>
       {macro.phaseProfile.map((p) => {
@@ -150,7 +150,7 @@ function PhaseRibbon({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }
             <span style={{
               position: "relative", zIndex: 1, display: "block", fontFamily: "var(--wl-display)",
               fontWeight: 700, fontSize: 9, lineHeight: 1.1, color: "var(--wl-text)", overflowWrap: "break-word",
-            }}>{p.name}{peak ? " ▲" : ""}</span>
+            }}>{t(`domain:macro.${macro.id}.phase.${p.key}.name`)}{peak ? " ▲" : ""}</span>
             <span style={{
               position: "relative", zIndex: 1, display: "block", marginTop: 3,
               fontFamily: "var(--mono)", fontSize: 8.5, color: "var(--wl-muted)",
@@ -167,7 +167,7 @@ function PhaseRibbon({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }
 }
 
 // ---- 3. phase rows (ports phaseRows) ----
-function PhaseRows({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }) {
+function PhaseRows({ macro, t }: { macro: Macrocycle; t: TFunction<["charts", "domain"]> }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
       {macro.phaseProfile.map((p) => (
@@ -175,7 +175,7 @@ function PhaseRows({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }) 
           background: "var(--wl-surface)", borderRadius: "var(--wl-radius)", padding: "11px 12px",
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-            <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5, color: "var(--wl-text)" }}>{p.name}</span>
+            <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 13.5, color: "var(--wl-text)" }}>{t(`domain:macro.${macro.id}.phase.${p.key}.name`)}</span>
             <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", whiteSpace: "nowrap" }}>
               {t("periodization.rowWeeksImr", { range: weekRange(p), lo: p.imrPct[0], hi: p.imrPct[1] })}
             </span>
@@ -186,7 +186,7 @@ function PhaseRows({ macro, t }: { macro: Macrocycle; t: TFunction<"charts"> }) 
           }}>
             <span style={{ display: "block", height: "100%", borderRadius: 99, width: `${p.volRel}%`, background: "var(--wl-accent)" }} />
           </div>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>{t("periodization.rowVolFocus", { vol: p.volRel, focus: p.focus })}</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>{t("periodization.rowVolFocus", { vol: p.volRel, focus: t(`domain:macro.${macro.id}.phase.${p.key}.focus`) })}</div>
         </div>
       ))}
     </div>
