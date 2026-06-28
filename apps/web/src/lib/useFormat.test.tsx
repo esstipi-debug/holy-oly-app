@@ -16,14 +16,14 @@ beforeEach(async () => {
 describe("useFormat", () => {
   test("number formatting follows the active language", async () => {
     const { result, rerender } = renderHook(() => useFormat(), { wrapper });
-    // es-419 (neutral Latin America) groups thousands with commas.
-    expect(result.current.number(1234567)).toBe("1,234,567");
+    // es-419 (neutral Latin America) is mapped to es-CL → dot grouping (the app's convention).
+    expect(result.current.number(1234567)).toBe("1.234.567");
     await act(async () => {
-      await i18n.changeLanguage("es-AR");
+      await i18n.changeLanguage("en");
     });
     rerender();
-    // es-AR (Argentina) groups thousands with dots — proves the binding follows the language.
-    expect(result.current.number(1234567)).toBe("1.234.567");
+    // en groups thousands with commas — proves the binding follows the active language.
+    expect(result.current.number(1234567)).toBe("1,234,567");
   });
 
   test("currency formatting follows the active language", async () => {

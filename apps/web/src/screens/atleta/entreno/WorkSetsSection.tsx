@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DiscRow } from "../../../ui/Disc";
+import { useFormat } from "../../../lib/useFormat";
 
 export interface SetRow { kg?: number; reps?: number; done: boolean; }
 
@@ -62,6 +63,7 @@ export function WorkSetsSection({ series, barKg, onPatchSet }: {
   series: SetRow[]; barKg: number; onPatchSet: (i: number, p: Partial<SetRow>) => void;
 }) {
   const { t } = useTranslation("atleta");
+  const fmt = useFormat();
   const [reveal, setReveal] = useState(false);
   const nDone = series.filter((s) => s.done).length;
   const vol = series.filter((s) => s.done).reduce((a, s) => a + (s.kg || 0) * (s.reps || 0), 0);
@@ -72,7 +74,7 @@ export function WorkSetsSection({ series, barKg, onPatchSet }: {
     <div className="et-worksets">
       <div className="et-worksets__head">
         <span className="et-worksets__title">{t("wsTitle")}</span>
-        <span className={"et-worksets__count" + (all ? " is-all" : "")}>{nDone}/{series.length}{vol > 0 ? ` · ${vol.toLocaleString("es-CL")} kg` : ""}</span>
+        <span className={"et-worksets__count" + (all ? " is-all" : "")}>{nDone}/{series.length}{vol > 0 ? ` · ${fmt.number(vol)} kg` : ""}</span>
       </div>
       <div className="et-worksets__track" aria-hidden><span className="et-worksets__fill" style={{ width: `${series.length ? (nDone / series.length) * 100 : 0}%` }} /></div>
 
@@ -93,7 +95,7 @@ export function WorkSetsSection({ series, barKg, onPatchSet }: {
       {all && (
         <div className="et-worksets__complete">
           <span className="et-worksets__complete-ic" aria-hidden>✓</span>
-          {t("wsAllComplete", { count: series.length, vol: vol.toLocaleString("es-CL") })}
+          {t("wsAllComplete", { count: series.length, vol: fmt.number(vol) })}
           <button type="button" className="et-worksets__re" onClick={() => setReveal((v) => !v)}>{reveal ? t("wsHide") : t("wsReview")}</button>
         </div>
       )}

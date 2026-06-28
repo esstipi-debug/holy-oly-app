@@ -2,8 +2,8 @@ import { describe, test, expect } from "vitest";
 import { formatNumber, formatCurrency, formatDate, intlLocale } from "./format";
 
 describe("intlLocale", () => {
-  test("passes real locales through and maps the pseudo-locale to English", () => {
-    expect(intlLocale("es-419")).toBe("es-419");
+  test("maps es-419 to es-CL (dot grouping), passes other locales through, pseudo→English", () => {
+    expect(intlLocale("es-419")).toBe("es-CL"); // neutral LatAm → the app's Chilean dot grouping
     expect(intlLocale("es-AR")).toBe("es-AR");
     expect(intlLocale("en")).toBe("en");
     expect(intlLocale("en-XA")).toBe("en");

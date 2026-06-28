@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { formatClp, MULTISEDE } from "@holy-oly/core";
+import { MULTISEDE } from "@holy-oly/core";
+import { useFormat } from "../../lib/useFormat";
 import { billingCheckout, billingPlans, billingStatus, mockActivate, type BillingPeriod, type BillingPlan, type BillingStatus } from "../../billing/billingClient";
 import { useAuth } from "../../auth/AuthContext";
 import { BackButton } from "../../ui/BackButton";
@@ -19,6 +20,9 @@ export function SuscripcionScreen() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation("roster");
+  const fmt = useFormat();
+  // CLP localizado: es-419/es-AR → "$19.990" (es-CL), en → "CLP 19,990", pt-BR → "CLP 19.990".
+  const clp = (amount: number): string => fmt.currency(amount, "CLP", { maximumFractionDigits: 0 });
   const coachesLabel = (n: number | null): string => (n == null ? t("subCoachesUnlimited") : t("subCoaches", { count: n }));
   // Email para coordinar los pagos que no entran a MP (PayPal/transferencia).
   const coordinarPagoHref = (planName: string): string =>
@@ -112,12 +116,12 @@ export function SuscripcionScreen() {
           <div style={{ fontSize: 18, fontWeight: 800, marginTop: 4 }}>{status.active ? t("subActive") : status.status}</div>
           {activePlan && (
             <div style={{ fontSize: 13, marginTop: 6 }}>
-              {t("subPlanLine", { name: activePlan.name, price: formatClp(activePlan.priceClpMonthly) })}
+              {t("subPlanLine", { name: activePlan.name, price: clp(activePlan.priceClpMonthly) })}
             </div>
           )}
           {status.currentPeriodEnd && (
             <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 6 }}>
-              {t("subExpires", { date: new Date(status.currentPeriodEnd).toLocaleDateString() })}
+              {t("subExpires", { date: fmt.date(status.currentPeriodEnd, { year: "numeric", month: "long", day: "numeric" }) })}
             </div>
           )}
         </div>
@@ -154,13 +158,13 @@ export function SuscripcionScreen() {
                     <span style={{ fontFamily: "var(--mono)", fontSize: 13, fontWeight: 700 }}>
                       {/* Headline siempre por mes → escalera comparable entre planes (sem y mensual no se mezclan). */}
                       {period === "semiannual"
-                        ? t("subPerMonthApprox", { price: formatClp(Math.round(plan.priceClpSemiannual / 6)) })
-                        : t("subPerMonth", { price: formatClp(plan.priceClpMonthly) })}
+                        ? t("subPerMonthApprox", { price: clp(Math.round(plan.priceClpSemiannual / 6)) })
+                        : t("subPerMonth", { price: clp(plan.priceClpMonthly) })}
                     </span>
                   </div>
                   {period === "semiannual" && (
                     <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-accent)", marginTop: 3 }}>
-                      {t("subSemiDetail", { price: formatClp(plan.priceClpSemiannual), months: monthsFree(plan) })}
+                      {t("subSemiDetail", { price: clp(plan.priceClpSemiannual), months: monthsFree(plan) })}
                     </div>
                   )}
                   {manualSemi && (
@@ -180,7 +184,7 @@ export function SuscripcionScreen() {
             <div style={{ padding: 14, borderRadius: 12, border: "1px dashed color-mix(in srgb,var(--wl-muted) 35%,transparent)", background: "var(--wl-surface)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                 <span style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{MULTISEDE.name}</span>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>{t("subFromPerMonth", { price: formatClp(MULTISEDE.fromClpMonthly) })}</span>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)" }}>{t("subFromPerMonth", { price: clp(MULTISEDE.fromClpMonthly) })}</span>
               </div>
               <div style={{ fontSize: 12, color: "var(--wl-muted)", marginTop: 4 }}>{MULTISEDE.description}</div>
               <a href="mailto:esstipi@gmail.com?subject=Plan%20Multi-sede" style={{ display: "inline-block", marginTop: 8, fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-accent)", fontWeight: 700 }}>
