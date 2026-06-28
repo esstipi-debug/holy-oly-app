@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title data-i18n="meta_title">Holy Oly — Periodización para coaches de levantamiento</title>
-<meta name="description" data-i18n-attr="content" data-i18n="meta_desc" content="Indica la fecha de la competencia y Holy Oly arma los ciclos para que tu atleta llegue en pico. Periodización automática, carga y estrés de cada atleta, todo tu equipo en un panel." />
+<meta name="description" data-i18n-attr="content" data-i18n="meta_desc" content="Indica la fecha de la competencia y Holy Oly arma los ciclos para que tu atleta llegue en Peak. Periodización automática, carga y estrés de cada atleta, todo tu equipo en un panel." />
 <meta name="theme-color" content="#0A0B0E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -143,6 +143,18 @@ h2{ font-family:var(--display); font-weight:800; letter-spacing:-.015em; line-he
 .discs{ display:flex; align-items:center; gap:6px; margin-left:auto; }
 .discs .lbl{ font-family:var(--mono); font-size:10px; color:var(--muted); margin-right:2px; }
 .discs svg{ display:block; filter:drop-shadow(0 2px 4px rgba(0,0,0,.45)); }
+.rxrow--warm{ background:linear-gradient(180deg, rgba(46,230,160,.07), rgba(46,230,160,.02)); border-color:rgba(46,230,160,.28); }
+.warm-tag{ font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.08em; color:var(--teal); background:rgba(46,230,160,.12); border:1px solid rgba(46,230,160,.3); border-radius:999px; padding:3px 9px; }
+.warm-ramp{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-family:var(--mono); font-weight:700; font-size:13px; color:#cfd5dc; }
+.warm-ramp i{ color:var(--teal); font-style:normal; }
+.signup{ display:flex; flex-direction:column; gap:11px; max-width:420px; margin:28px auto 0; text-align:left; }
+.signup__field{ width:100%; font-family:var(--body); font-size:15px; color:var(--text); background:var(--surface-2); border:1px solid var(--hair); border-radius:12px; padding:13px 16px; outline:none; transition:border-color .18s, box-shadow .18s; }
+.signup__field::placeholder{ color:var(--muted); }
+.signup__field:focus{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(46,230,160,.15); }
+.signup__select{ appearance:none; -webkit-appearance:none; cursor:pointer; padding-right:40px; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1l5 5 5-5' stroke='%236B7480' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat:no-repeat; background-position:right 14px center; }
+.signup__select:invalid{ color:var(--muted); }
+.signup .btn--primary{ width:100%; margin-top:3px; }
+.signup__hp{ position:absolute!important; left:-9999px!important; width:1px!important; height:1px!important; opacity:0!important; pointer-events:none; }
 /* readiness gold card */
 .ready{ position:relative; border-radius:18px; overflow:hidden; padding:18px; color:#241A04; min-height:148px; box-shadow:0 18px 40px -16px rgba(233,196,106,.5), inset 0 0 0 1px rgba(255,240,200,.5); background:#C7A14C; }
 .ready .l-base{ position:absolute; inset:0; background:linear-gradient(135deg,#6E561F 0%,#C7A14C 24%,#F8E7AE 47%,#C49A41 66%,#8A6E2C 100%); }
@@ -299,7 +311,7 @@ footer{ border-top:1px solid var(--hair); padding:32px 0; }
     <div class="wrap">
       <div>
         <span class="eyebrow"><i></i><span data-i18n="hero_eyebrow">Periodización para levantamiento olímpico</span></span>
-        <h1 data-i18n="hero_h1">Indica la fecha de la competencia. <span class="grad">Holy Oly arma los ciclos</span> para que tu atleta llegue en pico.</h1>
+        <h1 data-i18n="hero_h1">Indica la fecha de la competencia. <span class="grad">Holy Oly arma los ciclos</span> para que tu atleta llegue en Peak.</h1>
         <p class="lead" data-i18n="hero_lead">Periodización automática por escuela, carga y estrés de cada atleta, y todo tu equipo en un solo panel. Olvídate de las planillas.</p>
         <div class="cta-row">
           <a class="btn btn--primary" data-i18n="cta_main" href="https://holy-oly.onrender.com">Crea tu cuenta gratis</a>
@@ -351,8 +363,8 @@ footer{ border-top:1px solid var(--hair); padding:32px 0; }
       <div class="bento">
         <div class="pillar rv">
           <div class="ic">🎯</div>
-          <h3 data-i18n="p1_h">Periodización que pica en la fecha</h3>
-          <p data-i18n="p1_p">Elige la escuela —<b>Búlgaro, Ruso, Chino, Cubano…</b>— y la fecha de la competencia. Holy Oly calcula los ciclos para llegar al pico. ¿Cambió la fecha? <b>Se reperiodiza sola</b>, sin tocar lo ya entrenado.</p>
+          <h3 data-i18n="p1_h">Periodización que Peakea en la fecha</h3>
+          <p data-i18n="p1_p">Elige la escuela —<b>Búlgaro, Ruso, Chino, Cubano…</b>— y la fecha de la competencia. Holy Oly calcula los ciclos para llegar al Peak. ¿Cambió la fecha? <b>Se reperiodiza sola</b>, sin tocar lo ya entrenado.</p>
         </div>
         <div class="pillar rv">
           <div class="ic">📊</div>
@@ -398,7 +410,7 @@ footer{ border-top:1px solid var(--hair); padding:32px 0; }
       <div class="section-head rv">
         <span class="kicker" data-i18n="shot_kicker">Así se ve</span>
         <h2 data-i18n="shot_h2">El plan, sin ambigüedad</h2>
-        <p class="section-lead" data-i18n="shot_lead">Porcentaje, kilos, series por repeticiones y los discos exactos a cargar. El atleta sabe qué hacer; tú sabes cómo viene.</p>
+        <p class="section-lead" data-i18n="shot_lead">Hasta el calentamiento se calcula: porcentaje, kilos, series por repeticiones y los discos exactos a cargar. El atleta sabe qué hacer; tú sabes cómo viene.</p>
       </div>
       <div class="shots">
         <div class="shot rv">
@@ -407,6 +419,16 @@ footer{ border-top:1px solid var(--hair); padding:32px 0; }
             <span class="shot__tag" data-i18n="shot_phase">FASE: ACUMULACIÓN</span>
           </div>
           <div class="rx">
+            <div class="rxrow rxrow--warm">
+              <div class="rxtop">
+                <span class="rxname" data-i18n="ex_warmup">Calentamiento</span>
+                <span class="warm-tag" data-i18n="warm_tag">CALCULADO</span>
+              </div>
+              <div class="rxmeta">
+                <span class="warm-ramp">40% <i>›</i> 55% <i>›</i> 70%</span>
+                <span class="rxsets" data-i18n="warm_sub" style="margin-left:auto;">Rampa automática al primer trabajo</span>
+              </div>
+            </div>
             <div class="rxrow">
               <div class="rxtop">
                 <span class="rxname" data-i18n="ex_squat">Sentadilla</span>
@@ -488,7 +510,6 @@ footer{ border-top:1px solid var(--hair); padding:32px 0; }
       </div>
       <div class="diffs rv">
         <span class="chip"><span class="dot">◆</span><span data-i18n="diff1">ADN real de cada escuela</span></span>
-        <span class="chip"><span class="dot">◆</span><span data-i18n="diff2">Discos exactos (10·15·20·25)</span></span>
         <span class="chip"><span class="dot">◆</span><span data-i18n="diff3">% + kg + series×reps por fila</span></span>
         <span class="chip"><span class="dot">◆</span><span data-i18n="diff4">Kilos reales, no percepciones</span></span>
         <span class="chip"><span class="dot">◆</span><span data-i18n="diff5">Ciclo menstrual para atletas mujeres</span></span>
@@ -501,12 +522,16 @@ footer{ border-top:1px solid var(--hair); padding:32px 0; }
   <section class="final">
     <div class="wrap">
       <div class="panel rv">
-        <span class="kicker" data-i18n="final_kicker">Empieza hoy</span>
-        <h2 data-i18n="final_h2">Tu próximo macrociclo, en minutos</h2>
-        <p class="section-lead" data-i18n="final_lead">Crea tu cuenta, agrega tu primer atleta y arma un ciclo completo hoy mismo. Sin instalar nada.</p>
-        <div class="cta-row">
-          <a class="btn btn--primary" data-i18n="cta_main" href="https://holy-oly.onrender.com">Crea tu cuenta gratis</a>
-        </div>
+        <span class="kicker" data-i18n="final_kicker">Beta abierta</span>
+        <h2 data-i18n="final_h2">Prueba la versión beta gratis</h2>
+        <p class="section-lead" data-i18n="final_lead">Déjanos tu correo y te damos acceso. Arma tu primer ciclo completo hoy mismo, sin instalar nada.</p>
+        <form class="signup" id="leadForm" novalidate>
+          <input class="signup__field" type="email" name="email" required autocomplete="email" data-i18n-attr="placeholder" data-i18n="cta_email_ph" placeholder="tu@correo.com" aria-label="Correo electrónico" />
+          <input class="signup__field" type="number" name="athletes" required min="1" max="10000" inputmode="numeric" data-i18n-attr="placeholder" data-i18n="cta_athletes_ph" placeholder="¿Cuántos atletas manejas?" aria-label="Cuántos atletas manejas" />
+          <select class="signup__field signup__select" id="leadCountry" name="country" required aria-label="País de origen"></select>
+          <input class="signup__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <button class="btn btn--primary" type="submit" data-i18n="cta_register">Regístrate gratis</button>
+        </form>
         <p class="cta-note"><b data-i18n="cta_note_b">Gratis</b><span data-i18n="cta_note">durante la fase de prueba · sin tarjeta</span></p>
       </div>
     </div>
@@ -660,14 +685,14 @@ var MACROS = [
     leavesOut:{ es:'Sin accesorios de culturismo: todo es fuerza posicional.', en:'No bodybuilding accessories: it is all positional strength.', pt:'Sem acessórios de musculação: tudo é força posicional.' } },
 
   { id:'colombiano-5d', name:'Colombiano 5D', family:'Colombiano', color:'#A855F7', freqDays:5, weeks:12, intensity:4, volume:4, peakWeek:12,
-    char:{ es:'Prioridad absoluta al envión con volumen extremo de piernas; en el pico, las piernas van a cero.', en:'Absolute priority on the clean & jerk with extreme leg volume; at peak, legs go to zero.', pt:'Prioridade absoluta ao arremesso com volume extremo de pernas; no pico, as pernas vão a zero.' },
+    char:{ es:'Prioridad absoluta al envión con volumen extremo de piernas; en el Peak, las piernas van a cero.', en:'Absolute priority on the clean & jerk with extreme leg volume; at peak, legs go to zero.', pt:'Prioridade absoluta ao arremesso com volume extremo de pernas; no pico, as pernas vão a zero.' },
     phases:[
       { nm:{es:'Prep. General',en:'General Prep',pt:'Prep. Geral'}, weeks:[1,4], pct:[58,66], vol:100, focus:{es:'volumen extremo de piernas',en:'extreme leg volume',pt:'volume extremo de pernas'} },
       { nm:{es:'Prep. Especial',en:'Special Prep',pt:'Prep. Especial'}, weeks:[5,8], pct:[65,72], vol:65, focus:{es:'balance técnica-fuerza',en:'technique-strength balance',pt:'equilíbrio técnica-força'} },
       { nm:{es:'Precompetencia',en:'Pre-competition',pt:'Pré-competição'}, weeks:[9,10], pct:[72,82], vol:30, focus:{es:'intensidad · baja volumen',en:'intensity · low volume',pt:'intensidade · baixo volume'} },
-      { nm:{es:'Realización',en:'Realization',pt:'Realização'}, weeks:[11,12], pct:[82,100], vol:10, focus:{es:'pico · piernas a cero',en:'peak · legs to zero',pt:'pico · pernas a zero'} } ],
+      { nm:{es:'Realización',en:'Realization',pt:'Realização'}, weeks:[11,12], pct:[82,100], vol:10, focus:{es:'Peak · piernas a cero',en:'peak · legs to zero',pt:'pico · pernas a zero'} } ],
     signature:{ es:['Cargada y envión','Sentadilla frontal','Tirones de cargada','Jerk'], en:['Clean & Jerk','Front Squat','Clean Pulls','Jerk'], pt:['Arremesso','Agachamento frontal','Puxadas de clean','Jerk'] },
-    leavesOut:{ es:'En el pico, las piernas van a cero: queda el gesto.', en:'At peak, legs go to zero: only the lift remains.', pt:'No pico, as pernas vão a zero: resta o gesto.' } },
+    leavesOut:{ es:'En el Peak, las piernas van a cero: queda el gesto.', en:'At peak, legs go to zero: only the lift remains.', pt:'No pico, as pernas vão a zero: resta o gesto.' } },
 
   { id:'chino-5d', name:'Chino 5D', family:'Chino', color:'#F59E0B', freqDays:5, weeks:4, intensity:4, volume:4, peakWeek:null,
     char:{ es:'Híbrido técnica-fuerza squat-dominante; toda sesión cierra con culturismo funcional.', en:'Technique-strength squat-dominant hybrid; every session ends with functional bodybuilding.', pt:'Híbrido técnica-força squat-dominante; toda sessão fecha com musculação funcional.' },
@@ -684,7 +709,7 @@ var MACROS = [
     phases:[
       { nm:{es:'Acumulación',en:'Accumulation',pt:'Acumulação'}, weeks:[1,6], pct:[70,85], vol:100, focus:{es:'una serie por minuto · densidad',en:'one set per minute · density',pt:'uma série por minuto · densidade'} },
       { nm:{es:'Intensificación',en:'Intensification',pt:'Intensificação'}, weeks:[7,11], pct:[85,94], vol:55, focus:{es:'singles · intensificación + taper',en:'singles · intensification + taper',pt:'singles · intensificação + taper'} },
-      { nm:{es:'Test máximo',en:'Max test',pt:'Teste máximo'}, weeks:[12,12], pct:[90,100], vol:20, focus:{es:'pico · test',en:'peak · test',pt:'pico · teste'} } ],
+      { nm:{es:'Test máximo',en:'Max test',pt:'Teste máximo'}, weeks:[12,12], pct:[90,100], vol:20, focus:{es:'Peak · test',en:'peak · test',pt:'pico · teste'} } ],
     signature:{ es:['Olímpicos (una serie por minuto)','Potencias','Sentadilla frontal'], en:['Olympic lifts (one set per minute)','Power variants','Front Squat'], pt:['Olímpicos (uma série por minuto)','Potências','Agachamento frontal'] },
     leavesOut:{ es:'Sin accesorios lentos: rompen el reloj.', en:'No slow accessories: they break the clock.', pt:'Sem acessórios lentos: quebram o relógio.' } }
 ];
@@ -796,10 +821,10 @@ function selectMacro(id, scroll){
 var I18N = {
   es: {
     meta_title:"Holy Oly — Periodización para coaches de levantamiento",
-    meta_desc:"Indica la fecha de la competencia y Holy Oly arma los ciclos para que tu atleta llegue en pico. Periodización automática, carga y estrés de cada atleta, todo tu equipo en un panel.",
+    meta_desc:"Indica la fecha de la competencia y Holy Oly arma los ciclos para que tu atleta llegue en Peak. Periodización automática, carga y estrés de cada atleta, todo tu equipo en un panel.",
     nav_cta:"Probar gratis",
     hero_eyebrow:"Periodización para levantamiento olímpico",
-    hero_h1:'Indica la fecha de la competencia. <span class="grad">Holy Oly arma los ciclos</span> para que tu atleta llegue en pico.',
+    hero_h1:'Indica la fecha de la competencia. <span class="grad">Holy Oly arma los ciclos</span> para que tu atleta llegue en Peak.',
     hero_lead:"Periodización automática por escuela, carga y estrés de cada atleta, y todo tu equipo en un solo panel. Olvídate de las planillas.",
     cta_main:"Crea tu cuenta gratis",
     cta_secondary:"Ver cómo funciona",
@@ -814,23 +839,25 @@ var I18N = {
     pain3_p:"Más atletas, más caos. El seguimiento individual se vuelve imposible de sostener.",
     pil_kicker:"La solución", pil_h2:"Todo lo que necesitas, en un solo lugar",
     pil_lead:"Las tres cosas que más cuestan al coach, resueltas y conectadas entre sí.",
-    p1_h:"Periodización que pica en la fecha",
-    p1_p:'Elige la escuela —<b>Búlgaro, Ruso, Chino, Cubano…</b>— y la fecha de la competencia. Holy Oly calcula los ciclos para llegar al pico. ¿Cambió la fecha? <b>Se reperiodiza sola</b>, sin tocar lo ya entrenado.',
+    p1_h:"Periodización que Peakea en la fecha",
+    p1_p:'Elige la escuela —<b>Búlgaro, Ruso, Chino, Cubano…</b>— y la fecha de la competencia. Holy Oly calcula los ciclos para llegar al Peak. ¿Cambió la fecha? <b>Se reperiodiza sola</b>, sin tocar lo ya entrenado.',
     p2_h:"Carga y estrés de cada atleta",
     p2_p:'El atleta registra su sesión y tú ves <b>mapas de calor, adherencia y readiness</b>. Sabes quién viene fuerte y a quién bajarle la carga, <b>antes de que se lesione</b>.',
     p3_h:"Escala sin perder el control",
     p3_p:'10, 20 o 50 atletas. Cada uno ve <b>solo su plan</b>, claro y sin distracciones. Tú ves a todo el equipo desde <b>un panel</b>, con alertas de quién necesita atención.',
     shot_kicker:"Así se ve", shot_h2:"El plan, sin ambigüedad",
-    shot_lead:"Porcentaje, kilos, series por repeticiones y los discos exactos a cargar. El atleta sabe qué hacer; tú sabes cómo viene.",
+    shot_lead:"Hasta el calentamiento se calcula: porcentaje, kilos, series por repeticiones y los discos exactos a cargar. El atleta sabe qué hacer; tú sabes cómo viene.",
     shot_today:"Hoy · Fuerza", shot_phase:"FASE: ACUMULACIÓN",
     ex_squat:"Sentadilla", ex_snatch:"Arranque", ex_pull:"Tirón de arranque", per_side:"por lado",
+    ex_warmup:"Calentamiento", warm_tag:"CALCULADO", warm_sub:"Rampa automática al primer trabajo",
     ready_eyebrow:"★ READINESS DE HOY", ready_sub:"Lista para cargar pesado",
     heat_title:"Adherencia · 10 semanas", heat_low:"Bajo", heat_high:"Alto",
     diff_kicker:"Por qué es distinto", diff_h2:"Pensado por y para el levantamiento",
-    diff1:"ADN real de cada escuela", diff2:"Discos exactos (10·15·20·25)", diff3:"% + kg + series×reps por fila",
+    diff1:"ADN real de cada escuela", diff3:"% + kg + series×reps por fila",
     diff4:"Kilos reales, no percepciones", diff5:"Ciclo menstrual para atletas mujeres", diff6:"Historial de ciclos y récords",
-    final_kicker:"Empieza hoy", final_h2:"Tu próximo macrociclo, en minutos",
-    final_lead:"Crea tu cuenta, agrega tu primer atleta y arma un ciclo completo hoy mismo. Sin instalar nada.",
+    final_kicker:"Beta abierta", final_h2:"Prueba la versión beta gratis",
+    final_lead:"Déjanos tu correo y te damos acceso. Arma tu primer ciclo completo hoy mismo, sin instalar nada.",
+    cta_email_ph:"tu@correo.com", cta_athletes_ph:"¿Cuántos atletas manejas?", cta_country_ph:"País de origen…", cta_country_other:"Otro", cta_register:"Regístrate gratis",
     foot_tag:"Holy Oly · Hecho para coaches de levantamiento olímpico.",
     mc_kicker:"El catálogo", mc_h2:"Macrociclos con metodología real",
     mc_lead:"Cada escuela es un programa fundado en su literatura, no una plantilla genérica. Toca uno para ver su detalle.",
@@ -838,8 +865,8 @@ var I18N = {
     md_lead:"El mapa de intensidad semana a semana, las fases con su banda de porcentaje del máximo y volumen, y qué movimientos firma cada escuela.",
     lbl_freq:"Frecuencia", lbl_dur:"Duración", lbl_int:"Intensidad", lbl_vol:"Volumen",
     lbl_weeksWord:"semanas", lbl_daysWk:"días/sem",
-    lbl_peakAt:"Pica en sem. {w}", lbl_noPeak:"Sin pico", lbl_open:"Ver detalle ›", lbl_weekShort:"Sem",
-    map_intensity:"Intensidad (% del máximo) semana a semana", lbl_peakFlag:"PICO",
+    lbl_peakAt:"Peakea en sem. {w}", lbl_noPeak:"Sin Peak", lbl_open:"Ver detalle ›", lbl_weekShort:"Sem",
+    map_intensity:"Intensidad (% del máximo) semana a semana", lbl_peakFlag:"PEAK",
     lbl_phases:"Fases", lbl_signature:"Movimientos firma", lbl_leavesout:"Deja fuera"
   },
   en: {
@@ -869,16 +896,18 @@ var I18N = {
     p3_h:"Scale without losing control",
     p3_p:'10, 20, or 50 athletes. Each sees <b>only their own plan</b>, clean and focused. You see the whole roster from <b>one dashboard</b>, with alerts on who needs attention.',
     shot_kicker:"Here's how it looks", shot_h2:"The plan, zero ambiguity",
-    shot_lead:"Percentage, kilos, sets × reps, and the exact plates to load. The athlete knows what to do; you know how they're tracking.",
+    shot_lead:"Even the warm-up is calculated: percentage, kilos, sets × reps, and the exact plates to load. The athlete knows what to do; you know how they're tracking.",
     shot_today:"Today · Strength", shot_phase:"PHASE: ACCUMULATION",
     ex_squat:"Back Squat", ex_snatch:"Snatch", ex_pull:"Snatch Pull", per_side:"per side",
+    ex_warmup:"Warm-up", warm_tag:"CALCULATED", warm_sub:"Auto ramp to the first work set",
     ready_eyebrow:"★ TODAY'S READINESS", ready_sub:"Ready to go heavy",
     heat_title:"Adherence · 10 weeks", heat_low:"Low", heat_high:"High",
     diff_kicker:"Why it's different", diff_h2:"Built by and for weightlifting",
-    diff1:"Each methodology's real DNA", diff2:"Exact plates (10·15·20·25)", diff3:"% + kg + sets×reps per line",
+    diff1:"Each methodology's real DNA", diff3:"% + kg + sets×reps per line",
     diff4:"Real kilos, not perceptions", diff5:"Menstrual cycle for female athletes", diff6:"Cycle & record history",
-    final_kicker:"Start today", final_h2:"Your next macrocycle, in minutes",
-    final_lead:"Create your account, add your first athlete, and build a full cycle today. Nothing to install.",
+    final_kicker:"Open beta", final_h2:"Try the free beta",
+    final_lead:"Leave your email and we'll get you in. Build your first full cycle today — nothing to install.",
+    cta_email_ph:"you@email.com", cta_athletes_ph:"How many athletes?", cta_country_ph:"Country of origin…", cta_country_other:"Other", cta_register:"Sign up free",
     foot_tag:"Holy Oly · Made for Olympic weightlifting coaches.",
     mc_kicker:"The catalog", mc_h2:"Macrocycles with real methodology",
     mc_lead:"Each school is a program grounded in its own literature, not a generic template. Tap one to see its detail.",
@@ -917,16 +946,18 @@ var I18N = {
     p3_h:"Escale sem perder o controle",
     p3_p:'10, 20 ou 50 atletas. Cada um vê <b>só o seu plano</b>, limpo e focado. Você vê todo o elenco em <b>um painel</b>, com alertas de quem precisa de atenção.',
     shot_kicker:"Veja como é", shot_h2:"O plano, sem ambiguidade",
-    shot_lead:"Porcentagem, quilos, séries × repetições e as anilhas exatas. O atleta sabe o que fazer; você sabe como ele está.",
+    shot_lead:"Até o aquecimento é calculado: porcentagem, quilos, séries × repetições e as anilhas exatas. O atleta sabe o que fazer; você sabe como ele está.",
     shot_today:"Hoje · Força", shot_phase:"FASE: ACUMULAÇÃO",
     ex_squat:"Agachamento", ex_snatch:"Arranco", ex_pull:"Puxada de arranco", per_side:"por lado",
+    ex_warmup:"Aquecimento", warm_tag:"CALCULADO", warm_sub:"Rampa automática até a primeira série",
     ready_eyebrow:"★ READINESS DE HOJE", ready_sub:"Pronta para pegar pesado",
     heat_title:"Adesão · 10 semanas", heat_low:"Baixo", heat_high:"Alto",
     diff_kicker:"Por que é diferente", diff_h2:"Feito por e para o levantamento",
-    diff1:"DNA real de cada escola", diff2:"Anilhas exatas (10·15·20·25)", diff3:"% + kg + séries×reps por linha",
+    diff1:"DNA real de cada escola", diff3:"% + kg + séries×reps por linha",
     diff4:"Quilos reais, não percepções", diff5:"Ciclo menstrual para atletas mulheres", diff6:"Histórico de ciclos e recordes",
-    final_kicker:"Comece hoje", final_h2:"Seu próximo macrociclo, em minutos",
-    final_lead:"Crie sua conta, adicione seu primeiro atleta e monte um ciclo completo hoje. Sem instalar nada.",
+    final_kicker:"Beta aberta", final_h2:"Teste a versão beta grátis",
+    final_lead:"Deixe seu e-mail e a gente te dá acesso. Monte seu primeiro ciclo completo hoje, sem instalar nada.",
+    cta_email_ph:"seu@email.com", cta_athletes_ph:"Quantos atletas?", cta_country_ph:"País de origem…", cta_country_other:"Outro", cta_register:"Cadastre-se grátis",
     foot_tag:"Holy Oly · Feito para treinadores de levantamento olímpico.",
     mc_kicker:"O catálogo", mc_h2:"Macrociclos com metodologia real",
     mc_lead:"Cada escola é um programa fundamentado na sua literatura, não um template genérico. Toque em um para ver o detalhe.",
@@ -939,6 +970,59 @@ var I18N = {
     lbl_phases:"Fases", lbl_signature:"Movimentos-assinatura", lbl_leavesout:"Deixa de fora"
   }
 };
+
+/* ===== Lead capture (landing → API → registro de la app) ===== */
+// POST /leads es público y SIN cookies (CORS abierto), así que la landing puede vivir en otro
+// origen. Apunta estas dos constantes a tu API / app desplegada.
+var LEAD_API = 'https://holy-oly.onrender.com';
+var LEAD_REDIRECT_URL = 'https://holy-oly.onrender.com/login?mode=signup';
+
+// LatAm primero (luego Australia —mercado prioritario— y otros orígenes comunes). Las etiquetas
+// se localizan con Intl.DisplayNames; el value es el código ISO-3166 alpha-2 que se guarda crudo.
+var COUNTRY_CODES = ['AR','CL','MX','CO','PE','UY','EC','BO','PY','VE','BR','US','ES','CR','GT','PA','DO','PR','HN','SV','NI','CU','AU','GB','CA','IT','FR','DE','PT'];
+
+function renderCountries(lang){
+  var sel = document.getElementById('leadCountry'); if(!sel) return;
+  var dict = I18N[lang] || I18N.es;
+  var prev = sel.value;
+  var dn = null;
+  try{ dn = new Intl.DisplayNames([lang==='pt'?'pt-BR':lang], {type:'region'}); }catch(e){}
+  var html = '<option value="" disabled'+(prev?'':' selected')+'>'+(dict.cta_country_ph||'País…')+'</option>';
+  COUNTRY_CODES.forEach(function(code){
+    var name = dn ? (dn.of(code)||code) : code;
+    html += '<option value="'+code+'">'+name+'</option>';
+  });
+  html += '<option value="ZZ">'+(dict.cta_country_other||'Otro')+'</option>';
+  sel.innerHTML = html;
+  if(prev){ sel.value = prev; }
+}
+
+function initLeadForm(){
+  var form = document.getElementById('leadForm'); if(!form) return;
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    if(!form.reportValidity()) return;
+    var btn = form.querySelector('button[type="submit"]');
+    if(btn){ btn.disabled = true; }
+    var payload = {
+      email: (form.email.value||'').trim(),
+      athletes: parseInt(form.athletes.value, 10),
+      country: form.country.value,
+      website: form.website.value
+    };
+    // Fire-and-redirect: keepalive deja que el POST termine durante la navegación; nunca atrapamos
+    // al usuario si el API está lento o caído.
+    var go = function(){ window.location.href = LEAD_REDIRECT_URL; };
+    try{
+      fetch(LEAD_API + '/leads', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload),
+        keepalive:true
+      }).then(go, go);
+    }catch(e){ go(); }
+  });
+}
 
 function setLang(lang){
   var dict = I18N[lang] || I18N.es;
@@ -955,6 +1039,7 @@ function setLang(lang){
     b.classList.toggle('active', b.getAttribute('data-lang')===lang);
   });
   renderMacros(lang);
+  renderCountries(lang);
   try{ localStorage.setItem('holyoly-lang', lang); }catch(e){}
 }
 
@@ -968,6 +1053,7 @@ function setLang(lang){
   document.querySelectorAll('.langsw button').forEach(function(b){
     b.addEventListener('click', function(){ setLang(b.getAttribute('data-lang')); });
   });
+  initLeadForm();
 })();
 
 /* ===== Scroll reveal ===== */
