@@ -51,6 +51,8 @@ describe("CrearCicloSheet", () => {
       comp: { name: "Nacional", date: "2026-10-01" },
     });
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    // RM input-only ("RM nunca crudo"): tras crear, el draft de RM queda limpio — jamás se re-muestra.
+    expect(screen.getByLabelText("Arranque")).toHaveValue(null);
   });
 
   it("submit deshabilitado sin RMs válidos (sólo escuela elegida)", () => {
