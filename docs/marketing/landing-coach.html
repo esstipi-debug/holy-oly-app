@@ -172,6 +172,80 @@ h2{ font-family:var(--display); font-weight:800; letter-spacing:-.015em; line-he
 .heat-legend{ display:flex; align-items:center; gap:8px; margin-top:12px; font-family:var(--mono); font-size:10px; color:var(--muted); }
 .heat-legend i{ width:11px; height:11px; border-radius:3px; display:inline-block; }
 
+/* ===== Interactive app demo (atleta ⇄ coach) ===== */
+.demo{ border:1px solid var(--hair); border-radius:22px; background:var(--surface); padding:clamp(14px,2.4vw,22px); }
+.demo__toolbar{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
+.demo__seg{ display:inline-flex; background:var(--surface-2); border:1px solid var(--hair); border-radius:12px; padding:4px; gap:4px; }
+.demo__seg button{ font-family:var(--cond); font-weight:800; text-transform:uppercase; letter-spacing:.04em; font-size:13.5px; color:var(--muted); background:none; border:none; cursor:pointer; padding:8px 18px; border-radius:9px; transition:color .15s, background .15s; }
+.demo__seg button.on{ color:#1a1205; background:linear-gradient(180deg,#F8E7AE,#E9C46A); box-shadow:0 2px 8px -2px rgba(233,196,106,.5); }
+.demo__hint{ font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:.04em; margin-left:auto; display:inline-flex; align-items:center; gap:7px; }
+.demo__hint i{ width:6px; height:6px; border-radius:50%; background:var(--teal); box-shadow:0 0 8px var(--teal); font-style:normal; }
+.demo__schools{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.dchip{ font-family:var(--cond); font-weight:700; font-size:14px; letter-spacing:.02em; color:#cfd5dc; background:var(--surface-2); border:1px solid var(--hair); border-radius:999px; padding:7px 14px; cursor:pointer; transition:color .15s, border-color .15s; display:inline-flex; align-items:center; gap:8px; }
+.dchip .swatch{ width:9px; height:9px; border-radius:50%; background:var(--dc,#888); }
+.dchip:hover{ color:var(--text); border-color:rgba(255,255,255,.2); }
+.dchip.on{ color:var(--text); border-color:var(--dc); box-shadow:0 0 0 1px var(--dc) inset; }
+.appwin{ position:relative; }
+.appwin__bar{ display:none; }
+.demo__cols{ display:grid; grid-template-columns:1.25fr .85fr; gap:18px; align-items:start; }
+.col-plan, .col-side{ display:grid; gap:16px; align-content:start; }
+.daytabs{ display:flex; gap:6px; }
+.daytab{ flex:1; font-family:var(--mono); font-weight:700; font-size:11.5px; letter-spacing:.03em; color:var(--muted); background:var(--surface-2); border:1px solid var(--hair); border-radius:10px; padding:8px 6px; cursor:pointer; text-align:center; transition:color .15s, border-color .15s, background .15s; }
+.daytab.on{ color:var(--text); border-color:rgba(233,196,106,.4); background:rgba(233,196,106,.08); }
+.daytab small{ display:block; font-size:9.5px; font-weight:400; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:.04em; }
+.daytab.on small{ color:#cfd5dc; }
+.rxrow--ex{ cursor:pointer; transition:border-color .18s, background .18s; }
+.rxrow--ex:hover{ border-color:rgba(233,196,106,.3); }
+.rxrow--open{ border-color:rgba(233,196,106,.45); background:linear-gradient(180deg, rgba(233,196,106,.06), var(--surface-2)); }
+.rxchev{ color:var(--muted); margin-left:7px; transition:transform .2s, color .2s; display:inline-block; }
+.rxrow--open .rxchev{ transform:rotate(90deg); color:var(--gold); }
+.rx-expand{ overflow:hidden; max-height:0; transition:max-height .3s var(--ease-out); }
+.rxrow--open .rx-expand{ max-height:340px; }
+.rx-expand__in{ padding-top:13px; margin-top:12px; border-top:1px dashed var(--hair); }
+.ramp{ display:flex; flex-wrap:wrap; gap:7px; }
+.ramp .step{ font-family:var(--mono); font-size:11.5px; color:#cfd5dc; background:var(--surface); border:1px solid var(--hair); border-radius:8px; padding:5px 9px; }
+.ramp .step b{ color:var(--text); }
+.ramp .step.work{ color:#1a1205; background:linear-gradient(180deg,#ffd34d,#e6a912); border:none; font-weight:700; }
+.rx-bigdiscs{ display:flex; align-items:center; gap:6px; margin-top:12px; }
+.rx-note{ font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:10px; line-height:1.4; }
+.adj{ font-family:var(--mono); font-weight:700; font-size:10.5px; color:#ffb4b9; background:rgba(255,59,70,.12); border:1px solid rgba(255,59,70,.25); border-radius:6px; padding:3px 7px; }
+.ready-ctrl{ border:1px solid var(--hair); border-radius:14px; padding:14px 16px; background:var(--surface-2); }
+.ready-ctrl__top{ display:flex; align-items:center; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; margin-bottom:11px; }
+.ready-ctrl__top .rng-val{ font-family:var(--display); font-weight:900; font-size:16px; color:var(--gold); }
+.rng{ -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:999px; background:linear-gradient(90deg,#7a1f25,#7a5410 55%,#1bc98a); outline:none; }
+.rng::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%; background:linear-gradient(180deg,#F8E7AE,#C49A41); border:2px solid #1a1205; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.5); }
+.rng::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:linear-gradient(180deg,#F8E7AE,#C49A41); border:2px solid #1a1205; cursor:pointer; }
+.ready-ctrl__hint{ font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:10px; line-height:1.4; }
+.coach{ display:grid; grid-template-columns:1fr 1.05fr; gap:18px; align-items:start; }
+.coach__roster{ display:grid; gap:9px; align-content:start; }
+.rostitle{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 3px; }
+.rosrow{ display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; border:1px solid var(--hair); border-radius:13px; padding:12px 13px; background:var(--surface-2); cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit; transition:border-color .15s, background .15s; }
+.rosrow:hover{ border-color:rgba(255,255,255,.2); }
+.rosrow.on{ border-color:var(--gold); box-shadow:0 0 0 1px rgba(233,196,106,.5) inset; }
+.rdy-pill{ font-family:var(--display); font-weight:900; font-size:18px; width:46px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#0c0d0f; }
+.ros-mid{ display:grid; gap:6px; min-width:0; }
+.ros-name{ font-family:var(--cond); font-weight:800; font-size:16px; letter-spacing:.02em; }
+.ros-sub{ font-family:var(--mono); font-size:11px; color:var(--muted); }
+.ros-heat{ display:grid; grid-template-columns:repeat(10,1fr); gap:3px; width:120px; max-width:55vw; }
+.ros-heat i{ aspect-ratio:1; border-radius:2px; }
+.ros-alert{ font-family:var(--mono); font-size:10.5px; font-weight:700; letter-spacing:.02em; padding:4px 8px; border-radius:7px; text-align:center; }
+.ros-alert.warn{ color:#ffd9a3; background:rgba(233,196,106,.12); border:1px solid rgba(233,196,106,.3); }
+.ros-alert.bad{ color:#ffb4b9; background:rgba(255,59,70,.12); border:1px solid rgba(255,59,70,.28); }
+.ros-alert.ok{ color:var(--teal); background:rgba(46,230,160,.1); border:1px solid rgba(46,230,160,.28); }
+.coach__detail{ border:1px solid var(--hair); border-radius:16px; background:var(--surface-2); padding:16px; }
+.coach-back{ display:none; }
+@media (max-width:860px){
+  .demo__cols{ grid-template-columns:1fr; }
+  .appwin{ max-width:392px; margin:0 auto; background:#0c0f13; border:1px solid var(--hair); border-radius:40px; padding:12px 12px 20px; box-shadow:0 0 0 9px #15181e, 0 30px 70px -22px #000; }
+  .appwin__bar{ display:flex; align-items:center; justify-content:center; height:24px; margin-bottom:8px; }
+  .appwin__bar::before{ content:""; width:118px; height:7px; border-radius:999px; background:#000; }
+  .coach{ grid-template-columns:1fr; }
+  .coach__detail{ display:none; }
+  .coach.has-sel .coach__roster{ display:none; }
+  .coach.has-sel .coach__detail{ display:block; }
+  .coach-back{ display:inline-flex; align-items:center; gap:7px; font-family:var(--mono); font-size:12px; color:var(--gold); background:none; border:none; cursor:pointer; padding:0; margin-bottom:12px; }
+}
+
 /* ===== Differentials ===== */
 .diffs{ display:flex; flex-wrap:wrap; gap:12px; }
 .chip{ display:inline-flex; align-items:center; gap:9px; border:1px solid var(--hair); border-radius:12px; padding:12px 16px; background:var(--surface); font-size:14.5px; font-weight:600; }
@@ -404,100 +478,15 @@ footer{ border-top:1px solid var(--hair); padding:32px 0; }
     </div>
   </section>
 
-  <!-- HOW IT LOOKS -->
-  <section style="background:linear-gradient(180deg, rgba(255,255,255,.015), transparent);">
+  <!-- INTERACTIVE APP DEMO (atleta ⇄ coach) -->
+  <section id="demo-sec" style="background:linear-gradient(180deg, rgba(255,255,255,.015), transparent);">
     <div class="wrap">
       <div class="section-head rv">
         <span class="kicker" data-i18n="shot_kicker">Así se ve</span>
         <h2 data-i18n="shot_h2">El plan, sin ambigüedad</h2>
-        <p class="section-lead" data-i18n="shot_lead">Hasta el calentamiento se calcula: porcentaje, kilos, series por repeticiones y los discos exactos a cargar. El atleta sabe qué hacer; tú sabes cómo viene.</p>
+        <p class="section-lead" data-i18n="demo_lead">Esto no es una captura: es la app. Cambiá el día, la escuela, abrí un ejercicio o movéle el readiness y mirá cómo se recalcula todo.</p>
       </div>
-      <div class="shots">
-        <div class="shot rv">
-          <div class="shot__hd">
-            <span class="shot__title" data-i18n="shot_today">Hoy · Fuerza</span>
-            <span class="shot__tag" data-i18n="shot_phase">FASE: ACUMULACIÓN</span>
-          </div>
-          <div class="rx">
-            <div class="rxrow rxrow--warm">
-              <div class="rxtop">
-                <span class="rxname" data-i18n="ex_warmup">Calentamiento</span>
-                <span class="warm-tag" data-i18n="warm_tag">CALCULADO</span>
-              </div>
-              <div class="rxmeta">
-                <span class="warm-ramp">40% <i>›</i> 55% <i>›</i> 70%</span>
-                <span class="rxsets" data-i18n="warm_sub" style="margin-left:auto;">Rampa automática al primer trabajo</span>
-              </div>
-            </div>
-            <div class="rxrow">
-              <div class="rxtop">
-                <span class="rxname" data-i18n="ex_squat">Sentadilla</span>
-                <span class="rxsets">5 × 3</span>
-              </div>
-              <div class="rxmeta">
-                <span class="badge-int">80%</span>
-                <span class="kg">140 kg</span>
-                <span class="discs" data-kg="140" data-bar="20">
-                  <span class="lbl" data-i18n="per_side">por lado</span>
-                </span>
-              </div>
-            </div>
-            <div class="rxrow">
-              <div class="rxtop">
-                <span class="rxname" data-i18n="ex_snatch">Arranque</span>
-                <span class="rxsets">6 × 2</span>
-              </div>
-              <div class="rxmeta">
-                <span class="badge-int">75%</span>
-                <span class="kg">90 kg</span>
-                <span class="discs" data-kg="90" data-bar="20">
-                  <span class="lbl" data-i18n="per_side">por lado</span>
-                </span>
-              </div>
-            </div>
-            <div class="rxrow">
-              <div class="rxtop">
-                <span class="rxname" data-i18n="ex_pull">Tirón de arranque</span>
-                <span class="rxsets">4 × 3</span>
-              </div>
-              <div class="rxmeta">
-                <span class="badge-int">95%</span>
-                <span class="kg">114 kg</span>
-                <span class="discs" data-kg="114" data-bar="20">
-                  <span class="lbl" data-i18n="per_side">por lado</span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="shot shot--side">
-          <div class="shot rv" style="border:none; padding:0;">
-            <div class="ready">
-              <div class="l-base"></div><div class="l-holo"></div><div class="l-shine"></div>
-              <div class="l-in">
-                <span class="l-eyebrow" data-i18n="ready_eyebrow">★ READINESS DE HOY</span>
-                <div class="l-big">94</div>
-                <div class="l-sub" data-i18n="ready_sub">Lista para cargar pesado</div>
-              </div>
-            </div>
-          </div>
-          <div class="shot rv">
-            <div class="shot__hd">
-              <span class="shot__title" data-i18n="heat_title">Adherencia · 10 semanas</span>
-            </div>
-            <div class="heat">
-              <i class="h2"></i><i class="h3"></i><i class="h3"></i><i class="h1"></i><i class="h3"></i><i class="h2"></i><i class="h3"></i><i class="hw"></i><i class="h3"></i><i class="h3"></i>
-              <i class="h3"></i><i class="h2"></i><i class="ha"></i><i class="h3"></i><i class="h3"></i><i class="h3"></i><i class="h2"></i><i class="h3"></i><i class="h1"></i><i class="h3"></i>
-              <i class="h3"></i><i class="h3"></i><i class="h2"></i><i class="h3"></i><i class="hw"></i><i class="h3"></i><i class="h3"></i><i class="h2"></i><i class="h3"></i><i class="h3"></i>
-            </div>
-            <div class="heat-legend">
-              <span data-i18n="heat_low">Bajo</span>
-              <i style="background:#13412c"></i><i style="background:#1b6e46"></i><i style="background:#1bc98a"></i>
-              <span data-i18n="heat_high">Alto</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="demo rv" id="demoRoot"><!-- montado por renderDemo() --></div>
     </div>
   </section>
 
@@ -817,6 +806,192 @@ function selectMacro(id, scroll){
   if(scroll){ var el=document.getElementById('macroDetail'); if(el) el.scrollIntoView({behavior:'smooth', block:'center'}); }
 }
 
+/* ===== Interactive app demo · faithful slice of Holy Oly (atleta ⇄ coach) =====
+   Reusa el sistema de discos (perSide/disc3q), la i18n (L/getL) y los tokens de la landing.
+   Regla de dominio intocable: cada fila del atleta lleva % + kg + series×reps + discos;
+   el kg manda y los discos aproximan; el RPE no aparece en ninguna superficie del atleta. */
+var MV = {
+  squat:{es:'Sentadilla',en:'Back Squat',pt:'Agachamento'},
+  frontsquat:{es:'Sentadilla frontal',en:'Front Squat',pt:'Agachamento frontal'},
+  snatch:{es:'Arranque',en:'Snatch',pt:'Arranco'},
+  cleanjerk:{es:'Cargada y envión',en:'Clean & Jerk',pt:'Arremesso'},
+  clean:{es:'Cargada',en:'Clean',pt:'Clean'},
+  snatchpull:{es:'Tirón de arranque',en:'Snatch Pull',pt:'Puxada de arranco'},
+  cleanpull:{es:'Tirón de cargada',en:'Clean Pull',pt:'Puxada de clean'},
+  powersnatch:{es:'Arranque de potencia',en:'Power Snatch',pt:'Arranco de potência'},
+  snatchbalance:{es:'Snatch balance',en:'Snatch Balance',pt:'Snatch balance'},
+  pushpress:{es:'Push press',en:'Push Press',pt:'Push press'}
+};
+// 1RM (kg) de la atleta demo (Caro); cada atleta del roster escala sobre esta base.
+var RM = { squat:175, frontsquat:150, snatch:120, cleanjerk:150, clean:150, snatchpull:120, cleanpull:155, powersnatch:100, snatchbalance:112, pushpress:95 };
+// Microciclos por escuela (subset jugable): foco + fase + ejercicios (%/series/reps de phaseProfile real).
+var SCHOOLS = [
+  { id:'ruso', name:'Ruso 5D', color:'#06B6D4', days:[
+    { f:{es:'Fuerza',en:'Strength',pt:'Força'}, ph:{es:'ACUMULACIÓN',en:'ACCUMULATION',pt:'ACUMULAÇÃO'},
+      ex:[ {mv:'squat',s:5,r:3,p:80}, {mv:'snatch',s:6,r:2,p:75}, {mv:'snatchpull',s:4,r:3,p:95} ] },
+    { f:{es:'Técnica',en:'Technique',pt:'Técnica'}, ph:{es:'ACUMULACIÓN',en:'ACCUMULATION',pt:'ACUMULAÇÃO'},
+      ex:[ {mv:'powersnatch',s:5,r:2,p:70}, {mv:'clean',s:5,r:2,p:78}, {mv:'frontsquat',s:4,r:4,p:72} ] },
+    { f:{es:'Potencia',en:'Power',pt:'Potência'}, ph:{es:'INTENSIFICACIÓN',en:'INTENSIFICATION',pt:'INTENSIFICAÇÃO'},
+      ex:[ {mv:'snatch',s:5,r:1,p:88}, {mv:'cleanjerk',s:5,r:1,p:85}, {mv:'snatchpull',s:3,r:3,p:100} ] }
+  ]},
+  { id:'bulgaro', name:'Búlgaro 6D', color:'#EF4444', days:[
+    { f:{es:'Máximo del día',en:'Daily max',pt:'Máximo do dia'}, ph:{es:'DAILY MAX',en:'DAILY MAX',pt:'DAILY MAX'},
+      ex:[ {mv:'snatch',s:6,r:1,p:95}, {mv:'cleanjerk',s:6,r:1,p:93}, {mv:'frontsquat',s:5,r:2,p:90} ] },
+    { f:{es:'Máximo del día',en:'Daily max',pt:'Máximo do dia'}, ph:{es:'DAILY MAX',en:'DAILY MAX',pt:'DAILY MAX'},
+      ex:[ {mv:'snatch',s:5,r:1,p:92}, {mv:'clean',s:5,r:1,p:92}, {mv:'squat',s:4,r:2,p:88} ] },
+    { f:{es:'Descarga',en:'Deload',pt:'Descarga'}, ph:{es:'DESCARGA',en:'DELOAD',pt:'DESCARGA'},
+      ex:[ {mv:'snatch',s:4,r:1,p:80}, {mv:'cleanjerk',s:4,r:1,p:80}, {mv:'frontsquat',s:3,r:3,p:75} ] }
+  ]},
+  { id:'chino', name:'Chino 5D', color:'#F59E0B', days:[
+    { f:{es:'Base estructural',en:'Structural base',pt:'Base estrutural'}, ph:{es:'BASE',en:'BASE',pt:'BASE'},
+      ex:[ {mv:'snatch',s:5,r:2,p:72}, {mv:'squat',s:6,r:3,p:75}, {mv:'pushpress',s:4,r:6,p:65} ] },
+    { f:{es:'Acumulación',en:'Accumulation',pt:'Acumulação'}, ph:{es:'ACUMULACIÓN',en:'ACCUMULATION',pt:'ACUMULAÇÃO'},
+      ex:[ {mv:'snatchbalance',s:5,r:2,p:80}, {mv:'cleanpull',s:5,r:3,p:90}, {mv:'frontsquat',s:5,r:3,p:82} ] },
+    { f:{es:'Choque',en:'Shock',pt:'Choque'}, ph:{es:'CHOQUE',en:'SHOCK',pt:'CHOQUE'},
+      ex:[ {mv:'snatch',s:4,r:1,p:92}, {mv:'cleanjerk',s:4,r:1,p:90}, {mv:'squat',s:4,r:2,p:92} ] }
+  ]},
+  { id:'coreano', name:'Coreano 5D', color:'#3B82F6', days:[
+    { f:{es:'Cimentación',en:'Foundation',pt:'Cimentação'}, ph:{es:'BASE',en:'BASE',pt:'BASE'},
+      ex:[ {mv:'snatchpull',s:5,r:3,p:100}, {mv:'snatch',s:5,r:2,p:74}, {mv:'frontsquat',s:5,r:4,p:72} ] },
+    { f:{es:'Transformación',en:'Transformation',pt:'Transformação'}, ph:{es:'FUERZA',en:'STRENGTH',pt:'FORÇA'},
+      ex:[ {mv:'cleanpull',s:5,r:3,p:105}, {mv:'clean',s:5,r:2,p:82}, {mv:'squat',s:5,r:3,p:84} ] },
+    { f:{es:'Realización',en:'Realization',pt:'Realização'}, ph:{es:'PEAKING',en:'PEAKING',pt:'PEAKING'},
+      ex:[ {mv:'snatch',s:4,r:1,p:90}, {mv:'cleanjerk',s:4,r:1,p:88}, {mv:'snatchpull',s:3,r:2,p:105} ] }
+  ]}
+];
+// Plantel del coach: readiness + adherencia (eje Lunes-first) + alerta. La RM la ve el coach, nunca el atleta.
+var ROSTER = [
+  { name:'Caro', sc:0, day:0, rdy:94, scale:1.00, alert:{t:'ok',k:'al_pr'},      adh:'h3 h3 h2 h3 h3 h3 h2 h3 h3 h3' },
+  { name:'Meli', sc:1, day:1, rdy:78, scale:0.82, alert:{t:'warn',k:'al_down'},  adh:'h2 h3 h1 h3 hw h3 h2 h3 h3 h2' },
+  { name:'Nico', sc:2, day:0, rdy:88, scale:1.18, alert:{t:'ok',k:'al_green'},   adh:'h3 h3 h3 h2 h3 h3 h3 h3 h2 h3' },
+  { name:'Dani', sc:3, day:2, rdy:64, scale:0.90, alert:{t:'bad',k:'al_fatigue'},adh:'h2 ha h2 h1 hw h2 ha h2 h3 h2' },
+  { name:'Vale', sc:0, day:2, rdy:91, scale:0.86, alert:{t:'warn',k:'al_rm'},    adh:'h3 h2 h3 h3 h3 hw h3 h2 h3 h3' }
+];
+var D = { view:'atleta', sc:0, day:0, rdy:94, ex:null, ath:0, athOpen:false };
+
+function mvName(mv,lang){ return getL(MV[mv],lang); }
+function readyDelta(r){ return r>=85 ? 0 : r>=75 ? -2.5 : -5; }
+function workKg(rm,p,r){ return Math.max(20, Math.round(rm*(p+readyDelta(r))/100)); }
+function rdyKey(r){ return r>=90 ? 'ready_hi' : r>=80 ? 'ready_mid' : r>=72 ? 'ready_lo' : 'ready_min'; }
+function rdyColor(r){ return r>=85 ? '#1bc98a' : r>=72 ? '#E9C46A' : '#ff3b46'; }
+function fmtDelta(r){ var d=readyDelta(r); return d<0 ? '−'+Math.abs(d)+'%' : ''; }
+function discsInline(kg,size,lang){
+  var ds=perSide(kg,20), inner='';
+  for(var i=0;i<ds.length;i++){ inner+=disc3q(ds[i],size); }
+  return '<span class="discs"><span class="lbl">'+L(lang,'per_side')+'</span>'+inner+'</span>';
+}
+function exExpandHtml(rm,p,r,lang){
+  var kg=workKg(rm,p,r), fr=[0.5,0.7,0.85], lad='';
+  for(var i=0;i<fr.length;i++){ var k=Math.max(20,Math.round(kg*fr[i])); lad+='<span class="step">'+Math.round(fr[i]*100)+'% · <b>'+k+'</b></span>'; }
+  lad+='<span class="step work">'+L(lang,'ramp_work')+' · <b>'+kg+' kg</b></span>';
+  var note=readyDelta(r)<0 ? '<div class="rx-note">'+L(lang,'rx_adjnote')+'</div>' : '';
+  return '<div class="rx-expand__in"><div class="ramp">'+lad+'</div><div class="rx-bigdiscs">'+discsInline(kg,44,lang)+'</div>'+note+'</div>';
+}
+function exRowHtml(ex,i,rm,r,lang){
+  var kg=workKg(rm,ex.p,r), d=readyDelta(r), open=(D.ex===i);
+  return '<div class="rxrow rxrow--ex'+(open?' rxrow--open':'')+'" data-act="ex" data-ex="'+i+'" data-rm="'+rm+'" data-pct="'+ex.p+'" data-lastkg="'+kg+'" tabindex="0" role="button" aria-expanded="'+(open?'true':'false')+'">'+
+    '<div class="rxtop"><span class="rxname">'+mvName(ex.mv,lang)+'</span>'+
+      '<span class="rxsets">'+ex.s+' × '+ex.r+'<span class="rxchev">›</span></span></div>'+
+    '<div class="rxmeta"><span class="badge-int">'+ex.p+'%</span>'+
+      '<span class="kg">'+kg+' kg</span>'+
+      '<span class="adj" data-adj'+(d<0?'':' style="display:none"')+'>'+fmtDelta(r)+'</span>'+
+      discsInline(kg,26,lang)+'</div>'+
+    '<div class="rx-expand">'+(open?exExpandHtml(rm,ex.p,r,lang):'')+'</div>'+
+  '</div>';
+}
+function planHtml(sch,dayIdx,r,scale,lang){
+  var day=sch.days[dayIdx];
+  var rows='<div class="rxrow rxrow--warm"><div class="rxtop"><span class="rxname">'+L(lang,'ex_warmup')+'</span><span class="warm-tag">'+L(lang,'warm_tag')+'</span></div>'+
+    '<div class="rxmeta"><span class="warm-ramp">40% <i>›</i> 55% <i>›</i> 70%</span><span class="rxsets" style="margin-left:auto;">'+L(lang,'warm_sub')+'</span></div></div>';
+  for(var i=0;i<day.ex.length;i++){ var ex=day.ex[i]; rows+=exRowHtml(ex,i,Math.round((RM[ex.mv]||100)*scale),r,lang); }
+  return '<div class="shot__hd"><span class="shot__title">'+L(lang,'today_word')+' · '+getL(day.f,lang)+'</span>'+
+    '<span class="shot__tag">'+L(lang,'phase_word')+': '+getL(day.ph,lang)+'</span></div><div class="rx">'+rows+'</div>';
+}
+function readyCardHtml(r,lang){
+  return '<div class="ready"><div class="l-base"></div><div class="l-holo"></div><div class="l-shine"></div>'+
+    '<div class="l-in"><span class="l-eyebrow">'+L(lang,'ready_eyebrow')+'</span><div class="l-big">'+r+'</div>'+
+    '<div class="l-sub">'+L(lang,rdyKey(r))+'</div></div></div>';
+}
+function readyCtrlHtml(r,lang){
+  return '<div class="ready-ctrl"><div class="ready-ctrl__top"><span>'+L(lang,'rdy_word')+'</span><span class="rng-val">'+r+'</span></div>'+
+    '<input class="rng" type="range" min="60" max="99" value="'+r+'" data-act="rdy" aria-label="'+L(lang,'rdy_word')+'" />'+
+    '<div class="ready-ctrl__hint">'+L(lang,'rdy_hint')+'</div></div>';
+}
+function atletaHtml(lang){
+  var sch=SCHOOLS[D.sc], chips='', tabs='';
+  for(var i=0;i<SCHOOLS.length;i++){ var s=SCHOOLS[i]; chips+='<button type="button" class="dchip'+(i===D.sc?' on':'')+'" data-act="school" data-i="'+i+'" style="--dc:'+s.color+'"><span class="swatch"></span>'+s.name+'</button>'; }
+  for(var j=0;j<sch.days.length;j++){ tabs+='<button type="button" class="daytab'+(j===D.day?' on':'')+'" data-act="day" data-i="'+j+'">'+L(lang,'day_word')+' '+(j+1)+'<small>'+getL(sch.days[j].f,lang)+'</small></button>'; }
+  return '<div class="demo__schools">'+chips+'</div>'+
+    '<div class="appwin"><div class="appwin__bar"></div><div class="demo__cols">'+
+      '<div class="col-plan"><div class="daytabs">'+tabs+'</div>'+planHtml(sch,D.day,D.rdy,1,lang)+'</div>'+
+      '<div class="col-side">'+readyCardHtml(D.rdy,lang)+readyCtrlHtml(D.rdy,lang)+'</div>'+
+    '</div></div>';
+}
+function coachHtml(lang){
+  var rows='';
+  for(var i=0;i<ROSTER.length;i++){ var a=ROSTER[i], s=SCHOOLS[a.sc], cells=a.adh.split(' '), heat='';
+    for(var c=0;c<cells.length;c++){ heat+='<i class="'+cells[c]+'"></i>'; }
+    rows+='<button type="button" class="rosrow'+(i===D.ath?' on':'')+'" data-act="ath" data-i="'+i+'">'+
+      '<span class="rdy-pill" style="background:'+rdyColor(a.rdy)+'">'+a.rdy+'</span>'+
+      '<span class="ros-mid"><span class="ros-name">'+a.name+'</span><span class="ros-sub">'+s.name+' · '+getL(s.days[a.day].f,lang)+'</span><span class="heat ros-heat">'+heat+'</span></span>'+
+      '<span class="ros-alert '+a.alert.t+'">'+L(lang,a.alert.k)+'</span></button>';
+  }
+  var sel=ROSTER[D.ath], ss=SCHOOLS[sel.sc];
+  var detail='<button type="button" class="coach-back" data-act="back">‹ '+L(lang,'back_word')+'</button>'+
+    '<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px;">'+
+      '<span class="ros-mid"><span class="ros-name" style="font-size:19px;">'+sel.name+'</span><span class="ros-sub">'+ss.name+' · '+L(lang,'rdy_word')+' '+sel.rdy+'</span></span>'+
+      '<span class="rdy-pill" style="background:'+rdyColor(sel.rdy)+'; width:54px; height:46px; font-size:21px;">'+sel.rdy+'</span>'+
+    '</div>'+planHtml(ss,sel.day,sel.rdy,sel.scale,lang);
+  return '<div class="coach'+(D.athOpen?' has-sel':'')+'"><div class="coach__roster"><p class="rostitle">'+L(lang,'ros_title')+'</p>'+rows+'</div>'+
+    '<div class="coach__detail">'+detail+'</div></div>';
+}
+function renderDemo(lang){
+  var root=document.getElementById('demoRoot'); if(!root) return;
+  lang=lang||currentLang();
+  var seg='<div class="demo__seg" role="tablist">'+
+    '<button type="button" role="tab" aria-selected="'+(D.view==='atleta')+'" data-act="view" data-v="atleta" class="'+(D.view==='atleta'?'on':'')+'">'+L(lang,'seg_atleta')+'</button>'+
+    '<button type="button" role="tab" aria-selected="'+(D.view==='coach')+'" data-act="view" data-v="coach" class="'+(D.view==='coach'?'on':'')+'">'+L(lang,'seg_coach')+'</button></div>';
+  root.innerHTML='<div class="demo__toolbar">'+seg+'<span class="demo__hint"><i>•</i>'+L(lang,'demo_hint')+'</span></div>'+
+    '<div class="demo__stage">'+(D.view==='coach'?coachHtml(lang):atletaHtml(lang))+'</div>';
+}
+function patchReadiness(root,lang){
+  var r=D.rdy;
+  var big=root.querySelector('.l-big'); if(big) big.textContent=r;
+  var sub=root.querySelector('.l-sub'); if(sub) sub.textContent=L(lang,rdyKey(r));
+  var rv=root.querySelector('.rng-val'); if(rv) rv.textContent=r;
+  var rows=root.querySelectorAll('.rxrow[data-ex]');
+  for(var i=0;i<rows.length;i++){ var row=rows[i], rm=+row.getAttribute('data-rm'), p=+row.getAttribute('data-pct'), kg=workKg(rm,p,r), d=readyDelta(r);
+    // El set de discos sólo cambia cuando cambia el kg; evitamos regenerar SVGs en cada tick del slider.
+    if(String(kg)===row.getAttribute('data-lastkg')) continue;
+    row.setAttribute('data-lastkg', kg);
+    var kgEl=row.querySelector('.kg'); if(kgEl) kgEl.textContent=kg+' kg';
+    var adj=row.querySelector('[data-adj]'); if(adj){ if(d<0){ adj.style.display=''; adj.textContent=fmtDelta(r); } else { adj.style.display='none'; } }
+    var old=row.querySelector('.rxmeta .discs'); if(old){ var tmp=document.createElement('div'); tmp.innerHTML=discsInline(kg,26,lang); row.querySelector('.rxmeta').replaceChild(tmp.firstChild, old); }
+    var exp=row.querySelector('.rx-expand'); if(exp && row.classList.contains('rxrow--open')){ exp.innerHTML=exExpandHtml(rm,p,r,lang); }
+  }
+}
+function initDemo(){
+  var root=document.getElementById('demoRoot'); if(!root) return;
+  root.addEventListener('click', function(ev){
+    var t=ev.target.closest ? ev.target.closest('[data-act]') : null; if(!t) return;
+    var act=t.getAttribute('data-act'), lang=currentLang();
+    if(act==='view'){ if(D.view!==t.getAttribute('data-v')){ D.view=t.getAttribute('data-v'); D.ex=null; D.athOpen=false; renderDemo(lang); } }
+    else if(act==='school'){ D.sc=+t.getAttribute('data-i'); D.day=0; D.ex=null; renderDemo(lang); }
+    else if(act==='day'){ D.day=+t.getAttribute('data-i'); D.ex=null; renderDemo(lang); }
+    else if(act==='ex'){ var i=+t.getAttribute('data-ex'); D.ex=(D.ex===i?null:i); renderDemo(lang); }
+    else if(act==='ath'){ D.ath=+t.getAttribute('data-i'); D.athOpen=true; D.ex=null; renderDemo(lang); }
+    else if(act==='back'){ D.athOpen=false; renderDemo(lang); }
+  });
+  root.addEventListener('input', function(ev){
+    var t=ev.target; if(t && t.getAttribute && t.getAttribute('data-act')==='rdy'){ D.rdy=+t.value; patchReadiness(root, currentLang()); }
+  });
+  // Las filas expandibles son <div role="button">; los botones nativos ya manejan Enter/Espacio.
+  root.addEventListener('keydown', function(ev){
+    if(ev.key!=='Enter' && ev.key!==' ' && ev.key!=='Spacebar') return;
+    var t=ev.target; if(t && t.classList && t.classList.contains('rxrow--ex')){ ev.preventDefault(); t.click(); }
+  });
+}
+
 /* ===== i18n ===== */
 var I18N = {
   es: {
@@ -867,7 +1042,15 @@ var I18N = {
     lbl_weeksWord:"semanas", lbl_daysWk:"días/sem",
     lbl_peakAt:"Peakea en sem. {w}", lbl_noPeak:"Sin Peak", lbl_open:"Ver detalle ›", lbl_weekShort:"Sem",
     map_intensity:"Intensidad (% del máximo) semana a semana", lbl_peakFlag:"PEAK",
-    lbl_phases:"Fases", lbl_signature:"Movimientos firma", lbl_leavesout:"Deja fuera"
+    lbl_phases:"Fases", lbl_signature:"Movimientos firma", lbl_leavesout:"Deja fuera",
+    today_word:"Hoy", phase_word:"FASE",
+    seg_atleta:"Atleta", seg_coach:"Coach", demo_hint:"Tocá · cambiá · jugá",
+    demo_lead:"Esto no es una captura: es la app. Cambiá el día, la escuela, abrí un ejercicio o movéle el readiness y mirá cómo se recalcula todo.",
+    day_word:"Día", rdy_word:"Readiness", rdy_hint:"Movélo: la carga sugerida se ajusta al estado de hoy.",
+    ready_hi:"Lista para cargar pesado", ready_mid:"Buen día — dale parejo", ready_lo:"Modera la carga", ready_min:"Día técnico, no fuerces",
+    ramp_work:"Trabajo", rx_adjnote:"Carga ajustada por readiness · el kg manda, los discos aproximan.",
+    ros_title:"Tu equipo · hoy", back_word:"Volver al equipo",
+    al_pr:"Lista para PR", al_down:"Bajar carga hoy", al_green:"En verde", al_fatigue:"Fatiga · descarga", al_rm:"Falta RM de envión"
   },
   en: {
     meta_title:"Holy Oly — Periodization for weightlifting coaches",
@@ -917,7 +1100,15 @@ var I18N = {
     lbl_weeksWord:"weeks", lbl_daysWk:"days/wk",
     lbl_peakAt:"Peaks wk {w}", lbl_noPeak:"No peak", lbl_open:"See detail ›", lbl_weekShort:"Wk",
     map_intensity:"Intensity (% of max) week by week", lbl_peakFlag:"PEAK",
-    lbl_phases:"Phases", lbl_signature:"Signature lifts", lbl_leavesout:"Leaves out"
+    lbl_phases:"Phases", lbl_signature:"Signature lifts", lbl_leavesout:"Leaves out",
+    today_word:"Today", phase_word:"PHASE",
+    seg_atleta:"Athlete", seg_coach:"Coach", demo_hint:"Tap · switch · play",
+    demo_lead:"This isn't a screenshot — it's the app. Switch the day, the school, open a lift or drag the readiness and watch everything recompute.",
+    day_word:"Day", rdy_word:"Readiness", rdy_hint:"Drag it: the suggested load adapts to today's state.",
+    ready_hi:"Ready to go heavy", ready_mid:"Good day — push evenly", ready_lo:"Ease the load", ready_min:"Technical day, don't force it",
+    ramp_work:"Work set", rx_adjnote:"Load adjusted by readiness · kg is the truth, plates approximate.",
+    ros_title:"Your roster · today", back_word:"Back to roster",
+    al_pr:"Ready for a PR", al_down:"Cut load today", al_green:"All green", al_fatigue:"Fatigue · deload", al_rm:"Missing C&J max"
   },
   pt: {
     meta_title:"Holy Oly — Periodização para treinadores de levantamento",
@@ -967,7 +1158,15 @@ var I18N = {
     lbl_weeksWord:"semanas", lbl_daysWk:"dias/sem",
     lbl_peakAt:"Pico na sem. {w}", lbl_noPeak:"Sem pico", lbl_open:"Ver detalhe ›", lbl_weekShort:"Sem",
     map_intensity:"Intensidade (% do máximo) semana a semana", lbl_peakFlag:"PICO",
-    lbl_phases:"Fases", lbl_signature:"Movimentos-assinatura", lbl_leavesout:"Deixa de fora"
+    lbl_phases:"Fases", lbl_signature:"Movimentos-assinatura", lbl_leavesout:"Deixa de fora",
+    today_word:"Hoje", phase_word:"FASE",
+    seg_atleta:"Atleta", seg_coach:"Treinador", demo_hint:"Toque · mude · jogue",
+    demo_lead:"Isto não é uma captura — é o app. Mude o dia, a escola, abra um exercício ou arraste o readiness e veja tudo recalcular.",
+    day_word:"Dia", rdy_word:"Readiness", rdy_hint:"Arraste: a carga sugerida se ajusta ao estado de hoje.",
+    ready_hi:"Pronta para pegar pesado", ready_mid:"Bom dia — mantenha o ritmo", ready_lo:"Modere a carga", ready_min:"Dia técnico, não force",
+    ramp_work:"Trabalho", rx_adjnote:"Carga ajustada pelo readiness · o kg manda, as anilhas aproximam.",
+    ros_title:"Seu elenco · hoje", back_word:"Voltar ao elenco",
+    al_pr:"Pronta para recorde", al_down:"Reduzir carga hoje", al_green:"Tudo verde", al_fatigue:"Fadiga · descarga", al_rm:"Falta máx. de arremesso"
   }
 };
 
@@ -1039,6 +1238,7 @@ function setLang(lang){
     b.classList.toggle('active', b.getAttribute('data-lang')===lang);
   });
   renderMacros(lang);
+  renderDemo(lang);
   renderCountries(lang);
   try{ localStorage.setItem('holyoly-lang', lang); }catch(e){}
 }
@@ -1054,6 +1254,7 @@ function setLang(lang){
     b.addEventListener('click', function(){ setLang(b.getAttribute('data-lang')); });
   });
   initLeadForm();
+  initDemo();
 })();
 
 /* ===== Scroll reveal ===== */
