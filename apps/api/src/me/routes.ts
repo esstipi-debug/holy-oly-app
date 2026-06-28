@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { DayLogInputSchema, PutMeCycleInputSchema, PutMeSessionInputSchema, validateFechaEntreno } from "@holy-oly/core";
+import { DayLogInputSchema, PutMeCycleInputSchema, PutMeSessionInputSchema, validateFechaEntreno, SelfPlanInputSchema, MACROCYCLES, availableWeeksToComp, mondayOf } from "@holy-oly/core";
 import { prisma } from "../db/client";
 import { requireAthlete } from "../auth/guards";
 import { SESSION_COOKIE, cookieOpts } from "../auth/routes";
@@ -50,6 +50,32 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
     const parsed = DayLogInputSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: "invalid daylog" });
     return repo.upsertDayLog(prisma, athleteId, todayISO(), parsed.data);
+  });
+
+  // Self-coach (atleta autoentrenado): el atleta crea su PROPIO plan, sin coach. Reusa el motor
+  // entero — `setComps` ANTES de `savePlan` (instantiateForPlan lee las compes persistidas), igual
+  // que el flujo del coach. Gratis (no pasa por requireCoachWrite). Rate-limit por la vía estándar
+  // (off bajo test). El plan único se pisa si luego un coach asigna (la UI avisa). Sin sexo-gate:
+  // no hay macros female-only; el sexo sólo define la barra 15/20, que el motor ya aplica.
+  app.post("/me/plan", { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } }, async (req, reply) => {
+    const athleteId = requireAthlete(req, reply);
+    if (!athleteId) return;
+    const parsed = SelfPlanInputSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: "invalid plan" });
+    const { macroId, rms, comp } = parsed.data;
+    if (!MACROCYCLES.some((m) => m.id === macroId)) return reply.code(400).send({ error: "unknown macro" });
+    const today = todayISO();
+    if (comp && comp.date < today) return reply.code(400).send({ error: "fecha pasada" });
+    // Con compe: arranca el lunes y la escuela reescala para picar en la fecha (espejo de AssignSheet
+    // "competencia"). Sin compe: `startDate` ancla el calendario (modo "inicio"). El refine del schema
+    // garantiza que, sin compe, startDate está presente.
+    const startMonday = mondayOf(today);
+    const startDate = comp ? startMonday : parsed.data.startDate!;
+    const comps = comp ? [{ name: comp.name, week: availableWeeksToComp(startMonday, comp.date), date: comp.date }] : [];
+    await repo.setComps(prisma, athleteId, comps, today);
+    await repo.savePlan(prisma, athleteId, { atletaId: athleteId, macroId, startWeek: 1, startDate, rms, comps: [] }, today);
+    await recordAudit(prisma, { action: "plan.self_assign", actorUserId: req.userId, actorRole: req.role, targetAthleteId: athleteId, ip: req.ip });
+    return reply.code(200).send({ ok: true });
   });
 
   app.get<{ Querystring: { week?: string } }>("/me/sessions", async (req, reply) => {
