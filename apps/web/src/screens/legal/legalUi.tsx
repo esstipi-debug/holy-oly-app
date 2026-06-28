@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLegalLang } from "../../i18n/useLocale";
+import { useTranslation, Trans } from "react-i18next";
 import { LanguageToggle } from "../../i18n/LanguageToggle";
 
 /**
@@ -115,47 +115,35 @@ export function Summary({ title = "En resumen", items }: { title?: string; items
   );
 }
 
-const CHROME = {
-  es: {
-    back: "← Volver",
-    meta: (v: string, d: string) => `Holy Oly · Versión ${v} · vigente desde ${d}`,
-    footer: (<>Holy Oly — entrenamiento inteligente. Para consultas sobre este documento o tus datos, escribinos a <Contact />.</>),
-  },
-  en: {
-    back: "← Back",
-    meta: (v: string, d: string) => `Holy Oly · Version ${v} · in effect since ${d}`,
-    footer: (<>Holy Oly — smart training. For questions about this document or your data, contact us at <Contact />.</>),
-  },
-} as const;
-
-/** Marco del documento: volver + selector de idioma + título + metadatos + cuerpo. El idioma
- *  arranca automático (navegador) y se puede cambiar con el toggle ES/EN, que recuerda la elección. */
+/** Marco del documento: volver + selector de idioma + título + metadatos + cuerpo. El chrome (volver,
+ *  metadatos, footer) vive en el ns i18n `legal` y sigue el locale global; la PROSA larga conserva su
+ *  propio mecanismo ES/EN (privacyContent[.en]) vía useLegalLang. pt-BR muestra la prosa ES por ahora
+ *  (legal PT-BR pendiente), así que su chrome también es ES — consistente con lo que ve el usuario. */
 export function LegalShell({ title, version, effectiveDate, children }: { title: string; version: string; effectiveDate: string; children: ReactNode }) {
   const navigate = useNavigate();
-  const legalLang = useLegalLang();
+  const { t } = useTranslation("legal");
   // Volver = de dónde viniste (legal se linkea desde login, Cuenta coach y Cuenta atleta);
   // sin historial (deep-link) → a la raíz, que despacha por rol.
   const onBack = (): void => {
     if (window.history.length > 1) navigate(-1);
     else navigate("/");
   };
-  const t = CHROME[legalLang];
   return (
     <div style={page}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <button type="button" onClick={onBack}
           style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer", ...muted }}>
-          {t.back}
+          {t("back")}
         </button>
         <div style={{ width: 116, flex: "0 0 auto" }}>
           <LanguageToggle />
         </div>
       </div>
       <h1 style={{ fontSize: 26, fontWeight: 800, margin: "12px 0 4px", letterSpacing: "-.01em" }}>{title}</h1>
-      <div style={{ ...muted, marginBottom: 14 }}>{t.meta(version, effectiveDate)}</div>
+      <div style={{ ...muted, marginBottom: 14 }}>{t("meta", { version, date: effectiveDate })}</div>
       {children}
       <div style={{ ...muted, marginTop: 28, paddingTop: 12, borderTop: "1px solid color-mix(in srgb,var(--wl-text) 12%,transparent)" }}>
-        {t.footer}
+        <Trans t={t} i18nKey="footer" components={{ contact: <Contact /> }} />
       </div>
     </div>
   );
