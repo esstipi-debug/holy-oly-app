@@ -1,0 +1,78 @@
+{
+  "tip": {
+    "sueno-higiene": {
+      "topic": "Sueño",
+      "title": "Prepara el descanso desde temprano",
+      "body": "Baja las pantallas y la luz fuerte una hora antes de dormir, y deja el cuarto fresco (~18-19 °C). Lo que más ordena el sueño es acostarte y levantarte a horarios parecidos."
+    },
+    "sueno-nsdr": {
+      "topic": "Recuperación",
+      "title": "Si dormiste poco, recupera a la tarde",
+      "body": "10-20 minutos de descanso profundo sin dormir (NSDR / yoga nidra) por la tarde ayudan a reponer parte del descanso que faltó, sin sustituir al sueño nocturno."
+    },
+    "estres-suspiro": {
+      "topic": "Estrés",
+      "title": "Suspiro fisiológico para bajar un cambio",
+      "body": "Dos inhalaciones cortas seguidas por la nariz y después una exhalación larga por la boca. Repite 3-4 veces: baja las pulsaciones en segundos."
+    },
+    "estres-luz": {
+      "topic": "Luz y ánimo",
+      "title": "Luz natural a la mañana",
+      "body": "Unos 10-30 minutos de luz natural temprano ayudan a ordenar tu reloj interno y suavizan la sensación de estrés a lo largo del día."
+    },
+    "fatiga-estimulos": {
+      "topic": "Energía",
+      "title": "No apiles estímulos todos los días",
+      "body": "Cafeína fuerte + pre-entreno + música intensa en cada sesión, a la larga, aplana tu motivación de base. Reserva esos estímulos para los días que de verdad los necesitas."
+    },
+    "dolor-frio": {
+      "topic": "Recuperación",
+      "title": "Frío para molestias, pero no pegado al entreno",
+      "body": "El frío suave puede aliviar, pero déjalo varias horas separado del entreno de volumen: justo después frena parte de la adaptación que buscas."
+    },
+    "dolor-coach": {
+      "topic": "Cuidado",
+      "title": "Dolor que no afloja → avisa",
+      "body": "Si el dolor es localizado o no cede, cuéntaselo a tu coach antes de cargar fuerte. Cuidarte hoy es entrenar mejor mañana."
+    },
+    "humor-movimiento": {
+      "topic": "Ánimo",
+      "title": "Muévete un poco para levantar el ánimo",
+      "body": "Luz natural y algo de movimiento suave (aunque sea una caminata corta) levantan el ánimo más que quedarte sin hacer nada."
+    },
+    "motivacion-arranca": {
+      "topic": "Motivación",
+      "title": "La motivación viene después de arrancar",
+      "body": "No esperes tener ganas antes de empezar: haz la primera serie liviana y deja que el cuerpo entre en ritmo. Casi siempre el resto viene solo."
+    },
+    "gen-ok": {
+      "topic": "Sostener",
+      "title": "Vas en tu rango — sostenlo",
+      "body": "Buen día para seguir el plan como viene. Mantén el sueño y la luz de la mañana constantes para que esta racha se sostenga."
+    },
+    "gen-warn": {
+      "topic": "Sueño",
+      "title": "Cómo dormir mejor esta noche",
+      "body": "Baja la luz y las pantallas una hora antes de acostarte y deja el cuarto fresco (~18-19 °C). Sostener el horario es lo que más mejora tu recuperación."
+    },
+    "gen-alert": {
+      "topic": "Bajar un cambio",
+      "title": "Resetea el sistema nervioso",
+      "body": "Suspiro fisiológico: dos inhalaciones cortas por la nariz y una exhalación larga por la boca, 3-4 veces. Si puedes, suma 10-20 min de descanso profundo (NSDR) a la tarde."
+    },
+    "gen-descanso-series": {
+      "topic": "Recuperación",
+      "title": "El descanso largo entre series rinde",
+      "body": "En trabajo pesado, descansar 3-5 minutos entre series no es perder tiempo: te deja mover más kilos con mejor técnica."
+    }
+  },
+  "tipSource": "Basado en divulgación científica sobre sueño, estrés y recuperación",
+  "wellnessItem": {
+    "fatiga": { "label": "Fatiga", "q": "¿Cuánto cansancio sientes hoy?", "lo": "Con energía", "hi": "Agotamiento" },
+    "dolor": { "label": "Dolor", "q": "¿Tienes molestias o dolor?", "lo": "Nada", "hi": "Mucho" },
+    "estres": { "label": "Estrés", "q": "¿Cómo está tu cabeza hoy?", "lo": "En calma", "hi": "Mucho estrés" },
+    "humor": { "label": "Humor", "q": "¿Cómo es tu ánimo?", "lo": "Bajón", "hi": "Genial" },
+    "motivacion": { "label": "Motivación", "q": "¿Con cuántas ganas vienes?", "lo": "Pocas", "hi": "A full" },
+    "sueno": { "label": "Sueño", "q": "¿Cómo dormiste?", "lo": "Mal", "hi": "Like a baby" }
+  }
+}

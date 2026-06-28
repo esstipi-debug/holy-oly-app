@@ -7,22 +7,23 @@ import { Face, Check } from "./primitives";
 type Item = (typeof WELLNESS_ITEMS)[number];
 
 function FaceRow({ item, value, onPick }: { item: Item; value: number | undefined; onPick: (p: number) => void }) {
+  const { t } = useTranslation("domain");
   return (
     <div>
       <div className="ho-faces">
         {[1, 2, 3, 4, 5].map((p) => (
-          <button key={p} className={"ho-face" + (value === p ? " sel" : "")} onClick={() => onPick(p)} aria-label={`${item.label} ${p}`}>
+          <button key={p} className={"ho-face" + (value === p ? " sel" : "")} onClick={() => onPick(p)} aria-label={`${t(`wellnessItem.${item.field}.label`)} ${p}`}>
             <Face level={goodness(p, item.highBad)} />
           </button>
         ))}
       </div>
-      <div className="ho-facescale"><span>{item.lo}</span><span>{item.hi}</span></div>
+      <div className="ho-facescale"><span>{t(`wellnessItem.${item.field}.lo`)}</span><span>{t(`wellnessItem.${item.field}.hi`)}</span></div>
     </div>
   );
 }
 
 function FaceDial({ item, value, onPick }: { item: Item; value: number; onPick: (p: number) => void }) {
-  const { t } = useTranslation("atleta");
+  const { t } = useTranslation(["atleta", "domain"]);
   const trackRef = useRef<HTMLDivElement>(null);
   const setFromX = (clientX: number): void => {
     const el = trackRef.current;
@@ -60,7 +61,7 @@ function FaceDial({ item, value, onPick }: { item: Item; value: number; onPick: 
             <button key={p} className={value === p ? "on" : ""} onClick={() => onPick(p)}>{p}</button>
           ))}
         </div>
-        <div className="ho-facescale" style={{ marginTop: 2 }}><span>{item.lo}</span><span>{item.hi}</span></div>
+        <div className="ho-facescale" style={{ marginTop: 2 }}><span>{t(`domain:wellnessItem.${item.field}.lo`)}</span><span>{t(`domain:wellnessItem.${item.field}.hi`)}</span></div>
       </div>
     </div>
   );
@@ -91,7 +92,7 @@ export function CheckIn({ variant, initial, lastWeight, onClose, onDone }: {
   onClose: () => void;
   onDone: (input: DayLogInput) => void | Promise<void>;
 }) {
-  const { t } = useTranslation(["atleta", "common"]);
+  const { t } = useTranslation(["atleta", "common", "domain"]);
   const items = WELLNESS_ITEMS;
   const total = items.length + 1; // + peso
   const [step, setStep] = useState(0);
@@ -175,8 +176,8 @@ export function CheckIn({ variant, initial, lastWeight, onClose, onDone }: {
             </>
           ) : (
             <>
-              <div className="ho-ci__item">{t("ciStepItem", { n: step + 1, label: item!.label })}</div>
-              <div className="ho-ci__q">{item!.q}</div>
+              <div className="ho-ci__item">{t("ciStepItem", { n: step + 1, label: t(`domain:wellnessItem.${item!.field}.label`) })}</div>
+              <div className="ho-ci__q">{t(`domain:wellnessItem.${item!.field}.q`)}</div>
               {variant === "dial"
                 ? <FaceDial item={item!} value={answers[item!.field] ?? 3} onPick={(p) => pickDial(item!, p)} />
                 : <FaceRow item={item!} value={answers[item!.field]} onPick={(p) => pickTap(item!, p)} />}

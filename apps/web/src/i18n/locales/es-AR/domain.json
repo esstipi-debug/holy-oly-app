@@ -1,0 +1,46 @@
+{
+  "tip": {
+    "sueno-higiene": {
+      "title": "Prepará el descanso desde temprano",
+      "body": "Bajá las pantallas y la luz fuerte una hora antes de dormir, y dejá el cuarto fresco (~18-19 °C). Lo que más ordena el sueño es acostarte y levantarte a horarios parecidos."
+    },
+    "sueno-nsdr": {
+      "title": "Si dormiste poco, recuperá a la tarde"
+    },
+    "estres-suspiro": {
+      "body": "Dos inhalaciones cortas seguidas por la nariz y después una exhalación larga por la boca. Repetí 3-4 veces: baja las pulsaciones en segundos."
+    },
+    "fatiga-estimulos": {
+      "body": "Cafeína fuerte + pre-entreno + música intensa en cada sesión, a la larga, aplana tu motivación de base. Reservá esos estímulos para los días que de verdad los necesitás."
+    },
+    "dolor-frio": {
+      "body": "El frío suave puede aliviar, pero dejalo varias horas separado del entreno de volumen: justo después frena parte de la adaptación que buscás."
+    },
+    "dolor-coach": {
+      "title": "Dolor que no afloja → avisá",
+      "body": "Si el dolor es localizado o no cede, contáselo a tu coach antes de cargar fuerte. Cuidarte hoy es entrenar mejor mañana."
+    },
+    "humor-movimiento": {
+      "title": "Movete un poco para levantar el ánimo"
+    },
+    "motivacion-arranca": {
+      "body": "No esperés tener ganas antes de empezar: hacé la primera serie liviana y dejá que el cuerpo entre en ritmo. Casi siempre el resto viene solo."
+    },
+    "gen-ok": {
+      "title": "Vas en tu rango — sostenelo",
+      "body": "Buen día para seguir el plan como viene. Mantené el sueño y la luz de la mañana constantes para que esta racha se sostenga."
+    },
+    "gen-warn": {
+      "body": "Bajá la luz y las pantallas una hora antes de acostarte y dejá el cuarto fresco (~18-19 °C). Sostener el horario es lo que más mejora tu recuperación."
+    },
+    "gen-alert": {
+      "title": "Reseteá el sistema nervioso",
+      "body": "Suspiro fisiológico: dos inhalaciones cortas por la nariz y una exhalación larga por la boca, 3-4 veces. Si podés, sumá 10-20 min de descanso profundo (NSDR) a la tarde."
+    }
+  },
+  "wellnessItem": {
+    "fatiga": { "q": "¿Cuánto cansancio sentís hoy?" },
+    "dolor": { "q": "¿Tenés molestias o dolor?" },
+    "motivacion": { "q": "¿Con cuántas ganas venís?" }
+  }
+}

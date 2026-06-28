@@ -1,0 +1,78 @@
+{
+  "tip": {
+    "sueno-higiene": {
+      "topic": "Sleep",
+      "title": "Set up rest early",
+      "body": "Dim screens and bright light an hour before bed, and keep the room cool (~18-19 °C). What steadies sleep most is going to bed and waking up at similar times."
+    },
+    "sueno-nsdr": {
+      "topic": "Recovery",
+      "title": "Slept little? Recover in the afternoon",
+      "body": "10-20 minutes of deep rest without sleeping (NSDR / yoga nidra) in the afternoon help restore some of the rest you missed, without replacing night sleep."
+    },
+    "estres-suspiro": {
+      "topic": "Stress",
+      "title": "Physiological sigh to dial it down",
+      "body": "Two short inhales in a row through the nose, then one long exhale through the mouth. Repeat 3-4 times: it lowers your heart rate within seconds."
+    },
+    "estres-luz": {
+      "topic": "Light & mood",
+      "title": "Natural light in the morning",
+      "body": "About 10-30 minutes of natural light early on help set your internal clock and ease the feeling of stress through the day."
+    },
+    "fatiga-estimulos": {
+      "topic": "Energy",
+      "title": "Don't stack stimulants every day",
+      "body": "Strong caffeine + pre-workout + intense music every session flattens your baseline motivation over time. Save those for the days you really need them."
+    },
+    "dolor-frio": {
+      "topic": "Recovery",
+      "title": "Cold for aches, but not right after training",
+      "body": "Gentle cold can soothe, but keep it several hours apart from volume training: right after, it blunts part of the adaptation you're after."
+    },
+    "dolor-coach": {
+      "topic": "Care",
+      "title": "Pain that won't ease → speak up",
+      "body": "If the pain is localized or won't let up, tell your coach before loading heavy. Taking care of yourself today is training better tomorrow."
+    },
+    "humor-movimiento": {
+      "topic": "Mood",
+      "title": "Move a little to lift your mood",
+      "body": "Natural light and some gentle movement (even a short walk) lift your mood more than staying still."
+    },
+    "motivacion-arranca": {
+      "topic": "Motivation",
+      "title": "Motivation comes after you start",
+      "body": "Don't wait to feel like it before starting: do the first light set and let your body find its rhythm. The rest almost always follows."
+    },
+    "gen-ok": {
+      "topic": "Keep it up",
+      "title": "You're in your range — keep it up",
+      "body": "Good day to follow the plan as it comes. Keep your sleep and morning light consistent so this streak holds."
+    },
+    "gen-warn": {
+      "topic": "Sleep",
+      "title": "How to sleep better tonight",
+      "body": "Dim the light and screens an hour before bed and keep the room cool (~18-19 °C). Holding your schedule is what improves recovery most."
+    },
+    "gen-alert": {
+      "topic": "Dial it down",
+      "title": "Reset your nervous system",
+      "body": "Physiological sigh: two short inhales through the nose and one long exhale through the mouth, 3-4 times. If you can, add 10-20 min of deep rest (NSDR) in the afternoon."
+    },
+    "gen-descanso-series": {
+      "topic": "Recovery",
+      "title": "Long rest between sets pays off",
+      "body": "In heavy work, resting 3-5 minutes between sets isn't wasting time: it lets you move more weight with better technique."
+    }
+  },
+  "tipSource": "Based on science communication about sleep, stress and recovery",
+  "wellnessItem": {
+    "fatiga": { "label": "Fatigue", "q": "How tired do you feel today?", "lo": "Energized", "hi": "Exhausted" },
+    "dolor": { "label": "Pain", "q": "Any aches or pain?", "lo": "None", "hi": "A lot" },
+    "estres": { "label": "Stress", "q": "How's your head today?", "lo": "Calm", "hi": "Very stressed" },
+    "humor": { "label": "Mood", "q": "How's your mood?", "lo": "Low", "hi": "Great" },
+    "motivacion": { "label": "Motivation", "q": "How much drive do you have?", "lo": "Little", "hi": "All in" },
+    "sueno": { "label": "Sleep", "q": "How did you sleep?", "lo": "Badly", "hi": "Like a baby" }
+  }
+}

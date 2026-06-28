@@ -19,7 +19,7 @@ test("variante tap: tocar una carita auto-avanza al ítem siguiente", () => {
   vi.useFakeTimers();
   try {
     render(<CheckIn variant="tap" onClose={() => {}} onDone={vi.fn()} />);
-    expect(screen.getByText(/¿Qué tan cansada/)).toBeInTheDocument(); // Fatiga
+    expect(screen.getByText(/¿Cuánto cansancio/)).toBeInTheDocument(); // Fatiga
     fireEvent.click(screen.getByRole("button", { name: "Fatiga 2" }));
     act(() => { vi.advanceTimersByTime(320); });
     expect(screen.getByText(/molestias o dolor/)).toBeInTheDocument(); // Dolor
