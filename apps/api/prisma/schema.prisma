@@ -503,3 +503,17 @@ model CompetitionEntry {
   @@index([competitionId])
   @@index([athleteId])
 }
+
+/// Captura de leads de la landing de ventas (waitlist). Público y SIN sesión: el endpoint
+/// POST /leads lo escribe un prospecto antes de registrarse. NO es multi-tenant — no tiene
+/// relación con Coach/Athlete; es solo un correo + cuántos atletas maneja + país de origen.
+model Lead {
+  id        String   @id @default(uuid())
+  email     String
+  athletes  Int
+  country   String
+  source    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
