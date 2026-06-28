@@ -87,7 +87,7 @@ export function MacroDetail() {
     await repo.setComps(plan.atletaId, next);
     await repo.savePlan(plan); // ahora instancia adaptativo con las compes ya persistidas
     setAssignOpen(false);
-    setToast(t("mdAssignToast", { macro: m.name, athlete: athletes.find((a) => a.id === plan.atletaId)?.nombre ?? t("mdAssignToastFallback") }));
+    setToast(t("mdAssignToast", { macro: t(`domain:macro.${m.id}.name`), athlete: athletes.find((a) => a.id === plan.atletaId)?.nombre ?? t("mdAssignToastFallback") }));
     window.setTimeout(() => setToast(null), 2800);
   }
 
@@ -102,15 +102,15 @@ export function MacroDetail() {
     <div style={page}>
       <BackButton onClick={() => navigate(catalogHref)} />
 
-      <h1 style={titleStyle}>{macro.name}</h1>
+      <h1 style={titleStyle}>{t(`domain:macro.${macro.id}.name`)}</h1>
       <div style={tagsRow}>
-        <span style={famTag}>{macro.family}</span>
+        <span style={famTag}>{t(`domain:school.${macro.family}.name`)}</span>
         <span style={lvTag}>{levelLabel(macro.level)}</span>
         {macro.peaks && macro.peakWeek != null
           ? <span style={pkTag}>{t("mdPeakWeek", { week: macro.peakWeek })}</span>
           : <span style={lvTag}>{t("mdNoPeak")}</span>}
       </div>
-      <p style={descStyle}>{macro.desc}</p>
+      <p style={descStyle}>{t(`domain:macro.${macro.id}.desc`)}</p>
 
       {cta(16)}
 
@@ -159,7 +159,7 @@ export function MacroDetail() {
       <MacroTemplateMap macro={macro} />
 
       <div style={sec}>{t("mdSecBestFor")}</div>
-      <p style={{ fontSize: 12, lineHeight: 1.5, color: "var(--wl-text)", margin: 0 }}>{macro.bestFor}</p>
+      <p style={{ fontSize: 12, lineHeight: 1.5, color: "var(--wl-text)", margin: 0 }}>{t(`domain:macro.${macro.id}.bestFor`)}</p>
 
       {cta(20)}
 

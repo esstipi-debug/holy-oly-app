@@ -15,7 +15,7 @@ const AYER = iso(NOW - 86_400_000);
 
 const PLAN_FIXTURE: MePlanView = {
   athlete: { nombre: "Mara V.", iniciales: "MV", sexo: "F" },
-  plan: { macroName: "Ruso 5D", totalWeeks: 12, currentWeek: 9, currentPhase: "Fuerza", startDate: "2026-04-13", phases: [], comps: [] },
+  plan: { macroName: "Ruso 5D", totalWeeks: 12, currentWeek: 9, currentPhase: "Fuerza", currentPhaseKey: "fuerza", startDate: "2026-04-13", phases: [], comps: [] },
 };
 
 // 4 sesiones de la semana 9. Las construye cada test (la sesión 0 lleva la fecha que arma el caso).

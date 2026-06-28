@@ -33,7 +33,7 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
   preview?: boolean;
 } = {}) {
   // Tolerate a missing Outlet (preview mode): useOutletContext returns null outside an <Outlet>.
-  const { t } = useTranslation("atleta");
+  const { t } = useTranslation(["atleta", "domain"]);
   const ctx = useOutletContext<AtletaOutletCtx | null>();
   const variant: CheckinVariant = variantProp ?? ctx?.variant ?? "tap";
   const location = useLocation();
@@ -78,7 +78,11 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
         <div className="ho-greet__h">{t("homeGreet", { name: firstName })}</div>
         <div className="ho-greet__s">
           {plan.plan
-            ? t("homePlanLine", { macro: plan.plan.macroName, week: plan.plan.currentWeek, total: plan.plan.totalWeeks, phase: plan.plan.currentPhase })
+            ? t("homePlanLine", {
+                macro: plan.plan.macroId ? t(`domain:macro.${plan.plan.macroId}.name`) : plan.plan.macroName,
+                week: plan.plan.currentWeek, total: plan.plan.totalWeeks,
+                phase: plan.plan.macroId ? t(`domain:macro.${plan.plan.macroId}.phase.${plan.plan.currentPhaseKey}.name`) : plan.plan.currentPhase,
+              })
             : t("homeNoPlan")}
         </div>
         {/* Empty-state con salida: sin plan → el siguiente paso es vincularse (no en preview del coach). */}

@@ -31,7 +31,7 @@ const grid: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", g
 
 export function MacroCatalog() {
   const navigate = useNavigate();
-  const { t } = useTranslation("macros");
+  const { t } = useTranslation(["macros", "domain"]);
   // Si el coach vino desde un atleta (drill-down → "Asignar macro" pasa `?atleta=`), se conserva al
   // abrir un macro para que el AssignSheet lo pre-seleccione y no haya que re-elegirlo de la lista.
   const [params] = useSearchParams();
@@ -52,7 +52,7 @@ export function MacroCatalog() {
 
       <div style={filterLabel}>{t("mcFilterSchool")}</div>
       <div style={chipRow}>
-        {FAMILIES.map((f) => <Chip key={f} selected={family === f} onClick={() => setFamily(f)}>{f === "Todos" ? t("mcFilterAll") : f}</Chip>)}
+        {FAMILIES.map((f) => <Chip key={f} selected={family === f} onClick={() => setFamily(f)}>{f === "Todos" ? t("mcFilterAll") : t(`domain:school.${f}.name`)}</Chip>)}
       </div>
       <div style={filterLabel}>{t("mcFilterDays")}</div>
       <div style={chipRow}>

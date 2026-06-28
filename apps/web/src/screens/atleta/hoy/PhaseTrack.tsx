@@ -13,8 +13,10 @@ type PlanView = NonNullable<MePlanView["plan"]>;
  * Presentacional puro; reemplaza al ribbon proporcional en CaminoCard.
  */
 export function PhaseTrack({ plan }: { plan: PlanView }) {
-  const { t } = useTranslation("atleta");
+  const { t } = useTranslation(["atleta", "domain"]);
   const total = Math.max(1, plan.totalWeeks);
+  const phaseNm = (p: PlanView["phases"][number]): string =>
+    plan.macroId ? t(`domain:macro.${plan.macroId}.phase.${p.key}.name`) : p.name;
   const phaseIdxOf = (w: number): number => plan.phases.findIndex((p) => w >= p.from && w <= p.to);
   const compWeeks = new Set(plan.comps.map((c) => c.week));
 
@@ -49,7 +51,7 @@ export function PhaseTrack({ plan }: { plan: PlanView }) {
           return (
             <div key={`${p.name}-${p.from}`} style={{ flex: p.to - p.from + 1, display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}>
               <span aria-hidden style={{ width: 6, height: 6, borderRadius: 2, background: phaseColor(i), flexShrink: 0 }} />
-              <span style={{ ...legendName, color: now ? "var(--wl-text)" : "var(--wl-muted)" }}>{p.name}{now ? ` · ${t("phaseTrackToday")}` : ""}</span>
+              <span style={{ ...legendName, color: now ? "var(--wl-text)" : "var(--wl-muted)" }}>{phaseNm(p)}{now ? ` · ${t("phaseTrackToday")}` : ""}</span>
             </div>
           );
         })}

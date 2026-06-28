@@ -3,12 +3,12 @@ import type { MePlanView } from "@holy-oly/core";
 import { PhaseTrack } from "./PhaseTrack";
 
 const PLAN: NonNullable<MePlanView["plan"]> = {
-  macroName: "Ruso 5D", totalWeeks: 16, currentWeek: 12, currentPhase: "Fuerza / Potencia",
+  macroName: "Ruso 5D", totalWeeks: 16, currentWeek: 12, currentPhase: "Fuerza / Potencia", currentPhaseKey: "fuerza-potencia",
   phases: [
-    { name: "Hipertrofia", from: 1, to: 4, imr: 68, imrLo: 65, imrHi: 72, volRel: 95, focus: "" },
-    { name: "Fuerza básica", from: 5, to: 8, imr: 78, imrLo: 75, imrHi: 82, volRel: 85, focus: "" },
-    { name: "Fuerza / Potencia", from: 9, to: 12, imr: 88, imrLo: 85, imrHi: 92, volRel: 70, focus: "" },
-    { name: "Peaking", from: 13, to: 16, imr: 97, imrLo: 92, imrHi: 102, volRel: 40, focus: "" },
+    { key: "hipertrofia", name: "Hipertrofia", from: 1, to: 4, imr: 68, imrLo: 65, imrHi: 72, volRel: 95, focus: "" },
+    { key: "fuerza-basica", name: "Fuerza básica", from: 5, to: 8, imr: 78, imrLo: 75, imrHi: 82, volRel: 85, focus: "" },
+    { key: "fuerza-potencia", name: "Fuerza / Potencia", from: 9, to: 12, imr: 88, imrLo: 85, imrHi: 92, volRel: 70, focus: "" },
+    { key: "peaking", name: "Peaking", from: 13, to: 16, imr: 97, imrLo: 92, imrHi: 102, volRel: 40, focus: "" },
   ],
   comps: [{ name: "Nacional", week: 16 }],
 };

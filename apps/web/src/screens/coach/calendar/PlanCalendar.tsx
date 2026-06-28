@@ -31,7 +31,7 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
   today: string;
 }) {
   const { lang } = useLocale();
-  const { t } = useTranslation("coach");
+  const { t } = useTranslation(["coach", "domain"]);
   const [heat, setHeat] = useState<WeekHeat[] | null>(null);
   const [heatError, setHeatError] = useState(false);
   const [sel, setSel] = useState<HeatMapPos | null>(null);
@@ -113,7 +113,7 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
       <PlanDayDetail
         key={`${sel.week}-${sel.day}`}
         title={t("calDayTitle", { date: dayDateLabel(startDate, sel.week, sel.day), week: sel.week })}
-        phaseName={selPhase.name} phaseTint={phaseColor(phaseIndexFor(sel.week))} focus={selPhase.focus}
+        phaseName={t(`domain:macro.${macro.id}.phase.${selPhase.key}.name`)} phaseTint={phaseColor(phaseIndexFor(sel.week))} focus={t(`domain:macro.${macro.id}.phase.${selPhase.key}.focus`)}
         {...(isCompDay ? { compName: selComp!.name } : { isRest: true })}
         exercises={[]} barKg={barKgForSexo(sexo ?? "M")}
       />
@@ -132,7 +132,7 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
         key={`${sel.week}-${sel.day}`}
         title={t("calDayTitle", { date: dayDateLabel(startDate, sel.week, sel.day), week: sel.week })}
         sub={`${t("calSessionOfWeek", { n: sel.day + 1, total: perWeek })}${selCell.topPct != null ? ` · ${t("calTop", { pct: selCell.topPct })}` : ""} · ${t("calLifts", { count: selCell.lifts })}`}
-        phaseName={selPhase.name} phaseTint={phaseColor(phaseIndexFor(sel.week))} focus={selPhase.focus}
+        phaseName={t(`domain:macro.${macro.id}.phase.${selPhase.key}.name`)} phaseTint={phaseColor(phaseIndexFor(sel.week))} focus={t(`domain:macro.${macro.id}.phase.${selPhase.key}.focus`)}
         estado={estado} exercises={exercises} barKg={barKgForSexo(sexo ?? "M")}
       />
     );
@@ -149,7 +149,7 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
               background: "var(--wl-surface)",
               border: current ? `1px solid ${phaseColor(i)}` : "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
               <span aria-hidden="true" style={{ width: 9, height: 9, borderRadius: 2, background: phaseColor(i), flex: "0 0 auto" }} />
-              <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 11, color: "var(--wl-text)" }}>{p.name}</span>
+              <span style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 11, color: "var(--wl-text)" }}>{t(`domain:macro.${macro.id}.phase.${p.key}.name`)}</span>
               <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--wl-muted)" }}>{t("calPhaseRange", { from: p.weeks[0], to: p.weeks[1], range })}</span>
               {current && <span style={{ fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, color: "var(--wl-accent)" }}>{t("calToday")}</span>}
             </div>

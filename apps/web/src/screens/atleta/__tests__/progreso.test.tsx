@@ -53,7 +53,7 @@ const HEATDAYS: MeHeatDays = {
 const PLAN_NULL: MePlanView = { athlete: { nombre: "Kevin", iniciales: "KV", sexo: "M" }, plan: null };
 const PLAN_W2: MePlanView = {
   athlete: { nombre: "Kevin", iniciales: "KV", sexo: "M" },
-  plan: { macroName: "Ruso 5D", totalWeeks: 16, currentWeek: 2, currentPhase: "Fuerza", phases: [], comps: [] },
+  plan: { macroName: "Ruso 5D", totalWeeks: 16, currentWeek: 2, currentPhase: "Fuerza", currentPhaseKey: "fuerza", phases: [], comps: [] },
 };
 
 beforeEach(() => {

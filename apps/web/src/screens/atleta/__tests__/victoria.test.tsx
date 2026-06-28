@@ -7,7 +7,7 @@ import { VictoriaScreen } from "../entreno/VictoriaScreen";
 
 const PLAN: MePlanView = {
   athlete: { nombre: "Mara V.", iniciales: "MV", sexo: "F" },
-  plan: { macroName: "Ruso 5D", totalWeeks: 12, currentWeek: 8, currentPhase: "Fuerza", phases: [], comps: [] },
+  plan: { macroName: "Ruso 5D", totalWeeks: 12, currentWeek: 8, currentPhase: "Fuerza", currentPhaseKey: "fuerza", phases: [], comps: [] },
 };
 
 const actual = (over: Partial<ExerciseActual> & Pick<ExerciseActual, "movementId" | "movementName">): ExerciseActual => ({

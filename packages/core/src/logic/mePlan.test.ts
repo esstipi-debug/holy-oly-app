@@ -39,7 +39,7 @@ describe("buildMePlanView", () => {
     const phases = buildMePlanView(ATH, plan, "2026-06-03").plan!.phases;
     // first meso of ruso-5d: Hipertrofia, weeks 1–4, imrPct 65–72, volRel 100
     expect(phases[0]).toEqual({
-      name: "Hipertrofia", from: 1, to: 4, imr: 72, imrLo: 65, imrHi: 72, volRel: 100, focus: "hipertrofia · GPP",
+      key: "hipertrofia", name: "Hipertrofia", from: 1, to: 4, imr: 72, imrLo: 65, imrHi: 72, volRel: 100, focus: "hipertrofia · GPP",
     });
     // last meso = Peaking
     expect(phases[phases.length - 1]).toMatchObject({ name: "Peaking", imrLo: 92, imrHi: 102, volRel: 45 });

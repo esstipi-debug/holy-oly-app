@@ -24,7 +24,7 @@ const isoAt = (base: string, plusDays: number): string => new Date(ms(base) + pl
  * Sin `startDate` no hay verdad de fechas: ni anillo HOY ni títulos con fecha (honesto).
  */
 export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client: MeClient; sexo?: "M" | "F" }) {
-  const { t } = useTranslation("atleta");
+  const { t } = useTranslation(["atleta", "domain"]);
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
   const [heat, setHeat] = useState<WeekHeat[] | null>(null);
   const [heatError, setHeatError] = useState(false);
@@ -121,6 +121,13 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
   }, [cycleMarks, heat]);
 
   const selPhase = sel ? plan.phases[phaseIdx(sel.week)] : undefined;
+  // Proyección del dominio por id estable (macroId + phase.key). El catálogo ya no se hornea en el
+  // wire del plan: el nombre/foco salen del ns `domain` localizado. Fallback al texto del wire (ES)
+  // sólo si faltara el macroId (lenidad de fixtures; buildMePlanView siempre lo setea).
+  const phaseNm = (p: PlanView["phases"][number]): string =>
+    plan.macroId ? t(`domain:macro.${plan.macroId}.phase.${p.key}.name`) : p.name;
+  const phaseFc = (p: PlanView["phases"][number]): string =>
+    plan.macroId ? t(`domain:macro.${plan.macroId}.phase.${p.key}.focus`) : p.focus;
   const selCell = sel && heat ? (heat[sel.week - 1]?.days[sel.day] ?? null) : null;
   const selViews = sel ? weekViews.get(sel.week) : undefined;
   const selSession = sel && selViews ? selViews.find((s) => s.sessionIdx === sel.day) : undefined;
@@ -152,8 +159,8 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
 
   const panel = sel === null || selPhase === undefined ? null : selCell === null
     ? (
-      <PlanDayDetail key={`${sel.week}-${sel.day}`} title={title} phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))}
-        focus={selPhase.focus} isRest exercises={[]} barKg={barKg} {...(contextLine != null ? { contextLine } : {})} />
+      <PlanDayDetail key={`${sel.week}-${sel.day}`} title={title} phaseName={phaseNm(selPhase)} phaseTint={phaseColor(phaseIdx(sel.week))}
+        focus={phaseFc(selPhase)} isRest exercises={[]} barKg={barKg} {...(contextLine != null ? { contextLine } : {})} />
     )
     : dayError ? (
       <div role="alert" style={{ marginTop: 10, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)" }}>
@@ -170,7 +177,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
           hasDen: den > 0 ? "yes" : "no", den,
           hasTop: selCell.topPct != null ? "yes" : "no", top: selCell.topPct ?? 0,
         })}
-        phaseName={selPhase.name} phaseTint={phaseColor(phaseIdx(sel.week))} focus={selPhase.focus}
+        phaseName={phaseNm(selPhase)} phaseTint={phaseColor(phaseIdx(sel.week))} focus={phaseFc(selPhase)}
         exercises={exercises} barKg={barKg} {...(contextLine != null ? { contextLine } : {})} />
     );
 

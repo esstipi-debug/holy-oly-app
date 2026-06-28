@@ -25,18 +25,23 @@ export function PlanDetailSheet({ plan, open, onClose, client, sexo }: {
   /** Con cliente, el sheet suma el mapa de calor del plan (lazy, sólo montado abierto). */
   client?: MeClient; sexo?: "M" | "F";
 }) {
-  const { t } = useTranslation(["atleta", "common"]);
+  const { t } = useTranslation(["atleta", "common", "domain"]);
   const next = [...plan.comps].sort((a, b) => a.week - b.week).find((c) => c.week >= plan.currentWeek) ?? plan.comps[plan.comps.length - 1];
   const faltan = next ? next.week - plan.currentWeek : null;
   // Macro del catálogo (de `plan.macroId`) para el detalle de fase clickeable; null sin macroId.
   const macro = plan.macroId ? (MACROCYCLES.find((m) => m.id === plan.macroId) ?? null) : null;
   const [openPhase, setOpenPhase] = useState<string | null>(null);
+  // Proyección del dominio por id estable; fallback al texto del wire (ES) sólo sin macroId.
+  const phaseNm = (p: PlanView["phases"][number]): string =>
+    plan.macroId ? t(`domain:macro.${plan.macroId}.phase.${p.key}.name`) : p.name;
+  const phaseFc = (p: PlanView["phases"][number]): string =>
+    plan.macroId ? t(`domain:macro.${plan.macroId}.phase.${p.key}.focus`) : p.focus;
 
   return (
     <BottomSheet open={open} onClose={onClose} ariaLabel={t("pdsTitle")}>
       <div className="ho-plan__head">
         <div>
-          <div className="ho-plan__macro">{plan.macroName}</div>
+          <div className="ho-plan__macro">{plan.macroId ? t(`domain:macro.${plan.macroId}.name`) : plan.macroName}</div>
           <div className="ho-plan__wk">{t("pdsWeekOf", { current: plan.currentWeek, total: plan.totalWeeks })}</div>
         </div>
         <button type="button" className="ho-plan__close" onClick={onClose} aria-label={t("common:close")}>✕</button>
@@ -79,13 +84,13 @@ export function PlanDetailSheet({ plan, open, onClose, client, sexo }: {
                 onClick={() => setOpenPhase((cur) => (cur === p.name ? null : p.name))}>
                 <div className="ho-plan__mesohead">
                   <span className="ho-plan__mesonm">
-                    {p.name}
+                    {phaseNm(p)}
                     {hasComp && <span className="ho-plan__flag" aria-label={t("pdsCompetitionFlag")}> 🚩</span>}
                     {now && <span className="ho-plan__hoy"> • {t("pdsToday")}</span>}
                   </span>
                   <span className="ho-plan__mesowk">{t("pdsMesoWeeks", { from: p.from, to: p.to, weeks: wks })} <span className={"ho-plan__chev" + (open ? " open" : "")} aria-hidden>›</span></span>
                 </div>
-                <div className="ho-plan__mesofocus">{p.focus}</div>
+                <div className="ho-plan__mesofocus">{phaseFc(p)}</div>
                 <div className="ho-plan__mesometrics">
                   <span><Trans t={t} i18nKey="pdsImrOfYourMarks" values={{ lo: p.imrLo, hi: p.imrHi }} components={{ b: <b /> }} /></span>
                   <span><Trans t={t} i18nKey="pdsVolume" values={{ level: t(`pdsVolLevel.${volLevel(p.volRel)}`) }} components={{ b: <b /> }} /></span>
