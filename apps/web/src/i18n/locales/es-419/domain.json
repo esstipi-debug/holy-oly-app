@@ -74,5 +74,32 @@
     "humor": { "label": "Humor", "q": "¿Cómo es tu ánimo?", "lo": "Bajón", "hi": "Genial" },
     "motivacion": { "label": "Motivación", "q": "¿Con cuántas ganas vienes?", "lo": "Pocas", "hi": "A full" },
     "sueno": { "label": "Sueño", "q": "¿Cómo dormiste?", "lo": "Mal", "hi": "Like a baby" }
-  }
+  },
+  "school": {
+    "Búlgaro": { "character": "Sólo los lifts de competencia y sentadillas, a singles pesados, todos los días. Cero variedad: la adaptación ES la especificidad." },
+    "Ruso": { "character": "Ondulación de volumen sobre una base general ancha: tirones 90–110%, mucha sentadilla, complejos en la base y peaking clásico." },
+    "Chino": { "character": "Híbrido técnica-fuerza squat-dominante: potencias y segmentos, snatch balance y sots, y TODA sesión cierra con bloque de culturismo funcional." },
+    "Cubano": { "character": "Velocidad-fuerza por complejos y variantes de potencia/colgado, a porcentajes moderados y calidad máxima por serie." },
+    "Colombiano": { "character": "Prioridad absoluta al envión con volumen extremo de piernas (frontal dominante); en realización las piernas van a cero y queda el gesto." },
+    "Coreano": { "character": "Estructura rígida con tirones pesados omnipresentes (también desde bloques) y trabajo de posiciones: la fuerza se construye en el tirón." },
+    "Polaco": { "character": "Calidad sobre cantidad en ciclos cortos: singles y dobles a % alto desde temprano, con tirones desde bloques como segundo pilar." },
+    "Ucraniano": { "character": "Densidad: pocas piezas por sesión, dobles y triples al estilo EMOM, cero accesorios lentos — el descanso es la variable que se entrena." },
+    "Híbrido": { "character": "Bloques acumulación→transmutación→realización con compuestos grandes y complejos por eficiencia de tiempo — máximo estímulo por sesión corta." },
+    "USA": { "character": "Lineal americana 50:50 fuerza general : especificidad olímpica — powers dominantes en la base, complejos en el desarrollo, accesorios de espalda siempre." }
+  },
+  "enginePhase": {
+    "accumulation": { "label": "Acumulación", "rationale": "Semana de volumen alto: acá se acumula el estímulo que después se convierte en fuerza." },
+    "intensification": { "label": "Intensificación", "rationale": "Últimos kg de fuerza útil: baja el volumen, sube la intensidad." },
+    "peak": { "label": "Pico", "rationale": "Afinamos a peso de competencia. Menos trabajo, mismo peso." },
+    "taper": { "label": "Taper", "rationale": "Quitamos cansancio sin perder fuerza: el descanso es la mitad del trabajo." },
+    "comp_week": { "label": "Semana de competencia", "rationale": "Solo aperturas: disipamos fatiga para que llegues afilado el día de la competencia." },
+    "deload": { "label": "Descarga", "rationale": "Descarga: acá es donde el cuerpo reconstruye y se vuelve más fuerte." }
+  },
+  "readiness": {
+    "green": { "headline": "Readiness verde", "rationale": "Buena recuperación: se permite lo planificado." },
+    "amber": { "headline": "Readiness ámbar", "rationale": "Recuperación parcial: intensidad sostenida, sin subir el tope; volumen recortado al ~90%." },
+    "red": { "headline": "Readiness roja", "rationale": "Poca recuperación: dosis recortada (~75% del volumen)." }
+  },
+  "readinessNone": { "headline": "Sin señal de readiness", "rationale": "No hay monitoreo reciente para modular esta semana." },
+  "readinessMoveSingles": "Mueve los singles pesados, no los borres."
 }

@@ -74,5 +74,32 @@
     "humor": { "label": "Mood", "q": "How's your mood?", "lo": "Low", "hi": "Great" },
     "motivacion": { "label": "Motivation", "q": "How much drive do you have?", "lo": "Little", "hi": "All in" },
     "sueno": { "label": "Sleep", "q": "How did you sleep?", "lo": "Badly", "hi": "Like a baby" }
-  }
+  },
+  "school": {
+    "Búlgaro": { "character": "Only the competition lifts and squats, at heavy singles, every day. Zero variety: adaptation IS specificity." },
+    "Ruso": { "character": "Volume undulation over a wide general base: pulls at 90–110%, lots of squatting, complexes in the base and classic peaking." },
+    "Chino": { "character": "Squat-dominant technique-strength hybrid: power variants and segments, snatch balance and sots, and EVERY session closes with a functional bodybuilding block." },
+    "Cubano": { "character": "Speed-strength through complexes and power/hang variants, at moderate percentages and maximum quality per set." },
+    "Colombiano": { "character": "Absolute priority on the clean & jerk with extreme leg volume (front-squat dominant); at peaking the legs drop to zero and only the lift remains." },
+    "Coreano": { "character": "Rigid structure with heavy pulls everywhere (including from blocks) and position work: strength is built in the pull." },
+    "Polaco": { "character": "Quality over quantity in short cycles: singles and doubles at high % from early on, with pulls from blocks as the second pillar." },
+    "Ucraniano": { "character": "Density: few pieces per session, doubles and triples EMOM-style, zero slow accessories — rest is the variable being trained." },
+    "Híbrido": { "character": "Accumulation→transmutation→realization blocks with big compound lifts and complexes for time efficiency — maximum stimulus in a short session." },
+    "USA": { "character": "American linear 50:50 general strength : Olympic specificity — power variants dominant in the base, complexes in the build, back accessories always." }
+  },
+  "enginePhase": {
+    "accumulation": { "label": "Accumulation", "rationale": "High-volume week: this is where you build the stimulus that later turns into strength." },
+    "intensification": { "label": "Intensification", "rationale": "The last useful kilos of strength: volume drops, intensity rises." },
+    "peak": { "label": "Peak", "rationale": "We fine-tune at competition weight. Less work, same weight." },
+    "taper": { "label": "Taper", "rationale": "We shed fatigue without losing strength: rest is half the work." },
+    "comp_week": { "label": "Competition week", "rationale": "Openers only: we dissipate fatigue so you arrive sharp on competition day." },
+    "deload": { "label": "Deload", "rationale": "Deload: this is where the body rebuilds and comes back stronger." }
+  },
+  "readiness": {
+    "green": { "headline": "Readiness green", "rationale": "Good recovery: the plan as written is allowed." },
+    "amber": { "headline": "Readiness amber", "rationale": "Partial recovery: intensity held, no raising the top; volume trimmed to ~90%." },
+    "red": { "headline": "Readiness red", "rationale": "Low recovery: dose trimmed (~75% of volume)." }
+  },
+  "readinessNone": { "headline": "No readiness signal", "rationale": "No recent monitoring to modulate this week." },
+  "readinessMoveSingles": "Move the heavy singles, don't delete them."
 }
