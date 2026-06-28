@@ -46,7 +46,7 @@ const assignBtn: CSSProperties = {
 export function MacroDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation("macros");
+  const { t } = useTranslation(["macros", "domain"]);
   const [params] = useSearchParams();
   // Atleta del que vino el coach (drill-down → "Asignar macro" pasa `?atleta=`). Pre-selecciona el
   // sheet y se conserva al volver al catálogo, así no se pierde el contexto al elegir otro macro.
@@ -119,7 +119,7 @@ export function MacroDetail() {
           <div style={sec}>{t("mdSecMethod")}</div>
           <div style={{ background: "var(--wl-surface)", borderRadius: "var(--wl-radius)", padding: "12px 13px", border: "1px solid color-mix(in srgb,var(--wl-accent) 18%,transparent)" }}>
             <p style={{ fontFamily: "var(--wl-display)", fontSize: 13, lineHeight: 1.5, color: "var(--wl-text)", margin: 0, fontStyle: "italic" }}>
-              &ldquo;{dna.character}&rdquo;
+              &ldquo;{t(`domain:school.${dna.family}.character`)}&rdquo;
             </p>
             {dna.sources.length > 0 && (
               <p style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", margin: "8px 0 0", lineHeight: 1.45 }}>

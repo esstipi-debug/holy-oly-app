@@ -33,7 +33,7 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
   sexo: "M" | "F";
 }) {
   const repo = useRepository();
-  const { t } = useTranslation("coach");
+  const { t } = useTranslation(["coach", "domain"]);
   const RM_LABELS = useRmLabels();
   const [lift, setLift] = useState<RmLift>("arranque");
   const [week, setWeek] = useState<EngineWeek | null>(null);
@@ -102,20 +102,26 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
         ) : (
           <div style={{ marginTop: 8, padding: "12px", borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, justifyContent: "space-between" }}>
-              <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{week.label}</div>
+              <div style={{ fontFamily: "var(--wl-display)", fontWeight: 800, fontSize: 16 }}>{t(`domain:enginePhase.${week.phase}.label`)}</div>
               {week.heavySinglesAdvisory && (
                 <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--warn)", border: "1px solid color-mix(in srgb,var(--warn) 50%,transparent)", padding: "2px 7px", borderRadius: 99 }}>
                   {t("prilMoveSingles")}
                 </span>
               )}
             </div>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 4, lineHeight: 1.4 }}>{week.rationale}</div>
+            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", marginTop: 4, lineHeight: 1.4 }}>{t(`domain:enginePhase.${week.phase}.rationale`)}</div>
 
             {/* Ajuste por readiness (coach-only, read-only): redacta lo que el motor YA aplicó con
                 la banda del día — no es el plan asignado, no entra al semáforo. Sin señal → fallback. */}
             {(() => {
               const mod = readinessModulation(week);
               const color = BAND_COLOR[mod.band ?? "none"];
+              // Proyección del dominio: headline/rationale por banda estable (o el caso "none"
+              // honesto). El sufijo "mover singles" se vuelve a componer acá (core lo concatena).
+              const headline = mod.band ? t(`domain:readiness.${mod.band}.headline`) : t("domain:readinessNone.headline");
+              const rationale = mod.band
+                ? t(`domain:readiness.${mod.band}.rationale`) + (mod.moveHeavySingles ? ` ${t("domain:readinessMoveSingles")}` : "")
+                : t("domain:readinessNone.rationale");
               return (
                 <div aria-label={t("prilReadinessAdjust")} style={{ marginTop: 10, padding: "8px 10px", borderRadius: 10, background: "var(--wl-bg)", borderLeft: `3px solid ${color}`, border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8, justifyContent: "space-between" }}>
@@ -123,11 +129,11 @@ export function PrilepinSection({ athleteId, hoyWeek, sexo }: {
                       {t("prilReadinessAdjust")}
                     </div>
                     <span style={{ fontFamily: "var(--mono)", fontSize: 9, color, border: `1px solid color-mix(in srgb,${color} 50%,transparent)`, padding: "2px 7px", borderRadius: 99 }}>
-                      {mod.headline}
+                      {headline}
                     </span>
                   </div>
                   <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)", marginTop: 4, lineHeight: 1.4 }}>
-                    {mod.rationale}
+                    {rationale}
                   </div>
                 </div>
               );

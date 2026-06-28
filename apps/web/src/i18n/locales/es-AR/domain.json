@@ -42,5 +42,9 @@
     "fatiga": { "q": "¿Cuánto cansancio sentís hoy?" },
     "dolor": { "q": "¿Tenés molestias o dolor?" },
     "motivacion": { "q": "¿Con cuántas ganas venís?" }
-  }
+  },
+  "enginePhase": {
+    "comp_week": { "rationale": "Solo aperturas: disipamos fatiga para que llegués afilado el día de la competencia." }
+  },
+  "readinessMoveSingles": "Mové los singles pesados, no los borres."
 }
