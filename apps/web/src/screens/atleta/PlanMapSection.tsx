@@ -9,6 +9,7 @@ import { dayDateLabel, dayOffsetInWeek, isoRangeLabel, weekdayMonFirst } from ".
 import { phaseColor } from "../../ui/charts/phasePalette";
 import { RetryButton } from "../../ui/RetryButton";
 import { Loading } from "../../ui/Loading";
+import { useMovementName } from "../../i18n/useMovementLang";
 
 type PlanView = NonNullable<MePlanView["plan"]>;
 
@@ -25,6 +26,7 @@ const isoAt = (base: string, plusDays: number): string => new Date(ms(base) + pl
  */
 export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client: MeClient; sexo?: "M" | "F" }) {
   const { t } = useTranslation(["atleta", "domain"]);
+  const mn = useMovementName();
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
   const [heat, setHeat] = useState<WeekHeat[] | null>(null);
   const [heatError, setHeatError] = useState(false);
@@ -133,7 +135,7 @@ export function PlanMapSection({ plan, client, sexo }: { plan: PlanView; client:
   const selSession = sel && selViews ? selViews.find((s) => s.sessionIdx === sel.day) : undefined;
   const exercises: DayDetailExercise[] = selSession
     ? selSession.exercises.map((e) => ({
-        name: e.movementName, sets: e.sets, reps: e.reps,
+        name: mn(e.movementId), sets: e.sets, reps: e.reps,
         ...(e.pct != null ? { pct: e.pct } : {}),
         ...(e.targetKg != null ? { kg: e.targetKg } : {}),
       }))

@@ -6,6 +6,7 @@ import {
 } from "@holy-oly/core";
 import { DiscRow } from "../../../ui/Disc";
 import { useRmLabels } from "../rm/RmEditSheet";
+import { useMovementName } from "../../../i18n/useMovementLang";
 
 /** Análisis de carga neural de un complejo (COACH-ONLY): lo que el core ya computa pero hasta hoy
  *  no se veía. SNC/axial/metabólica + complejidad técnica + tope % programable + eslabón débil.
@@ -31,6 +32,7 @@ function Metric({ name, value }: { name: string; value: number | string }) {
 export function ComplexAnalysis({ movementId, rms }: { movementId: string; rms?: RM }) {
   const { t } = useTranslation("coach");
   const RM_LABELS = useRmLabels();
+  const mn = useMovementName();
   if (!isComplexId(movementId)) return null;
   const c = getComplex(movementId);
   if (!c) return null;
@@ -42,7 +44,7 @@ export function ComplexAnalysis({ movementId, rms }: { movementId: string; rms?:
   const weakKg = rms ? complexWeakRmKg(c, rms) : undefined;
 
   return (
-    <div style={wrap} aria-label={t("caAria", { name: c.name })}>
+    <div style={wrap} aria-label={t("caAria", { name: mn(movementId) })}>
       <div style={row}>
         <span style={{ ...label, color: "var(--wl-accent)" }}>{t("caNeural")}</span>
         <Metric name={t("caSnc")} value={`${loads.snc}/10`} />

@@ -20,8 +20,8 @@ function sessions(): SessionView[] {
     exercises: [
       { movementId: "arranque", movementName: "Arranque", sets: 2, reps: 2, pct: 80, targetKg: 64,
         actual: actual({ movementId: "arranque", movementName: "Arranque", sets: [{ kg: 64, reps: 2, done: true }, { kg: 66, reps: 2, done: true }] }) },
-      { movementId: "envion", movementName: "Envión", sets: 1, reps: 1, pct: 90, targetKg: 120,
-        actual: actual({ movementId: "envion", movementName: "Envión", sets: [{ kg: 120, reps: 1, done: true }] }) },
+      { movementId: "cargada-envion", movementName: "Envión", sets: 1, reps: 1, pct: 90, targetKg: 120,
+        actual: actual({ movementId: "cargada-envion", movementName: "Envión", sets: [{ kg: 120, reps: 1, done: true }] }) },
     ],
   }];
 }

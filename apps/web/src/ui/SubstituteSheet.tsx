@@ -1,7 +1,8 @@
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import { simplerVariants, substitutesOf, getMovement, getBase } from "@holy-oly/core";
+import { simplerVariants, substitutesOf } from "@holy-oly/core";
 import { useMovementLang } from "../i18n/useMovementLang";
+import { composeMovementName } from "../i18n/movementName";
 import { BottomSheet } from "./BottomSheet";
 
 const item: CSSProperties = {
@@ -58,14 +59,8 @@ export function SubstituteSheet({
   const simpler = simplerVariants(movementId);
   const subs = substitutesOf(movementId);
 
-  // The English nomenclature (`aliasEn`) lives on the base, reachable via the variant's baseId.
-  const movName = (id: string): string => {
-    const m = getMovement(id);
-    if (resolved === "en") {
-      return (m && getBase(m.baseId)?.aliasEn) ?? m?.name ?? id;
-    }
-    return m?.name ?? id;
-  };
+  // Full localized variant name (ES → core's programmableName; EN → composed with modifiers).
+  const movName = (id: string): string => composeMovementName(id, resolved);
 
   const choose = (id: string): void => {
     onPick(id);

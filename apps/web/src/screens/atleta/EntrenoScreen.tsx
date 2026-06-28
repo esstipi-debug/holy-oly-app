@@ -190,7 +190,7 @@ export function EntrenoScreen() {
       ) : !started ? (
         <div style={{ marginTop: 12 }}>
           <ResumenDia
-            rows={rows.map((r) => ({ movementName: r.movementName, sets: r.sets, reps: r.reps, kg: r.series[0]?.kg ?? r.targetKg, pct: r.pct }))}
+            rows={rows.map((r) => ({ movementId: r.movementId, movementName: r.movementName, sets: r.sets, reps: r.reps, kg: r.series[0]?.kg ?? r.targetKg, pct: r.pct }))}
             barKg={barKg}
             fecha={fecha ?? hoy}
             onFechaTap={() => setFechaSheet("editar")}

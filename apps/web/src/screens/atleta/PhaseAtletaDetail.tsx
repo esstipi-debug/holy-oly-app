@@ -4,6 +4,7 @@ import type { Macrocycle, SessionView } from "@holy-oly/core";
 import { barKgForSexo, dnaForFamily } from "@holy-oly/core";
 import { DiscRow } from "../../ui/Disc";
 import { signatureGroups, excludedNames } from "../coach/macros/composition";
+import { useMovementName } from "../../i18n/useMovementLang";
 import type { MeClient } from "../../data/meClient";
 
 interface PhaseLite {
@@ -35,9 +36,10 @@ export function PhaseAtletaDetail({ phase, macro, client, sexo, currentWeek }: {
   currentWeek: number;
 }) {
   const { t } = useTranslation(["atleta", "common"]);
+  const mn = useMovementName();
   const dna = macro ? dnaForFamily(macro.family) : undefined;
-  const groups = dna ? signatureGroups(dna) : [];
-  const excluded = dna ? excludedNames(dna) : [];
+  const groups = dna ? signatureGroups(dna, mn) : [];
+  const excluded = dna ? excludedNames(dna, mn) : [];
   const [showWhy, setShowWhy] = useState(false);
 
   // Semana representativa de la fase con kg REALES (derivados de los RMs en el server; el RM nunca viaja).
@@ -102,7 +104,7 @@ export function PhaseAtletaDetail({ phase, macro, client, sexo, currentWeek }: {
                   {s.exercises.map((e, i) => (
                     <div key={`${e.movementName}-${i}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 0", borderTop: i === 0 ? "none" : "1px solid color-mix(in srgb,var(--wl-text) 6%,transparent)" }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, color: "var(--wl-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.movementName}</div>
+                        <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 12, color: "var(--wl-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{mn(e.movementId)}</div>
                         <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "var(--wl-muted)" }}>{e.sets}×{e.reps}</div>
                       </div>
                       <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>

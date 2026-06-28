@@ -8,6 +8,7 @@ import { phaseColor } from "../../../ui/charts/phasePalette";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../../ui/charts/PlanHeatMap";
 import { PlanDayDetail, type DayEstado, type DayDetailExercise } from "../../../ui/charts/PlanDayDetail";
 import { useLocale } from "../../../i18n/useLocale";
+import { useMovementName } from "../../../i18n/useMovementLang";
 import { RetryButton } from "../../../ui/RetryButton";
 import { Loading } from "../../../ui/Loading";
 
@@ -32,6 +33,7 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
 }) {
   const { lang } = useLocale();
   const { t } = useTranslation(["coach", "domain"]);
+  const mn = useMovementName();
   const [heat, setHeat] = useState<WeekHeat[] | null>(null);
   const [heatError, setHeatError] = useState(false);
   const [sel, setSel] = useState<HeatMapPos | null>(null);
@@ -95,7 +97,7 @@ export function PlanCalendar({ macro, startDate, hoyWeek, comps, marks, perWeek,
   const selSession = sel && selViews ? selViews.find((s) => s.sessionIdx === sel.day) : undefined;
   const exercises: DayDetailExercise[] = selSession
     ? selSession.exercises.map((e) => ({
-        name: e.movementName, sets: e.sets, reps: e.reps,
+        name: mn(e.movementId), sets: e.sets, reps: e.reps,
         ...(e.pct != null ? { pct: e.pct } : {}),
         ...(e.targetKg != null ? { kg: e.targetKg } : {}),
       }))
