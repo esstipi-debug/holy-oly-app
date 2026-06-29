@@ -47,6 +47,18 @@ export const WELLNESS_TIPS: readonly WellnessTip[] = [
     body: "Despertarte siempre a una hora parecida —incluso los fines de semana— es lo que más estabiliza tu reloj interno; ordena el sueño incluso más que la hora a la que te acostás.",
     source: SRC,
   },
+  {
+    id: "sueno-cafeina-tarde", topic: "Sueño", states: ["warn", "alert", "ok"], items: ["sueno"],
+    title: "Cortá la cafeína bien antes de dormir",
+    body: "La cafeína de la tarde te puede dejar dormir igual, pero te roba profundidad de descanso sin que lo notes. Dejá pasar varias horas (8-10) entre el último café y la cama.",
+    source: SRC,
+  },
+  {
+    id: "sueno-luz-manana", topic: "Sueño", states: ["warn", "alert", "ok"], items: ["sueno"],
+    title: "La luz de la mañana mejora la noche",
+    body: "Salir a la luz natural temprano no solo te despierta: adelanta tu reloj y hace que esa misma noche te duermas más fácil. Bastan unos minutos al aire libre.",
+    source: SRC,
+  },
   // ── Estrés ──
   {
     id: "estres-suspiro", topic: "Estrés", states: ALL, items: ["estres"],
