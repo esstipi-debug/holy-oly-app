@@ -74,6 +74,17 @@ export function CuentaCoach() {
       {apiEnabled && <Link to="/coach/invitaciones" style={row}>{t("invitations")}</Link>}
       {apiEnabled && <Link to="/coach/suscripcion" style={row}>{t("subscription")}</Link>}
 
+      {/* Panel del dueño: solo visible para admins (ADMIN_EMAILS). El texto va sin i18n a propósito —
+          es una superficie interna del owner, no de cara al usuario final. */}
+      {apiEnabled && user?.isAdmin && (
+        <Link to="/admin" style={{ ...row, borderColor: "color-mix(in srgb, var(--wl-accent) 45%, transparent)" }}>
+          Panel de administración
+          <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, fontWeight: 400, color: "var(--wl-muted)", marginTop: 4 }}>
+            Usuarios registrados, país y vínculos atleta ↔ coach
+          </div>
+        </Link>
+      )}
+
       {apiEnabled && (
         <>
           {/* D6: el coach todavía no tiene endpoints de export/borrado → contacto honesto, no botones falsos. */}

@@ -4,6 +4,7 @@ import { App } from "./App";
 import { RepositoryProvider } from "../data/RepositoryProvider";
 import { AuthProvider } from "../auth/AuthContext";
 import { RequireAuth } from "../auth/RequireAuth";
+import { RequireAdmin } from "../auth/RequireAdmin";
 import { RoleLanding } from "../auth/RoleLanding";
 import { AuthScreen } from "../auth/AuthScreen";
 import { ForgotPasswordScreen } from "../auth/ForgotPasswordScreen";
@@ -23,6 +24,7 @@ import { MacroDetail } from "../screens/coach/macros/MacroDetail";
 import { CuentaCoach } from "../screens/coach/macros/CuentaCoach";
 import { CompetitionsList } from "../screens/coach/competitions/CompetitionsList";
 import { CompetitionDetail } from "../screens/coach/competitions/CompetitionDetail";
+import { AdminScreen } from "../screens/admin/AdminScreen";
 import { AthleteShell } from "../screens/atleta/AthleteShell";
 import { HomeScreen } from "../screens/atleta/HomeScreen";
 import { ProgresoScreen } from "../screens/atleta/ProgresoScreen";
@@ -51,6 +53,8 @@ const routes: RouteObject[] = [
       { path: "login/google-complete", element: <GoogleCompleteScreen /> },
       { path: "privacidad", element: <PrivacidadPage /> },
       { path: "terminos", element: <TerminosPage /> },
+      // Panel del dueño (admin). Top-level e independiente del rol; gateado por isAdmin (server-side).
+      { path: "admin", element: <RequireAdmin><AdminScreen /></RequireAdmin> },
       {
         path: "coach",
         element: <RequireAuth role="coach"><CoachShell /></RequireAuth>,

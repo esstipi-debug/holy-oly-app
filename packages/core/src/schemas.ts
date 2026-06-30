@@ -130,6 +130,8 @@ export const AuthUserSchema = z.object({
   athleteId: z.string().nullable(),
   email: z.string().email().nullable().optional(),
   emailVerified: z.boolean().optional(),
+  // Panel del dueño: true si el email ∈ ADMIN_EMAILS (server-side). Gate cosmético del web.
+  isAdmin: z.boolean().optional(),
 });
 
 export const VinculoEstadoSchema = z.enum(["pendiente", "activo", "rechazado", "revocado"]);

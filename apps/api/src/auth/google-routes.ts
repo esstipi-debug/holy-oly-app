@@ -8,6 +8,7 @@ import { createSession } from "./session";
 import { SESSION_COOKIE, cookieOpts } from "./routes";
 import { signCookiePayload, verifyCookiePayload } from "./signed-cookie";
 import { provisionUserRecords, sendCoachVerificationEmail } from "./provision-user";
+import { countryFromIp } from "../geo/country";
 import { GoogleCompleteSchema } from "./schemas";
 import {
   GOOGLE_PROVIDER,
@@ -150,6 +151,8 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
     const role = ctx.intent === "signup" && ctx.acceptTerms === true ? ctx.role : undefined;
     if (role) {
       const emailVerified = role !== "coach" || profile.emailVerified;
+      // País de origen (geo-IP) resuelto fuera de la transacción (best-effort). Ver geo/country.ts.
+      const signupCountry = await countryFromIp(req.ip);
       let user;
       try {
         user = await prisma.$transaction(async (tx) => {
@@ -161,6 +164,7 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
             passwordHash: null,
             sexo: ctx.sexo,
             weightKg: ctx.weightKg,
+            signupCountry,
           });
           await tx.oAuthAccount.create({
             data: { provider: GOOGLE_PROVIDER, providerUserId: profile.sub, userId: u.id },
@@ -216,6 +220,8 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
     const { role, name, sexo, weightKg } = parsed.data;
     // Onboarding del atleta: el FORM (GoogleCompleteScreen) exige sexo; la API es tolerante (default "M").
     const emailVerified = role !== "coach" || pending.emailVerified;
+    // País de origen (geo-IP) resuelto fuera de la transacción (best-effort). Ver geo/country.ts.
+    const signupCountry = await countryFromIp(req.ip);
     let user;
     try {
       user = await prisma.$transaction(async (tx) => {
@@ -227,6 +233,7 @@ export async function googleAuthRoutes(app: FastifyInstance): Promise<void> {
           passwordHash: null,
           sexo,
           weightKg,
+          signupCountry,
         });
         await tx.oAuthAccount.create({
           data: { provider: GOOGLE_PROVIDER, providerUserId: pending.sub, userId: u.id },

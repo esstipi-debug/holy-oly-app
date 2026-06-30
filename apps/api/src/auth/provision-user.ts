@@ -20,6 +20,9 @@ export async function provisionUserRecords(
     // Onboarding del atleta (2026-06-14): sexo (default "M" si no llega) + peso corporal opcional.
     sexo?: "M" | "F";
     weightKg?: number;
+    // País de origen (geo-IP) ya resuelto por la ruta FUERA de esta transacción. Solo el código
+    // ISO alpha-2; null si no se pudo resolver. Ver geo/country.ts.
+    signupCountry?: string | null;
   },
 ): Promise<User> {
   const email = opts.email.trim().toLowerCase();
@@ -38,6 +41,7 @@ export async function provisionUserRecords(
       termsVersion: LEGAL_TERMS_VERSION,
       privacyAcceptedAt: acceptedAt,
       privacyVersion: LEGAL_PRIVACY_VERSION,
+      signupCountry: opts.signupCountry ?? null,
     },
   });
   if (opts.role === "coach") {

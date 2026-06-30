@@ -9,6 +9,8 @@ export interface AuthUser {
   athleteId: string | null;
   email?: string | null;
   emailVerified?: boolean;
+  /** Panel del dueño: true si el email ∈ ADMIN_EMAILS (lo decide el server). */
+  isAdmin?: boolean;
 }
 
 const BASE = import.meta.env.VITE_API_URL ?? "";

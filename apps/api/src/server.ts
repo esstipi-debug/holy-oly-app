@@ -17,6 +17,7 @@ import { googleAuthRoutes } from "./auth/google-routes";
 import { vinculoRoutes } from "./vinculo/routes";
 import { meRoutes } from "./me/routes";
 import { competitionRoutes } from "./competitions/routes";
+import { adminRoutes } from "./admin/routes";
 import { requireCoach } from "./auth/guards";
 import { requireCoachWrite } from "./auth/coach-writes";
 import { billingRoutes } from "./billing/routes";
@@ -47,6 +48,10 @@ export interface BuildServerOptions {
 
 export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   const app = Fastify({
+    // Behind Render's proxy: trust X-Forwarded-For so `req.ip` is the REAL client IP (geo-IP del país
+    // en el alta + keying preciso del rate-limit). Seguro: el gate del demo-login lee el socket peer
+    // (no req.ip), así que no es spoofeable; ver auth/local-demo-login.ts.
+    trustProxy: true,
     // C5 — keep credentials out of logs. Fastify's default serializers don't log headers/bodies,
     // but redact is belt-and-suspenders if a custom serializer or debug level is ever enabled.
     logger: {
@@ -151,6 +156,8 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   app.register(billingRoutes);
   app.register(meRoutes);
   app.register(competitionRoutes);
+  // Panel del dueño (admin) — gateado server-side por ADMIN_EMAILS en cada ruta.
+  app.register(adminRoutes);
 
   app.get("/health", async () => ({ ok: true }));
 

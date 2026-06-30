@@ -13,6 +13,8 @@ import { isAccountLocked, recordLoginFailure, clearLoginFailures } from "./locko
 import { recordAudit } from "../audit";
 import { generateOneTimeToken, tokenIdFromRaw } from "./one-time-token";
 import { sendCoachVerificationEmail, provisionUserRecords } from "./provision-user";
+import { isAdminEmail } from "./admin";
+import { countryFromIp } from "../geo/country";
 import { sendEmail, appOrigin } from "../email";
 
 export const SESSION_COOKIE = "session";
@@ -56,8 +58,11 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     }
     const passwordHash = await hashPassword(password);
     const emailVerified = role !== "coach";
+    // País de origen (geo-IP) resuelto ANTES de abrir la transacción — hace una llamada de red y no
+    // debe sostener la transacción abierta. Best-effort: null si no se pudo (jamás bloquea el alta).
+    const signupCountry = await countryFromIp(req.ip);
     const user = await prisma.$transaction(async (tx) =>
-      provisionUserRecords(tx, { email, role, name, emailVerified, passwordHash, sexo, weightKg }),
+      provisionUserRecords(tx, { email, role, name, emailVerified, passwordHash, sexo, weightKg, signupCountry }),
     );
     // La sesión se crea SIEMPRE primero: así el alta queda usable aunque el email de verificación
     // falle (SMTP/throttle). Antes, un envío fallido tiraba 500 y dejaba la cuenta creada SIN sesión
@@ -126,6 +131,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       athleteId: req.athleteId ?? null,
       email: user?.email ?? null,
       emailVerified: user?.emailVerified ?? false,
+      // Gate cosmético del panel admin (la autoridad real está en requireAdmin, server-side).
+      isAdmin: isAdminEmail(user?.email),
     };
   });
 

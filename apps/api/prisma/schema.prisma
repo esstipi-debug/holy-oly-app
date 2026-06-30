@@ -79,6 +79,9 @@ model User {
   termsVersion      String?
   privacyAcceptedAt DateTime?
   privacyVersion    String?
+  // País de origen aproximado (ISO-3166 alpha-2, ej. "AR") resuelto por geo-IP en el alta. Solo el
+  // país se persiste — la IP NUNCA se guarda (dato personal). Best-effort: null si no se pudo resolver.
+  signupCountry String?
   sessions     Session[]
   coach        Coach?
   athlete      Athlete?
