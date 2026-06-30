@@ -51,6 +51,18 @@ describe("API integration (auth + coach-scoped reads)", () => {
     expect(roster.find((a) => a.id === "mv")?.needsRm).toBe(false);
   });
 
+  it("GET /roster/risk → mapa (200, coach autenticado)", async () => {
+    const headers = await loginDemoCoach();
+    const res = await app.inject({ method: "GET", url: "/roster/risk", headers });
+    expect(res.statusCode).toBe(200);
+    expect(typeof res.json()).toBe("object"); // mapa (posiblemente vacío según seed)
+  });
+
+  it("GET /roster/risk sin auth → 401/403", async () => {
+    const res = await app.inject({ method: "GET", url: "/roster/risk" });
+    expect([401, 403]).toContain(res.statusCode);
+  });
+
   it("GET /athletes/mv/series returns Mara's 12-week series", async () => {
     const headers = await loginDemoCoach();
     const res = await app.inject({ method: "GET", url: "/athletes/mv/series", headers });
