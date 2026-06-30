@@ -126,6 +126,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       athleteId: req.athleteId ?? null,
       email: user?.email ?? null,
       emailVerified: user?.emailVerified ?? false,
+      // Read-only public demo session → the SPA shows the "MODO DEMO" banner and hides write/pay CTAs.
+      demo: req.isDemo === true,
     };
   });
 

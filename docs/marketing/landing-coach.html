@@ -174,6 +174,9 @@ h2{ font-family:var(--display); font-weight:800; letter-spacing:-.015em; line-he
 
 /* ===== Interactive app demo (atleta ⇄ coach) ===== */
 .demo{ border:1px solid var(--hair); border-radius:22px; background:var(--surface); padding:clamp(14px,2.4vw,22px); }
+.demo-cta{ margin-top:22px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; }
+.demo-cta__lead{ margin:0; color:#cfd5dc; font-size:clamp(15px,1.5vw,17px); max-width:48ch; }
+.demo-cta__btns{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
 .demo__toolbar{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
 .demo__seg{ display:inline-flex; background:var(--surface-2); border:1px solid var(--hair); border-radius:12px; padding:4px; gap:4px; }
 .demo__seg button{ font-family:var(--cond); font-weight:800; text-transform:uppercase; letter-spacing:.04em; font-size:13.5px; color:var(--muted); background:none; border:none; cursor:pointer; padding:8px 18px; border-radius:9px; transition:color .15s, background .15s; }
@@ -495,6 +498,13 @@ footer{ border-top:1px solid var(--hair); padding:32px 0; }
         <p class="section-lead" data-i18n="demo_lead">Esto no es una captura: es la app. Cambiá el día, la escuela, abrí un ejercicio o movéle el readiness y mirá cómo se recalcula todo.</p>
       </div>
       <div class="demo rv" id="demoRoot"><!-- montado por renderDemo() --></div>
+      <div class="demo-cta rv">
+        <p class="demo-cta__lead" data-i18n="demo_cta_lead">¿Querés la app de verdad? Entrá sin registrarte, con datos de ejemplo (solo lectura).</p>
+        <div class="demo-cta__btns">
+          <a class="btn btn--primary" data-i18n="demo_cta_coach" href="https://holy-oly.onrender.com/auth/demo?as=coach">Probar el demo · Coach</a>
+          <a class="btn btn--ghost" data-i18n="demo_cta_atleta" href="https://holy-oly.onrender.com/auth/demo?as=atleta">Probar el demo · Atleta</a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1023,6 +1033,8 @@ var I18N = {
     hero_lead:"Periodización automática por escuela, carga y estrés de cada atleta, y todo tu equipo en un solo panel. Olvídate de las planillas.",
     cta_main:"Crea tu cuenta gratis",
     cta_secondary:"Ver cómo funciona",
+    demo_cta_lead:"¿Querés la app de verdad? Entrá sin registrarte, con datos de ejemplo (solo lectura).",
+    demo_cta_coach:"Probar el demo · Coach", demo_cta_atleta:"Probar el demo · Atleta",
     cta_note_b:"Gratis",
     cta_note:"durante la fase de prueba · sin tarjeta",
     prob_kicker:"El problema", prob_h2:"El día a día del coach, hoy",
@@ -1082,6 +1094,8 @@ var I18N = {
     hero_lead:"Automatic periodization by methodology, load and stress for every athlete, and your whole roster in one dashboard. Leave the spreadsheets behind.",
     cta_main:"Create your free account",
     cta_secondary:"See how it works",
+    demo_cta_lead:"Want the real app? Step in without signing up — example data, read-only.",
+    demo_cta_coach:"Try the demo · Coach", demo_cta_atleta:"Try the demo · Athlete",
     cta_note_b:"Free",
     cta_note:"during the trial phase · no credit card",
     prob_kicker:"The problem", prob_h2:"A coach's day-to-day, today",
@@ -1141,6 +1155,8 @@ var I18N = {
     hero_lead:"Periodização automática por escola, carga e estresse de cada atleta, e todo o seu elenco em um só painel. Deixe as planilhas para trás.",
     cta_main:"Crie sua conta grátis",
     cta_secondary:"Ver como funciona",
+    demo_cta_lead:"Quer o app de verdade? Entre sem cadastro, com dados de exemplo (somente leitura).",
+    demo_cta_coach:"Testar o demo · Treinador", demo_cta_atleta:"Testar o demo · Atleta",
     cta_note_b:"Grátis",
     cta_note:"durante a fase de testes · sem cartão",
     prob_kicker:"O problema", prob_h2:"O dia a dia do treinador, hoje",

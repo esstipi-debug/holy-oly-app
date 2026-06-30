@@ -201,7 +201,14 @@ export function SuscripcionScreen() {
         </div>
       )}
 
-      {status?.active ? (
+      {user?.demo ? (
+        // Read-only demo: show the pricing (it sells) but never the real MercadoPago CTA. Placed
+        // FIRST so a demo session always sees this — even though the seeded demo coach has an active
+        // (mock) subscription. The server gate also blocks POST /billing/checkout (defense-in-depth).
+        <div style={{ marginTop: 16, padding: 14, borderRadius: 12, border: "1px solid color-mix(in srgb, var(--wl-accent) 35%, transparent)", fontFamily: "var(--mono)", fontSize: 12, color: "var(--wl-muted)", lineHeight: 1.6, textAlign: "center" }}>
+          En modo demo no se cobra. Creá tu cuenta gratis para suscribirte de verdad.
+        </div>
+      ) : status?.active ? (
         // D6: suscripción activa → nada de CTA falso que re-dispare checkout. Cambios = contacto.
         <div style={{ marginTop: 16, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", lineHeight: 1.6 }}>
           {t("subChangePlan")}{" "}

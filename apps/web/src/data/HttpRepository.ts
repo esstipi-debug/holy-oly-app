@@ -7,6 +7,7 @@ import {
   type PrCandidate, type RmLift, type RmUpdate, type AthleteDailyView, type EngineWeek, type MacroHistoryView,
   type Competition, type CompetitionInput, type CompetitionListItem, type CompetitionDetailView, type CompetitionEntryInput,
 } from "@holy-oly/core";
+import { notifyReadOnly } from "../ui/readOnlyNotice";
 
 interface Parser<T> {
   parse(data: unknown): T;
@@ -92,7 +93,12 @@ export class HttpRepository implements Repository {
     });
     // Consume the body (like fetchJson) so the connection is released and API errors surface.
     const payload = res.status === 204 ? undefined : await res.json().catch(() => undefined);
-    if (!res.ok) throw new HttpError(res.status, path, (payload as { error?: string } | undefined)?.error);
+    if (!res.ok) {
+      const err = payload as { error?: string; code?: string } | undefined;
+      // Read-only demo gate blocked the write → tell the UI to flash a friendly "solo lectura" toast.
+      if (res.status === 403 && err?.code === "demo_read_only") notifyReadOnly();
+      throw new HttpError(res.status, path, err?.error);
+    }
     return payload;
   }
   private async mutate(path: string, method: "POST" | "PUT" | "PATCH" | "DELETE", body?: unknown): Promise<void> {

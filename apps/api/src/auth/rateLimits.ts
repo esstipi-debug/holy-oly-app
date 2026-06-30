@@ -9,3 +9,6 @@ export const ACCEPT_RATE_LIMIT = { max: 5, timeWindow: "1 minute" } as const;
 export const ROTATE_RATE_LIMIT = { max: 3, timeWindow: "1 minute" } as const;
 export const FORGOT_PASSWORD_RATE_LIMIT = { max: 5, timeWindow: "1 minute" } as const;
 export const RESET_PASSWORD_RATE_LIMIT = { max: 10, timeWindow: "1 minute" } as const;
+// Public demo entry: enough for real visitors, tight enough that it can't spray session rows.
+// Each hit creates one short-lived (6h), read-only session for a seeded demo account.
+export const DEMO_LOGIN_RATE_LIMIT = { max: 8, timeWindow: "1 minute" } as const;

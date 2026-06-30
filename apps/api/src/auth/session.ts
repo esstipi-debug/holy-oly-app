@@ -22,9 +22,14 @@ export function sessionIdFromToken(token: string): string {
   return encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 }
 
-export async function createSession(prisma: PrismaClient, userId: string): Promise<{ token: string; expiresAt: Date }> {
+export async function createSession(
+  prisma: PrismaClient,
+  userId: string,
+  ttlOverrideMs?: number,
+): Promise<{ token: string; expiresAt: Date }> {
   const token = generateSessionToken();
-  const expiresAt = new Date(Date.now() + ttlMs());
+  // ttlOverrideMs lets the public demo issue short-lived sessions so flood traffic expires fast.
+  const expiresAt = new Date(Date.now() + (ttlOverrideMs ?? ttlMs()));
   await prisma.session.create({ data: { id: sessionIdFromToken(token), userId, expiresAt } });
   return { token, expiresAt };
 }

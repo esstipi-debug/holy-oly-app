@@ -8,6 +8,7 @@ import { NavIcon } from "./primitives";
 // NOTE: this is a copy of public/icon.svg (which stays as the favicon source for index.html / the
 // normal build) — keep the two in sync if the icon ever changes.
 import iconUrl from "../../assets/icon.svg";
+import { DemoBanner } from "../../ui/DemoBanner";
 import "./atleta.css";
 
 export interface AtletaOutletCtx {
@@ -40,6 +41,7 @@ export function AthleteShell() {
 
   return (
     <div className={`ho-shell wl wl--${skin}`}>
+      <DemoBanner />
       <header className="ho-hobar">
         <img className="ho-hobar__logo" src={iconUrl} alt="" />
         <div className="ho-hobar__brand">

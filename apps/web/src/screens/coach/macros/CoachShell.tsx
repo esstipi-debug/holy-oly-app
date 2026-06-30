@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Outlet, useOutletContext } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
 import { getCoachSkin, setCoachSkin as persistCoachSkin } from "./coachPrefs";
+import { DemoBanner } from "../../../ui/DemoBanner";
 
 export interface CoachOutletCtx {
   skin: string;
@@ -24,6 +25,7 @@ export function CoachShell() {
 
   return (
     <div className={`wl wl--${skin}`} style={{ minHeight: "100vh", background: "var(--wl-bg)" }}>
+      <DemoBanner />
       {/* Clear the fixed BottomNav (~55px) so the last element of any coach screen stays tappable. */}
       <div style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom, 0px))" }}>
         <Outlet context={ctx} />

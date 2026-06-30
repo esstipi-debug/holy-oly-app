@@ -130,6 +130,8 @@ export const AuthUserSchema = z.object({
   athleteId: z.string().nullable(),
   email: z.string().email().nullable().optional(),
   emailVerified: z.boolean().optional(),
+  /** Public read-only demo session — drives the "MODO DEMO" banner + hides write/pay CTAs. */
+  demo: z.boolean().optional(),
 });
 
 export const VinculoEstadoSchema = z.enum(["pendiente", "activo", "rechazado", "revocado"]);

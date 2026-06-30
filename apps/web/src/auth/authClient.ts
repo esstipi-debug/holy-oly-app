@@ -9,6 +9,8 @@ export interface AuthUser {
   athleteId: string | null;
   email?: string | null;
   emailVerified?: boolean;
+  /** Public read-only demo session — drives the "MODO DEMO" banner + hides write/pay CTAs. */
+  demo?: boolean;
 }
 
 const BASE = import.meta.env.VITE_API_URL ?? "";

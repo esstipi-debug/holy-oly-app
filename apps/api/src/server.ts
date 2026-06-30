@@ -13,6 +13,7 @@ import * as repo from "./repo";
 import { validateSessionToken } from "./auth/session";
 import { authRoutes, SESSION_COOKIE, cookieOpts } from "./auth/routes";
 import { localDemoLoginRoutes } from "./auth/local-demo-login";
+import { demoLoginRoutes, isDemoEmail } from "./auth/demo-login";
 import { googleAuthRoutes } from "./auth/google-routes";
 import { vinculoRoutes } from "./vinculo/routes";
 import { meRoutes } from "./me/routes";
@@ -30,6 +31,8 @@ declare module "fastify" {
     role?: UserRole;
     coachId?: string;
     athleteId?: string;
+    /** True when the principal is a seeded demo account → its session is read-only (public demo). */
+    isDemo?: boolean;
   }
 }
 
@@ -132,6 +135,7 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     const { user, refreshedExpiresAt } = result;
     req.userId = user.id;
     req.role = user.role;
+    req.isDemo = isDemoEmail(user.email);
     if (user.role === "coach") {
       const c = await prisma.coach.findUnique({ where: { userId: user.id } });
       req.coachId = c?.id;
@@ -145,8 +149,23 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     }
   });
 
+  // READ-ONLY GUARD for the public demo. A demo session may browse everything (GET) but must never
+  // mutate — this single deny-by-default gate covers the whole write surface (coach + athlete +
+  // billing) at once, so a visitor can't corrupt the shared demo data NOR reach the real
+  // MercadoPago checkout (POST /billing/checkout). Logout is the one mutation they're allowed.
+  // ORDER MATTERS: this hook MUST stay registered AFTER the session-resolution hook above (which
+  // sets req.isDemo) and BEFORE the app.register(...) route plugins, so it fires for every route.
+  app.addHook("onRequest", async (req: FastifyRequest, reply: FastifyReply) => {
+    if (!req.isDemo) return;
+    const m = req.method;
+    if (m === "GET" || m === "HEAD" || m === "OPTIONS") return;
+    if (m === "POST" && req.url.split("?")[0] === "/auth/logout") return;
+    return reply.code(403).send({ error: "modo demo: solo lectura", code: "demo_read_only" });
+  });
+
   app.register(authRoutes);
   app.register(localDemoLoginRoutes);
+  app.register(demoLoginRoutes);
   app.register(googleAuthRoutes);
   app.register(vinculoRoutes);
   app.register(billingRoutes);
