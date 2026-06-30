@@ -50,4 +50,19 @@ describe("wellnessStreak", () => {
   it("sin check-ins → null", () => {
     expect(wellnessStreak([], "2026-06-29")).toBeNull();
   });
+
+  it("frescura: último check-in a EXACTAMENTE 2 días de today → sí avisa (no null)", () => {
+    const logs = ["25", "26", "27"].map((d) => D(`2026-06-${d}`, { sueno: 2 }));
+    expect(wellnessStreak(logs, "2026-06-29")).toEqual({ item: "sueno", days: 3, severity: "warn", alsoStreaking: [] });
+  });
+
+  it("líder por LARGO de racha, no por prioridad: fatiga 4 días gana a dolor 3 días", () => {
+    const logs = [
+      D("2026-06-26", { fatiga: 5 }),
+      D("2026-06-27", { fatiga: 5, dolor: 5 }),
+      D("2026-06-28", { fatiga: 5, dolor: 5 }),
+      D("2026-06-29", { fatiga: 5, dolor: 5 }),
+    ];
+    expect(wellnessStreak(logs, "2026-06-29")).toEqual({ item: "fatiga", days: 4, severity: "alert", alsoStreaking: ["dolor"] });
+  });
 });
