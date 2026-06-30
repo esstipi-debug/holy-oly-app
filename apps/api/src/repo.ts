@@ -7,7 +7,7 @@ import type {
   MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf, MacroHistoryView, MacroHistoryRow, MeHeatDays,
   Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryView, CompetitionEntryInput,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildAdaptivePlan, effectiveTotalWeeks, availableWeeksToComp, weekIndexUnclamped, reinstantiableWeeks, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildAdaptivePlan, effectiveTotalWeeks, availableWeeksToComp, weekIndexUnclamped, reinstantiableWeeks, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore, wellnessStreak } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -314,7 +314,10 @@ export async function getDayLogView(prisma: PrismaClient, athleteId: string, tod
   const rows = await prisma.dayLog.findMany({ where: { athleteId }, select: { date: true } });
   const days = rows.map((r) => r.date);
   const entry = await prisma.dayLog.findUnique({ where: { athleteId_date: { athleteId, date: target } } });
-  return { entry: entry ? toDayLog(entry) : null, streak: computeStreak(days, today), days, today };
+  // Racha de bienestar: las últimas ~14 filas CON valores alcanzan para racha + guarda de frescura.
+  const recent = await prisma.dayLog.findMany({ where: { athleteId }, orderBy: { date: "desc" }, take: 14 });
+  const headsUp = wellnessStreak(recent.map(toDayLog), today);
+  return { entry: entry ? toDayLog(entry) : null, streak: computeStreak(days, today), days, today, headsUp };
 }
 
 /** Upsert the athlete's entry for `today` (one row per athlete-day), then recompute the streak. */

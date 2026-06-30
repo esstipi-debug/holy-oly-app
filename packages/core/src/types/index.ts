@@ -141,6 +141,7 @@ export interface DayLogView {
   streak: number;
   days: string[]; // ISO dates with a logged entry (for the heatmap)
   today: string;  // ISO
+  headsUp?: StreakHeadsUp | null; // racha de bienestar (si esto sigue, va a pasar X), o null
 }
 
 /** PUT /me/daylog response. */
