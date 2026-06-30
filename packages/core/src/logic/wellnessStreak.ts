@@ -1,4 +1,6 @@
-import type { DayLog, StreakHeadsUp, WatchedWellnessField } from "../types";
+import type { DayLog, MonitorSeries, ReadinessBand, StreakHeadsUp, WatchedWellnessField } from "../types";
+import { acwr } from "./monitor";
+import { readiness, readinessBand } from "./readiness";
 
 /** Los 5 ítems vigilados + su polaridad: highBad = un valor ALTO es malo (fatiga/dolor/estrés);
  *  para sueño/motivación, un valor BAJO es malo. Espejo de WELLNESS_ITEMS (wellness.ts). */
@@ -67,4 +69,39 @@ export function wellnessStreak(logs: DayLog[], today: string): StreakHeadsUp | n
     .map((s) => s.field);
 
   return { item: leader.field, days: leader.len, severity, alsoStreaking };
+}
+
+/** Riesgo predictivo COACH-ONLY: la racha del check-in (motor compartido) + contexto de carga
+ *  (ACWR sostenido / banda de readiness). El coach SÍ ve "sobrecarga"; el atleta jamás (HR-1). */
+export interface CoachRisk {
+  item: WatchedWellnessField;
+  days: number;
+  severity: "warn" | "alert";
+  alsoStreaking: WatchedWellnessField[];
+  acwrSustained: boolean;               // ACWR > 1.3 en las últimas ≥2 semanas
+  readinessBand: ReadinessBand | null;  // banda de la última semana (o null sin serie)
+  loadNote: "sobrecarga" | null;        // la carga sostiene/amplifica el riesgo
+}
+
+const ACWR_RISK = 1.3;
+
+/** Riesgo del coach: SOLO si hay racha de bienestar (la carga sola la cubre `seriesState`). Enriquece
+ *  con ACWR sostenido + readiness. PURO. */
+export function coachStreakRisk(
+  logs: DayLog[], series: MonitorSeries | undefined, today: string,
+): CoachRisk | null {
+  const streak = wellnessStreak(logs, today);
+  if (!streak) return null;
+
+  let acwrSustained = false;
+  let band: ReadinessBand | null = null;
+  if (series && series.weeks >= 1) {
+    const a = acwr(series.acute);
+    const lastTwo = a.slice(-2).filter((v) => Number.isFinite(v));
+    acwrSustained = lastTwo.length >= 2 && lastTwo.every((v) => v > ACWR_RISK);
+    const lastAcwr = a.at(-1);
+    band = readinessBand(readiness(series.recovery.at(-1), Number.isFinite(lastAcwr ?? NaN) ? lastAcwr : undefined));
+  }
+  const loadNote: "sobrecarga" | null = acwrSustained || band === "red" ? "sobrecarga" : null;
+  return { ...streak, acwrSustained, readinessBand: band, loadNote };
 }

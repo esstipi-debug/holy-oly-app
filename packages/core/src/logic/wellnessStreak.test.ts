@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { wellnessStreak } from "./wellnessStreak";
-import type { DayLog } from "../types";
+import { wellnessStreak, coachStreakRisk } from "./wellnessStreak";
+import type { DayLog, MonitorSeries } from "../types";
 
 /** Fixture: un check-in con todos los ítems neutros (3 = no malo), sobreescribiendo los que importan. */
 const D = (date: string, o: Partial<DayLog>): DayLog => ({
@@ -64,5 +64,31 @@ describe("wellnessStreak", () => {
       D("2026-06-29", { fatiga: 5, dolor: 5 }),
     ];
     expect(wellnessStreak(logs, "2026-06-29")).toEqual({ item: "fatiga", days: 4, severity: "alert", alsoStreaking: ["dolor"] });
+  });
+});
+
+const seriesWith = (acute: number[], recovery: number[]): MonitorSeries => ({
+  weeks: acute.length, acute, recovery,
+  hrv: [], hrvBase: 0, rhr: [], rhrBase: 0, wellness: [],
+} as unknown as MonitorSeries);
+
+describe("coachStreakRisk", () => {
+  it("sin racha de check-in → null (la carga sola la cubre el semáforo)", () => {
+    const logs = ["27","28","29"].map((d) => D(`2026-06-${d}`, {})); // todos neutros
+    expect(coachStreakRisk(logs, seriesWith([100,100,200,260],[60,60,60,60]), "2026-06-29")).toBeNull();
+  });
+
+  it("racha sin carga → CoachRisk con loadNote null", () => {
+    const logs = ["27","28","29"].map((d) => D(`2026-06-${d}`, { sueno: 1 }));
+    const r = coachStreakRisk(logs, undefined, "2026-06-29");
+    expect(r).toMatchObject({ item: "sueno", days: 3, severity: "warn", acwrSustained: false, readinessBand: null, loadNote: null });
+  });
+
+  it("racha + ACWR sostenido > 1.3 dos semanas → loadNote 'sobrecarga'", () => {
+    const logs = ["27","28","29"].map((d) => D(`2026-06-${d}`, { sueno: 1 }));
+    // acute con 2 últimas semanas muy por encima de la base crónica → ACWR > 1.3 sostenido
+    const r = coachStreakRisk(logs, seriesWith([100,100,260,280],[85,85,85,85]), "2026-06-29");
+    expect(r?.acwrSustained).toBe(true);
+    expect(r?.loadNote).toBe("sobrecarga");
   });
 });
