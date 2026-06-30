@@ -1,15 +1,20 @@
 ---
 title: "Cafeína: cuánto y cuándo según tu entrenamiento"
-summary: La dosis y el timing de la cafeína cambian su efecto sobre fuerza, potencia y resistencia.
+summary: La dosis y el timing de la cafeína cambian su efecto sobre fuerza,
+  potencia y resistencia.
 category: Nutrición
 topic: caffeine_performance
-tags: [nutrición, energía, rendimiento]
+tags:
+  - nutrición
+  - energía
+  - rendimiento
 primary_sources:
-  - title: "International Society of Sports Nutrition position stand: caffeine and exercise performance"
-    authors: "Guest NS, et al."
-    journal: "Journal of the International Society of Sports Nutrition"
+  - title: "International Society of Sports Nutrition position stand: caffeine and
+      exercise performance"
+    authors: Guest NS, et al.
+    journal: Journal of the International Society of Sports Nutrition
     year: 2021
-    doi: "10.1186/s12970-021-00383-y"
+    doi: 10.1186/s12970-021-00383-y
 applications:
   crossfit:
     - Útil antes de WODs largos o de alta demanda aeróbica
@@ -19,7 +24,7 @@ applications:
     - Probar la dosis en entrenamiento, nunca estrenarla en competencia
 contraindications:
   - Si te altera el sueño, corré la última toma más temprano
-readingMinutes: 4
+readingMinutes: 1
 publishDate: 2026-06-28
 ---
 

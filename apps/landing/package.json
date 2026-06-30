@@ -4,12 +4,16 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "sync:corpus": "node scripts/sync-corpus.mjs",
+    "build": "node scripts/sync-corpus.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "astro": "^5.6.0",
     "@astrojs/sitemap": "^3.2.1"
+  },
+  "devDependencies": {
+    "yaml": "^2.6.1"
   }
 }

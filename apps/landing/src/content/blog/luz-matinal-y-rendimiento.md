@@ -1,15 +1,19 @@
 ---
 title: Luz matinal y rendimiento
-summary: Exponerse a luz natural temprano ordena el reloj biológico y mejora energía y descanso.
+summary: Exponerse a luz natural temprano ordena el reloj biológico y mejora
+  energía y descanso.
 category: Sueño
 topic: circadian_rhythm
-tags: [sueño, recuperación, energía]
+tags:
+  - sueño
+  - recuperación
+  - energía
 primary_sources:
-  - title: "Timing of light exposure affects mood and brain circuits"
-    authors: "Bedrosian TA, Nelson RJ"
-    journal: "Translational Psychiatry"
+  - title: Timing of light exposure affects mood and brain circuits
+    authors: Bedrosian TA, Nelson RJ
+    journal: Translational Psychiatry
     year: 2017
-    doi: "10.1038/tp.2016.262"
+    doi: 10.1038/tp.2016.262
 applications:
   crossfit:
     - Sostiene la energía para WODs y metcons temprano
@@ -19,7 +23,7 @@ applications:
     - Tras sesiones nocturnas, priorizar luz matinal al día siguiente
 contraindications:
   - Nunca mires fuentes de brillo doloroso
-readingMinutes: 3
+readingMinutes: 1
 publishDate: 2026-06-30
 ---
 

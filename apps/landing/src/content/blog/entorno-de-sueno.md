@@ -1,15 +1,18 @@
 ---
-title: "Cómo el entorno de tu cuarto cambia tu descanso"
-summary: Temperatura y oscuridad del dormitorio influyen directamente en la calidad del sueño.
+title: Cómo el entorno de tu cuarto cambia tu descanso
+summary: Temperatura y oscuridad del dormitorio influyen directamente en la
+  calidad del sueño.
 category: Recuperación
 topic: sleep_environment
-tags: [sueño, recuperación]
+tags:
+  - sueño
+  - recuperación
 primary_sources:
-  - title: "Effects of thermal environment on sleep and circadian rhythm"
-    authors: "Okamoto-Mizuno K, Mizuno K"
-    journal: "Journal of Physiological Anthropology"
+  - title: Effects of thermal environment on sleep and circadian rhythm
+    authors: Okamoto-Mizuno K, Mizuno K
+    journal: Journal of Physiological Anthropology
     year: 2012
-    doi: "10.1186/1880-6805-31-14"
+    doi: 10.1186/1880-6805-31-14
 applications:
   crossfit:
     - Mejor descanso = mejor tolerancia a volúmenes altos de WODs
@@ -17,7 +20,7 @@ applications:
     - Mejor descanso = mejor adaptación a bloques de fuerza
 contraindications:
   - Si el calor te desvela seguido, revisá ventilación y abrigo
-readingMinutes: 3
+readingMinutes: 1
 publishDate: 2026-06-25
 ---
 
