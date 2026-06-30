@@ -2,11 +2,13 @@ import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AtletaMiniCard } from "./AtletaMiniCard";
 import type { RosterRow } from "../roster";
+import type { CoachRisk } from "@holy-oly/core";
 
 const row: RosterRow = {
   id: "mara", nombre: "Mara V.", iniciales: "MV", metodo: "Ruso 5D", compite: true,
   acwr: 1.62, rec: 41, cell: "alert", readiness: 28, trend: -9, cat: "64 kg",
   history: ["ok", "ok", "warn", "alert", "warn", "alert", "alert"], needsRm: false,
+  risk: null,
 };
 
 describe("AtletaMiniCard", () => {
@@ -49,5 +51,14 @@ describe("AtletaMiniCard", () => {
     expect(screen.getByText("Falta RM")).toBeInTheDocument();
     rerender(<AtletaMiniCard row={{ ...row, needsRm: false }} onPick={() => {}} />);
     expect(screen.queryByText("Falta RM")).toBeNull();
+  });
+  it("risk chip: row.risk con loadNote=sobrecarga → muestra 'Riesgo sobrecarga'", () => {
+    const risk: CoachRisk = { item: "sueno", days: 4, severity: "alert", alsoStreaking: [], acwrSustained: true, readinessBand: "red", loadNote: "sobrecarga" };
+    render(<AtletaMiniCard row={{ ...row, risk }} onPick={() => {}} />);
+    expect(screen.getByText(/Riesgo sobrecarga/)).toBeInTheDocument();
+  });
+  it("risk chip: row.risk=null → no aparece ningún texto de riesgo ni ⚠ de carga", () => {
+    render(<AtletaMiniCard row={{ ...row, risk: null, needsRm: false }} onPick={() => {}} />);
+    expect(screen.queryByText(/Riesgo|⚠.*sobrecarga/)).toBeNull();
   });
 });

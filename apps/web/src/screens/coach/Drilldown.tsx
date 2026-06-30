@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useRepository } from "../../data/RepositoryProvider";
-import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, type Atleta, type Competencia, type Macrocycle, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
+import { MACROCYCLES, rosterStatus, weekOfDate, dateOfWeek, isTaperWeek, defaultStartDate, sessionsPerWeek, coachStreakRisk, type Atleta, type AthleteDailyView, type Competencia, type Macrocycle, type MonitorSeries, type SessionLog, type Plan } from "@holy-oly/core";
+import { ITEM_SHORT } from "./atletas/AtletaMiniCard";
 import { ROSTER_META } from "../../data/seeds";
 import { Badge } from "../../ui/Badge";
 import { BackButton } from "../../ui/BackButton";
@@ -37,6 +38,7 @@ export function Drilldown() {
   };
   const [athlete, setAthlete] = useState<Atleta | undefined>();
   const [series, setSeries] = useState<MonitorSeries | undefined>();
+  const [daily, setDaily] = useState<AthleteDailyView | undefined>();
   const [comps, setComps] = useState<Competencia[]>([]);
   const [plan, setPlan] = useState<Plan | undefined>();
   const [sessionLog, setSessionLog] = useState<SessionLog>([]);
@@ -65,14 +67,21 @@ export function Drilldown() {
   useEffect(() => {
     let on = true;
     setLoaded(false); setError(false); setAsAthlete(false); // reset on athlete change (incl. the athlete-view toggle)
-    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id)])
-      .then(([a, s, c, sl, pl]) => {
+    Promise.all([repo.getAthlete(id), repo.getSeries(id), repo.getComps(id), repo.getSessionLog(id), repo.getPlan(id), repo.getDaily(id)])
+      .then(([a, s, c, sl, pl, dv]) => {
         if (!on) return;
-        setAthlete(a); setSeries(s); setComps(c); setSessionLog(sl); setPlan(pl); setLoaded(true);
+        setAthlete(a); setSeries(s); setDaily(dv); setComps(c); setSessionLog(sl); setPlan(pl); setLoaded(true);
       })
       .catch(() => { if (on) { setError(true); setLoaded(true); } });
     return () => { on = false; };
   }, [repo, id, reload]);
+
+  // Riesgo predictivo coach-only: racha de bienestar + contexto de carga. HR-1: jamás en superficie atleta.
+  // Debe estar ANTES de los early returns para no violar las reglas de hooks (número estable de hooks por render).
+  const risk = useMemo(
+    () => (daily ? coachStreakRisk(daily.checkins.map((c) => ({ ...c })), series, daily.today) : null),
+    [daily, series],
+  );
 
   if (!loaded) return <Loading style={{ padding: 24 }}>{t("common:loading")}</Loading>;
   if (error) {
@@ -148,6 +157,16 @@ export function Drilldown() {
           ? <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--wl-muted)", border: "1px solid color-mix(in srgb,var(--wl-text) 16%,transparent)", padding: "3px 8px", borderRadius: 99 }}>{estadoLabel}</span>
           : <Badge tone={cell}>{estadoLabel}</Badge>}
       </div>
+
+      {/* Riesgo predictivo coach-only (HR-1: jamás en superficie atleta). Línea de rationale. */}
+      {risk && (
+        <div role="status" style={{ marginTop: 10, padding: "8px 12px", borderRadius: 10, background: `color-mix(in srgb, var(--${risk.severity === "alert" ? "alert" : "warn"}) 12%, var(--wl-surface))`, border: `1px solid color-mix(in srgb, var(--${risk.severity === "alert" ? "alert" : "warn"}) 40%, transparent)`, fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-text)", lineHeight: 1.4 }}>
+          {`${ITEM_SHORT[risk.item] ?? risk.item} bajo ${risk.days} días seguidos`}
+          {risk.acwrSustained ? " · ACWR sostenido >1,3" : ""}
+          {risk.readinessBand === "red" || risk.readinessBand === "amber" ? ` · readiness ${risk.readinessBand}` : ""}
+          {risk.loadNote === "sobrecarga" ? " → riesgo de sobrecarga si no descarga." : "."}
+        </div>
+      )}
 
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "var(--wl-surface)", border: "1px solid color-mix(in srgb,var(--wl-text) 8%,transparent)" }}>
         <div style={{ flex: 1, minWidth: 0 }}>

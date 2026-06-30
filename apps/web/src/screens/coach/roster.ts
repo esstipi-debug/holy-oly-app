@@ -1,4 +1,4 @@
-import { acwr, rosterStatus, seriesState, readiness, readinessTrend, type CellState, type Repository } from "@holy-oly/core";
+import { acwr, rosterStatus, seriesState, readiness, readinessTrend, type CellState, type CoachRisk, type Repository } from "@holy-oly/core";
 import { ROSTER_META } from "../../data/seeds";
 
 export interface RosterRow {
@@ -16,11 +16,16 @@ export interface RosterRow {
   history: CellState[];
   /** Alerta del coach (slice macro-history): el atleta no tiene RM cargado → no se puede prescribir. */
   needsRm: boolean;
+  /** Riesgo predictivo de bienestar (coach-only); null si no hay racha activa. */
+  risk: CoachRisk | null;
 }
 
 export async function getRosterRows(repo: Repository): Promise<RosterRow[]> {
   const roster = await repo.getRoster();
-  const seriesList = await Promise.all(roster.map((a) => repo.getSeries(a.id)));
+  const [seriesList, riskMap] = await Promise.all([
+    Promise.all(roster.map((a) => repo.getSeries(a.id))),
+    repo.getRosterRisk(),
+  ]);
   return roster.map((a, i) => {
     const s = seriesList[i];
     const weeks = s?.weeks ?? 0;
@@ -41,6 +46,7 @@ export async function getRosterRows(repo: Repository): Promise<RosterRow[]> {
       cat: s?.weightBand ? `${s.weightBand[1]} kg` : undefined,
       history: Array.from({ length: weeks }, (_, w) => seriesState(s, w + 1)),
       needsRm: a.needsRm === true,
+      risk: riskMap[a.id] ?? null,
     };
   });
 }
