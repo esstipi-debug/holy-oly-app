@@ -12,6 +12,24 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@holy-oly/web", "dev"],
       "port": 8743
+    },
+    {
+      "name": "landing-preview",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8744", "-d", "docs/marketing"],
+      "port": 8744
+    },
+    {
+      "name": "blog",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@holy-oly/landing", "dev", "--", "--port", "4321"],
+      "port": 4321
+    },
+    {
+      "name": "blog-static",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@holy-oly/landing", "preview", "--", "--port", "4322"],
+      "port": 4322
     }
   ]
 }

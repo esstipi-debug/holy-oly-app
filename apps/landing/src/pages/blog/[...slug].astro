@@ -1,0 +1,102 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Icon from "../../components/Icon.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const d = post.data;
+
+const SPORT_META: Record<string, { label: string; cls: string; icon: string }> = {
+  crossfit: { label: "CrossFit", cls: "cf", icon: "flame" },
+  weightlifting: { label: "Halterofilia", cls: "wl", icon: "barbell" },
+};
+const apps = Object.entries(d.applications);
+const fmtDate = new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric" }).format(
+  d.publishDate,
+);
+---
+
+<Base title={`${d.title} · Holy Oly`} description={d.summary}>
+  <article class="wrap article">
+    <p class="eyebrow">{d.category}</p>
+    <h1>{d.title}</h1>
+    <p class="lead">{d.summary}</p>
+    <div class="article-meta">
+      <span><Icon name="clock" /> {d.readingMinutes} min de lectura</span>
+      <span><Icon name="calendar" /> {fmtDate}</span>
+    </div>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {
+      apps.length > 0 && (
+        <>
+          <h2 class="section-title" style="margin-top:8px;">
+            Aplicá según tu deporte
+          </h2>
+          <div class="apps">
+            {apps.map(([sport, lines]) => {
+              const meta = SPORT_META[sport] ?? { label: sport, cls: "cf", icon: "activity" };
+              return (
+                <div class="box">
+                  <div class="h">
+                    <span class={`dot ${meta.cls}`}>
+                      <Icon name={meta.icon} />
+                    </span>
+                    <b>{meta.label}</b>
+                  </div>
+                  <ul>
+                    {lines.map((line) => (
+                      <li>{line}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )
+    }
+
+    {
+      d.contraindications.length > 0 && (
+        <div class="callout">
+          <Icon name="alert-triangle" class="ic" />
+          <div>{d.contraindications.join(" · ")}</div>
+        </div>
+      )
+    }
+
+    {
+      d.primary_sources.length > 0 && (
+        <div class="sources">
+          <h3>Fuentes</h3>
+          {d.primary_sources.map((s) => (
+            <p class="ref">
+              <Icon name="file-text" class="ref-ic" />
+              <span>
+                {s.authors} {s.year ? `(${s.year}).` : ""} {s.title}.{" "}
+                {s.journal && <em>{s.journal}.</em>}{" "}
+                {s.doi && (
+                  <a href={`https://doi.org/${s.doi}`}>
+                    doi:{s.doi} <Icon name="external-link" />
+                  </a>
+                )}
+              </span>
+            </p>
+          ))}
+        </div>
+      )
+    }
+
+    <a class="backlink" href="/"><Icon name="arrow-left" /> Volver al blog</a>
+  </article>
+</Base>

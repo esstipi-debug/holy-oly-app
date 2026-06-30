@@ -1,0 +1,67 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import ArticleCard from "../components/ArticleCard.astro";
+
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+);
+const featured = posts[0];
+const rest = posts.slice(1);
+---
+
+<Base
+  title="Holy Oly · Ciencia del entrenamiento"
+  description="Protocolos de sueño, recuperación y nutrición con respaldo científico, aplicados a la fuerza y el CrossFit."
+>
+  <section class="hero">
+    <div class="wrap-wide">
+      <p class="eyebrow">Ciencia del entrenamiento</p>
+      <h1>La ciencia detrás de tu mejor entrenamiento.</h1>
+      <p>
+        Protocolos de sueño, recuperación y nutrición con respaldo en evidencia, traducidos
+        a lo que hacés en el gimnasio — para halterofilia y CrossFit.
+      </p>
+    </div>
+  </section>
+
+  {
+    featured && (
+      <section class="wrap-wide">
+        <div class="featured">
+          <div class="panel">
+            <span class="tag">{featured.data.category}</span>
+            <span class="glyph">{featured.data.title.charAt(0)}</span>
+          </div>
+          <div>
+            <span class="kicker">Destacado · {featured.data.category}</span>
+            <h2>
+              <a href={`/blog/${featured.id}/`}>{featured.data.title}</a>
+            </h2>
+            <p>{featured.data.summary}</p>
+            <a class="readmore" href={`/blog/${featured.id}/`}>
+              Leer el artículo →
+            </a>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="wrap-wide">
+    <h2 class="section-title" style="padding-top:36px;">Últimos artículos</h2>
+    <div class="grid">
+      {
+        rest.map((post) => (
+          <ArticleCard
+            href={`/blog/${post.id}/`}
+            category={post.data.category}
+            title={post.data.title}
+            summary={post.data.summary}
+            readingMinutes={post.data.readingMinutes}
+          />
+        ))
+      }
+    </div>
+  </section>
+</Base>

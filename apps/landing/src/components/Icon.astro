@@ -1,0 +1,38 @@
+---
+interface Props {
+  name: string;
+  class?: string;
+}
+const { name, class: cls } = Astro.props;
+const P: Record<string, string> = {
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+  calendar: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/>',
+  flame:
+    '<path d="M12 12c2 -2.96 0 -7 -1 -8c0 3.038 -1.773 4.741 -3 6c-1.226 1.26 -2 3.24 -2 5a6 6 0 1 0 12 0c0 -1.532 -1.056 -3.94 -2 -5c-1.786 3 -2.791 3 -4 2z"/>',
+  barbell: '<path d="M3 12h18M6 8v8M9 9v6M15 9v6M18 8v8"/>',
+  "alert-triangle":
+    '<path d="M12 9v4M12 17h.01M10.24 3.957l-8.422 14.06a1.9 1.9 0 0 0 1.636 2.983h16.844a1.9 1.9 0 0 0 1.636 -2.983l-8.421 -14.06a1.9 1.9 0 0 0 -3.273 0z"/>',
+  "file-text":
+    '<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9h1M9 13h6M9 17h6"/>',
+  "external-link":
+    '<path d="M12 6H6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9M15 4h5v5"/>',
+  "arrow-left": '<path d="M5 12h14M5 12l6 6M5 12l6 -6"/>',
+  activity: '<path d="M3 12h4l3 8l4 -16l3 8h4"/>',
+};
+const d = P[name] ?? P.activity;
+---
+
+<svg
+  class={`icn ${cls ?? ""}`}
+  xmlns="http://www.w3.org/2000/svg"
+  width="1em"
+  height="1em"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.75"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  set:html={d}
+></svg>
