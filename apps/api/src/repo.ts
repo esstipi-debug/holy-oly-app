@@ -314,7 +314,10 @@ export async function getDayLogView(prisma: PrismaClient, athleteId: string, tod
   const rows = await prisma.dayLog.findMany({ where: { athleteId }, select: { date: true } });
   const days = rows.map((r) => r.date);
   const entry = await prisma.dayLog.findUnique({ where: { athleteId_date: { athleteId, date: target } } });
-  // Racha de bienestar: las últimas ~14 filas CON valores alcanzan para racha + guarda de frescura.
+  // Racha de bienestar: las últimas ~14 filas CON valores alcanzan para racha + guarda de frescura
+  // (ventana ≥ ALERT_DAYS + margen). El offline (LocalMeClient) pasa TODO el historial y da el MISMO
+  // resultado — wellnessStreak sólo camina días contiguos hacia atrás desde el más reciente y corta
+  // por frescura; no "uniformar" a un solo findMany pensando que diverge.
   const recent = await prisma.dayLog.findMany({ where: { athleteId }, orderBy: { date: "desc" }, take: 14 });
   const headsUp = wellnessStreak(recent.map(toDayLog), today);
   return { entry: entry ? toDayLog(entry) : null, streak: computeStreak(days, today), days, today, headsUp };
