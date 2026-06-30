@@ -13,6 +13,11 @@
 > - **T6 corre en este repo (Holy Oly)** y es independiente de T1–T5: se puede ejecutar **ya**.
 > - Rutas de T1–T5: relativas a la **raíz del repo de huermn** (post-extracción = lo que hoy es `packages/huermn/`).
 
+> ✅ **Estado de ejecución (2026-06-30): SP-0 implementado.**
+> - **T1 corregido:** `packages/huermn/` estaba **untracked** en volta-atlas → NO se usó `git subtree` (los Steps 1–4 originales quedan obsoletos). Se hizo `git init` **in-place** (branch `master`, baseline `4c0c4d6`). El **push al remoto GitHub + repuntar Volta queda PENDIENTE de confirmar** (nombre/visibilidad del repo).
+> - **Entorno:** huermn corre vía su `.venv` (`.venv/Scripts/python.exe -m pytest`); todos los comandos `pytest`/`python` de abajo se ejecutan con ese intérprete.
+> - **Hecho y verde:** T2 `063d428` · T3 `f038253` · T4 `4cb6332` · T5 `4b19c26` (suite huermn **61/61**) · T6 `bee63ee` en Holy Oly (core **494/494**).
+
 ## Global Constraints
 
 - Huberman **nunca** nombrado en ninguna superficie de producto (regex de guard: `/huberman/i`).
