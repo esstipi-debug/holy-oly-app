@@ -19,6 +19,7 @@ import { vinculoRoutes } from "./vinculo/routes";
 import { meRoutes } from "./me/routes";
 import { competitionRoutes } from "./competitions/routes";
 import { leadRoutes } from "./leads/routes";
+import { adminRoutes } from "./admin/routes";
 import { requireCoach } from "./auth/guards";
 import { requireCoachWrite } from "./auth/coach-writes";
 import { billingRoutes } from "./billing/routes";
@@ -173,6 +174,8 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
   app.register(competitionRoutes);
   // Public, unauthenticated lead capture from the marketing landing (cross-origin, cookieless).
   app.register(leadRoutes);
+  // Admin read-only (HTTP Basic Auth) — registrado ANTES del static/SPA fallback (línea ~375).
+  app.register(adminRoutes);
 
   app.get("/health", async () => ({ ok: true }));
 
