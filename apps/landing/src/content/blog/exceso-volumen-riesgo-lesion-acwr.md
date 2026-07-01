@@ -62,8 +62,9 @@ Los picos aislados de volumen o intensidad son saltos bruscos e impredecibles qu
 patrón habitual del cuerpo y elevan la probabilidad de lesión. Bajar el volumen de golpe después
 de semanas cargadas produce el mismo tipo de salto brusco que subirlo sin control.
 
-No existe un umbral universal de "volumen seguro": cada atleta tolera distinto el mismo aumento
-de carga, así que un registro individual semana a semana dice más que copiar un plan genérico.
+El mismo aumento de carga se tolera distinto en cada atleta, y ese umbral de "volumen seguro"
+varía persona a persona. Un registro individual semana a semana dice más que copiar un plan
+genérico.
 
 ## Qué significa para tu entrenamiento
 
