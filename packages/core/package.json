@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "vitest": "^3.2.6"
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "zod": "^3.25.76"
