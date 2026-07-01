@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Icon from "../components/Icon.astro";
 interface Props {
   title: string;
   description: string;
@@ -11,6 +12,15 @@ const year = 2026;
 <!doctype html>
 <html lang="es">
   <head>
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem("holyoly-blog-theme");
+          var theme = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {}
+      })();
+    </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
@@ -28,12 +38,18 @@ const year = 2026;
           <b>Holy Oly</b>
           <span>· Ciencia del entrenamiento</span>
         </a>
-        <nav class="nav">
-          <a href="/blog">Blog</a>
-          <a href="/blog">Sueño</a>
-          <a href="/blog">Nutrición</a>
-          <a href="/blog">Recuperación</a>
-        </nav>
+        <div class="bar-right">
+          <nav class="nav">
+            <a href="/blog">Blog</a>
+            <a href="/blog">Sueño</a>
+            <a href="/blog">Nutrición</a>
+            <a href="/blog">Recuperación</a>
+          </nav>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar a modo oscuro">
+            <Icon name="sun" class="theme-toggle__sun" />
+            <Icon name="moon" class="theme-toggle__moon" />
+          </button>
+        </div>
       </div>
     </header>
 
@@ -47,5 +63,22 @@ const year = 2026;
         <span>© {year} Holy Oly</span>
       </div>
     </footer>
+
+    <script is:inline>
+      (function () {
+        var btn = document.getElementById("theme-toggle");
+        if (!btn) return;
+        var setLabel = function (theme) {
+          btn.setAttribute("aria-label", theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+        };
+        setLabel(document.documentElement.getAttribute("data-theme") || "light");
+        btn.addEventListener("click", function () {
+          var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          try { localStorage.setItem("holyoly-blog-theme", next); } catch (e) {}
+          setLabel(next);
+        });
+      })();
+    </script>
   </body>
 </html>
