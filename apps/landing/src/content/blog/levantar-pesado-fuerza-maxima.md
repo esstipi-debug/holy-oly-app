@@ -59,10 +59,10 @@ un hecho medible de fuerza y coordinación reducidas. En
 paralelo, esa misma sesión dispara subidas de testosterona y cortisol en ambos grupos, aunque el
 salto de testosterona resultó bastante mayor en quienes venían entrenando fuerza hace años que en
 los no entrenados — como si el cuerpo, con la práctica, aprendiera a responder más fuerte al
-mismo estímulo pesado. El cortisol que acompaña esa subida no es una señal de alarma en sí
-misma: forma parte de la respuesta normal de movilizar energía durante el esfuerzo, y el problema
-aparece recién cuando queda elevado de forma sostenida por acumular carga sin descanso suficiente
-entre sesiones.
+mismo estímulo pesado. Que ambas hormonas suban juntas justo después de la serie pesada no es
+contradictorio: la testosterona más alta acompaña la señal de construir músculo, mientras el
+cortisol acompaña la movilización de energía que hizo posible mover esa carga — son dos caras
+de la misma respuesta aguda al esfuerzo máximo, no una a favor y otra en contra.
 
 Para el entrenamiento, la consecuencia es doble. Primero, mientras dura esa caída de fuerza y
 coordinación neuromuscular, repetir intentos máximos sin dejar pasar el descanso completo entre

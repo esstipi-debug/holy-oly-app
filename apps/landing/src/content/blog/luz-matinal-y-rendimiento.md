@@ -2,7 +2,7 @@
 title: Luz matinal y rendimiento
 summary: Exponerse a luz natural temprano ordena el reloj biológico y mejora
   energía y descanso.
-category: Sueño
+category: Recuperación
 topic: circadian_rhythm
 tags:
   - sueño

@@ -34,9 +34,10 @@ applications:
       temprano de que el cuerpo no está compensando el estrés hormonal del
       entrenamiento, y ajustar volumen antes de que aparezca un estancamiento.
 contraindications:
-  - Un pico de cortisol puntual por entrenar es normal; si tu estrés basal ya
-    viene alto varios días, sumar una sesión muy pesada puede jugar en contra —
-    coordinalo con tu coach
+  - "La decisión de sumar o no una sesión muy pesada no depende solo del plan
+    escrito: si tu estrés basal ya viene alto varios días, meter más volumen o
+    intensidad en ese momento juega en contra de la recuperación en vez de sumar
+    a favor — coordinalo con tu coach antes de forzar el número en la barra"
 readingMinutes: 2
 publishDate: 2026-07-23
 ---
@@ -72,5 +73,7 @@ exigencia con levantamientos pesados, planificá al menos algunos días de volum
 descanso activo en la semana para evitar que el estrés físico sumado al estrés de vida diaria
 te empuje hacia fatiga crónica.
 
-Un pico de cortisol puntual por entrenar es normal; si tu estrés basal ya viene alto varios
-días, sumar una sesión muy pesada puede jugar en contra — coordinalo con tu coach.
+La decisión de sumar o no una sesión muy pesada no depende solo del plan escrito: si tu estrés
+basal ya viene alto varios días, meter más volumen o intensidad en ese momento juega en contra
+de la recuperación en vez de sumar a favor — coordinalo con tu coach antes de forzar el número
+en la barra.

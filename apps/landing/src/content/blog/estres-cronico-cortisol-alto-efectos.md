@@ -44,13 +44,13 @@ readingMinutes: 2
 publishDate: 2026-07-08
 ---
 
-Una cosa es un pico de cortisol puntual — de minutos a un par de días — y otra muy distinta es
-el estrés que se mantiene alto semana tras semana: en ese segundo escenario, el ritmo diario del
-cortisol (que en condiciones sanas sube fuerte a la mañana y cae hacia la noche) se "aplana" y
-queda parejo todo el día, un patrón asociado a peor salud general y no solo a sentirse cansado.
-Ese aplanamiento no es un dato aislado de laboratorio: se relaciona sobre todo con marcadores de
-inflamación y de funcionamiento inmune, como si el cuerpo quedara en alerta bioquímica constante
-y perdiera capacidad de defenderse de infecciones o reparar tejido.
+El dato clave de este cuadro no es el nivel de cortisol en sí, sino su forma a lo largo del día:
+en condiciones sanas, el cortisol sube fuerte a la mañana y cae hacia la noche, y bajo estrés
+sostenido semana tras semana esa curva se "aplana" y queda pareja todo el día, un patrón
+asociado a peor salud general y no solo a sentirse cansado. Ese aplanamiento no es un dato
+aislado de laboratorio: se relaciona sobre todo con marcadores de inflamación y de
+funcionamiento inmune, como si el cuerpo quedara en alerta bioquímica constante y perdiera
+capacidad de defenderse de infecciones o reparar tejido.
 
 Lo que hace que este cuadro se sostenga en el tiempo es que rompe su propio mecanismo de freno:
 en un sistema sano, el cerebro detecta el cortisol alto y manda la señal para bajarlo, pero bajo
