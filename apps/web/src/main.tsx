@@ -5,6 +5,7 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "./i18n";
 import { router } from "./app/router";
 import "./styles/index.css";
+import "./hooks/pwaInstallStore";
 
 // http(s) only — the file:// single-file build (see vite.config.ts) can't register a SW.
 // A no-op-caching SW is what Chrome's install-prompt algorithm checks for before firing
