@@ -7,6 +7,7 @@ import { LanguageToggle } from "../../../i18n/LanguageToggle";
 import { MovementLangToggle } from "../../../i18n/MovementLangToggle";
 import { useCoachCtx } from "./CoachShell";
 import { COACH_SKINS } from "./coachPrefs";
+import { usePwaInstall } from "../../../hooks/usePwaInstall";
 
 const page: CSSProperties = {
   padding: "14px 13px 26px", color: "var(--wl-text)", background: "var(--wl-bg)",
@@ -34,6 +35,7 @@ export function CuentaCoach() {
   const { apiEnabled, user, logout } = useAuth();
   const { t } = useTranslation(["account", "common"]);
   const { skin, setSkin } = useCoachCtx();
+  const { canInstall, promptInstall } = usePwaInstall();
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
   function onLogout(): void {
@@ -98,6 +100,15 @@ export function CuentaCoach() {
             </div>
           )}
         </>
+      )}
+
+      {canInstall && (
+        <button type="button" onClick={() => void promptInstall()} style={{ ...row, width: "100%", textAlign: "left", cursor: "pointer" }}>
+          {t("installApp")}
+          <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, fontWeight: 400, color: "var(--wl-muted)", marginTop: 4 }}>
+            {t("installAppSub")}
+          </div>
+        </button>
       )}
 
       {/* Apariencia: el coach también elige skin (default legend). Pref local → no gateada por API. */}

@@ -11,6 +11,7 @@ import { RetryButton } from "../../ui/RetryButton";
 import { SegmentedTabs } from "../../ui/SegmentedTabs";
 import { LanguageToggle } from "../../i18n/LanguageToggle";
 import { MovementLangToggle } from "../../i18n/MovementLangToggle";
+import { usePwaInstall } from "../../hooks/usePwaInstall";
 
 const HO_SKINS: Array<{ id: string; nm: string; sw: [string, string, string] }> = [
   { id: "neon", nm: "Neon PR", sw: ["#07070f", "#c8ff2d", "#1fe7ff"] },
@@ -216,6 +217,7 @@ function TusDatosSection() {
 export function CuentaMin() {
   const { apiEnabled, user, logout } = useAuth();
   const { skin, setSkin, variant, setVariant } = useAtletaCtx();
+  const { canInstall, promptInstall } = usePwaInstall();
   const { t } = useTranslation(["account", "common"]);
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
@@ -261,6 +263,18 @@ export function CuentaMin() {
           ))}
         </div>
       </div>
+
+      {canInstall && (
+        <div className="ho-acct__group">
+          <div className="ho-acct__label">{t("installApp")}</div>
+          <div className="ho-card">
+            <div className="ho-acct__rowsub" style={{ marginBottom: 10 }}>{t("installAppSub")}</div>
+            <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%" }} onClick={() => void promptInstall()}>
+              {t("installApp")}
+            </button>
+          </div>
+        </div>
+      )}
 
       <CicloSection />
 
