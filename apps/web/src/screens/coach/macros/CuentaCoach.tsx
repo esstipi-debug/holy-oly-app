@@ -35,7 +35,7 @@ export function CuentaCoach() {
   const { apiEnabled, user, logout } = useAuth();
   const { t } = useTranslation(["account", "common"]);
   const { skin, setSkin } = useCoachCtx();
-  const { canInstall, promptInstall } = usePwaInstall();
+  const { canInstall, showIosHint, promptInstall } = usePwaInstall();
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
   function onLogout(): void {
@@ -109,6 +109,14 @@ export function CuentaCoach() {
             {t("installAppSub")}
           </div>
         </button>
+      )}
+      {showIosHint && (
+        <div style={card}>
+          <div style={{ fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14 }}>{t("installApp")}</div>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--wl-muted)", marginTop: 4, lineHeight: 1.5 }}>
+            {t("installIosSub")}
+          </div>
+        </div>
       )}
 
       {/* Apariencia: el coach también elige skin (default legend). Pref local → no gateada por API. */}

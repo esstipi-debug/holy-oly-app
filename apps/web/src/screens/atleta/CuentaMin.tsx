@@ -217,7 +217,7 @@ function TusDatosSection() {
 export function CuentaMin() {
   const { apiEnabled, user, logout } = useAuth();
   const { skin, setSkin, variant, setVariant } = useAtletaCtx();
-  const { canInstall, promptInstall } = usePwaInstall();
+  const { canInstall, showIosHint, promptInstall } = usePwaInstall();
   const { t } = useTranslation(["account", "common"]);
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
@@ -272,6 +272,14 @@ export function CuentaMin() {
             <button type="button" className="wl-btn wl-btn--primary" style={{ width: "100%" }} onClick={() => void promptInstall()}>
               {t("installApp")}
             </button>
+          </div>
+        </div>
+      )}
+      {showIosHint && (
+        <div className="ho-acct__group">
+          <div className="ho-acct__label">{t("installApp")}</div>
+          <div className="ho-card">
+            <div className="ho-acct__rowsub">{t("installIosSub")}</div>
           </div>
         </div>
       )}
