@@ -45,29 +45,45 @@ contraindications:
     calidad) y el efecto promedio es chico frente a la variabilidad entre
     atletas; usá esto como una pista para registrar tu propio patrón, no como
     una regla fija de cuándo entrenar pesado.
-readingMinutes: 2
+readingMinutes: 3
 publishDate: 2026-07-06
 ---
 
+## Un mismo peso, dos sesiones que se sienten distinto
+
+Misma barra, mismo porcentaje de tu marca, y sin embargo la sesión de esta semana se siente
+distinta de la de hace tres semanas. Para una atleta que sigue de cerca su propio ciclo, esa
+pregunta aparece tarde o temprano: ¿hay algo real detrás de esa sensación de que la fuerza
+fluctúa según el momento del ciclo, o es apenas ruido del día a día? La evidencia disponible
+ofrece una respuesta parcial, con matices que vale la pena conocer antes de sacar conclusiones.
+
+## Qué pasa en el cuerpo
+
 Un metaanálisis de 22 estudios con 433 mujeres encontró que la fuerza máxima no es igual en
-todo el ciclo: en promedio, la fase folicular temprana —justo después de que empieza el
+todo el ciclo. En promedio, la fase folicular temprana —justo después de que empieza el
 sangrado— tiende a mostrar los valores más bajos de fuerza en varios tipos de test. La fase
 folicular tardía —los días previos a la ovulación, cuando el estrógeno sube y domina sobre la
 progesterona— mostró en promedio los mejores valores de fuerza isométrica y de fuerza dinámica,
 la de levantar una carga real como en press o sentadilla. Para la fuerza medida en movimiento a
-velocidad controlada, el mejor momento promedio fue durante la ovulación, no en la fase
-folicular tardía.
+velocidad controlada (isocinética), el mejor momento promedio apareció durante la ovulación, un
+poco después que el pico de fuerza isométrica y dinámica.
 
 Detrás de estos números está el vaivén de estrógeno y progesterona en cada fase, que modula
-cuánta fuerza puede expresar el sistema neuromuscular en un momento dado. Ahora bien, conviene
-no sobredimensionar el hallazgo por dos motivos que juegan en la misma dirección. Primero, el
-tamaño del efecto: aun siendo consistente a nivel grupal, es de magnitud chica a moderada, algo
-que difícilmente una atleta note de forma clara de una sesión a otra. Segundo, la base de
-evidencia detrás es floja —de los 22 estudios que entraron al metaanálisis, apenas uno alcanzó
-calidad alta según los propios autores—, lo que impide convertir estos promedios en una regla
-fija de "entrená pesado en tal fase sí o sí". A eso se suma que cada atleta trae su propio
-ciclo —distinta duración, síntomas y sensibilidad hormonal—, así que nada garantiza que su
-respuesta individual calque el promedio del grupo.
+cuánta fuerza puede expresar el sistema neuromuscular en un momento dado. Ese mecanismo hormonal
+explica por qué existe un patrón promedio, pero conviene sostener dos matices importantes antes
+de traducirlo en una regla de entrenamiento.
+
+El primer matiz es el tamaño del efecto: aun siendo consistente a nivel grupal, las diferencias
+encontradas son de magnitud chica a moderada, algo que difícilmente una atleta note de forma
+clara de una sesión a otra. El segundo matiz tiene que ver con la calidad de la base de
+evidencia detrás del hallazgo. De los 22 estudios que entraron al metaanálisis, apenas uno
+alcanzó calidad alta según los propios autores del trabajo, y esa combinación de estudios en su
+mayoría flojos impide convertir estos promedios en una regla fija del tipo "entrená pesado en
+tal fase". A eso se suma que cada atleta trae su propio ciclo, con su propia duración, síntomas
+y sensibilidad hormonal particular, así que nada garantiza que la respuesta individual de una
+atleta calque el promedio del grupo estudiado.
+
+## Qué significa para tu entrenamiento
 
 En la práctica, tiene sentido llevar un registro simple de en qué fase del ciclo cae cada
 sesión de récords o test de fuerza máxima, para no confundir una fase de bajón hormonal con una
@@ -75,6 +91,9 @@ pérdida real de nivel, y para leer mejor la fatiga y el dolor percibido sin sac
 apuradas. Si una atleta nota sistemáticamente que rinde peor en los primeros días de sangrado,
 tiene sentido evitar programar ahí los intentos máximos importantes y reservarlos para la
 ventana folicular tardía u ovulatoria, siempre confirmando el patrón personal antes de fijarlo
-como regla. Pero no conviene usar la fase del ciclo como excusa única ante una caída de
-rendimiento: como el efecto promedio es chico y muy variable entre personas, conviene mirar en
-conjunto sueño, estrés y carga de entrenamiento antes de atribuir todo al ciclo.
+como regla fija de programación.
+
+Conviene, eso sí, evitar apoyarse en la fase del ciclo como única explicación ante una caída de
+rendimiento. Dado que el efecto promedio es chico y muy variable entre personas, tiene más
+sentido mirar en conjunto el sueño, el estrés y la carga de entrenamiento acumulada antes de
+atribuir una mala sesión solamente al momento del ciclo.

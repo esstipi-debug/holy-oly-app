@@ -46,27 +46,43 @@ applications:
 contraindications:
   - Si el dolor es localizado, agudo o no cede en 2-3 días, avisá a tu coach
     antes de cargar fuerte
-readingMinutes: 3
+readingMinutes: 4
 publishDate: 2026-07-10
 ---
 
-La molestia muscular "normal" del día después y una lesión real se distinguen sobre todo por
-su forma de instalarse, no por su intensidad. La primera tarda en aparecer — entre 12 y 24
-horas, con su punto más marcado recién entre las 24 y 72 — y cuando llega se reparte de forma
-pareja por todo el vientre muscular, sin dejar huella visible y disolviéndose sola día tras día.
-La lesión juega otro juego: avisa casi enseguida (desde el mismo esfuerzo o pocas horas después)
-y siempre señala un punto exacto, con marcas que la molestia común nunca deja — hinchazón,
-moretón, un bulto o hundimiento, o una zona puntualmente caliente y sensible al tacto.
+## Ese dolor del día después, ¿es normal o es alarma?
 
-El dato más confiable para diferenciarlas no es cuánto duele sino cuándo y cómo aparece: un
-tirón agudo o un "pinchazo" durante el propio levantamiento no es la molestia esperable del
-entrenamiento, es la señal más clara de daño estructural y ahí hay que parar la serie. Otra
-forma útil de leerlo es funcional: con la molestia típica podés seguir moviendo la articulación
-y generando fuerza, aunque incómodo y algo más débil los primeros días; con una lesión de
-verdad, la fuerza y el rango de movimiento caen de forma marcada, y a veces la articulación
-llega a fallar o bloquearse. Los movimientos con fase excéntrica larga o poco habituales para
-vos son justamente los que más generan esa molestia esperable, porque producen micro-daño e
-inflamación en el tejido como parte de la propia adaptación — no porque algo se haya roto.
+Al día siguiente de una sesión pesada aparece un dolor generalizado en las piernas o la espalda,
+y la duda de siempre asoma: ¿es la molestia normal de haber entrenado fuerte, o es el aviso de
+que algo se lastimó? La respuesta está en cómo y cuándo apareció ese dolor, y aprender a leer esa
+diferencia evita dos errores opuestos: frenar de más por miedo, o seguir cargando cuando en
+realidad hay una lesión en curso.
+
+## Qué pasa en el cuerpo
+
+La molestia muscular "normal" del día después y una lesión real se distinguen sobre todo por su
+forma de instalarse, no por su intensidad. La primera tarda en aparecer —entre 12 y 24 horas,
+con su punto más marcado recién entre las 24 y 72— y cuando llega se reparte de forma pareja por
+todo el vientre muscular, sin dejar huella visible y disolviéndose sola día tras día. La lesión
+juega otro juego: avisa casi enseguida, desde el mismo esfuerzo o pocas horas después, y siempre
+señala un punto exacto, con marcas que la molestia común nunca deja, como hinchazón, moretón, un
+bulto o hundimiento, o una zona puntualmente caliente y sensible al tacto.
+
+El dato más confiable para diferenciarlas es cuándo y cómo aparece, más allá de cuánto duele. La
+molestia esperable del entrenamiento se instala de forma gradual, entre 12 y 24 horas después del
+esfuerzo. Un tirón agudo o un "pinchazo" durante el propio levantamiento es la señal más clara de
+daño estructural, con aparición inmediata en lugar de progresiva, y ahí hay que parar la serie de
+inmediato en lugar de terminarla. Otra forma útil de leerlo es funcional: con la molestia típica
+podés seguir moviendo la articulación y generando fuerza, aunque incómodo y algo más débil los
+primeros días. Con una lesión de verdad, la fuerza y el rango de movimiento caen de forma
+marcada, y a veces la articulación llega a fallar o bloquearse por completo al intentar usarla.
+
+Los movimientos con fase excéntrica larga o poco habituales para vos generan especialmente esa
+molestia esperable, porque producen micro-daño e inflamación en el tejido muscular como parte de
+la propia adaptación. Ese micro-daño no significa que algo se haya roto: es el mismo proceso que,
+con el tiempo, deja al músculo mejor preparado para tolerar ese estímulo la próxima vez.
+
+## Qué significa para tu entrenamiento
 
 Para el entrenamiento de fuerza, esto se traduce en no frenar por miedo cuando el dolor es
 difuso: si vas a probar un récord o una variante técnica nueva, esperá esa molestia generalizada
@@ -74,14 +90,25 @@ al día siguiente, que mejora progresivamente mientras la técnica y el rango de
 mantienen intactos. Distinto es en los días previos a una competencia o a un test de máximos,
 donde conviene evitar estímulos excéntricos nuevos o mucho mayor volumen, porque esa misma
 molestia esperable puede recortar la fuerza expresable justo cuando más se necesita, sin que eso
-signifique lesión. En bloques de alto volumen o WODs con muchas repeticiones excéntricas es
-esperable sentir esa molestia difusa en varios grupos musculares a la vez, señal de que el
-cuerpo pide más recuperación antes del próximo estímulo similar — y en el entrenamiento
-concurrente, donde esa molestia se mezcla con el cansancio del trabajo metabólico, cuesta más
-detectar una lesión real entre medio.
+signifique lesión.
 
-Por eso conviene fijar de antemano qué patrón te hace parar y avisar: un dolor puntual y agudo
-durante el segundo o tercer tirón es la bandera roja que separa lesión de molestia normal, y
-también lo es una molestia que en vez de mejorar empeora, que no cede pasados varios días, o que
-aparece junto con inestabilidad o dolor al apoyar en una articulación. Si el dolor es localizado,
-agudo o no cede en 2-3 días, avisá a tu coach antes de cargar fuerte.
+En bloques de alto volumen o WODs con muchas repeticiones excéntricas es esperable sentir esa
+molestia difusa en varios grupos musculares a la vez, señal de que el cuerpo pide más
+recuperación antes del próximo estímulo similar. En el entrenamiento concurrente, donde esa
+molestia se mezcla con el cansancio del trabajo metabólico, cuesta más detectar una lesión real
+entre medio, así que vale la pena prestarle atención extra a cualquier dolor que se sienta
+distinto del cansancio muscular habitual.
+
+## Cuándo prestar atención
+
+Conviene fijar de antemano qué patrón te hace parar y avisar, en vez de decidirlo en caliente en
+medio de una serie. Un dolor puntual y agudo durante el segundo o tercer tirón es la bandera roja
+más clara: ese tipo de aparición inmediata y focalizada en un solo punto separa una lesión de la
+molestia muscular normal, y ahí corresponde cortar la serie ahí mismo, no "un par de repeticiones
+más" para ver si afloja. La otra señal de alarma es la evolución en el tiempo: una molestia que
+en vez de mejorar día a día empeora, que no cede pasados varios días, o que aparece junto con
+inestabilidad o dolor al apoyar en una articulación, deja de encajar en el patrón esperable de
+recuperación progresiva y pasa a ser motivo de consulta. Ninguna de estas señales requiere
+esperar a confirmarlas del todo antes de actuar: si el dolor es localizado, agudo o no cede en
+2-3 días, lo prudente es avisar a tu coach antes de cargar fuerte otra vez, para que la decisión
+de seguir, ajustar o parar no dependa de aguantar el dolor y ver qué pasa.

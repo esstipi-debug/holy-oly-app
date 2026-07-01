@@ -40,38 +40,56 @@ applications:
       de sesiones máximas seguidas sin suficiente recuperación entre ellas, más
       que falta de fuerza real.
 contraindications: []
-readingMinutes: 2
+readingMinutes: 3
 publishDate: 2026-07-12
 ---
 
+## Esa serie pesada que te deja "roto"
+
+Terminás una serie de sentadilla al 90% y sentís que las piernas te fallan para lo que sea que
+venga después, aunque no duela nada todavía. Esa sensación tiene una explicación fisiológica
+concreta, medible en laboratorio, y entenderla ayuda a leer mejor qué está pasando en el cuerpo
+cuando la carga se acerca al máximo.
+
+## Qué pasa en el cuerpo
+
 Cuando la carga se acerca a tu máximo, el cuerpo recluta un tipo de fibra que casi no entra en
-juego con pesos livianos: son las fibras de reserva, pensadas para fuerza y potencia, y son las
-que te permiten mover mucho más peso cuando de verdad hace falta. Ese reclutamiento no es
-gratis — es también lo que explica por qué una serie de sentadilla pesada golpea tanto al
-sistema, más allá del cansancio que se siente en el momento.
+juego con pesos livianos: las fibras de reserva, pensadas para fuerza y potencia, permiten mover
+mucho más peso cuando de verdad hace falta. Ese reclutamiento explica buena parte de por qué una
+serie de sentadilla pesada golpea tanto al sistema, más allá del cansancio que se siente en el
+momento.
 
-¿Cuánto se derrumba realmente la fuerza justo después de una serie pesada de sentadilla? Un
-estudio que comparó levantadores experimentados con personas activas sin ese entrenamiento le
-puso un número: entre 32% y 52% menos de fuerza isométrica máxima, medida apenas terminada la
-serie. La señal eléctrica que el sistema nervioso manda al músculo también cae con fuerza en ese
-mismo momento, así que "quedar roto" después de levantar pesado no es una manera de hablar — es
-un hecho medible de fuerza y coordinación reducidas. En
-paralelo, esa misma sesión dispara subidas de testosterona y cortisol en ambos grupos, aunque el
-salto de testosterona resultó bastante mayor en quienes venían entrenando fuerza hace años que en
-los no entrenados — como si el cuerpo, con la práctica, aprendiera a responder más fuerte al
-mismo estímulo pesado. Que ambas hormonas suban juntas justo después de la serie pesada no es
-contradictorio: la testosterona más alta acompaña la señal de construir músculo, mientras el
-cortisol acompaña la movilización de energía que hizo posible mover esa carga — son dos caras
-de la misma respuesta aguda al esfuerzo máximo, no una a favor y otra en contra.
+Un estudio que comparó levantadores experimentados con personas activas sin ese entrenamiento
+midió cuánto se derrumba la fuerza justo después de una serie pesada de sentadilla: entre 32% y
+52% menos de fuerza isométrica máxima, medida apenas terminada la serie. La señal eléctrica que
+el sistema nervioso manda al músculo cae con fuerza en ese mismo momento, junto con la fuerza
+medida. "Quedar roto" después de levantar pesado tiene entonces un correlato objetivo: fuerza y
+coordinación genuinamente reducidas, no solo una sensación.
 
-Para el entrenamiento, la consecuencia es doble. Primero, mientras dura esa caída de fuerza y
-coordinación neuromuscular, repetir intentos máximos sin dejar pasar el descanso completo entre
-series empeora la calidad técnica del levantamiento — no es cansancio percibido, es un sistema
-genuinamente menos coordinado que necesita tiempo. Segundo, tanto en halterofilia como en
-CrossFit, notar que los levantamientos pesados cuestan más "sentirse fuertes" en la misma semana
-suele ser fatiga neuromuscular acumulada de sesiones máximas seguidas sin recuperación suficiente,
-antes que una pérdida real de nivel; y si un WOD mete un levantamiento de fuerza máxima justo
-antes o en medio de un bloque metabólico de alto volumen, ahí se suman dos tipos de fatiga que se
-potencian entre sí, así que ese día conviene dar más espacio de recuperación entre bloques del que
-usarías para un WOD común, y bajar volumen o intensidad en semanas donde ambos estímulos se
-acumulan sin pausa.
+Esa misma sesión dispara subidas de testosterona y cortisol en ambos grupos estudiados. El salto
+de testosterona resultó bastante mayor en quienes venían entrenando fuerza hace años que en los
+no entrenados, como si el cuerpo aprendiera con la práctica a responder más fuerte al mismo
+estímulo pesado. El cortisol que sube junto con la testosterona cumple su propia función en esa
+respuesta: moviliza la energía que hizo posible mover la carga, mientras la testosterona
+acompaña la señal de reparar y construir tejido. Ambas hormonas responden juntas al mismo
+esfuerzo máximo, cada una aportando su parte de la reacción aguda.
+
+Esa caída de fuerza y coordinación neuromuscular se recupera con el tiempo, pero mientras dura,
+el músculo y el sistema nervioso quedan genuinamente más débiles y menos coordinados. Repetir
+intentos máximos sin dejar pasar el descanso completo entre series, en ese estado, empeora la
+calidad técnica del levantamiento porque el sistema todavía no está en condiciones de sostenerla.
+
+## Qué significa para tu entrenamiento
+
+Tanto en halterofilia como en CrossFit, notar que los levantamientos pesados cuestan más
+"sentirse fuertes" en la misma semana suele responder a fatiga neuromuscular acumulada de
+sesiones máximas seguidas sin recuperación suficiente, antes que a una pérdida real de nivel; el
+malestar y el cansancio que siguen a una sesión de cargas máximas son parte esperable de esa
+respuesta aguda, y conviene distinguirlos de una lesión sin por eso ignorarlos si se acumulan día
+tras día.
+
+Cuando un WOD mete un levantamiento de fuerza máxima justo antes o en medio de un bloque
+metabólico de alto volumen, se suman dos tipos de fatiga que se potencian entre sí. Ese día
+conviene dar más espacio de recuperación entre bloques del que usarías para un WOD común, y en
+semanas donde ambos estímulos se acumulan sin pausa, bajar el volumen o la intensidad de los
+levantamientos pesados responde a una razón fisiológica real, no a falta de voluntad.

@@ -45,36 +45,51 @@ readingMinutes: 2
 publishDate: 2026-07-18
 ---
 
+## Un umbral más estricto que "estar cansado"
+
 Las revisiones científicas sobre el tema definen el sobreentrenamiento de forma bastante más
 estricta que "estar muy cansado": exigen una caída de rendimiento que se sostenga durante varias
-semanas seguidas, un umbral que un simple bache de unos días flojos ni siquiera roza. Hasta
-ahora, ningún estudio logró documentar con datos objetivos el antes y el después de un atleta
-que cae en sobreentrenamiento junto con el
-registro de sus cambios de humor, lo cual explica por qué hoy se lo reconoce sobre todo por
-descarte y por seguimiento en el tiempo, no por un análisis puntual.
+semanas seguidas, un umbral que un simple bache de unos días flojos ni siquiera roza.
+
+Hasta ahora, ningún estudio logró documentar con datos objetivos el antes y el después de un
+atleta que cae en sobreentrenamiento junto con el registro de sus cambios de humor. Hoy se lo
+reconoce sobre todo por descarte y por seguimiento en el tiempo.
+
+## Qué pasa en el cuerpo
 
 Las señales que más aparecen combinadas en atletas que atraviesan este cuadro son variadas:
 cambio negativo de humor, peor rendimiento en el entrenamiento, reacciones más lentas de lo
 normal, fatiga general, alteraciones del sueño, menos apetito, baja de peso no buscada y una
-caída notoria de las ganas de entrenar. Como todavía no existe un test único y práctico que lo
-confirme, tiene más sentido vigilar ese conjunto de señales —rendimiento, cuerpo, ánimo— que
-guiarse por una sola pista aislada. Vale la pena tomarlo en serio: en deportes de alto volumen de
-entrenamiento, una proporción importante de corredores de élite atraviesa este cuadro en algún
-momento de su carrera, lo que sugiere que planificar bien cargas y descanso pesa tanto como el
-trabajo duro en sí.
+caída notoria de las ganas de entrenar.
+
+Todavía no existe un test único y práctico que lo confirme. Vigilar ese conjunto de señales —
+rendimiento, cuerpo, ánimo — a la vez tiene más sentido que guiarse por una sola pista aislada.
+
+En deportes de alto volumen de entrenamiento, una proporción importante de corredores de élite
+atraviesa este cuadro en algún momento de su carrera, lo que sugiere que planificar bien cargas y
+descanso pesa tanto como el trabajo duro en sí.
+
+## Qué significa para tu entrenamiento
 
 Para halterofilia, esto se traduce en no esperar a que caiga el número en la barra para
 reaccionar: llevar un registro simple de ánimo, ganas de entrenar y calidad de sueño la noche
 anterior da una alerta más temprana, porque el rendimiento suele ser de los últimos indicadores
-en moverse. Si en las últimas dos o tres semanas los levantamientos vienen más lentos o más
-pesados de lo normal en el mismo porcentaje de tu máximo, y además notás peor humor y peor sueño,
-un solo día libre no alcanza — ahí corresponde bajar volumen o intensidad de la semana completa.
-En bloques cercanos a una competencia, un chequeo semanal de apetito y peso corporal puede
-detectar el patrón antes de que llegue a afectar el arranque o el envión. En CrossFit, donde
-fuerza, metabólico y a veces cardio se combinan en la misma semana, el riesgo de acumular fatiga
-de varios sistemas a la vez es mayor: si varios WODs seguidos dejan peor ánimo, sueño cortado y
-piernas "pesadas" que no mejoran en 3-4 días, eso es señal de bajar el volumen general, y conviene
-mirar el conjunto de señales antes que fijarse solo en si el tiempo del WOD mejoró o no.
+en moverse.
+
+En CrossFit, donde fuerza, metabólico y a veces cardio se combinan en la misma semana, el riesgo
+de acumular fatiga de varios sistemas a la vez es mayor.
+
+## Cuándo prestar atención
+
+Si en las últimas dos o tres semanas los levantamientos vienen más lentos o más pesados de lo
+normal en el mismo porcentaje de tu máximo, y además notás peor humor y peor sueño, corresponde
+bajar volumen o intensidad de la semana completa. En bloques cercanos a una competencia, un
+chequeo semanal de apetito y peso corporal puede detectar el patrón antes de que llegue a afectar
+el arranque o el envión.
+
+En CrossFit, si varios WODs seguidos dejan peor ánimo, sueño cortado y piernas "pesadas" que no
+mejoran en 3-4 días, esa es la señal de bajar el volumen general; conviene mirar el conjunto de
+señales, no solo si el tiempo del WOD mejoró.
 
 Este checklist es orientativo. Si marcás varias señales a la vez durante más de 1-2 semanas,
 avisá a tu coach antes de seguir cargando volumen.

@@ -45,27 +45,47 @@ readingMinutes: 2
 publishDate: 2026-07-04
 ---
 
-Cuando acumulás varias series pesadas de un mismo ejercicio —no una sola serie aislada—, tu
-cuerpo eleva la testosterona en sangre entre un 16% y un 23% justo después del entreno, y ese
-nivel se mantiene alto durante los primeros 15 a 30 minutos de la recuperación. Es un efecto
-agudo y transitorio: sube por horas, en algunos casos hasta 48 horas, no de forma permanente
-por un solo entrenamiento. Una serie pesada sola no alcanza para disparar ese pico; hace falta
-volumen acumulado de series exigentes.
+## El pico que no vino de una sola serie
 
-Lo que parece activar esa respuesta hormonal no es el peso levantado en sí mismo, sino el
-sistema nervioso reclutando las fibras musculares grandes que solo se activan con cargas
-altas. Por eso entrenar con cargas altas pero sin llegar al fallo muscular —parar la serie
-cuando la técnica o la velocidad empiezan a degradarse, en vez de forzar la última repetición
-imposible— parece producir mejores respuestas hormonales que llevar cada serie al límite.
-Pasarse de intensidad o de duración también tiene un costo: sesiones muy largas y muy
-demandantes pueden elevar tanto el cortisol que terminan bajando la testosterona en lugar de
-subirla, así que más volumen no siempre suma más beneficio.
+Terminaste el bloque de sentadilla del día, tres o cuatro series bien pesadas, y sentís ese
+calorcito conocido, algo entre cansancio y activación. Ese estado tiene una base hormonal
+concreta, un pico real y medible de testosterona circulando en tu sangre, más allá de la
+sensación subjetiva de cansancio. Dando por sentado que ese pico existe, la pregunta interesante
+es qué lo dispara — y ahí la respuesta sorprende a bastante gente que entrena.
+
+## Qué pasa en el cuerpo
+
+Cuando acumulás varias series pesadas de un mismo ejercicio, no una sola serie aislada, tu
+cuerpo eleva la testosterona en sangre entre un 16% y un 23% justo después del entreno. Ese
+nivel se mantiene alto durante los primeros 15 a 30 minutos de la recuperación, y el efecto es
+agudo y transitorio: sube por horas, en algunos casos hasta 48 horas, pero sin instalarse de
+forma permanente por un solo entrenamiento. Una serie pesada sola directamente no alcanza para
+disparar ese pico; hace falta volumen acumulado de series exigentes para que la respuesta
+hormonal aparezca.
+
+Lo que activa esa respuesta parece tener menos que ver con el número que marca la barra y más
+con lo que pasa adentro del sistema nervioso: el reclutamiento de las fibras musculares grandes,
+esas que solo entran en juego cuando la carga es alta, funciona como la señal disparadora. El
+peso levantado importa en la medida en que obliga a ese reclutamiento, no como un valor aislado
+con efecto propio.
+
+Ahí aparece un matiz clave sobre cómo llevar cada serie. Entrenar con cargas altas sin llegar al
+fallo muscular —parar quedando alguna repetición en el tanque, cuando la técnica o la velocidad
+empiezan a degradarse, en vez de forzar la última repetición imposible— parece producir una
+respuesta hormonal mejor que llevar cada serie al límite absoluto. Y hay un techo para todo esto:
+pasarse de intensidad o de duración tiene un costo, porque sesiones muy largas y muy demandantes
+pueden elevar tanto el cortisol que terminan bajando la testosterona en lugar de subirla. El
+volumen ayuda hasta cierto punto; superado ese punto, empieza a jugar en contra.
+
+## Qué significa para tu entrenamiento
 
 En bloques de fuerza, esto se traduce en priorizar varias series pesadas en los ejercicios
-principales —arranque, envión, sentadilla— en vez de apostar todo a una serie única, y en
-cuidar la duración total de la sesión y el descanso entre bloques pesados para no opacar ese
-beneficio hormonal con un exceso de cortisol. En sesiones con alto volumen concurrente (fuerza
-más trabajo metabólico), conviene completar primero el estímulo de fuerza con series completas
-antes de acumular fatiga por el componente metabólico, y prestar atención a la fatiga y la
-motivación como señales de que el volumen semanal está pasando el punto de retorno favorable,
-sobre todo en semanas con varias sesiones intensas concurrentes.
+principales —arranque, envión, sentadilla— en vez de apostar todo a una serie única, cuidando al
+mismo tiempo la duración total de la sesión y el descanso entre bloques pesados para no opacar el
+beneficio hormonal con un exceso de cortisol.
+
+En sesiones con alto volumen concurrente, fuerza más trabajo metabólico, conviene completar
+primero el estímulo de fuerza con series completas antes de acumular fatiga por el componente
+metabólico, prestando atención a la fatiga y la motivación como señales de que el volumen semanal
+se está acercando al punto donde el retorno hormonal deja de ser favorable, algo particularmente
+relevante en semanas con varias sesiones intensas concurrentes.

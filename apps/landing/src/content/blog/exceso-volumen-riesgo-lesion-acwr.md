@@ -44,33 +44,45 @@ readingMinutes: 2
 publishDate: 2026-07-20
 ---
 
-Imaginate dos atletas que terminan la semana con el mismo tonelaje total: uno viene subiendo la
-carga de forma gradual desde hace un mes, el otro la duplicó de golpe respecto a la semana
-anterior. El primero está protegido por una base bien construida; al segundo, ese salto brusco
-lo pone en una franja de riesgo de lesión de 21 a 49%, contra menos de 10% cuando la carga se
-mantiene relativamente estable — la comparación que importa es la de esta semana contra tu
-propio promedio de las últimas 3-4 semanas, no un solo día pesado aislado.
+## El salto de carga que dispara el riesgo
 
-Tener una base de entrenamiento acumulada alta y bien construida en realidad protege, siempre
-que se haya llegado ahí de forma gradual y de manera sostenida, entrenando duro semana tras
-semana sin sobresaltos. Los picos aislados de volumen o intensidad — esos saltos bruscos e
-impredecibles que rompen el patrón habitual del cuerpo — elevan la probabilidad de
-lesión. Tampoco existe un umbral universal de "volumen seguro", porque cada atleta tolera
-distinto el mismo aumento de carga, así que un registro individual semana a semana dice más que
-copiar un plan genérico. Y el mismo riesgo corre en la dirección contraria: bajar el volumen de
-golpe después de semanas cargadas produce el mismo tipo de salto brusco que subirlo sin control.
+Comparar lo que hiciste esta semana contra tu propio promedio de las últimas 3-4 semanas dice más
+sobre tu riesgo de lesión que mirar el volumen total acumulado o un solo día pesado.
+
+Cuando la carga de una semana sube 15% o más respecto a la semana anterior, la probabilidad de
+lesión salta a un rango de 21-49%. Cuando la carga se mantiene relativamente estable, esa
+probabilidad baja a menos de 10%.
+
+## Qué pasa en el cuerpo
+
+Tener una base de entrenamiento acumulada alta y bien construida protege, siempre que se haya
+llegado ahí de forma gradual y sostenida, entrenando duro semana tras semana sin sobresaltos.
+
+Los picos aislados de volumen o intensidad son saltos bruscos e impredecibles que rompen el
+patrón habitual del cuerpo y elevan la probabilidad de lesión. Bajar el volumen de golpe después
+de semanas cargadas produce el mismo tipo de salto brusco que subirlo sin control.
+
+No existe un umbral universal de "volumen seguro": cada atleta tolera distinto el mismo aumento
+de carga, así que un registro individual semana a semana dice más que copiar un plan genérico.
+
+## Qué significa para tu entrenamiento
 
 En halterofilia, esto se traduce en planificar los bloques de fuerza pesada con incrementos
-moderados semana a semana, en vez de duplicar el volumen de golpe tras una semana de descarga; si
-volvés de un viaje, una semana liviana o una competencia, conviene escalonar el volumen de
-arranques y envión en 2-3 semanas antes de retomar el máximo previo. Llevar un registro simple de
-series totales o tonelaje semanal permite detectar a tiempo cuando una semana va a superar en 15%
-o más el promedio reciente, momento de revisar técnica, dolor y fatiga antes de sumar más carga.
-En CrossFit, el volumen combinado de todas las modalidades —WODs de alto volumen más
-levantamientos pesados— cuenta para ese total semanal, no solo la pesa, así que conviene evitar
-que una semana de competencia o testing duplique el volumen habitual sin aviso previo; programar
-descargas regulares sostiene una base alta sin picos, y una progresión escalonada es preferible a
-alternar semanas muy livianas con semanas explosivas de alto volumen multi-modal.
+moderados semana a semana. Si volvés de un viaje, una semana liviana o una competencia, conviene
+escalonar el volumen de arranques y envión en 2-3 semanas antes de retomar el máximo previo.
 
-Un salto brusco de volumen no siempre causa lesión, pero es un factor de riesgo real. Si tu
-coach no está ajustando la progresión, es un buen momento para preguntarle.
+En CrossFit, el volumen combinado de todas las modalidades — WODs de alto volumen más
+levantamientos pesados — cuenta para ese total semanal, no solo la pesa.
+
+## Cuándo prestar atención
+
+Llevar un registro simple de series totales o tonelaje semanal permite detectar a tiempo cuando
+una semana va a superar en 15% o más el promedio reciente: ese es el momento de revisar técnica,
+dolor y fatiga antes de sumar más carga. Conviene evitar que una semana de competencia o testing
+duplique el volumen habitual sin aviso previo.
+
+Programar descargas regulares sostiene una base alta sin picos; una progresión escalonada es
+preferible a alternar semanas muy livianas con semanas explosivas de alto volumen multi-modal. Un
+salto brusco de volumen no siempre causa lesión, pero es un factor de riesgo real.
+
+Si tu coach no está ajustando la progresión, es un buen momento para preguntarle.

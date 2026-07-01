@@ -41,41 +41,55 @@ applications:
       calórica y descanso suficiente, un volumen moderado no compromete de forma
       relevante la fuerza ni el tamaño muscular."
 contraindications: []
-readingMinutes: 2
+readingMinutes: 3
 publishDate: 2026-07-16
 ---
 
-Cuando en el mismo bloque de entrenamiento conviven el trabajo de fuerza máxima y el aeróbico
-prolongado, lo que más se resiente no es la fuerza máxima ni el tamaño muscular, sino la
-potencia — la capacidad de mover peso rápido —, y ese dato cambia según el sexo: en hombres
-aparece también un freno chico pero medible en la fuerza de piernas, mientras que un
-metaanálisis de 2023 no encontró ese mismo freno en mujeres para tren inferior, aunque sí golpeó
-la potencia por igual en ambos sexos. La fuerza de tren superior, en cambio, prácticamente no se
-ve afectada por sumar aeróbico, a diferencia de las piernas, que son mucho más sensibles cuando
-el volumen de cardio es alto.
+## Fuerza y cardio en el mismo bloque, ¿se pisan?
 
-No todo el trabajo aeróbico pesa igual: las actividades con impacto y frenado muscular fuerte,
-como correr, generan más roce con las ganancias de fuerza que las de bajo impacto, como bicicleta
-o remo — la diferencia está en cuánto castigo mecánico recibe el mismo tejido que se está tratando
-de hacer fuerte. Pensá en dos bloques idénticos de fuerza más aeróbico, mismo volumen y misma
-frecuencia semana a semana: en uno, la comida y el descanso crecen junto con la carga extra que
-se suma; en el otro, se mantienen igual que antes aunque el entrenamiento pesa más. En el segundo
-caso la fatiga se va acumulando sesión tras sesión sin nada que la absorba, y ahí es donde termina
-golpeando la fuerza de piernas; en el primero, con esas dos variables sostenidas al ritmo del
-volumen nuevo, esa misma pérdida casi no llega a notarse. En quienes ya entrenan fuerza en serio,
-además, sumar aeróbico moderado no compromete de forma relevante ni la fuerza máxima ni la
-potencia — a diferencia de lo que sí ocurre en principiantes.
+Metcon largo un día, sentadilla pesada al día siguiente, y la duda de siempre: ¿el trabajo
+aeróbico está frenando las ganancias de fuerza? La respuesta tiene matices, y el dato central
+sorprende: la cualidad que más se resiente cuando se combinan ambos estímulos suele quedar afuera
+de lo que la mayoría imagina.
+
+## Qué pasa en el cuerpo
+
+Cuando en el mismo bloque de entrenamiento conviven el trabajo de fuerza máxima y el aeróbico
+prolongado, la potencia —la capacidad de mover peso rápido— es la cualidad que más se resiente,
+por encima de la fuerza máxima o el tamaño muscular.
+
+Ese efecto cambia según el sexo. En hombres aparece un freno chico pero medible en la fuerza de
+piernas; un metaanálisis de 2023 no encontró ese mismo freno en mujeres para tren inferior, y en
+ambos sexos por igual se vio afectada la potencia. La fuerza de tren superior apenas se ve
+afectada por sumar aeróbico; la de piernas es la más sensible cuando el volumen de cardio es
+alto.
+
+No todo el trabajo aeróbico pesa igual sobre esa fuerza de piernas. Las actividades con impacto y
+frenado muscular fuerte, como correr, generan más roce con las ganancias de fuerza que las de
+bajo impacto, como bicicleta o remo; la diferencia está en cuánto castigo mecánico recibe el
+mismo tejido que se está tratando de hacer fuerte.
+
+La comida y el descanso funcionan como la variable que absorbe ese costo. En dos bloques
+idénticos de fuerza más aeróbico, con mismo volumen y misma frecuencia semana a semana, sostener
+la ingesta calórica y el descanso al ritmo de la carga nueva evita que la fatiga se acumule
+sesión tras sesión; sin ese ajuste, la fatiga se va acumulando sin nada que la absorba y termina
+golpeando la fuerza de piernas. En quienes ya entrenan fuerza en serio, sumar aeróbico moderado
+no compromete de forma relevante ni la fuerza máxima ni la potencia, algo que sí se observa en
+principiantes.
+
+## Qué significa para tu entrenamiento
 
 Para CrossFit, donde fuerza y trabajo metabólico conviven en la misma sesión casi por diseño,
 esto se traduce en priorizar el bloque de potencia y fuerza al principio del entrenamiento,
 cuando el sistema nervioso todavía está fresco, porque la potencia es lo primero que se resiente
-si el volumen metabólico es muy alto ese día; en ciclos donde el objetivo prioriza ganar fuerza
-de piernas, ayuda reducir temporalmente el volumen de estímulos de alto impacto y larga duración
-para que ese objetivo no compita tanto por los mismos recursos de recuperación, y cuidar la
-ingesta calórica total y el descanso entre sesiones de alta demanda pesa más que evitar por
-completo la mezcla fuerza+resistencia. En halterofilia, donde arranque y envión dependen sobre
-todo de potencia, conviene separar por varias horas — o directamente por día — el trabajo
-aeróbico largo del trabajo de piernas de alta intensidad, priorizando además aeróbico de bajo
-impacto (bici, remo, caminata con carga) por sobre salir a correr largo en las semanas cercanas a
-competencia, sabiendo que no hace falta eliminar el aeróbico general si la alimentación y el
-descanso acompañan.
+si el volumen metabólico es muy alto ese día. En ciclos donde el objetivo prioriza ganar fuerza
+de piernas, reducir temporalmente el volumen de estímulos de alto impacto y larga duración ayuda
+a que ese objetivo no compita tanto por los mismos recursos de recuperación, y cuidar la ingesta
+calórica total y el descanso entre sesiones de alta demanda pesa más que evitar por completo la
+mezcla fuerza+resistencia.
+
+En halterofilia, donde arranque y envión dependen sobre todo de potencia, conviene separar por
+varias horas, o directamente por día, el trabajo aeróbico largo del trabajo de piernas de alta
+intensidad, priorizando además aeróbico de bajo impacto (bici, remo, caminata con carga) en las
+semanas cercanas a competencia; no hace falta eliminar el aeróbico general si la alimentación y
+el descanso acompañan a la carga extra.
