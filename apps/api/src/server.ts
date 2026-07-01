@@ -206,6 +206,12 @@ export function buildServer(opts: BuildServerOptions = {}): FastifyInstance {
     return repo.getRoster(prisma, coachId);
   });
 
+  app.get("/roster/risk", async (req, reply) => {
+    const coachId = requireCoach(req, reply);
+    if (!coachId) return;
+    return repo.getRosterRisk(prisma, coachId, new Date().toISOString().slice(0, 10));
+  });
+
   app.get<{ Params: { id: string } }>("/athletes/:id/series", async (req, reply) => {
     if (!(await guardAthlete(req, reply, req.params.id))) return;
     const s = await repo.getSeries(prisma, req.params.id);

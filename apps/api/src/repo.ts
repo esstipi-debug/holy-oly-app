@@ -7,7 +7,7 @@ import type {
   MeRecorrido, RecorridoSemana, AthleteDailyView, EngineWeek, DayOf, MacroHistoryView, MacroHistoryRow, MeHeatDays,
   Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryView, CompetitionEntryInput,
 } from "@holy-oly/core";
-import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildAdaptivePlan, effectiveTotalWeeks, availableWeeksToComp, weekIndexUnclamped, reinstantiableWeeks, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore } from "@holy-oly/core";
+import { RMSchema, buildMePlanView, computeStreak, MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildAdaptivePlan, effectiveTotalWeeks, availableWeeksToComp, weekIndexUnclamped, reinstantiableWeeks, buildSessionViews, mergeActuals, summarizeSets, barKgForSexo, SetActualsSchema, planHeat, prCandidates, RM_LIFTS, lutealNow, redactCycle, weekDoneSummary, buildDailyView, dailyFromDate, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, dayLayoutFor, fechaConflict, unresolvedPriorDays, CYCLE_CONSENT_VERSION, macroHistoryView, competenciaForPico, buildMeHeatDays, setTonnage, wellnessScore, wellnessStreak, coachStreakRisk, type CoachRisk } from "@holy-oly/core";
 import { rowsToSeries } from "./db/mapping";
 import { decryptAtRest, encryptAtRest } from "./crypto-at-rest";
 
@@ -54,6 +54,20 @@ export async function getRoster(prisma: PrismaClient, coachId: string): Promise<
     return raw == null || !RMSchema.safeParse(raw).success;
   };
   return vinculos.map((v) => ({ ...toAtleta(v.athlete), needsRm: needsRm(v.athleteId) }));
+}
+
+/** Riesgo predictivo por atleta del coach (mapa). Server-side: N consultas locales, 1 respuesta.
+ *  Sólo entra el atleta CON racha de bienestar. */
+export async function getRosterRisk(prisma: PrismaClient, coachId: string, today: string): Promise<Record<string, CoachRisk>> {
+  const vinculos = await prisma.vinculo.findMany({ where: { coachId, estado: "activo" }, select: { athleteId: true } });
+  const out: Record<string, CoachRisk> = {};
+  for (const { athleteId } of vinculos) {
+    const recent = await prisma.dayLog.findMany({ where: { athleteId }, orderBy: { date: "desc" }, take: 14 });
+    const series = await getSeries(prisma, athleteId);
+    const risk = coachStreakRisk(recent.map(toDayLog), series, today);
+    if (risk) out[athleteId] = risk;
+  }
+  return out;
 }
 
 export async function getSeries(prisma: PrismaClient, athleteId: string): Promise<MonitorSeries | undefined> {
@@ -314,7 +328,13 @@ export async function getDayLogView(prisma: PrismaClient, athleteId: string, tod
   const rows = await prisma.dayLog.findMany({ where: { athleteId }, select: { date: true } });
   const days = rows.map((r) => r.date);
   const entry = await prisma.dayLog.findUnique({ where: { athleteId_date: { athleteId, date: target } } });
-  return { entry: entry ? toDayLog(entry) : null, streak: computeStreak(days, today), days, today };
+  // Racha de bienestar: las últimas ~14 filas CON valores alcanzan para racha + guarda de frescura
+  // (ventana ≥ ALERT_DAYS + margen). El offline (LocalMeClient) pasa TODO el historial y da el MISMO
+  // resultado — wellnessStreak sólo camina días contiguos hacia atrás desde el más reciente y corta
+  // por frescura; no "uniformar" a un solo findMany pensando que diverge.
+  const recent = await prisma.dayLog.findMany({ where: { athleteId }, orderBy: { date: "desc" }, take: 14 });
+  const headsUp = wellnessStreak(recent.map(toDayLog), today);
+  return { entry: entry ? toDayLog(entry) : null, streak: computeStreak(days, today), days, today, headsUp };
 }
 
 /** Upsert the athlete's entry for `today` (one row per athlete-day), then recompute the streak. */

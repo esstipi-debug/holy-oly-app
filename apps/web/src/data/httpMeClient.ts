@@ -5,7 +5,7 @@
  */
 import {
   MePlanViewSchema, MonitorSeriesSchema, DayLogViewSchema, DayLogResultSchema, SessionViewsSchema, WeekHeatsSchema, MeCycleViewSchema, MeRecorridoSchema, MacroHistoryViewSchema, MeHeatDaysSchema,
-  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type MeCycleView, type PutMeSessionInput, type MacroHistoryView, type MeHeatDays,
+  type MePlanView, type MeRecorrido, type MonitorSeries, type DayLogView, type DayLogResult, type DayLogInput, type SessionView, type WeekHeat, type CycleData, type MeCycleView, type PutMeSessionInput, type MacroHistoryView, type MeHeatDays, type SelfPlanInput,
 } from "@holy-oly/core";
 import { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
 
@@ -49,6 +49,17 @@ export async function putDayLog(input: DayLogInput): Promise<DayLogResult> {
   });
   if (!res.ok) return fail(res);
   return DayLogResultSchema.parse(await res.json());
+}
+
+/** Self-coach (atleta autoentrenado): el atleta crea su propio plan (POST /me/plan). */
+export async function createMyPlan(input: SelfPlanInput): Promise<void> {
+  const res = await fetch(`${BASE}/me/plan`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) await fail(res);
 }
 
 /** The athlete's prescribed sessions for a given week (merged with their actuals). */

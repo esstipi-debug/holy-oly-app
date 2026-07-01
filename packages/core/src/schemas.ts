@@ -89,6 +89,19 @@ export const PlanSchema = z.object({
   comps: z.array(CompetenciaSchema),
 });
 
+/** Self-coach (atleta autoentrenado): el atleta crea su propio plan. SIN `atletaId` (el server usa
+ *  `req.athleteId`, nunca el body). Una competencia opcional. Ancla obligatoria — fecha de compe O
+ *  `startDate` — si no, Hoy no puede calcular la semana actual. `startWeek` lo fija el server en 1. */
+export const SelfPlanInputSchema = z
+  .object({
+    macroId: z.string().min(1).max(60),
+    rms: RMSchema,
+    startDate: IsoDateSchema.optional(),
+    comp: z.object({ name: z.string().min(1).max(120), date: IsoDateSchema }).optional(),
+  })
+  .refine((v) => v.startDate != null || v.comp != null, { message: "ancla requerida: compe o startDate" });
+export type SelfPlanInput = z.infer<typeof SelfPlanInputSchema>;
+
 export const CycleShareSchema = z.enum(["full", "min", "none"]);
 export const CycleStateSchema = z.enum(["regular", "unreliable", "amenorrhea"]);
 
@@ -173,11 +186,31 @@ export const DayLogSchema = z.object({
 /** Stored array of own-written check-ins — validates the LocalMeClient localStorage read. */
 export const DayLogsSchema = z.array(DayLogSchema).max(2000);
 
+export const StreakHeadsUpSchema = z.object({
+  item: z.enum(["sueno", "estres", "fatiga", "dolor", "motivacion"]),
+  days: z.number().int().positive(),
+  severity: z.enum(["warn", "alert"]),
+  alsoStreaking: z.array(z.enum(["sueno", "estres", "fatiga", "dolor", "motivacion"])),
+});
+
+export const CoachRiskSchema = z.object({
+  item: z.enum(["sueno", "estres", "fatiga", "dolor", "motivacion"]),
+  days: z.number().int().positive(),
+  severity: z.enum(["warn", "alert"]),
+  alsoStreaking: z.array(z.enum(["sueno", "estres", "fatiga", "dolor", "motivacion"])),
+  acwrSustained: z.boolean(),
+  readinessBand: z.enum(["green", "amber", "red"]).nullable(),
+  loadNote: z.enum(["sobrecarga"]).nullable(),
+});
+/** Mapa athleteId → riesgo. Sólo atletas CON racha (ausente = sin riesgo). */
+export const RosterRiskSchema = z.record(z.string(), CoachRiskSchema);
+
 export const DayLogViewSchema = z.object({
   entry: DayLogSchema.nullable(),
   streak: z.number().int().nonnegative(),
   days: z.array(IsoDateSchema).max(2000),
   today: IsoDateSchema,
+  headsUp: StreakHeadsUpSchema.nullable().optional(),
 });
 
 export const DayLogResultSchema = z.object({

@@ -8,8 +8,8 @@
  * setSessionActuals) verbatim in semantics, keeping the two athlete clients swappable.
  */
 import type {
-  Atleta, CycleData, MeCycleView, MePlanView, MeRecorrido, MonitorSeries, Plan, PrescriptionRow, RecorridoSemana,
-  DayLog, DayLogView, DayLogResult, DayLogInput,
+  Atleta, Competencia, CycleData, MeCycleView, MePlanView, MeRecorrido, MonitorSeries, Plan, PrescriptionRow, RecorridoSemana,
+  DayLog, DayLogView, DayLogResult, DayLogInput, SelfPlanInput,
   SessionView, SessionActual, WeekHeat, SessionRegistro, PutMeSessionInput, MacroHistoryView, MeHeatDays,
 } from "@holy-oly/core";
 import {
@@ -18,7 +18,8 @@ import {
   MonitorSeriesSchema, PlanSchema, RosterSchema, PrescriptionRowsSchema,
   DayLogsSchema, SessionActualsSchema, SessionRegistrosSchema, CycleShareSchema, CycleStateSchema, MacroHistoryViewSchema,
   MACROCYCLES, planHeat, weekDoneSummary, dayLayoutFor, buildMeHeatDays, setTonnage, wellnessScore,
-  validateFechaEntreno, fechaConflict, unresolvedPriorDays,
+  buildAdaptivePlan, instantiatePrescription, effectiveTotalWeeks, availableWeeksToComp, mondayOf, ALL_RECIPES,
+  validateFechaEntreno, fechaConflict, unresolvedPriorDays, wellnessStreak,
 } from "@holy-oly/core";
 import { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
 import { JsonStore } from "./storage";
@@ -87,7 +88,7 @@ export class LocalMeClient implements MeClient {
     const days = logs.map((l) => l.date);
     const target = date ?? today;
     const entry = logs.find((l) => l.date === target) ?? null;
-    return { entry, streak: computeStreak(days, today), days, today };
+    return { entry, streak: computeStreak(days, today), days, today, headsUp: wellnessStreak(logs, today) };
   }
 
   /** Upsert today's self-report, then recompute the streak. Mirrors repo.upsertDayLog. */
@@ -98,6 +99,29 @@ export class LocalMeClient implements MeClient {
     const next = [...this.dayLogs().filter((l) => l.date !== today), entry];
     this.s.set(KEYS.dayLog(this.id), next);
     return { entry, streak: computeStreak(next.map((l) => l.date), today) };
+  }
+
+  /** Self-coach (atleta autoentrenado): el atleta crea su propio plan. Espejo de
+   *  repo.savePlan + instantiateForPlan — persiste el Plan (con comps embebidas) y la prescripción
+   *  instanciada con las MISMAS funciones puras del server. Sólo input/persistencia: jamás devuelve RM. */
+  async createMyPlan(input: SelfPlanInput): Promise<void> {
+    const macro = MACROCYCLES.find((m) => m.id === input.macroId);
+    if (!macro) throw new Error("unknown macro");
+    const today = this.today();
+    const startMonday = mondayOf(today);
+    // Con compe: arranca el lunes y la escuela reescala para picar (modo "competencia"). Sin compe:
+    // startDate ancla (modo "inicio"). El refine del schema garantiza una de las dos.
+    const startDate = input.comp ? startMonday : input.startDate!;
+    const comps: Competencia[] = input.comp
+      ? [{ name: input.comp.name, week: availableWeeksToComp(startMonday, input.comp.date), date: input.comp.date }]
+      : [];
+    const compWeeks = comps.map((c) => c.date).filter((d): d is string => d != null).map((d) => availableWeeksToComp(startDate, d));
+    const totalWeeks = effectiveTotalWeeks(macro, compWeeks);
+    const phasePlan = buildAdaptivePlan(macro, compWeeks);
+    const rows: PrescriptionRow[] = instantiatePrescription(ALL_RECIPES, macro, totalWeeks, phasePlan);
+    const plan: Plan = { atletaId: this.id, macroId: input.macroId, startWeek: 1, startDate, rms: input.rms, comps };
+    this.s.set(KEYS.plan(this.id), plan);
+    this.s.set(KEYS.prescription(this.id), rows);
   }
 
   /** A week's sessions (kg from plan RMs) merged with actuals, with day/turno/fecha. Mirrors server. */

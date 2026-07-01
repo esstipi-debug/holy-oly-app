@@ -1,11 +1,12 @@
 import {
   RosterSchema, MonitorSeriesSchema, MedalsSchema, CompsSchema, SessionLogSchema, PlanSchema, CycleContextSchema,
   SessionViewsSchema, WeekHeatsSchema, PrCandidatesSchema, RmUpdatesSchema, AthleteDailyViewSchema, PrilepinWeekSchema,
-  MacroHistoryViewSchema, CompetitionListSchema, CompetitionDetailViewSchema, CompetitionSchema,
+  MacroHistoryViewSchema, CompetitionListSchema, CompetitionDetailViewSchema, CompetitionSchema, RosterRiskSchema,
   type Repository, type Atleta, type MonitorSeries, type Medal, type Competencia, type Plan,
   type CycleShare, type CycleContext, type SessionLog, type SessionView, type PrescribedExercise, type WeekHeat,
   type PrCandidate, type RmLift, type RmUpdate, type AthleteDailyView, type EngineWeek, type MacroHistoryView,
   type Competition, type CompetitionInput, type CompetitionListItem, type CompetitionDetailView, type CompetitionEntryInput,
+  type CoachRisk,
 } from "@holy-oly/core";
 import { notifyReadOnly } from "../ui/readOnlyNotice";
 
@@ -54,6 +55,10 @@ export class HttpRepository implements Repository {
 
   async getRoster(): Promise<Atleta[]> {
     return this.get("/roster", RosterSchema);
+  }
+
+  async getRosterRisk(): Promise<Record<string, CoachRisk>> {
+    return this.get("/roster/risk", RosterRiskSchema);
   }
 
   async getAthlete(id: string): Promise<Atleta | undefined> {

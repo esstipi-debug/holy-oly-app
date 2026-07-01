@@ -1,0 +1,51 @@
+---
+import "../styles/global.css";
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const year = 2026;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230f6e56'/><text x='16' y='22' font-size='18' font-family='Georgia,serif' fill='white' text-anchor='middle'>H</text></svg>" />
+  </head>
+  <body>
+    <header class="site-head">
+      <div class="wrap-wide bar">
+        <a class="brand" href="/">
+          <span class="mark">H</span>
+          <b>Holy Oly</b>
+          <span>· Ciencia del entrenamiento</span>
+        </a>
+        <nav class="nav">
+          <a href="/blog">Blog</a>
+          <a href="/blog">Sueño</a>
+          <a href="/blog">Nutrición</a>
+          <a href="/blog">Recuperación</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-foot">
+      <div class="wrap-wide bar">
+        <span>Holy Oly · Ciencia del entrenamiento aplicada a la fuerza</span>
+        <span>© {year} Holy Oly</span>
+      </div>
+    </footer>
+  </body>
+</html>

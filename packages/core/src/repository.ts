@@ -4,9 +4,12 @@ import type {
   PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek, MacroHistoryView,
   Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryInput,
 } from "./types";
+import type { CoachRisk } from "./logic/wellnessStreak";
 
 export interface Repository {
   getRoster(): Promise<Atleta[]>;
+  /** Riesgo predictivo por atleta (racha de bienestar + carga). Sólo atletas CON racha. {} sin ninguno. */
+  getRosterRisk(): Promise<Record<string, CoachRisk>>;
   getAthlete(id: string): Promise<Atleta | undefined>;
   getSeries(id: string): Promise<MonitorSeries | undefined>;
   getPlan(id: string): Promise<Plan | undefined>;

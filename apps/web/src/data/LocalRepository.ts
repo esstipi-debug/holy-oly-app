@@ -3,6 +3,7 @@ import type {
   CycleShare, CycleState, CycleContext, SessionLog, SessionView, PrescribedExercise, PrescriptionRow, WeekHeat,
   PrCandidate, RmLift, RmUpdate, AthleteDailyView, EngineWeek, MacroHistoryView,
   Competition, CompetitionInput, CompetitionListItem, CompetitionDetailView, CompetitionEntryView, CompetitionEntryInput, CompResult, CompRole,
+  CoachRisk,
 } from "@holy-oly/core";
 import {
   RosterSchema, MonitorSeriesSchema, PlanSchema, MedalsSchema,
@@ -10,7 +11,7 @@ import {
   PrescriptionRowsSchema, RmUpdatesSchema, SessionActualsSchema, DayLogsSchema, MacroHistoryViewSchema,
   MACROCYCLES, ALL_RECIPES, instantiatePrescription, buildSessionViews, defaultStartDate, planHeat,
   prCandidates, RM_LIFTS, lutealNow, redactCycle, buildDailyView, DAILY_WINDOW_WEEKS, prilepinPreviewWeek, planNeedsRm,
-  competenciaForPico,
+  competenciaForPico, coachStreakRisk,
 } from "@holy-oly/core";
 import { JsonStore } from "./storage";
 import { KEYS } from "./keys";
@@ -74,6 +75,20 @@ export class LocalRepository implements Repository {
     // needsRm: mirror del API — sin plan o rms incompleto ⇒ falta RM (alerta del Plantel).
     return r.data.map((a) => ({ ...a, needsRm: planNeedsRm(this.planFor(a.id)) }));
   }
+
+  async getRosterRisk(): Promise<Record<string, CoachRisk>> {
+    const today = new Date().toISOString().slice(0, 10);
+    const roster = await this.getRoster();
+    const out: Record<string, CoachRisk> = {};
+    for (const a of roster) {
+      const logs = DayLogsSchema.safeParse(this.s.getOptional<unknown>(KEYS.dayLog(a.id)));
+      const series = MonitorSeriesSchema.safeParse(this.s.getOptional<unknown>(KEYS.series(a.id)));
+      const risk = coachStreakRisk(logs.success ? logs.data : [], series.success ? series.data : undefined, today);
+      if (risk) out[a.id] = risk;
+    }
+    return out;
+  }
+
   private planFor(id: string): Plan | undefined {
     const r = PlanSchema.safeParse(this.s.getOptional<unknown>(KEYS.plan(id)));
     return r.success ? r.data : undefined;

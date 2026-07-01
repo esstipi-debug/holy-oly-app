@@ -41,6 +41,24 @@ export const WELLNESS_TIPS: readonly WellnessTip[] = [
     body: "10-20 minutos de descanso profundo sin dormir (NSDR / yoga nidra) por la tarde ayudan a reponer parte del descanso que faltó, sin sustituir al sueño nocturno.",
     source: SRC,
   },
+  {
+    id: "sueno-hora-fija", topic: "Sueño", states: ["warn", "alert", "ok"], items: ["sueno"],
+    title: "La hora de despertar es tu ancla",
+    body: "Despertarte siempre a una hora parecida —incluso los fines de semana— es lo que más estabiliza tu reloj interno; ordena el sueño incluso más que la hora a la que te acostás.",
+    source: SRC,
+  },
+  {
+    id: "sueno-cafeina-tarde", topic: "Sueño", states: ["warn", "alert", "ok"], items: ["sueno"],
+    title: "Cortá la cafeína bien antes de dormir",
+    body: "La cafeína de la tarde te puede dejar dormir igual, pero te roba profundidad de descanso sin que lo notes. Dejá pasar varias horas (8-10) entre el último café y la cama.",
+    source: SRC,
+  },
+  {
+    id: "sueno-luz-manana", topic: "Sueño", states: ["warn", "alert", "ok"], items: ["sueno"],
+    title: "La luz de la mañana mejora la noche",
+    body: "Salir a la luz natural temprano no solo te despierta: adelanta tu reloj y hace que esa misma noche te duermas más fácil. Bastan unos minutos al aire libre.",
+    source: SRC,
+  },
   // ── Estrés ──
   {
     id: "estres-suspiro", topic: "Estrés", states: ALL, items: ["estres"],
@@ -59,6 +77,12 @@ export const WELLNESS_TIPS: readonly WellnessTip[] = [
     id: "fatiga-estimulos", topic: "Energía", states: ALL, items: ["fatiga", "motivacion"],
     title: "No apiles estímulos todos los días",
     body: "Cafeína fuerte + pre-entreno + música intensa en cada sesión, a la larga, aplana tu motivación de base. Reservá esos estímulos para los días que de verdad los necesitás.",
+    source: SRC,
+  },
+  {
+    id: "energia-cafeina-timing", topic: "Energía", states: ["ok", "warn"], items: ["fatiga", "motivacion"],
+    title: "Demorá un poco el café al despertar",
+    body: "Esperar una hora o dos desde que te levantás para el primer café suaviza el bajón de media mañana y te deja la cafeína para cuando de verdad la necesitás en el entreno.",
     source: SRC,
   },
   // ── Dolor ──

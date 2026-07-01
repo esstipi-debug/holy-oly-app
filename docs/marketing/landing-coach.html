@@ -174,9 +174,6 @@ h2{ font-family:var(--display); font-weight:800; letter-spacing:-.015em; line-he
 
 /* ===== Interactive app demo (atleta ⇄ coach) ===== */
 .demo{ border:1px solid var(--hair); border-radius:22px; background:var(--surface); padding:clamp(14px,2.4vw,22px); }
-.demo-cta{ margin-top:22px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; }
-.demo-cta__lead{ margin:0; color:#cfd5dc; font-size:clamp(15px,1.5vw,17px); max-width:48ch; }
-.demo-cta__btns{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
 .demo__toolbar{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
 .demo__seg{ display:inline-flex; background:var(--surface-2); border:1px solid var(--hair); border-radius:12px; padding:4px; gap:4px; }
 .demo__seg button{ font-family:var(--cond); font-weight:800; text-transform:uppercase; letter-spacing:.04em; font-size:13.5px; color:var(--muted); background:none; border:none; cursor:pointer; padding:8px 18px; border-radius:9px; transition:color .15s, background .15s; }
@@ -210,14 +207,6 @@ h2{ font-family:var(--display); font-weight:800; letter-spacing:-.015em; line-he
 .ramp .step b{ color:var(--text); }
 .ramp .step.work{ color:#1a1205; background:linear-gradient(180deg,#ffd34d,#e6a912); border:none; font-weight:700; }
 .rx-bigdiscs{ display:flex; align-items:center; gap:6px; margin-top:12px; }
-.warm-right{ display:inline-flex; align-items:center; gap:8px; }
-.wramp{ display:grid; gap:8px; }
-.wstep{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:7px 10px; border:1px solid var(--hair); border-radius:9px; background:var(--surface); }
-.wstep__l{ font-family:var(--mono); font-size:11px; color:var(--muted); min-width:42px; }
-.wstep__kg{ font-family:var(--mono); font-weight:700; font-size:13px; color:var(--text); min-width:52px; }
-.wstep .discs{ margin-left:auto; }
-.wstep.work{ background:linear-gradient(180deg, rgba(46,230,160,.09), var(--surface)); border-color:rgba(46,230,160,.32); }
-.wstep.work .wstep__l{ color:var(--teal); }
 .rx-note{ font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:10px; line-height:1.4; }
 .adj{ font-family:var(--mono); font-weight:700; font-size:10.5px; color:#ffb4b9; background:rgba(255,59,70,.12); border:1px solid rgba(255,59,70,.25); border-radius:6px; padding:3px 7px; }
 .ready-ctrl{ border:1px solid var(--hair); border-radius:14px; padding:14px 16px; background:var(--surface-2); }
@@ -498,13 +487,6 @@ footer{ border-top:1px solid var(--hair); padding:32px 0; }
         <p class="section-lead" data-i18n="demo_lead">Esto no es una captura: es la app. Cambiá el día, la escuela, abrí un ejercicio o movéle el readiness y mirá cómo se recalcula todo.</p>
       </div>
       <div class="demo rv" id="demoRoot"><!-- montado por renderDemo() --></div>
-      <div class="demo-cta rv">
-        <p class="demo-cta__lead" data-i18n="demo_cta_lead">¿Querés la app de verdad? Entrá sin registrarte, con datos de ejemplo (solo lectura).</p>
-        <div class="demo-cta__btns">
-          <a class="btn btn--primary" data-i18n="demo_cta_coach" href="https://holy-oly.onrender.com/auth/demo?as=coach">Probar el demo · Coach</a>
-          <a class="btn btn--ghost" data-i18n="demo_cta_atleta" href="https://holy-oly.onrender.com/auth/demo?as=atleta">Probar el demo · Atleta</a>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -905,17 +887,8 @@ function exExpandHtml(rm,p,r,lang){
   var note=readyDelta(r)<0 ? '<div class="rx-note">'+L(lang,'rx_adjnote')+'</div>' : '';
   return '<div class="rx-expand__in"><div class="ramp">'+lad+'</div><div class="rx-bigdiscs">'+discsInline(kg,44,lang)+'</div>'+note+'</div>';
 }
-// Calentamiento: la rampa que avanza hasta el primer trabajo del día (barra → 40/55/70% → trabajo),
-// con kg y discos en cada paso, tal como el atleta sube en la app.
-function warmExpandHtml(rm,p,r,lang){
-  var W=workKg(rm,p,r);
-  var steps=[ {l:L(lang,'warm_bar'),kg:20}, {l:'40%',kg:Math.round(0.40*W)}, {l:'55%',kg:Math.round(0.55*W)}, {l:'70%',kg:Math.round(0.70*W)}, {l:L(lang,'ramp_work'),kg:W,w:1} ];
-  var h='';
-  for(var i=0;i<steps.length;i++){ var s=steps[i]; h+='<div class="wstep'+(s.w?' work':'')+'"><span class="wstep__l">'+s.l+'</span><span class="wstep__kg">'+s.kg+' kg</span>'+discsInline(s.kg,22,lang)+'</div>'; }
-  return '<div class="rx-expand__in"><div class="wramp">'+h+'</div><div class="rx-note">'+L(lang,'warm_note')+'</div></div>';
-}
 function exRowHtml(ex,i,rm,r,lang){
-  var kg=workKg(rm,ex.p,r), d=readyDelta(r), open=(D.ex===String(i));
+  var kg=workKg(rm,ex.p,r), d=readyDelta(r), open=(D.ex===i);
   return '<div class="rxrow rxrow--ex'+(open?' rxrow--open':'')+'" data-act="ex" data-ex="'+i+'" data-rm="'+rm+'" data-pct="'+ex.p+'" data-lastkg="'+kg+'" tabindex="0" role="button" aria-expanded="'+(open?'true':'false')+'">'+
     '<div class="rxtop"><span class="rxname">'+mvName(ex.mv,lang)+'</span>'+
       '<span class="rxsets">'+ex.s+' × '+ex.r+'<span class="rxchev">›</span></span></div>'+
@@ -928,11 +901,8 @@ function exRowHtml(ex,i,rm,r,lang){
 }
 function planHtml(sch,dayIdx,r,scale,lang){
   var day=sch.days[dayIdx];
-  var w0=day.ex[0], wrm=Math.round((RM[w0.mv]||100)*scale), wkg=workKg(wrm,w0.p,r), wopen=(D.ex==='w');
-  var rows='<div class="rxrow rxrow--warm rxrow--ex'+(wopen?' rxrow--open':'')+'" data-act="ex" data-ex="w" data-warm="1" data-rm="'+wrm+'" data-pct="'+w0.p+'" data-lastkg="'+wkg+'" tabindex="0" role="button" aria-expanded="'+(wopen?'true':'false')+'">'+
-    '<div class="rxtop"><span class="rxname">'+L(lang,'ex_warmup')+'</span><span class="warm-right"><span class="warm-tag">'+L(lang,'warm_tag')+'</span><span class="rxchev">›</span></span></div>'+
-    '<div class="rxmeta"><span class="warm-ramp">40% <i>›</i> 55% <i>›</i> 70%</span><span class="rxsets" style="margin-left:auto;">'+L(lang,'warm_sub')+'</span></div>'+
-    '<div class="rx-expand">'+(wopen?warmExpandHtml(wrm,w0.p,r,lang):'')+'</div></div>';
+  var rows='<div class="rxrow rxrow--warm"><div class="rxtop"><span class="rxname">'+L(lang,'ex_warmup')+'</span><span class="warm-tag">'+L(lang,'warm_tag')+'</span></div>'+
+    '<div class="rxmeta"><span class="warm-ramp">40% <i>›</i> 55% <i>›</i> 70%</span><span class="rxsets" style="margin-left:auto;">'+L(lang,'warm_sub')+'</span></div></div>';
   for(var i=0;i<day.ex.length;i++){ var ex=day.ex[i]; rows+=exRowHtml(ex,i,Math.round((RM[ex.mv]||100)*scale),r,lang); }
   return '<div class="shot__hd"><span class="shot__title">'+L(lang,'today_word')+' · '+getL(day.f,lang)+'</span>'+
     '<span class="shot__tag">'+L(lang,'phase_word')+': '+getL(day.ph,lang)+'</span></div><div class="rx">'+rows+'</div>';
@@ -997,7 +967,7 @@ function patchReadiness(root,lang){
     var kgEl=row.querySelector('.kg'); if(kgEl) kgEl.textContent=kg+' kg';
     var adj=row.querySelector('[data-adj]'); if(adj){ if(d<0){ adj.style.display=''; adj.textContent=fmtDelta(r); } else { adj.style.display='none'; } }
     var old=row.querySelector('.rxmeta .discs'); if(old){ var tmp=document.createElement('div'); tmp.innerHTML=discsInline(kg,26,lang); row.querySelector('.rxmeta').replaceChild(tmp.firstChild, old); }
-    var exp=row.querySelector('.rx-expand'); if(exp && row.classList.contains('rxrow--open')){ exp.innerHTML = row.hasAttribute('data-warm') ? warmExpandHtml(rm,p,r,lang) : exExpandHtml(rm,p,r,lang); }
+    var exp=row.querySelector('.rx-expand'); if(exp && row.classList.contains('rxrow--open')){ exp.innerHTML=exExpandHtml(rm,p,r,lang); }
   }
 }
 function initDemo(){
@@ -1008,7 +978,7 @@ function initDemo(){
     if(act==='view'){ if(D.view!==t.getAttribute('data-v')){ D.view=t.getAttribute('data-v'); D.ex=null; D.athOpen=false; renderDemo(lang); } }
     else if(act==='school'){ D.sc=+t.getAttribute('data-i'); D.day=0; D.ex=null; renderDemo(lang); }
     else if(act==='day'){ D.day=+t.getAttribute('data-i'); D.ex=null; renderDemo(lang); }
-    else if(act==='ex'){ var id=t.getAttribute('data-ex'); D.ex=(D.ex===id?null:id); renderDemo(lang); }
+    else if(act==='ex'){ var i=+t.getAttribute('data-ex'); D.ex=(D.ex===i?null:i); renderDemo(lang); }
     else if(act==='ath'){ D.ath=+t.getAttribute('data-i'); D.athOpen=true; D.ex=null; renderDemo(lang); }
     else if(act==='back'){ D.athOpen=false; renderDemo(lang); }
   });
@@ -1033,8 +1003,6 @@ var I18N = {
     hero_lead:"Periodización automática por escuela, carga y estrés de cada atleta, y todo tu equipo en un solo panel. Olvídate de las planillas.",
     cta_main:"Crea tu cuenta gratis",
     cta_secondary:"Ver cómo funciona",
-    demo_cta_lead:"¿Querés la app de verdad? Entrá sin registrarte, con datos de ejemplo (solo lectura).",
-    demo_cta_coach:"Probar el demo · Coach", demo_cta_atleta:"Probar el demo · Atleta",
     cta_note_b:"Gratis",
     cta_note:"durante la fase de prueba · sin tarjeta",
     prob_kicker:"El problema", prob_h2:"El día a día del coach, hoy",
@@ -1081,7 +1049,6 @@ var I18N = {
     day_word:"Día", rdy_word:"Readiness", rdy_hint:"Movélo: la carga sugerida se ajusta al estado de hoy.",
     ready_hi:"Lista para cargar pesado", ready_mid:"Buen día — dale parejo", ready_lo:"Modera la carga", ready_min:"Día técnico, no fuerces",
     ramp_work:"Trabajo", rx_adjnote:"Carga ajustada por readiness · el kg manda, los discos aproximan.",
-    warm_bar:"Barra", warm_note:"Rampa automática hasta el primer trabajo del día — el atleta sube parejo, sin hacer la cuenta.",
     ros_title:"Tu equipo · hoy", back_word:"Volver al equipo",
     al_pr:"Lista para PR", al_down:"Bajar carga hoy", al_green:"En verde", al_fatigue:"Fatiga · descarga", al_rm:"Falta RM de envión"
   },
@@ -1094,8 +1061,6 @@ var I18N = {
     hero_lead:"Automatic periodization by methodology, load and stress for every athlete, and your whole roster in one dashboard. Leave the spreadsheets behind.",
     cta_main:"Create your free account",
     cta_secondary:"See how it works",
-    demo_cta_lead:"Want the real app? Step in without signing up — example data, read-only.",
-    demo_cta_coach:"Try the demo · Coach", demo_cta_atleta:"Try the demo · Athlete",
     cta_note_b:"Free",
     cta_note:"during the trial phase · no credit card",
     prob_kicker:"The problem", prob_h2:"A coach's day-to-day, today",
@@ -1142,7 +1107,6 @@ var I18N = {
     day_word:"Day", rdy_word:"Readiness", rdy_hint:"Drag it: the suggested load adapts to today's state.",
     ready_hi:"Ready to go heavy", ready_mid:"Good day — push evenly", ready_lo:"Ease the load", ready_min:"Technical day, don't force it",
     ramp_work:"Work set", rx_adjnote:"Load adjusted by readiness · kg is the truth, plates approximate.",
-    warm_bar:"Bar", warm_note:"Auto ramp up to the day's first work set — the athlete builds up evenly, no math.",
     ros_title:"Your roster · today", back_word:"Back to roster",
     al_pr:"Ready for a PR", al_down:"Cut load today", al_green:"All green", al_fatigue:"Fatigue · deload", al_rm:"Missing C&J max"
   },
@@ -1155,8 +1119,6 @@ var I18N = {
     hero_lead:"Periodização automática por escola, carga e estresse de cada atleta, e todo o seu elenco em um só painel. Deixe as planilhas para trás.",
     cta_main:"Crie sua conta grátis",
     cta_secondary:"Ver como funciona",
-    demo_cta_lead:"Quer o app de verdade? Entre sem cadastro, com dados de exemplo (somente leitura).",
-    demo_cta_coach:"Testar o demo · Treinador", demo_cta_atleta:"Testar o demo · Atleta",
     cta_note_b:"Grátis",
     cta_note:"durante a fase de testes · sem cartão",
     prob_kicker:"O problema", prob_h2:"O dia a dia do treinador, hoje",
@@ -1203,7 +1165,6 @@ var I18N = {
     day_word:"Dia", rdy_word:"Readiness", rdy_hint:"Arraste: a carga sugerida se ajusta ao estado de hoje.",
     ready_hi:"Pronta para pegar pesado", ready_mid:"Bom dia — mantenha o ritmo", ready_lo:"Modere a carga", ready_min:"Dia técnico, não force",
     ramp_work:"Trabalho", rx_adjnote:"Carga ajustada pelo readiness · o kg manda, as anilhas aproximam.",
-    warm_bar:"Barra", warm_note:"Rampa automática até a primeira série do dia — o atleta sobe parelho, sem fazer conta.",
     ros_title:"Seu elenco · hoje", back_word:"Voltar ao elenco",
     al_pr:"Pronta para recorde", al_down:"Reduzir carga hoje", al_green:"Tudo verde", al_fatigue:"Fadiga · descarga", al_rm:"Falta máx. de arremesso"
   }

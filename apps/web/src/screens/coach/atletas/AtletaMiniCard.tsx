@@ -1,8 +1,16 @@
 import { useTranslation } from "react-i18next";
-import type { CellState } from "@holy-oly/core";
+import type { CellState, CoachRisk } from "@holy-oly/core";
 import type { RosterRow } from "../roster";
 import { STATUS } from "../../../ui/status";
 import { LEGEND_NOISE } from "./legendNoise";
+
+export const ITEM_SHORT: Record<string, string> = {
+  sueno: "Sueño", estres: "Estrés", fatiga: "Fatiga", dolor: "Dolor", motivacion: "Motiv.",
+};
+
+function riskLabel(r: CoachRisk): string {
+  return r.loadNote === "sobrecarga" ? "Riesgo sobrecarga" : `${ITEM_SHORT[r.item] ?? r.item} ${r.days}d`;
+}
 
 /** Tendencia de readiness (Δ vs. semana previa, signo+valor): ▲ sube · ▼ baja · → estable.
  *  Sin dato (trend == null) → no se pinta (sin-dato honesto, nunca una flecha inventada). */
@@ -77,6 +85,20 @@ export function AtletaMiniCard({ row, onPick }: { row: RosterRow; onPick: (id: s
             color: "var(--wl-accent)", fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase",
           }}>
             <span aria-hidden="true">⚠</span> {t("common:missingRm")}
+          </span>
+        </div>
+      )}
+      {/* Riesgo predictivo de bienestar (coach-only). Reusar estilo needsRm pill, color por severidad. */}
+      {row.risk && (
+        <div style={{ position: "relative", marginTop: 8 }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 99,
+            background: `color-mix(in srgb, ${STATUS[row.risk.severity === "alert" ? "alert" : "warn"]} 16%, transparent)`,
+            border: `1px solid color-mix(in srgb, ${STATUS[row.risk.severity === "alert" ? "alert" : "warn"]} 50%, transparent)`,
+            color: STATUS[row.risk.severity === "alert" ? "alert" : "warn"],
+            fontFamily: "var(--mono)", fontSize: 9, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase",
+          }}>
+            <span aria-hidden="true">⚠</span> {riskLabel(row.risk)}
           </span>
         </div>
       )}

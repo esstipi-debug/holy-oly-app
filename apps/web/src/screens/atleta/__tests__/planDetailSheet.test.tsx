@@ -97,6 +97,7 @@ function stubClient(): MeClient {
     getMeSeries: async () => undefined,
     getDayLog: async () => ({ entry: null, streak: 0, days: [], today: "2026-06-10" }),
     putDayLog: async () => ({ entry: { date: "2026-06-10", fatiga: 3, dolor: 1, estres: 2, humor: 4, motivacion: 4, sueno: 4 }, streak: 1 }),
+    createMyPlan: async () => {},
     getMeSessions: async (week: number) => views(week),
     getMeHeat: async () => heat,
     getMeRecorrido: async () => ({ semanas: [] }),

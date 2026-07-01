@@ -6,9 +6,11 @@ import { meClient, type MeClient } from "../../data/meClient";
 import type { CheckinVariant } from "./prefs";
 import { Titular } from "./hoy/Titular";
 import { EstadoTip } from "./hoy/EstadoTip";
+import { AtencionBlock } from "./hoy/AtencionBlock";
 import { CaminoCard } from "./hoy/CaminoCard";
 import { SemanaCard } from "./hoy/SemanaCard";
 import { CicloCarousel } from "./ciclo/CicloCarousel";
+import { CrearCicloSheet } from "./crear/CrearCicloSheet";
 import { CheckIn } from "./CheckIn";
 import { Check } from "./primitives";
 import type { AtletaOutletCtx } from "./AthleteShell";
@@ -43,6 +45,7 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
   const [daylog, setDaylog] = useState<DayLogView | null>(null);
   const [load, setLoad] = useState<Load>("loading");
   const [checkinOpen, setCheckinOpen] = useState(() => Boolean((location.state as { openCheckin?: boolean } | null)?.openCheckin));
+  const [crearOpen, setCrearOpen] = useState(false);
 
   useEffect(() => {
     let on = true;
@@ -57,6 +60,15 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
     await client.putDayLog(input);
     const fresh = await client.getDayLog();
     setDaylog(fresh);
+  }, [client]);
+
+  // Re-fetch tras crear el propio ciclo (self-coach): el plan recién creado enciende Hoy.
+  const reload = useCallback(async () => {
+    setLoad("loading");
+    try {
+      const [p, s, d] = await Promise.all([client.getMePlan(), client.getMeSeries(), client.getDayLog()]);
+      setPlan(p); setSeries(s); setDaylog(d); setLoad("ready");
+    } catch { setLoad("error"); }
   }, [client]);
 
   if (load === "loading") {
@@ -85,15 +97,21 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
               })
             : t("homeNoPlan")}
         </div>
-        {/* Empty-state con salida: sin plan → el siguiente paso es vincularse (no en preview del coach). */}
+        {/* Empty-state con salida: sin plan → armá tu propio ciclo (self-coach) o vinculate con un
+            coach (no en preview del coach). */}
         {!plan.plan && !preview && (
-          <Link to="/atleta/cuenta" style={{ display: "inline-block", marginTop: 6, fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-accent)", textDecoration: "none" }}>
-            {t("homeLinkCuenta")}
-          </Link>
+          <div style={{ marginTop: 10, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+            <button type="button" className="wl-btn wl-btn--primary" onClick={() => setCrearOpen(true)}>Crear mi ciclo</button>
+            <Link to="/atleta/cuenta" style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-accent)", textDecoration: "none" }}>
+              o vinculate con tu coach en Cuenta ›
+            </Link>
+          </div>
         )}
       </div>
 
       <Titular state={titularState} />
+      {/* Aviso de racha: "si esto sigue, va a pasar X". Aparece solo con racha activa (else null). */}
+      <AtencionBlock headsUp={daylog.headsUp} />
       {/* Tip del día (parafraseado de divulgación científica), elegido por estado + ítem más flojo del
           check-in. Determinístico por fecha → varía día a día sin cambiar a cada render. */}
       <EstadoTip state={titularState} entry={daylog.entry} seed={Number(daylog.today.replaceAll("-", "")) || 0} />
@@ -124,6 +142,9 @@ export function HomeScreen({ client = meClient, variant: variantProp, preview = 
           steps={ATLETA_STEPS}
           storageKey={onboardingKey(user.id)}
         />
+      )}
+      {!preview && (
+        <CrearCicloSheet open={crearOpen} onClose={() => setCrearOpen(false)} onCreated={reload} client={client} />
       )}
     </>
   );
