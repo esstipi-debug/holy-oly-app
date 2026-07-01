@@ -6,7 +6,7 @@ import type { RosterRow } from "../roster";
 const row = (id: string, nombre: string, needsRm: boolean): RosterRow => ({
   id, nombre, iniciales: id.toUpperCase(), metodo: "Ruso 5D", compite: false,
   acwr: undefined, rec: undefined, cell: "none", readiness: undefined, trend: undefined,
-  cat: undefined, history: [], needsRm,
+  cat: undefined, history: [], needsRm, risk: null,
 });
 
 describe("RmFaltanteBanner", () => {

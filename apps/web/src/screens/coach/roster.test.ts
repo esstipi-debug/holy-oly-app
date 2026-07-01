@@ -52,7 +52,7 @@ describe("getRosterRows · readiness/trend/cat", () => {
       bodyweight: [64, 64, 64, 64, 64], weightBand: [60, 64],
     };
     const atleta: Atleta = { id: "a1", nombre: "Mara V.", iniciales: "MV", nivel: "advanced", sexo: "F", macroId: "ruso-5d", compite: true };
-    const repo = { getRoster: async () => [atleta], getSeries: async () => s } as unknown as Repository;
+    const repo = { getRoster: async () => [atleta], getSeries: async () => s, getRosterRisk: async () => ({}) } as unknown as Repository;
     const rows = await getRosterRows(repo);
     expect(rows[0]!.readiness).toBeGreaterThanOrEqual(0);
     expect(rows[0]!.readiness).toBeLessThanOrEqual(100);
@@ -61,7 +61,7 @@ describe("getRosterRows · readiness/trend/cat", () => {
   });
   it("atleta sin serie → readiness/trend/cat sin dato (undefined)", async () => {
     const atleta: Atleta = { id: "a2", nombre: "Caro F.", iniciales: "CF", nivel: "beginner", sexo: "F", compite: false };
-    const repo = { getRoster: async () => [atleta], getSeries: async () => undefined } as unknown as Repository;
+    const repo = { getRoster: async () => [atleta], getSeries: async () => undefined, getRosterRisk: async () => ({}) } as unknown as Repository;
     const rows = await getRosterRows(repo);
     expect(rows[0]!.readiness).toBeUndefined();
     expect(rows[0]!.trend).toBeUndefined();

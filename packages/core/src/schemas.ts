@@ -184,11 +184,31 @@ export const DayLogSchema = z.object({
 /** Stored array of own-written check-ins — validates the LocalMeClient localStorage read. */
 export const DayLogsSchema = z.array(DayLogSchema).max(2000);
 
+export const StreakHeadsUpSchema = z.object({
+  item: z.enum(["sueno", "estres", "fatiga", "dolor", "motivacion"]),
+  days: z.number().int().positive(),
+  severity: z.enum(["warn", "alert"]),
+  alsoStreaking: z.array(z.enum(["sueno", "estres", "fatiga", "dolor", "motivacion"])),
+});
+
+export const CoachRiskSchema = z.object({
+  item: z.enum(["sueno", "estres", "fatiga", "dolor", "motivacion"]),
+  days: z.number().int().positive(),
+  severity: z.enum(["warn", "alert"]),
+  alsoStreaking: z.array(z.enum(["sueno", "estres", "fatiga", "dolor", "motivacion"])),
+  acwrSustained: z.boolean(),
+  readinessBand: z.enum(["green", "amber", "red"]).nullable(),
+  loadNote: z.enum(["sobrecarga"]).nullable(),
+});
+/** Mapa athleteId → riesgo. Sólo atletas CON racha (ausente = sin riesgo). */
+export const RosterRiskSchema = z.record(z.string(), CoachRiskSchema);
+
 export const DayLogViewSchema = z.object({
   entry: DayLogSchema.nullable(),
   streak: z.number().int().nonnegative(),
   days: z.array(IsoDateSchema).max(2000),
   today: IsoDateSchema,
+  headsUp: StreakHeadsUpSchema.nullable().optional(),
 });
 
 export const DayLogResultSchema = z.object({

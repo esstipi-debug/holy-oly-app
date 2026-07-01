@@ -110,6 +110,18 @@ export interface WellnessItemDef {
 
 export type WellnessAnswers = Record<WellnessField, number>;
 
+/** Ítems del check-in vigilados para rachas de bienestar (humor queda afuera por diseño). */
+export type WatchedWellnessField = "sueno" | "estres" | "fatiga" | "dolor" | "motivacion";
+
+/** Heads-up "si esto sigue, va a pasar X": el ítem líder en racha de días malos + severidad.
+ *  Hechos estructurados — la copy (frase-factor/consecuencia/acción) vive en la capa web. */
+export interface StreakHeadsUp {
+  item: WatchedWellnessField;
+  days: number;                          // días malos consecutivos del ítem líder
+  severity: "warn" | "alert";
+  alsoStreaking: WatchedWellnessField[]; // otros ítems en racha (≥3), por prioridad
+}
+
 /** One athlete-day self-report (private to the athlete, anchored to a calendar date). */
 export interface DayLog {
   date: string; // ISO YYYY-MM-DD
@@ -129,6 +141,7 @@ export interface DayLogView {
   streak: number;
   days: string[]; // ISO dates with a logged entry (for the heatmap)
   today: string;  // ISO
+  headsUp?: StreakHeadsUp | null; // racha de bienestar (si esto sigue, va a pasar X), o null
 }
 
 /** PUT /me/daylog response. */

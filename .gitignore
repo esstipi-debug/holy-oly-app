@@ -23,3 +23,7 @@ dist/
 
 # embedded-postgres ephemeral data dirs (db-verify orchestrator)
 .pgdata*/
+
+# Borrador de autoría de tips (huermn → wellnessTips): contiene texto de fuente premium —
+# es scratch local para parafrasear a mano, JAMÁS se embarca ni se commitea.
+docs/wellness/*-drafts.md

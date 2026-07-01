@@ -19,7 +19,7 @@ import {
   DayLogsSchema, SessionActualsSchema, SessionRegistrosSchema, CycleShareSchema, CycleStateSchema, MacroHistoryViewSchema,
   MACROCYCLES, planHeat, weekDoneSummary, dayLayoutFor, buildMeHeatDays, setTonnage, wellnessScore,
   buildAdaptivePlan, instantiatePrescription, effectiveTotalWeeks, availableWeeksToComp, mondayOf, ALL_RECIPES,
-  validateFechaEntreno, fechaConflict, unresolvedPriorDays,
+  validateFechaEntreno, fechaConflict, unresolvedPriorDays, wellnessStreak,
 } from "@holy-oly/core";
 import { FechaOcupadaError, DiaBloqueadoError } from "./fechaError";
 import { JsonStore } from "./storage";
@@ -88,7 +88,7 @@ export class LocalMeClient implements MeClient {
     const days = logs.map((l) => l.date);
     const target = date ?? today;
     const entry = logs.find((l) => l.date === target) ?? null;
-    return { entry, streak: computeStreak(days, today), days, today };
+    return { entry, streak: computeStreak(days, today), days, today, headsUp: wellnessStreak(logs, today) };
   }
 
   /** Upsert today's self-report, then recompute the streak. Mirrors repo.upsertDayLog. */
