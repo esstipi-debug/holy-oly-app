@@ -52,3 +52,16 @@ export async function promptInstall(): Promise<void> {
   deferredEvent = null;
   recompute();
 }
+
+/** iOS/iPadOS (Safari, and Chrome/Firefox-on-iOS since they all sit on WebKit) never fire
+ *  `beforeinstallprompt` — WebKit officially opposes implementing it. The only install path
+ *  there is the manual Share-sheet "Agregar a inicio", so instead of a button we show
+ *  instructions. Doesn't need to be reactive: user agent doesn't change mid-session, and
+ *  after actually adding to home screen the user gets a fresh page load (new `standalone`
+ *  value) rather than staying on this tab. */
+export function isIosAddToHomeScreenAvailable(): boolean {
+  const iOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPadOS reports as Mac
+  return iOS && !isStandalone();
+}

@@ -16,10 +16,11 @@ function singlefileHtmlCleanup(): Plugin {
       const svg = readFileSync(new URL("./public/icon.svg", import.meta.url), "utf8");
       const dataUri = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
       return html
-        // favicon + apple-touch-icon → inline data URI (Vite may emit the path as "./icon.svg"
-        // or "/icon.svg"; match either, replacing the whole href so no stray "." leaks through).
+        // favicon → inline data URI (Vite may emit the path as "./icon.svg" or "/icon.svg";
+        // match either, replacing the whole href so no stray "." leaks through).
         .replace(/(href=")\.?\/icon\.svg(")/g, `$1${dataUri}$2`)
-        .replace(/\s*<link rel="manifest"[^>]*>/, ""); // PWA manifest is meaningless for file://
+        .replace(/\s*<link rel="manifest"[^>]*>/, "") // PWA manifest is meaningless for file://
+        .replace(/\s*<link rel="apple-touch-icon"[^>]*>/, ""); // same — no home screen icon for file://
     },
   };
 }
