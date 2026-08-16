@@ -14,7 +14,7 @@ function makeHeat(weeks: number): WeekHeat[] {
 }
 const weekViews = (week: number): SessionView[] => [
   { week, sessionIdx: 2, exercises: [{ movementId: "arranque", movementName: "Arranque", sets: 5, reps: 2, pct: 80, targetKg: 64 }] },
-  { week, sessionIdx: 3, exercises: [{ movementId: "envion", movementName: "Envión", sets: 4, reps: 2, pct: 85, targetKg: 85 }] },
+  { week, sessionIdx: 3, exercises: [{ movementId: "cargada-envion", movementName: "Envión", sets: 4, reps: 2, pct: 85, targetKg: 85 }] },
 ];
 
 // hoy 2026-03-25 (miércoles) cae en la semana 4 del plan que arranca el lunes 2026-03-02.

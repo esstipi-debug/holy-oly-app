@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { SchoolDNA } from "@holy-oly/core";
+import { useMovementName } from "../../../i18n/useMovementLang";
 import { signatureGroups, excludedNames, intensitySignature } from "./composition";
 
 const intensityBox: CSSProperties = {
@@ -33,8 +34,9 @@ const exChip: CSSProperties = {
  */
 export function MacroComposition({ dna }: { dna: SchoolDNA }) {
   const { t } = useTranslation("macros");
-  const groups = signatureGroups(dna);
-  const excluded = excludedNames(dna);
+  const mn = useMovementName();
+  const groups = signatureGroups(dna, mn);
+  const excluded = excludedNames(dna, mn);
 
   return (
     <div>

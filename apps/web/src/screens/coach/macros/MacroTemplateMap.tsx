@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Macrocycle } from "@holy-oly/core";
-import { ALL_RECIPES, instantiatePrescription, planHeat, phaseForWeek, programmableName } from "@holy-oly/core";
+import { ALL_RECIPES, instantiatePrescription, planHeat, phaseForWeek } from "@holy-oly/core";
+import { useMovementName } from "../../../i18n/useMovementLang";
 import { PlanHeatMap, HeatLegend, type HeatMapPos } from "../../../ui/charts/PlanHeatMap";
 import { PlanDayDetail, type DayDetailExercise } from "../../../ui/charts/PlanDayDetail";
 import { phaseColor } from "../../../ui/charts/phasePalette";
@@ -15,6 +16,7 @@ const EMPTY_COMPS: ReadonlyMap<number, { name: string; day?: number }> = new Map
  */
 export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
   const { t } = useTranslation(["macros", "domain"]);
+  const mn = useMovementName();
   const totalWeeks = macro.phaseProfile[macro.phaseProfile.length - 1]?.weeks[1] ?? 0;
   const rows = useMemo(() => instantiatePrescription(ALL_RECIPES, macro, totalWeeks), [macro, totalWeeks]);
   const heat = useMemo(() => (rows.length > 0 ? planHeat(rows, totalWeeks) : null), [rows, totalWeeks]);
@@ -42,7 +44,7 @@ export function MacroTemplateMap({ macro }: { macro: Macrocycle }) {
         .filter((r) => r.week === sel.week && r.sessionIdx === sel.day)
         .sort((a, b) => a.order - b.order)
         .map((r) => ({
-          name: programmableName(r.movementId), // variante o complejo (con su notación)
+          name: mn(r.movementId), // variante o complejo (con su notación)
           sets: r.sets, reps: r.reps,
           ...(r.pct != null ? { pct: r.pct } : {}),
         }))

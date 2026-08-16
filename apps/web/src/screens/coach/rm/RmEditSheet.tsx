@@ -4,6 +4,7 @@ import type { PrCandidate, RM, RmLift } from "@holy-oly/core";
 import { RM_LIFTS } from "@holy-oly/core";
 import { BottomSheet } from "../../../ui/BottomSheet";
 import { isoDateLabel } from "../../../ui/charts/planDates";
+import { useMovementName } from "../../../i18n/useMovementLang";
 
 /** Etiquetas de los 4 RM de la casa (ns coach). Hook para que sigan el idioma activo; lo reusan
  *  RmSection, PrilepinSection y ComplexAnalysis (centraliza lo que antes era el const RM_LABELS). */
@@ -43,6 +44,7 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
   onSave: (updates: { lift: RmLift; kg: number }[], reason: "manual" | "pr") => Promise<void>;
 }) {
   const { t } = useTranslation(["coach", "common"]);
+  const mn = useMovementName();
   const RM_LABELS = useRmLabels();
   const [draft, setDraft] = useState<Draft>(() => toDraft(rms));
   const [saving, setSaving] = useState(false);
@@ -97,7 +99,7 @@ export function RmEditSheet({ open, mode, rms, onClose, onSave }: {
       </div>
       {mode.kind === "pr" && (
         <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--wl-muted)", marginTop: 6 }}>
-          {mode.candidate.movementName} · {t("rmLifted", { kg: mode.candidate.kg, when: mode.candidate.doneAt ? isoDateLabel(mode.candidate.doneAt) : t("compWeekLabel", { week: mode.candidate.week }) })}
+          {mn(mode.candidate.movementId)} · {t("rmLifted", { kg: mode.candidate.kg, when: mode.candidate.doneAt ? isoDateLabel(mode.candidate.doneAt) : t("compWeekLabel", { week: mode.candidate.week }) })}
           <br />{t("rmFinalNote")}
         </div>
       )}

@@ -14,6 +14,7 @@ import { barKgForSexo, type SessionView } from "@holy-oly/core";
 import { Loading } from "../../ui/Loading";
 import { LocalMeClient } from "../../data/LocalMeClient";
 import { DiscRow } from "../../ui/Disc";
+import { useMovementName } from "../../i18n/useMovementLang";
 import { LeadCaptureButton } from "./LeadCaptureButton";
 
 /** The slice of the athlete client this preview needs (lets tests inject a fake). */
@@ -35,6 +36,7 @@ export function AtletaPreview({
   client?: AthletePreviewClient;
 }) {
   const { t } = useTranslation("coach");
+  const mn = useMovementName();
   const me = useMemo<AthletePreviewClient>(() => client ?? new LocalMeClient(athleteId), [client, athleteId]);
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
   const [load, setLoad] = useState<Load>("loading");
@@ -73,7 +75,7 @@ export function AtletaPreview({
           <div className="ho-card__head"><span className="ho-card__t">{t("previewDay", { n: s.sessionIdx + 1 })}</span></div>
           {s.exercises.map((e, i) => (
             <div key={`${s.sessionIdx}-${i}`} className="wls__row" style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
-              <span className="wls__rowlabel">{e.movementName}</span>
+              <span className="wls__rowlabel">{mn(e.movementId)}</span>
               <span className="wls__reps">{e.sets}×{e.reps}{e.pct != null ? ` · ${e.pct}%` : ""}</span>
               <span style={{ flex: 1 }} />
               {e.targetKg != null ? <DiscRow kg={e.targetKg} barKg={barKg} /> : <span className="wls__hint">—</span>}

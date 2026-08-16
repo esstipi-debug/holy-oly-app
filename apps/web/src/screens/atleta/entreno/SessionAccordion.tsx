@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import { getMovement, type WarmupSet } from "@holy-oly/core";
+import { type WarmupSet } from "@holy-oly/core";
+import { useMovementName } from "../../../i18n/useMovementLang";
 import { ExerciseHero } from "./ExerciseHero";
 import { WarmupSection } from "./WarmupSection";
 import { WorkSetsSection, type SetRow } from "./WorkSetsSection";
@@ -31,6 +32,7 @@ function ExerciseCard({
   onSubstitute: () => void; onMovementNotDone: () => void;
 }) {
   const { t } = useTranslation("atleta");
+  const mn = useMovementName();
   const nDone = r.series.filter((s) => s.done).length;
   const all = isComplete(r);
   const substituted = r.movementId !== r.prescribedMovementId;
@@ -49,7 +51,7 @@ function ExerciseCard({
         <button type="button" className="et-ex__head" onClick={() => onOpen(idx)} aria-expanded={isOpen}>
           <span className={"et-ex__badge" + (all ? " is-all" : "")} aria-hidden>{all ? "✓" : `${nDone}/${r.series.length}`}</span>
           <span className="et-ex__titles">
-            <span className="et-ex__name">{r.movementName}</span>
+            <span className="et-ex__name">{mn(r.movementId)}</span>
             <span className="et-ex__meta">{r.sets}×{r.reps}{r.pct != null ? ` · ${r.pct}%` : ""}{r.targetKg != null ? ` · ${r.targetKg} kg` : ""}</span>
           </span>
           <span className="et-ex__segs" aria-hidden>
@@ -61,12 +63,12 @@ function ExerciseCard({
       {isOpen && (
         <div className="et-ex__body">
           <ExerciseHero
-            movementName={r.movementName} targetKg={r.targetKg} pct={r.pct}
+            movementName={mn(r.movementId)} targetKg={r.targetKg} pct={r.pct}
             sets={r.sets} reps={r.reps} barKg={barKg} nDone={nDone} total={r.series.length}
             onCollapse={() => onOpen(-1)}
           />
 
-          {substituted && <div className="et-ex__prescr">{t("saPrescribed")}: {getMovement(r.prescribedMovementId)?.name ?? r.prescribedMovementId}</div>}
+          {substituted && <div className="et-ex__prescr">{t("saPrescribed")}: {mn(r.prescribedMovementId)}</div>}
           {r.notes && !substituted && <div className="et-coach"><span className="et-coach__tag">{t("saCoachTag")}</span>{r.notes}</div>}
 
           {hasWarmup && <WarmupSection sets={r.warmup} barKg={barKg} doneSet={warmSet} onToggle={toggleWarm} />}
@@ -90,7 +92,7 @@ function ExerciseCard({
           )}
 
           <div className="et-ex__actions">
-            <button type="button" className="et-action" onClick={onSubstitute} aria-label={t("saChangeMovementAria", { name: r.movementName })}>⇄ {t("saChange")}</button>
+            <button type="button" className="et-action" onClick={onSubstitute} aria-label={t("saChangeMovementAria", { name: mn(r.movementId) })}>⇄ {t("saChange")}</button>
             <button type="button" className="et-action" onClick={onMovementNotDone}>{t("saNotDoneAll")}</button>
           </div>
         </div>

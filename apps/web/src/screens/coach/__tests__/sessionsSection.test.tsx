@@ -99,7 +99,7 @@ test("SP4: muestra sustituido con nombre del movimiento real y SIN marcador de d
   render(<RepositoryProvider repo={repo}><SessionsSection athleteId="mv" hoyWeek={1} totalWeeks={16} /></RepositoryProvider>);
   await screen.findByText("Arranque");
   expect(screen.getByText(/sustituido/)).toBeInTheDocument();
-  expect(screen.getByText(/Arranque colgado \(bajo\)/)).toBeInTheDocument();
+  expect(screen.getByText(/Arranque desde colgado \(bajo\)/)).toBeInTheDocument(); // nombre canónico vía mn(movementId)
   expect(screen.queryByText(/↑/)).not.toBeInTheDocument();
   expect(screen.queryByText(/↓/)).not.toBeInTheDocument();
 });

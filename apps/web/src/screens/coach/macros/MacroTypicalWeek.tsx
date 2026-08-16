@@ -1,6 +1,7 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { Macrocycle } from "@holy-oly/core";
+import { useMovementName } from "../../../i18n/useMovementLang";
 import { typicalWeek } from "./composition";
 
 const chipRow: CSSProperties = { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 };
@@ -38,9 +39,10 @@ const kgNote: CSSProperties = { fontFamily: "var(--mono)", fontSize: 9.5, color:
  */
 export function MacroTypicalWeek({ macro }: { macro: Macrocycle }) {
   const { t } = useTranslation(["macros", "domain"]);
+  const mn = useMovementName();
   const phases = macro.phaseProfile;
   const [sel, setSel] = useState(() => phases[0]?.key ?? "");
-  const sessions = useMemo(() => typicalWeek(macro, sel), [macro, sel]);
+  const sessions = useMemo(() => typicalWeek(macro, sel, mn), [macro, sel, mn]);
   if (!sessions) return null;
 
   const selPhase = phases.find((p) => p.key === sel);

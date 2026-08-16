@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { MePlanView, SessionView, MeRecorrido, DayLog, MonitorSeries } from "@holy-oly/core";
 import { sessionTonnage, completion } from "@holy-oly/core";
 import * as me from "../../../data/meClient";
+import { useMovementName } from "../../../i18n/useMovementLang";
 import { xpForSession, cumulativeXp, levelInfo, weekStreak, highestTier } from "./celebracion/gamify";
 import { buildWellnessRadar } from "./celebracion/radarData";
 import { Celebracion, type CelData, type CelLift, type CelStat } from "./celebracion/Celebracion";
@@ -19,6 +20,7 @@ const costToReach = (level: number): number => 100 * level * (level - 1);
  */
 export function VictoriaScreen() {
   const { t } = useTranslation(["atleta", "common", "domain"]);
+  const mn = useMovementName();
   const { week: weekP, idx: idxP } = useParams();
   const navigate = useNavigate();
   const week = Number(weekP);
@@ -93,7 +95,7 @@ export function VictoriaScreen() {
   const lifts: CelLift[] = exercises.map((e) => {
     const done = e.actual?.sets?.filter((s) => s.done) ?? [];
     const top = done.length ? Math.max(...done.map((s) => s.kg ?? 0)) : (e.targetKg ?? 0);
-    return { nm: e.actual?.movementName ?? e.movementName, top, sets: done.length || e.sets, reps: done[0]?.reps ?? e.reps, ...(e.pct != null ? { pct: e.pct } : {}) };
+    return { nm: mn(e.actual?.movementId ?? e.movementId), top, sets: done.length || e.sets, reps: done[0]?.reps ?? e.reps, ...(e.pct != null ? { pct: e.pct } : {}) };
   });
 
   const semanas = recorrido?.semanas ?? [];

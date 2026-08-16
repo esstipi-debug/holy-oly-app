@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { getMovement, resolveTargetKg, PrescribedExercisesSchema, type PrescribedExercise, type PrescribedExerciseView, type RM } from "@holy-oly/core";
+import { useMovementName } from "../../../i18n/useMovementLang";
 import { BottomSheet } from "../../../ui/BottomSheet";
 import { MovementPicker } from "./MovementPicker";
 import { ComplexAnalysis } from "./ComplexAnalysis";
@@ -16,19 +17,19 @@ const mini: CSSProperties = {
   border: 0, background: "transparent", color: "var(--wl-muted)", cursor: "pointer", fontFamily: "var(--mono)", fontSize: 13, padding: 4,
 };
 
-function toDraft(id: string): Draft {
+function toDraft(id: string, mn: (id: string) => string): Draft {
   const mv = getMovement(id);
   const usesPct = !!mv && mv.rmRef !== "none";
-  return { movementId: id, movementName: mv?.name ?? id, sets: 3, reps: 3, ...(usesPct ? { pct: 70 } : {}) };
+  return { movementId: id, movementName: mn(id), sets: 3, reps: 3, ...(usesPct ? { pct: 70 } : {}) };
 }
 
-function swapMovement(d: Draft, id: string): Draft {
+function swapMovement(d: Draft, id: string, mn: (id: string) => string): Draft {
   const mv = getMovement(id);
   const usesPct = !!mv && mv.rmRef !== "none";
   return {
     ...d,
     movementId: id,
-    movementName: mv?.name ?? id,
+    movementName: mn(id),
     kgOverride: undefined,
     pct: usesPct ? (d.pct ?? 70) : undefined,
   };
@@ -39,6 +40,7 @@ export function SessionEditor({ open, week, sessionIdx, exercises, rms, onClose,
   onClose: () => void; onSave: (exercises: PrescribedExercise[]) => Promise<void> | void;
 }) {
   const { t } = useTranslation(["coach", "common"]);
+  const mn = useMovementName();
   const [rows, setRows] = useState<Draft[]>(() =>
     exercises.map((e) => ({ movementId: e.movementId, movementName: e.movementName, sets: e.sets, reps: e.reps, pct: e.pct, kgOverride: e.kgOverride })));
   // Selector unificado: "add" agrega una fila; un número cambia el movimiento de esa fila (cualquiera
@@ -78,7 +80,7 @@ export function SessionEditor({ open, week, sessionIdx, exercises, rms, onClose,
           return (
             <div key={i} style={{ background: "var(--wl-surface)", borderRadius: 10, padding: "8px 10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14, color: "var(--wl-text)" }}>{r.movementName}</span>
+                <span style={{ flex: 1, fontFamily: "var(--wl-display)", fontWeight: 700, fontSize: 14, color: "var(--wl-text)" }}>{mn(r.movementId)}</span>
                 <button type="button" style={mini} aria-label={t("sesEditorChange", { name: r.movementName })} onClick={() => setPickerFor(i)}>⇄</button>
                 <button type="button" style={mini} aria-label={t("sesEditorMoveUp", { name: r.movementName })} onClick={() => move(i, -1)}>↑</button>
                 <button type="button" style={mini} aria-label={t("sesEditorMoveDown", { name: r.movementName })} onClick={() => move(i, 1)}>↓</button>
@@ -112,7 +114,7 @@ export function SessionEditor({ open, week, sessionIdx, exercises, rms, onClose,
       <MovementPicker
         open={pickerFor !== null}
         onClose={() => setPickerFor(null)}
-        onPick={(id) => setRows((rs) => (pickerFor === "add" ? [...rs, toDraft(id)] : rs.map((r, j) => (j === pickerFor ? swapMovement(r, id) : r))))}
+        onPick={(id) => setRows((rs) => (pickerFor === "add" ? [...rs, toDraft(id, mn)] : rs.map((r, j) => (j === pickerFor ? swapMovement(r, id, mn) : r))))}
       />
     </BottomSheet>
   );
