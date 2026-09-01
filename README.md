@@ -1,112 +1,112 @@
 <p align="center">
-  <img src="_mockup/holy-oly-disc.png" alt="Holy Oly — disco 25 kg" width="194" height="192" />
+  <img src="_mockup/holy-oly-disc.png" alt="Holy Oly — 25 kg plate" width="194" height="192" />
 </p>
 
 <h1 align="center">Holy Oly</h1>
 
 <p align="center">
-  <strong>Macrociclos coach⇄atleta para halterofilia olímpica.</strong><br />
+  <strong>Coach⇄athlete macrocycles for Olympic weightlifting.</strong><br />
   <em>Smart training, zero burnout.</em>
 </p>
 
 <p align="center">
-  Planificás hacia la competencia · Leés carga y recuperación con contexto · El calendario manda
+  You plan toward the competition · You read load and recovery with context · The calendar rules
 </p>
 
 ---
 
-Holy Oly conecta al **coach** con su **plantel** en un solo lugar: prescripción de macrociclos, monitor de carga, clases en el box y el camino del atleta hacia la fecha que importa. No es un Excel con colores — cada señal se explica **cómo se forma**, **para qué sirve** y **contra qué se lee**.
+Holy Oly connects the **coach** with their **roster** in one place: macrocycle prescription, load monitor, classes at the box, and the athlete's path toward the date that matters. It's not an Excel sheet with colors — every signal explains **how it is formed**, **what it is for**, and **what it is read against**.
 
-| Coach | Atleta |
-|-------|--------|
-| Equipo, drill-down, asignación de macros | Su feed, entreno del día, progreso vs su normal |
-| ACWR, recuperación, alertas con banda | Señales legibles — sin números gameables |
-| Calendario de clases y cupos | Reserva de clases, ciclo (opt-in, redactado) |
-
----
-
-## Por qué existe
-
-En halterofilia el problema no es “falta de datos”: es **demasiados números sin marco**. Holy Oly prioriza:
-
-1. **Verdad anclada a fecha** — competencias y mesociclos en calendario real, no semanas sueltas.
-2. **Viz-first** — gráficos con referencia; sin dato → estado explícito, nunca falso verde.
-3. **Privacidad por rol** — el atleta no ve lo que puede usarse para auto-presionarse; el coach solo ve atletas con vínculo activo.
-
-Catálogo de referencia: **24 macrociclos · 10 escuelas** (`packages/core` + seed).
+| Coach | Athlete |
+|-------|---------|
+| Team, drill-down, macrocycle assignment | Their feed, the day's session, progress vs their normal |
+| ACWR, recovery, alerts with a band | Readable signals — no gameable numbers |
+| Class calendar and slots | Class booking, cycle (opt-in, redacted) |
 
 ---
 
-## Arranque rápido
+## Why it exists
 
-Requisitos: **Node 22**, **pnpm 10**.
+In weightlifting the problem is not “a lack of data”: it's **too many numbers with no frame**. Holy Oly prioritizes:
+
+1. **Date-anchored truth** — competitions and mesocycles on a real calendar, not loose weeks.
+2. **Viz-first** — charts with a reference; no data → explicit state, never a false green.
+3. **Privacy by role** — the athlete does not see what can be used to self-pressure; the coach only sees athletes with an active coach-athlete link.
+
+Reference catalog: **24 macrocycles · 10 schools** (`packages/core` + seed).
+
+---
+
+## Quick start
+
+Requirements: **Node 22**, **pnpm 10**.
 
 ```bash
 pnpm install
-pnpm dev                 # SPA React → http://localhost:5173
+pnpm dev                 # React SPA → http://localhost:5173
 ```
 
-API + base de datos (integración local): [`docs/superpowers/DEPLOY-LOCAL.md`](docs/superpowers/DEPLOY-LOCAL.md).
+API + database (local integration): [`docs/superpowers/DEPLOY-LOCAL.md`](docs/superpowers/DEPLOY-LOCAL.md).
 
-Demo offline instalable en Windows (modo local, sin backend): `pwsh -File scripts/local-demo/setup.ps1`.
+Installable offline demo on Windows (local mode, no backend): `pwsh -File scripts/local-demo/setup.ps1`.
 
 ---
 
 ## Monorepo
 
 ```
-packages/core   →  dominio puro (monitor, prescription, classes, repository)
+packages/core   →  pure domain (monitor, prescription, classes, repository)
 apps/api        →  Fastify + Prisma + authz
-apps/web        →  React — shells coach y atleta
-_mockup/        →  prototipo HTML/PWA (referencia visual legacy)
+apps/web        →  React — coach and athlete shells
+_mockup/        →  HTML/PWA prototype (legacy visual reference)
 ```
 
-| Comando | Qué hace |
-|---------|----------|
-| `pnpm dev` | Frontend en caliente |
-| `pnpm -r typecheck` | Types en todo el workspace |
-| `pnpm -r test` | Unit + integración API |
-| `pnpm -r build` | Build de producción |
+| Command | What it does |
+|---------|--------------|
+| `pnpm dev` | Frontend, live |
+| `pnpm -r typecheck` | Types across the whole workspace |
+| `pnpm -r test` | Unit + API integration |
+| `pnpm -r build` | Production build |
 
 ---
 
-## Documentación
+## Documentation
 
-| Si necesitás… | Abrí |
-|---------------|------|
-| Contexto del producto y mapa de módulos | [`docs/MEMORIA.md`](docs/MEMORIA.md) |
-| Reglas MUST/NEVER (HR-1, HR-2, authz, ciclo) | [`docs/domain/HOLY-OLY-DOMAIN.md`](docs/domain/HOLY-OLY-DOMAIN.md) |
-| Ritual de agentes + graphify | [`CLAUDE.md`](CLAUDE.md) · [`docs/GRAPHIFY-QUICKSTART.md`](docs/GRAPHIFY-QUICKSTART.md) |
+| If you need… | Open |
+|--------------|------|
+| Product context and module map | [`docs/MEMORIA.md`](docs/MEMORIA.md) |
+| MUST/NEVER rules (HR-1, HR-2, authz, cycle) | [`docs/domain/HOLY-OLY-DOMAIN.md`](docs/domain/HOLY-OLY-DOMAIN.md) |
+| Agent ritual + graphify | [`CLAUDE.md`](CLAUDE.md) · [`docs/GRAPHIFY-QUICKSTART.md`](docs/GRAPHIFY-QUICKSTART.md) |
 
 <details>
-<summary><strong>Graphify</strong> (explorar el código con grafo)</summary>
+<summary><strong>Graphify</strong> (explore the code with a graph)</summary>
 
 ```powershell
 pnpm graphify:setup
 pnpm graphify:query -- "LocalRepository MonitorSeries AssignSheet"
-pnpm graphify:update    # tras cambiar .ts/.tsx
-pnpm graphify:viz         # graph.html en el navegador
+pnpm graphify:update    # after changing .ts/.tsx
+pnpm graphify:viz         # graph.html in the browser
 ```
 
-Índice por comunidades: [`graphify-out/wiki/index.md`](graphify-out/wiki/index.md) (cuando el grafo está generado).
+Index by communities: [`graphify-out/wiki/index.md`](graphify-out/wiki/index.md) (when the graph has been generated).
 
 </details>
 
 <details>
-<summary><strong>Mockup estático</strong> (legacy, sin backend)</summary>
+<summary><strong>Static mockup</strong> (legacy, no backend)</summary>
 
-Pantallas de referencia en `_mockup/` — `index.html`, `atleta.html`, `coach.html`, etc.
+Reference screens in `_mockup/` — `index.html`, `atleta.html`, `coach.html`, etc.
 
 ```bash
 python -m http.server 8000 -d _mockup
 ```
 
-El producto activo vive en `apps/web` + `apps/api`.
+The active product lives in `apps/web` + `apps/api`.
 
 </details>
 
 ---
 
 <p align="center">
-  <sub>Repo privado · halterofilia · coach-atleta · mobile-first</sub>
+  <sub>Private repo · weightlifting · coach-athlete · mobile-first</sub>
 </p>
